@@ -91,6 +91,7 @@ Cursor אליו). הוא כתוב בגוף שני, ישירות אל המפתח/
 - **Rate limiting** על שליחת בקשות חיבור והודעות (`lib/rate-limit.ts`)
 - **העלאת CV אופציונלית** לטאלנט (PDF, bucket פרטי `talent-cvs`, מיגרציה `0010`)
 - **סינון שרת ב-Discovery** (תעשייה, מיקום, סגנון עבודה + pagination)
+- **Funnel אמיתי** בדשבורד החברה מ-`relationship_events` (אותו כלל תצוגה כמו Board)
 - קונפטי MINGLE עבר ל-CSS burst+fall; פעמון התראות תוקן מבחינת stacking/`overflow`
 
 ### מה נשאר לפני פתיחה חיצונית
@@ -110,7 +111,6 @@ Cursor אליו). הוא כתוב בגוף שני, ישירות אל המפתח/
 
 - skeletons מחוץ לאשפים
 - command palette
-- funnel אמיתי בדשבורד החברה (הבר היום עדיין דמה; ה-Board הוא מקור האמת)
 - onboarding מודרך לפיילוט
 - מייל טרנזקציוני, טבלת התראות, Storage לקבצים נוספים מעבר ל-CV של הטאלנט
 - CI/CD (lint + build + `test:e2e`)

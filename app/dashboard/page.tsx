@@ -5,6 +5,7 @@ import { CompanyDashboard, type CandidateRow } from "@/components/dashboard/Comp
 import { TalentDashboard, type CompanyRow } from "@/components/dashboard/TalentDashboard";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
 import { matchScore } from "@/lib/profile-detail/why-match";
+import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -33,12 +34,15 @@ export default async function DashboardPage() {
       .maybeSingle();
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
 
-    const { data: talentRows } = await supabase
-      .from("talent_profiles")
-      .select("*")
-      .neq("user_id", user.id)
-      .order("updated_at", { ascending: false })
-      .limit(8);
+    const [{ data: talentRows }, funnel] = await Promise.all([
+      supabase
+        .from("talent_profiles")
+        .select("*")
+        .neq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(8),
+      loadCompanyFunnel(supabase, user.id),
+    ]);
 
     const candidates: CandidateRow[] = (talentRows ?? [])
       .filter((row) => row.first_name)
@@ -68,6 +72,7 @@ export default async function DashboardPage() {
           profileCompletion={userRow.profile_completion}
           candidates={candidates}
           accountLabel={accountLabel}
+          funnel={funnel}
         />
       </DashboardShell>
     );

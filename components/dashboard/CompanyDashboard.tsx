@@ -2,6 +2,8 @@ import Link from "next/link";
 import { KpiTile } from "@/components/dashboard/KpiTile";
 import { EmptyState } from "@/components/EmptyState";
 import { IconBadge } from "@/components/dashboard/IconBadge";
+import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
+import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import {
   GaugeIcon,
   PeopleIcon,
@@ -9,7 +11,6 @@ import {
   CompassIcon,
   BriefcaseIcon,
   CalendarIcon,
-  FunnelIcon,
 } from "@/components/dashboard/icons";
 
 export type CandidateRow = {
@@ -20,14 +21,6 @@ export type CandidateRow = {
   matchScore: number;
   updatedAt: string;
 };
-
-const PIPELINE_STAGES = [
-  "Connected",
-  "Exploring",
-  "In conversation",
-  "Opportunity",
-  "Decision",
-];
 
 function timeAgo(iso: string): string {
   const days = Math.max(
@@ -43,10 +36,12 @@ export function CompanyDashboard({
   profileCompletion,
   candidates,
   accountLabel,
+  funnel,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
   accountLabel: string;
+  funnel: CompanyFunnel;
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -72,57 +67,26 @@ export function CompanyDashboard({
         />
         <KpiTile
           icon={CompassIcon}
-          label="New connections"
-          value="0"
+          label="Connections"
+          value={String(funnel.total)}
           accent="ctaPink"
         />
         <KpiTile
           icon={MessageIcon}
           label="Active conversations"
-          value="0"
+          value={String(funnel.counts.in_conversation)}
           accent="pinkCta"
         />
         <KpiTile
           icon={BriefcaseIcon}
           label="Open opportunities"
-          value="0"
+          value={String(funnel.counts.opportunity)}
           accent="purplePink"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-          <div className="flex items-center gap-3">
-            <IconBadge icon={FunnelIcon} accent="purpleCta" size={32} iconSize={15} />
-            <h2 className="font-display text-sm font-semibold text-mingle-white">
-              Your pipeline
-            </h2>
-            <Link
-              href="/board"
-              className="ml-auto text-xs font-medium text-mingle-cta"
-            >
-              Open board
-            </Link>
-          </div>
-          <div className="mt-5 flex flex-col gap-3">
-            {PIPELINE_STAGES.map((stage) => (
-              <div key={stage} className="flex items-center gap-3">
-                <span className="w-32 shrink-0 text-xs text-mingle-text-secondary">
-                  {stage}
-                </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-mingle-bg">
-                  <div className="h-full w-0 rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple" />
-                </div>
-                <span className="w-4 shrink-0 text-right text-xs font-medium text-mingle-white">
-                  0
-                </span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-xs text-mingle-text-secondary">
-            Your pipeline fills up as you start connecting with talent.
-          </p>
-        </div>
+        <CompanyPipelineFunnel funnel={funnel} />
 
         <div className="flex flex-col gap-6">
           <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">

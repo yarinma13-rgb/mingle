@@ -76,7 +76,7 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 
 **קיים היום:** theme כהה/בהיר · הרשמה ו-onboarding · אשפי פרופיל · צפייה חוצת-צד ·
 Dashboard · מנוע התאמה · Discovery · שמירות · חיבורים · MINGLE · צ'אט · התראות · מסלול
-קשר · Board לחברה · toasts · מצבי ריק במסכי ליבה · Terms (`/legal/terms`) ו-Privacy
+קשר · Board לחברה · funnel אמיתי בדשבורד החברה · toasts · מצבי ריק במסכי ליבה · Terms (`/legal/terms`) ו-Privacy
 (`/legal/privacy`) · Sentry/PostHog scaffolding · smoke test Playwright · העלאת CV
 אופציונלית לטאלנט (PDF, bucket פרטי).
 
@@ -86,6 +86,8 @@ Dashboard · מנוע התאמה · Discovery · שמירות · חיבורים 
 - `currentStage` = השלב הרחוק ביותר (`STAGE_RANK`). מסכי Explore/צ'אט/פאנל משתמשים בזה.
 - Board משתמש ב-`latestStage` (האירוע האחרון) כדי שצעד אחורה מאושר יהיה גלוי בעמודות.
   `recordBoardStage` עדיין בודק רגרסיה מול `currentStage` ודורש `allowRegression`.
+- Funnel בדשבורד החברה סופר חיבורים מקובלים לפי האירוע האחרון ב-`relationship_events`
+  (אותו כלל תצוגה כמו עמודות ה-Board). בלי אירועים השלב הוא Connected. קריאה בלבד.
 - graceful degradation לכל תלות בטבלה חדשה.
 - ניטור/אנליטיקה: אותו דפוס — בלי מפתח אין דיווח ואין קריסה.
 - כותרת ה-MINGLE היא טקסט לבן `It's a mingle`. הסימן הגדול (`variant="mark"` size 72)
