@@ -63,7 +63,7 @@ function generateConfettiSpecs(): ConfettiSpec[] {
 function useConfettiSpecs(): ConfettiSpec[] {
   const [specs, setSpecs] = useState<ConfettiSpec[]>([]);
   useEffect(() => {
-    setSpecs(generateConfettiSpecs());
+    Promise.resolve().then(() => setSpecs(generateConfettiSpecs()));
   }, []);
   return specs;
 }
