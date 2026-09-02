@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+:root {
+  /* MINGLE design system — see PRODUCT_SPEC.md section 8.
+     Dark is the default (Welcome through profile creation).
+     Accent colors (pink/purple/cta) are identical in both themes and
+     never change between the blocks below. */
+  --mingle-bg: #0f1420;
+  --mingle-product-bg: #171d2b;
+  --mingle-surface: #202738;
+  --mingle-pink: #e2378d;
+  --mingle-purple: #7362e2;
+  --mingle-cta: #4d42db;
+  --mingle-white: #ffffff;
+  --mingle-text-secondary: #e1e4ea;
+  --mingle-border: rgba(255, 255, 255, 0.08);
+  --mingle-mascot-backdrop: #01041e;
+}
+
+/* Explicit dark block, matching :root exactly — needed so a
+   data-theme="dark" element nested inside a light-themed subtree (the
+   dashboard's top bar) can win the cascade and revert to dark, rather
+   than inheriting the light values from its ancestor. */
+[data-theme="dark"] {
+  --mingle-bg: #0f1420;
+  --mingle-product-bg: #171d2b;
+  --mingle-surface: #202738;
+  --mingle-white: #ffffff;
+  --mingle-text-secondary: #e1e4ea;
+  --mingle-border: rgba(255, 255, 255, 0.08);
+  --mingle-mascot-backdrop: #01041e;
+}
+
+/* Light theme — Dashboard and everything after profile completion
+   (discovery, matches, conversations, profile viewing, settings). */
+[data-theme="light"] {
+  --mingle-bg: #f6f4fc;
+  --mingle-product-bg: #f6f4fc;
+  --mingle-surface: #ffffff;
+  --mingle-white: #1b1930;
+  --mingle-text-secondary: #6e6c8a;
+  --mingle-border: #e9e4f7;
+  --mingle-mascot-backdrop: #ffffff;
+}
+
+@theme inline {
+  --color-mingle-bg: var(--mingle-bg);
+  --color-mingle-product: var(--mingle-product-bg);
+  --color-mingle-surface: var(--mingle-surface);
+  --color-mingle-pink: var(--mingle-pink);
+  --color-mingle-purple: var(--mingle-purple);
+  --color-mingle-cta: var(--mingle-cta);
+  --color-mingle-white: var(--mingle-white);
+  --color-mingle-text-secondary: var(--mingle-text-secondary);
+  --color-mingle-border: var(--mingle-border);
+
+  --font-display: var(--font-poppins);
+  --font-sans: var(--font-inter);
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  background: var(--mingle-bg);
+  color: var(--mingle-white);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+/* iOS zooms any focused control under 16px. Keep desktop density, stop
+   the zoom on phones. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Native <button> defaults to cursor: default in every browser — links
+   already get a pointer cursor automatically, but every button in the
+   app needs this explicitly or clickable actions read as inert. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.mingle-gradient-text {
+  background: linear-gradient(120deg, var(--mingle-pink), var(--mingle-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mingle-gradient-border {
+  border-image: linear-gradient(120deg, var(--mingle-pink), var(--mingle-purple)) 1;
+}
+
+/* MINGLE moment confetti — burst from the M, then a gravity fall.
+   Burst target and fall distance are computed in JS as custom properties.
+   Each phase is monotonic: one vector to the burst, then only +Y down. */
+@keyframes mingle-confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(var(--burst-x), var(--burst-y), 0)
+      rotate(var(--rot-burst));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.72, 0.18);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(
+        var(--burst-x),
+        calc(var(--burst-y) + var(--fall-y)),
+        0
+      )
+      rotate(var(--rot-end));
+  }
+}
+
+@keyframes mingle-confetti-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  75% {
+    opacity: 0.9;
+  }
+}
+
+.mingle-confetti-piece {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  margin-left: -4px;
+  border-radius: 2px;
+  animation-name: mingle-confetti-burst;
+  animation-duration: 2.4s;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mingle-confetti-piece {
+    animation-name: mingle-confetti-fade;
+    animation-duration: 2.1s;
+    animation-timing-function: ease;
+  }
+}
