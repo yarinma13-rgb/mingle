@@ -41,7 +41,9 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 
 - **Supabase:** Postgres + Auth + Realtime. Project ref `yehbilfmzjmdlthhbfgw`.
 - **אפליקציה:** Next.js 16 App Router, מקומית `next dev` על `localhost:3000`. אין דיפלוי
-  לפרודקשן עדיין. אין הפרדת סביבות, אין CI/CD.
+  לפרודקשן עדיין. אין הפרדת סביבות. CI בסיסי ב-GitHub Actions (`.github/workflows/ci.yml`):
+  lint + build על כל push/PR; `test:e2e` רץ אבל `continue-on-error` כי ההרשמה ב-smoke
+  תלויה באימות מייל/SMTP (Resend) שעדיין לא יציב ב-CI.
 - **ניטור (אופציונלי, חינני בלי מפתח):** Sentry (`NEXT_PUBLIC_SENTRY_DSN`) ו-PostHog
   (`NEXT_PUBLIC_POSTHOG_KEY`, אופציונלי `NEXT_PUBLIC_POSTHOG_HOST`). אתחול ב-
   `instrumentation.ts` / `instrumentation-client.ts`. בלי מפתח: no-op, בלי קריסה.
@@ -177,6 +179,10 @@ npm run dev
 | `npm run start` | הרצת הבילד |
 | `npm run lint` | ESLint |
 | `npm run test:e2e` | smoke test Playwright (golden path) |
+
+**CI (GitHub Actions):** אותו lint + build + e2e על push ו-pull request. סודות:
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (לא בריפו). שלב ה-e2e
+כרגע לא חוסם את ה-job אם נכשל (SMTP/אימות מייל).
 
 ה-smoke דורש `.env.local` תקין ו-Chromium של Playwright (`npx playwright install chromium`).
 הוא נרשם שני משתמשים חדשים ב-Supabase המשותף.
