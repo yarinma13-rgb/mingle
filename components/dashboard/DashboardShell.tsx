@@ -117,7 +117,7 @@ export function DashboardShell({
               type="button"
               onClick={openPalette}
               disabled={!paletteEnabled}
-              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary transition-colors hover:border-mingle-purple hover:text-mingle-text focus:border-mingle-purple focus:outline-none disabled:opacity-60"
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text focus:border-mingle-blue focus:outline-none disabled:opacity-60"
             >
               {searchPlaceholder}
             </button>
@@ -138,7 +138,7 @@ export function DashboardShell({
           <NotificationBell userId={userId} />
 
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xs font-bold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
               {userInitials}
             </div>
             <div className="hidden leading-tight sm:block">
@@ -166,7 +166,7 @@ export function DashboardShell({
                 href={item.href}
                 className={`flex items-center gap-3 rounded-[10px] px-3.5 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-mingle-lavender text-mingle-purple"
+                    ? "bg-mingle-lavender text-mingle-blue"
                     : "text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
                 }`}
               >

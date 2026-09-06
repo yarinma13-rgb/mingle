@@ -5,7 +5,7 @@ import {
 } from "@/lib/discovery/filters";
 
 const fieldClass =
-  "w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none";
 
 export function DiscoveryFiltersForm({
   filters,
@@ -63,7 +63,7 @@ export function DiscoveryFiltersForm({
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="submit"
-          className="cursor-pointer rounded-full bg-mingle-cta px-5 py-2.5 font-display text-xs font-semibold text-white"
+          className="mingle-btn-primary cursor-pointer text-xs"
         >
           Apply filters
         </button>
@@ -96,7 +96,7 @@ export function DiscoveryPagination({
       {page > 1 ? (
         <Link
           href={discoveryQueryString(filters, page - 1)}
-          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-text"
+          className="mingle-btn-secondary cursor-pointer text-xs"
         >
           Previous
         </Link>
@@ -109,7 +109,7 @@ export function DiscoveryPagination({
       {page < pageCount ? (
         <Link
           href={discoveryQueryString(filters, page + 1)}
-          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-text"
+          className="mingle-btn-secondary cursor-pointer text-xs"
         >
           Next
         </Link>

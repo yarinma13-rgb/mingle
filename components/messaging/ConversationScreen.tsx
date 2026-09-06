@@ -147,7 +147,7 @@ export function ConversationScreen({
           <BackArrowIcon />
         </Link>
         <Link href={`/profile/view/${otherUserId}`} className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-sm font-bold text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
             {otherInitial}
           </div>
           <div className="min-w-0">
@@ -228,7 +228,7 @@ export function ConversationScreen({
             }}
             placeholder="Write a message"
             maxLength={4000}
-            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
           />
           <button
             type="button"

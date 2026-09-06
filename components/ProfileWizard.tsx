@@ -459,8 +459,8 @@ export function ProfileWizard() {
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
-                            ? "border-mingle-purple bg-mingle-lavender text-mingle-text"
-                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-purple/50"
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
                         }`}
                       >
                         {option}
@@ -518,7 +518,7 @@ export function ProfileWizard() {
                   rows={6}
                   maxLength={2000}
                   placeholder="What should someone know about you before they meet you?"
-                  className="w-full resize-none rounded-[16px] border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
+                  className="w-full resize-none rounded-[16px] border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
                 />
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {BEYOND_CV_SUB_PROMPTS.map((prompt) => (
@@ -586,7 +586,7 @@ export function ProfileWizard() {
 }
 
 const inputClass =
-  "w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none";
 
 function Field({
   label,
@@ -613,7 +613,7 @@ function CompletionMeter({ percent }: { percent: number }) {
     <div className="flex w-full max-w-xs flex-col items-center gap-1.5">
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-mingle-lavender">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple"
+          className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue"
           initial={false}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}

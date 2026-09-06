@@ -379,7 +379,7 @@ export function CompanyProfileWizard() {
                         className="h-12 w-12 rounded-xl object-cover"
                       />
                     )}
-                    <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70">
+                    <label className="mingle-btn-secondary cursor-pointer text-xs">
                       {uploadingLogo ? "Uploading…" : "Choose logo"}
                       <input
                         type="file"
@@ -433,8 +433,8 @@ export function CompanyProfileWizard() {
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-full border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
-                            ? "border-mingle-purple bg-mingle-purple/15 text-mingle-text"
-                            : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-purple/50"
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-blue/50"
                         }`}
                       >
                         {option}
@@ -499,7 +499,7 @@ export function CompanyProfileWizard() {
                     rows={3}
                     maxLength={1200}
                     placeholder="The kind of person who does well on your team"
-                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
                   />
                 </div>
 
@@ -518,7 +518,7 @@ export function CompanyProfileWizard() {
                     rows={3}
                     maxLength={1200}
                     placeholder="What your company is building and why it matters"
-                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
                   />
                 </div>
 
@@ -562,7 +562,7 @@ export function CompanyProfileWizard() {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none";
 
 function Field({
   label,
@@ -589,7 +589,7 @@ function CompletionMeter({ percent }: { percent: number }) {
     <div className="flex w-full max-w-xs flex-col items-center gap-1.5">
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-mingle-surface">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple"
+          className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue"
           initial={false}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}

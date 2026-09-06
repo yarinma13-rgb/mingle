@@ -130,7 +130,7 @@ export function DecisionScreen({
             type="button"
             onClick={() => handleDecide(option.choice)}
             disabled={saving}
-            className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 text-left transition-colors hover:border-mingle-purple/50 disabled:opacity-60"
+            className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 text-left transition-colors hover:border-mingle-blue/50 disabled:opacity-60"
           >
             <p className="font-display text-sm font-semibold text-mingle-text">
               {option.label}

@@ -90,14 +90,14 @@ export function WelcomeScreen() {
                     whileTap={{ scale: 0.98 }}
                     className={`flex flex-col items-start rounded-2xl border bg-mingle-white p-6 text-left shadow-mingle transition-colors ${
                       isSelected
-                        ? "border-mingle-purple"
-                        : "border-mingle-border hover:border-mingle-purple/60"
+                        ? "border-mingle-blue"
+                        : "border-mingle-border hover:border-mingle-blue/60"
                     }`}
                   >
                     <span className="relative flex h-12 w-12 items-center justify-center">
                       <span
                         aria-hidden
-                        className={`absolute h-12 w-12 rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple blur-lg transition-opacity ${
+                        className={`absolute h-12 w-12 rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue blur-lg transition-opacity ${
                           isSelected ? "opacity-40" : "opacity-0"
                         }`}
                       />

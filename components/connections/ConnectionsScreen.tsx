@@ -30,7 +30,7 @@ function PersonRow({
         href={`/profile/view/${row.userId}`}
         className="flex min-w-0 items-center gap-3"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-sm font-bold text-white">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
           {row.initial}
         </div>
         <div className="min-w-0">

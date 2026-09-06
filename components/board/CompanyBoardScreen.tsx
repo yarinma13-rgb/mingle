@@ -202,7 +202,7 @@ export function CompanyBoardScreen({
                             if (draggingId) event.preventDefault();
                           }}
                         >
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xs font-bold text-white">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
                             {card.initial}
                           </div>
                           <div className="min-w-0">

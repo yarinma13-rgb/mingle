@@ -107,7 +107,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                     }}
                     className="flex w-full cursor-pointer items-start gap-3 border-b border-mingle-border px-4 py-3 text-left last:border-0 hover:bg-mingle-bg"
                   >
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mingle-purple/15 text-mingle-purple">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mingle-blue/15 text-mingle-blue">
                       <Icon size={14} />
                     </span>
                     <span className="min-w-0 flex-1">

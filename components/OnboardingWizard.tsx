@@ -225,8 +225,8 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                     }
                     className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                       selected
-                        ? "border-mingle-purple bg-mingle-lavender text-mingle-text"
-                        : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-purple/50"
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
                     }`}
                   >
                     {option}
@@ -287,7 +287,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
             key={dot}
             className={`h-1.5 w-7 rounded-full transition-colors ${
               dot <= step
-                ? "bg-gradient-to-r from-mingle-pink to-mingle-purple"
+                ? "bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue"
                 : "bg-mingle-surface"
             }`}
           />
@@ -338,7 +338,7 @@ function OnboardingComplete({ path }: { path: UserType }) {
         <div className="relative flex h-20 w-20 items-center justify-center">
           <span
             aria-hidden
-            className="absolute h-20 w-20 rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple opacity-30 blur-2xl"
+            className="absolute h-20 w-20 rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue opacity-30 blur-2xl"
           />
           <MingleLogo variant="mark" size={56} className="relative" />
         </div>

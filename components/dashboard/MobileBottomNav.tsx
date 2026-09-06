@@ -62,7 +62,7 @@ export function MobileBottomNav({
                     onClick={() => setMoreOpen(false)}
                     className={`flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium ${
                       active
-                        ? "bg-mingle-lavender text-mingle-purple"
+                        ? "bg-mingle-lavender text-mingle-blue"
                         : "text-mingle-text-secondary"
                     }`}
                   >
@@ -88,7 +88,7 @@ export function MobileBottomNav({
               key={item.label}
               href={item.href}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? "text-mingle-purple" : "text-mingle-text-secondary"
+                active ? "text-mingle-blue" : "text-mingle-text-secondary"
               }`}
             >
               <Icon size={20} />
@@ -100,7 +100,7 @@ export function MobileBottomNav({
           type="button"
           onClick={() => setMoreOpen(true)}
           className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-            moreActive ? "text-mingle-purple" : "text-mingle-text-secondary"
+            moreActive ? "text-mingle-blue" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />

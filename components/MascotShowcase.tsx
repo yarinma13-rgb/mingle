@@ -62,7 +62,7 @@ export function MascotShowcase() {
               onClick={() => setScore(preset)}
               className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                 score === preset
-                  ? "bg-mingle-purple text-white"
+                  ? "bg-mingle-blue text-white"
                   : "bg-mingle-surface text-mingle-text-secondary hover:text-mingle-text"
               }`}
             >

@@ -76,7 +76,7 @@ export function ExploreScreen({
           <Link
             key={action.label}
             href={action.href}
-            className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 transition-colors hover:border-mingle-purple/50"
+            className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 transition-colors hover:border-mingle-blue/50"
           >
             <p className="font-display text-sm font-semibold text-mingle-text">
               {action.label}

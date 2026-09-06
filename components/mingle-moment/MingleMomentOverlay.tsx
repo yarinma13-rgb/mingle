@@ -8,8 +8,8 @@ import { MingleLogo } from "@/components/MingleLogo";
 // component and pose assets are kept, just not rendered here for now.
 
 // Confetti burst origin is the M mark. Angle is computed in JS:
-// 0deg = right, 90deg = up. 20–160deg is the upper fan (up and to the
-// sides). Palette stays inside PRODUCT_SPEC section 8.
+// 0deg = right, 90deg = up. 20–160deg is the upper fan.
+// Colors are the 2026 brand tokens only — no white/pale tints on lavender.
 const CONFETTI_COLORS = [
   "#F65F7C",
   "#D83A52",

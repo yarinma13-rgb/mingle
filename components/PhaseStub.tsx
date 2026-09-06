@@ -37,7 +37,7 @@ export function PhaseStub({
 
         <Link
           href={backHref}
-          className="mt-10 rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70"
+          className="mingle-btn-secondary mt-10"
         >
           {backLabel}
         </Link>

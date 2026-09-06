@@ -76,7 +76,7 @@ export function ProfilePreview({
               className="h-20 w-20 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-white">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
               {initials || "?"}
             </div>
           )}

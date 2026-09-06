@@ -45,13 +45,6 @@ export function AuthForm({ path }: { path: UserType }) {
     // Try sign up first; if the account already exists, fall back to
     // signing in — a single "Continue" instead of forcing the user to
     // pick sign-up vs. log-in up front.
-    //
-    // TODO(pilot launch): "Confirm email" is currently OFF in the Supabase
-    // project (yehbilfmzjmdlthhbfgw), so signUp() returns an active session
-    // immediately with no confirmation step. Turned off deliberately for
-    // dev/demo testing — re-enable before real external users sign up. The
-    // `!signUpData.session` branch below already handles the confirmation-
-    // required case correctly, so no code change is needed when it's back on.
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
       {
         email: values.email,
@@ -59,6 +52,23 @@ export function AuthForm({ path }: { path: UserType }) {
         options: { data: { user_type: path } },
       },
     );
+
+    const signInExisting = async (): Promise<string | null> => {
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+      if (signInError) {
+        setServerError(signInError.message);
+        setIsSubmitting(false);
+        return null;
+      }
+      const signedInId = signInData.user.id;
+      track(AnalyticsEvent.signIn, { path }, signedInId);
+      identifyUser(signedInId, { path });
+      return signedInId;
+    };
 
     let userId: string | undefined = signUpData?.user?.id;
 
@@ -72,28 +82,29 @@ export function AuthForm({ path }: { path: UserType }) {
         return;
       }
 
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-      if (signInError) {
-        setServerError(signInError.message);
+      const signedInId = await signInExisting();
+      if (!signedInId) return;
+      userId = signedInId;
+    } else if (!signUpData.session) {
+      // Anti-enumeration: signUp on an existing confirmed email can
+      // return success with no session and an empty identities array.
+      // That is not a new user waiting to confirm — sign them in.
+      const existingAccount =
+        (signUpData.user?.identities?.length ?? 0) === 0;
+      if (existingAccount) {
+        const signedInId = await signInExisting();
+        if (!signedInId) return;
+        userId = signedInId;
+      } else {
+        setAwaitingConfirmation(true);
         setIsSubmitting(false);
+        track(
+          AnalyticsEvent.signup,
+          { path, awaiting_confirmation: true },
+          userId,
+        );
         return;
       }
-      userId = signInData.user.id;
-      track(AnalyticsEvent.signIn, { path }, userId);
-      identifyUser(userId, { path });
-    } else if (!signUpData.session) {
-      // Email confirmation is required on this project — signUp succeeded
-      // but there's no active session yet, so there's nothing to route
-      // into. Tell the user to confirm, rather than bouncing them off the
-      // onboarding route the proxy would otherwise redirect away from.
-      setAwaitingConfirmation(true);
-      setIsSubmitting(false);
-      track(AnalyticsEvent.signup, { path, awaiting_confirmation: true }, userId);
-      return;
     } else if (userId) {
       track(AnalyticsEvent.signup, { path }, userId);
       identifyUser(userId, { path });
@@ -177,7 +188,7 @@ export function AuthForm({ path }: { path: UserType }) {
               autoComplete="email"
               placeholder="Email"
               {...register("email")}
-              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
             />
             {errors.email && (
               <p className="mt-1.5 text-xs text-mingle-pink">
@@ -196,7 +207,7 @@ export function AuthForm({ path }: { path: UserType }) {
               autoComplete="current-password"
               placeholder="Password"
               {...register("password")}
-              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
             />
             {errors.password && (
               <p className="mt-1.5 text-xs text-mingle-pink">

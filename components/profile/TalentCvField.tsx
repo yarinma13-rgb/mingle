@@ -109,13 +109,13 @@ export function TalentCvField({
             type="button"
             onClick={handleOpen}
             disabled={busy}
-            className="max-w-full cursor-pointer truncate rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
+            className="mingle-btn-secondary max-w-full cursor-pointer truncate text-xs disabled:opacity-60"
           >
             {cvFileName}
           </button>
         )}
         {editable && (
-          <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70">
+          <label className="mingle-btn-secondary cursor-pointer text-xs">
             {busy ? "Working…" : hasFile ? "Replace PDF" : "Choose PDF"}
             <input
               ref={inputRef}

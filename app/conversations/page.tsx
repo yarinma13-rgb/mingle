@@ -120,9 +120,9 @@ export default async function ConversationsListPage() {
                 <Link
                   key={row.connectionId}
                   href={`/conversations/${row.connectionId}`}
-                  className="flex items-center gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-purple/50"
+                  className="flex items-center gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-blue/50"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-sm font-bold text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
                     {row.initial}
                   </div>
                   <div className="min-w-0 flex-1">

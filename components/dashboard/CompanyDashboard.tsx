@@ -53,6 +53,29 @@ export function CompanyDashboard({
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="mingle-banner rounded-2xl border border-mingle-border p-6">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
+          Suggested next step
+        </h2>
+        <p className="mt-2 text-sm text-mingle-text-secondary">
+          {profileCompletion < 100
+            ? "Finish your company profile so talent can find you."
+            : "Open Discover and start conversations with people who fit."}
+        </p>
+        {profileCompletion < 100 ? (
+          <Link
+            href="/company-profile/build"
+            className="mingle-btn-primary mt-4 inline-block text-xs"
+          >
+            Finish company profile
+          </Link>
+        ) : (
+          <Link href="/discover" className="mingle-btn-primary mt-4 inline-block text-xs">
+            Open Discover
+          </Link>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <KpiTile
           icon={GaugeIcon}
@@ -99,7 +122,7 @@ export function CompanyDashboard({
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xs font-bold text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
                   {accountLabel.charAt(0).toUpperCase()}
                 </div>
                 <div>

@@ -22,7 +22,7 @@ export function LegalShell({
         <h1 className="mt-3 font-display text-2xl font-bold text-mingle-text sm:text-3xl">
           {title}
         </h1>
-        <div className="mt-8 flex flex-col gap-6 break-words text-sm leading-relaxed text-mingle-text-secondary [&_h2]:mt-2 [&_h2]:font-display [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-mingle-text [&_a]:text-mingle-text [&_a]:underline [&_a]:underline-offset-2">
+        <div className="mt-8 flex flex-col gap-6 break-words text-sm leading-relaxed text-mingle-text-secondary [&_h2]:mt-2 [&_h2]:font-display [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-mingle-text [&_a]:text-mingle-blue [&_a]:underline [&_a]:underline-offset-2">
           {children}
         </div>
         <p className="mt-12 text-xs text-mingle-text-secondary">

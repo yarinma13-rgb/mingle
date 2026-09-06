@@ -65,7 +65,7 @@ export function CompanyProfilePreview({
               className="h-20 w-20 rounded-2xl object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-white">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
               {initial || "?"}
             </div>
           )}
