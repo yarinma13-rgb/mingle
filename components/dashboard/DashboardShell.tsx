@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MingleLogo } from "@/components/MingleLogo";
+import { useCommandPalette } from "@/components/command-palette/CommandPaletteProvider";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { NotificationBell } from "@/components/dashboard/NotificationBell";
 import {
@@ -83,17 +84,15 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const pathname = usePathname();
+  const { openPalette, enabled: paletteEnabled } = useCommandPalette();
   const isCompany = userType === "company";
   const navItems = isCompany ? COMPANY_NAV : TALENT_NAV;
   const primaryItems = isCompany ? COMPANY_NAV_PRIMARY : TALENT_NAV_PRIMARY;
   const moreItems = isCompany ? COMPANY_NAV_MORE : TALENT_NAV_MORE;
 
   return (
-    <div data-theme="light" className="flex min-h-screen flex-col bg-mingle-bg">
-      <header
-        data-theme="dark"
-        className="relative z-30 flex min-h-16 w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border bg-mingle-bg px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6"
-      >
+    <div className="flex min-h-screen flex-col bg-mingle-bg">
+      <header className="relative z-30 flex min-h-16 w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border bg-mingle-white px-4 pt-[env(safe-area-inset-top)] shadow-mingle sm:gap-6 sm:px-6">
         {/* Compact logo on mobile, full lockup from sm up (spec: "compact
             logo" on mobile). The responsive show/hide classes live on a
             plain wrapper rather than passed into MingleLogo's own
@@ -114,11 +113,14 @@ export function DashboardShell({
               size={16}
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mingle-text-secondary"
             />
-            <input
-              type="search"
-              placeholder={searchPlaceholder}
-              className="w-full rounded-full border border-mingle-border bg-mingle-surface py-2.5 pl-10 pr-4 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
-            />
+            <button
+              type="button"
+              onClick={openPalette}
+              disabled={!paletteEnabled}
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary transition-colors hover:border-mingle-purple hover:text-mingle-text focus:border-mingle-purple focus:outline-none disabled:opacity-60"
+            >
+              {searchPlaceholder}
+            </button>
           </div>
         </div>
 
@@ -126,7 +128,9 @@ export function DashboardShell({
           <button
             type="button"
             aria-label="Search"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-mingle-border bg-mingle-surface text-mingle-text-secondary transition-colors hover:text-mingle-white md:hidden"
+            onClick={openPalette}
+            disabled={!paletteEnabled}
+            className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:text-mingle-text disabled:opacity-60 md:hidden"
           >
             <SearchIcon size={16} />
           </button>
@@ -138,7 +142,7 @@ export function DashboardShell({
               {userInitials}
             </div>
             <div className="hidden leading-tight sm:block">
-              <p className="text-sm font-semibold text-mingle-white">
+              <p className="text-sm font-semibold text-mingle-text">
                 {userName}
               </p>
               <p className="text-xs text-mingle-text-secondary">
@@ -152,7 +156,7 @@ export function DashboardShell({
       <div className="flex flex-1">
         {/* Sidebar is desktop only — mobile gets a bottom nav instead
             (PRODUCT_SPEC.md section 58). */}
-        <aside className="hidden w-60 shrink-0 flex-col gap-1 border-r border-mingle-border bg-mingle-surface p-4 md:flex">
+        <aside className="hidden w-60 shrink-0 flex-col gap-1 border-r border-mingle-border bg-mingle-white p-4 md:flex">
           {navItems.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;
@@ -160,10 +164,10 @@ export function DashboardShell({
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-[10px] px-3.5 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-mingle-cta/10 text-mingle-cta"
-                    : "text-mingle-text-secondary hover:bg-mingle-bg hover:text-mingle-white"
+                    ? "bg-mingle-lavender text-mingle-purple"
+                    : "text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
                 }`}
               >
                 <Icon size={17} />
@@ -174,7 +178,7 @@ export function DashboardShell({
         </aside>
 
         <main className="min-w-0 flex-1 px-4 pb-24 pt-6 sm:px-8 sm:py-7 md:pb-7">
-          <h1 className="mb-6 font-display text-2xl font-bold text-mingle-white sm:mb-7">
+          <h1 className="mb-6 font-display text-2xl font-bold text-mingle-text sm:mb-7">
             {title}
           </h1>
 

@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-3 text-sm shadow-lg ${
                 item.kind === "error"
                   ? "border-mingle-pink/40 bg-mingle-surface text-mingle-pink"
-                  : "border-mingle-border bg-mingle-surface text-mingle-white"
+                  : "border-mingle-border bg-mingle-white text-mingle-text"
               }`}
             >
               {item.message}

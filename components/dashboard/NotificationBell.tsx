@@ -64,7 +64,7 @@ export function NotificationBell({ userId }: { userId: string }) {
         type="button"
         aria-label="Notifications"
         onClick={toggleOpen}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-mingle-border bg-mingle-surface text-mingle-text-secondary transition-colors hover:text-mingle-white"
+        className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:text-mingle-text"
       >
         <BellIcon size={16} />
         {items.length > 0 && (
@@ -76,11 +76,10 @@ export function NotificationBell({ userId }: { userId: string }) {
 
       {open && (
         <div
-          data-theme="light"
-          className="absolute right-0 top-11 z-50 w-80 max-w-[85vw] overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-xl"
+          className="absolute right-0 top-11 z-50 w-80 max-w-[85vw] overflow-hidden rounded-2xl border border-mingle-border bg-mingle-white shadow-mingle"
         >
           <div className="border-b border-mingle-border px-4 py-3">
-            <p className="font-display text-sm font-semibold text-mingle-white">
+            <p className="font-display text-sm font-semibold text-mingle-text">
               Notifications
             </p>
           </div>
@@ -112,7 +111,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                       <Icon size={14} />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-mingle-white">
+                      <span className="block truncate text-sm text-mingle-text">
                         {itemText(item)}
                       </span>
                       <span className="text-xs text-mingle-text-secondary">

@@ -131,7 +131,7 @@ export function AuthForm({ path }: { path: UserType }) {
           className="flex w-full max-w-sm flex-col items-center"
         >
           <MingleLogo variant="mark" size={40} className="mb-8" />
-          <h1 className="font-display text-2xl font-bold text-mingle-white">
+          <h1 className="font-display text-2xl font-bold text-mingle-text">
             Check your email
           </h1>
           <p className="mt-3 text-sm text-mingle-text-secondary">
@@ -156,7 +156,7 @@ export function AuthForm({ path }: { path: UserType }) {
           <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
             {copy.eyebrow}
           </span>
-          <h1 className="mt-3 font-display text-2xl font-bold text-mingle-white">
+          <h1 className="mt-3 font-display text-2xl font-bold text-mingle-text">
             {copy.headline}
           </h1>
         </div>
@@ -177,7 +177,7 @@ export function AuthForm({ path }: { path: UserType }) {
               autoComplete="email"
               placeholder="Email"
               {...register("email")}
-              className="w-full rounded-xl border border-mingle-surface bg-mingle-surface px-4 py-3.5 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
             />
             {errors.email && (
               <p className="mt-1.5 text-xs text-mingle-pink">
@@ -196,7 +196,7 @@ export function AuthForm({ path }: { path: UserType }) {
               autoComplete="current-password"
               placeholder="Password"
               {...register("password")}
-              className="w-full rounded-xl border border-mingle-surface bg-mingle-surface px-4 py-3.5 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+              className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
             />
             {errors.password && (
               <p className="mt-1.5 text-xs text-mingle-pink">
@@ -214,7 +214,7 @@ export function AuthForm({ path }: { path: UserType }) {
             disabled={isSubmitting}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-mingle-white disabled:opacity-60"
+            className="mingle-btn-primary mt-2 disabled:opacity-60"
           >
             {isSubmitting ? "Continuing…" : "Continue"}
           </motion.button>
@@ -225,11 +225,11 @@ export function AuthForm({ path }: { path: UserType }) {
         </p>
         <p className="mt-4 text-center text-xs text-mingle-text-secondary">
           By continuing you agree to the{" "}
-          <Link href="/legal/terms" className="text-mingle-white underline underline-offset-2">
+          <Link href="/legal/terms" className="text-mingle-text underline underline-offset-2">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/legal/privacy" className="text-mingle-white underline underline-offset-2">
+          <Link href="/legal/privacy" className="text-mingle-text underline underline-offset-2">
             Privacy Policy
           </Link>
           .

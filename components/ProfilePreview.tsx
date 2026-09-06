@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { MingleLogo } from "@/components/MingleLogo";
+import { MingleChip } from "@/components/MingleChip";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { Database } from "@/lib/supabase/types";
@@ -13,12 +14,7 @@ function ChipRow({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span
-          key={item}
-          className="rounded-full bg-mingle-purple/15 px-3 py-1.5 text-xs font-medium text-mingle-white"
-        >
-          {item}
-        </span>
+        <MingleChip key={item}>{item}</MingleChip>
       ))}
     </div>
   );
@@ -33,7 +29,7 @@ function Section({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-white">
+      <h2 className="font-display text-sm font-semibold text-mingle-text">
         {title}
       </h2>
       {children}
@@ -80,12 +76,12 @@ export function ProfilePreview({
               className="h-20 w-20 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-mingle-white">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-white">
               {initials || "?"}
             </div>
           )}
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-white">
+            <h1 className="font-display text-2xl font-bold text-mingle-text">
               {fullName || "Your name"}
             </h1>
             <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -139,7 +135,7 @@ export function ProfilePreview({
 
         <Link
           href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-mingle-white"
+          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white"
         >
           Looks good
         </Link>

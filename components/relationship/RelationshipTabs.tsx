@@ -24,7 +24,7 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
             className={`min-h-11 shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold transition-colors ${
               active
                 ? "bg-mingle-cta text-white"
-                : "text-mingle-text-secondary hover:text-mingle-white"
+                : "text-mingle-text-secondary hover:text-mingle-text"
             }`}
           >
             {tab.label}

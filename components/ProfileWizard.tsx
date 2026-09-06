@@ -286,7 +286,7 @@ export function ProfileWizard() {
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             Build your mingle profile
           </span>
-          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-white sm:text-3xl">
+          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-text sm:text-3xl">
             {step === 1
               ? "Your CV tells your story"
               : multiQuestion
@@ -392,7 +392,7 @@ export function ProfileWizard() {
                         className="h-12 w-12 rounded-full object-cover"
                       />
                     )}
-                    <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70">
+                    <label className="mingle-btn-secondary cursor-pointer text-xs">
                       {uploadingPhoto ? "Uploading…" : "Choose photo"}
                       <input
                         type="file"
@@ -434,7 +434,7 @@ export function ProfileWizard() {
                   disabled={saving}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-mingle-white disabled:opacity-60"
+                  className="mingle-btn-primary mt-2 text-sm disabled:opacity-60"
                 >
                   {saving ? "Saving…" : "Continue"}
                 </motion.button>
@@ -457,10 +457,10 @@ export function ProfileWizard() {
                         role="checkbox"
                         aria-checked={selected}
                         onClick={() => toggleMulti(multiKey, option)}
-                        className={`rounded-full border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                        className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
-                            ? "border-mingle-purple bg-mingle-purple/15 text-mingle-white"
-                            : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-purple/50"
+                            ? "border-mingle-purple bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-purple/50"
                         }`}
                       >
                         {option}
@@ -480,7 +480,7 @@ export function ProfileWizard() {
                     type="button"
                     onClick={goBack}
                     disabled={saving}
-                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                    className="mingle-btn-secondary disabled:opacity-50"
                   >
                     Back
                   </button>
@@ -496,10 +496,10 @@ export function ProfileWizard() {
                     whileTap={
                       profile[multiKey].length > 0 ? { scale: 0.97 } : undefined
                     }
-                    className={`rounded-full px-8 py-3.5 font-display text-sm font-semibold transition-colors ${
+                    className={`font-display text-sm ${
                       profile[multiKey].length > 0
-                        ? "bg-mingle-cta text-mingle-white"
-                        : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
+                        ? "mingle-btn-primary"
+                        : "mingle-btn-secondary cursor-not-allowed opacity-45"
                     }`}
                   >
                     {saving ? "Saving…" : "Continue"}
@@ -518,13 +518,13 @@ export function ProfileWizard() {
                   rows={6}
                   maxLength={2000}
                   placeholder="What should someone know about you before they meet you?"
-                  className="w-full resize-none rounded-2xl border-2 border-mingle-surface bg-mingle-surface p-4 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+                  className="w-full resize-none rounded-[16px] border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none"
                 />
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {BEYOND_CV_SUB_PROMPTS.map((prompt) => (
                     <span
                       key={prompt}
-                      className="rounded-full bg-mingle-surface px-3 py-1.5 text-xs text-mingle-text-secondary"
+                      className="rounded-[10px] bg-mingle-lavender px-3 py-1.5 text-xs text-mingle-text-secondary"
                     >
                       {prompt}
                     </span>
@@ -547,7 +547,7 @@ export function ProfileWizard() {
                     type="button"
                     onClick={goBack}
                     disabled={saving}
-                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                    className="mingle-btn-secondary disabled:opacity-50"
                   >
                     Back
                   </button>
@@ -565,10 +565,10 @@ export function ProfileWizard() {
                         ? { scale: 0.97 }
                         : undefined
                     }
-                    className={`rounded-full px-8 py-3.5 font-display text-sm font-semibold transition-colors ${
+                    className={`font-display text-sm ${
                       beyondCvSchema.safeParse(profile.beyondCv).success
-                        ? "bg-mingle-cta text-mingle-white"
-                        : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
+                        ? "mingle-btn-primary"
+                        : "mingle-btn-secondary cursor-not-allowed opacity-45"
                     }`}
                   >
                     {saving ? "Saving…" : "See my profile"}
@@ -586,7 +586,7 @@ export function ProfileWizard() {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-mingle-surface bg-mingle-surface px-4 py-3 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-purple focus:outline-none";
 
 function Field({
   label,
@@ -603,7 +603,7 @@ function Field({
         {label}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-mingle-pink">{error}</p>}
+      {error && <p className="mt-1 text-xs text-mingle-error">{error}</p>}
     </div>
   );
 }
@@ -611,7 +611,7 @@ function Field({
 function CompletionMeter({ percent }: { percent: number }) {
   return (
     <div className="flex w-full max-w-xs flex-col items-center gap-1.5">
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-mingle-surface">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-mingle-lavender">
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple"
           initial={false}
@@ -644,7 +644,7 @@ function ProfileWizardError({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70"
+        className="mingle-btn-secondary"
       >
         Try again
       </button>

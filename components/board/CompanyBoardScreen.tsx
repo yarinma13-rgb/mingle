@@ -12,6 +12,7 @@ import {
   recordBoardStage,
 } from "@/lib/relationship/persistence";
 import { EmptyState } from "@/components/EmptyState";
+import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 
 export type BoardCandidate = {
@@ -170,12 +171,10 @@ export function CompanyBoardScreen({
                 }`}
               >
                 <header className="mb-3 flex items-center justify-between gap-2 px-1">
-                  <h2 className="font-display text-sm font-semibold text-mingle-white">
+                  <h2 className="font-display text-sm font-semibold text-mingle-text">
                     {column.label}
                   </h2>
-                  <span className="rounded-full bg-mingle-bg px-2 py-0.5 text-xs font-medium text-mingle-text-secondary">
-                    {cards.length}
-                  </span>
+                  <MingleChip>{cards.length}</MingleChip>
                 </header>
                 <div className="flex min-h-40 flex-col gap-2">
                   {cards.length === 0 ? (
@@ -207,7 +206,7 @@ export function CompanyBoardScreen({
                             {card.initial}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-display text-sm font-semibold text-mingle-white">
+                            <p className="truncate font-display text-sm font-semibold text-mingle-text">
                               {card.name}
                             </p>
                             <p className="truncate text-xs text-mingle-text-secondary">
@@ -230,7 +229,7 @@ export function CompanyBoardScreen({
                                 false,
                               );
                             }}
-                            className="min-w-0 flex-1 rounded-lg border border-mingle-border bg-mingle-surface px-2 py-1.5 text-xs text-mingle-white"
+                            className="min-w-0 flex-1 rounded-lg border border-mingle-border bg-mingle-surface px-2 py-1.5 text-xs text-mingle-text"
                           >
                             {BOARD_COLUMNS.map((option) => (
                               <option key={option.id} value={option.id}>
@@ -240,7 +239,7 @@ export function CompanyBoardScreen({
                           </select>
                           <Link
                             href={`/conversations/${card.connectionId}`}
-                            className="shrink-0 rounded-full bg-mingle-cta px-3 py-1.5 font-display text-[11px] font-semibold text-mingle-white"
+                            className="shrink-0 rounded-full bg-mingle-cta px-3 py-1.5 font-display text-[11px] font-semibold text-white"
                           >
                             Chat
                           </Link>
@@ -268,7 +267,7 @@ export function CompanyBoardScreen({
           >
             <h2
               id="board-regression-title"
-              className="font-display text-lg font-bold text-mingle-white"
+              className="font-display text-lg font-bold text-mingle-text"
             >
               Move this relationship back?
             </h2>
@@ -290,7 +289,7 @@ export function CompanyBoardScreen({
               <button
                 type="button"
                 onClick={confirmRegression}
-                className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-mingle-white"
+                className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-white"
               >
                 Move to {STAGE_LABEL[pending.target]}
               </button>

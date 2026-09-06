@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { KpiTile } from "@/components/dashboard/KpiTile";
 import { EmptyState } from "@/components/EmptyState";
+import { MingleChip } from "@/components/MingleChip";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
@@ -89,10 +90,10 @@ export function CompanyDashboard({
         <CompanyPipelineFunnel funnel={funnel} />
 
         <div className="flex flex-col gap-6">
-          <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
             <div className="flex items-center gap-3">
               <IconBadge icon={PeopleIcon} accent="pinkPurple" size={32} iconSize={15} />
-              <h2 className="font-display text-sm font-semibold text-mingle-white">
+              <h2 className="font-display text-sm font-semibold text-mingle-text">
                 Your team
               </h2>
             </div>
@@ -102,7 +103,7 @@ export function CompanyDashboard({
                   {accountLabel.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-mingle-white">
+                  <p className="text-sm font-medium text-mingle-text">
                     {accountLabel}
                   </p>
                   <p className="text-xs text-mingle-text-secondary">You</p>
@@ -114,10 +115,10 @@ export function CompanyDashboard({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
             <div className="flex items-center gap-3">
               <IconBadge icon={CalendarIcon} accent="ctaPink" size={32} iconSize={15} />
-              <h2 className="font-display text-sm font-semibold text-mingle-white">
+              <h2 className="font-display text-sm font-semibold text-mingle-text">
                 Upcoming interviews
               </h2>
             </div>
@@ -129,9 +130,9 @@ export function CompanyDashboard({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-sm font-semibold text-mingle-white">
+          <h2 className="font-display text-sm font-semibold text-mingle-text">
             Candidates
           </h2>
           {avgScore !== null && (
@@ -174,7 +175,7 @@ export function CompanyDashboard({
                       <td className="py-3 pr-4">
                         <Link
                           href={`/profile/view/${candidate.userId}`}
-                          className="font-medium text-mingle-white transition-colors hover:text-mingle-cta"
+                          className="font-medium text-mingle-text transition-colors hover:text-mingle-cta"
                         >
                           {candidate.name}
                         </Link>
@@ -182,8 +183,8 @@ export function CompanyDashboard({
                       <td className="py-3 pr-4 text-mingle-text-secondary">
                         {candidate.headline || "—"}
                       </td>
-                      <td className="py-3 pr-4 font-medium text-mingle-purple">
-                        {candidate.matchScore}%
+                      <td className="py-3 pr-4">
+                        <MingleChip>{candidate.matchScore}% match</MingleChip>
                       </td>
                       <td className="py-3 pr-4 text-mingle-text-secondary">
                         {candidate.location || "—"}
@@ -205,12 +206,12 @@ export function CompanyDashboard({
                   className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-mingle-white">
+                    <p className="font-medium text-mingle-text">
                       {candidate.name}
                     </p>
-                    <span className="shrink-0 font-medium text-mingle-purple">
-                      {candidate.matchScore}%
-                    </span>
+                    <MingleChip className="shrink-0">
+                      {candidate.matchScore}% match
+                    </MingleChip>
                   </div>
                   <p className="text-xs text-mingle-text-secondary">
                     {candidate.headline || "—"}

@@ -142,7 +142,7 @@ export function ConversationScreen({
         <Link
           href="/conversations"
           aria-label="Back to conversations"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-mingle-text-secondary transition-colors hover:text-mingle-white"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-mingle-text-secondary transition-colors hover:text-mingle-text"
         >
           <BackArrowIcon />
         </Link>
@@ -151,7 +151,7 @@ export function ConversationScreen({
             {otherInitial}
           </div>
           <div className="min-w-0">
-            <p className="truncate font-display text-sm font-semibold text-mingle-white">
+            <p className="truncate font-display text-sm font-semibold text-mingle-text">
               {otherName}
             </p>
             <p className="truncate text-xs text-mingle-text-secondary">{otherSubtitle}</p>
@@ -189,7 +189,7 @@ export function ConversationScreen({
                       className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                         isOwn
                           ? "bg-mingle-cta text-white"
-                          : "bg-mingle-bg text-mingle-white"
+                          : "bg-mingle-bg text-mingle-text"
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{message.body}</p>
@@ -228,7 +228,7 @@ export function ConversationScreen({
             }}
             placeholder="Write a message"
             maxLength={4000}
-            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
           />
           <button
             type="button"

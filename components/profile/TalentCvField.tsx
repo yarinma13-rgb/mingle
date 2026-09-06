@@ -99,7 +99,7 @@ export function TalentCvField({
         </p>
       )}
       {!editable && showLabel && hasFile && (
-        <p className="mb-1.5 font-display text-sm font-semibold text-mingle-white">
+        <p className="mb-1.5 font-display text-sm font-semibold text-mingle-text">
           CV
         </p>
       )}
@@ -109,13 +109,13 @@ export function TalentCvField({
             type="button"
             onClick={handleOpen}
             disabled={busy}
-            className="max-w-full cursor-pointer truncate rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
+            className="max-w-full cursor-pointer truncate rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
           >
             {cvFileName}
           </button>
         )}
         {editable && (
-          <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70">
+          <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70">
             {busy ? "Working…" : hasFile ? "Replace PDF" : "Choose PDF"}
             <input
               ref={inputRef}
@@ -132,7 +132,7 @@ export function TalentCvField({
             type="button"
             onClick={handleRemove}
             disabled={busy}
-            className="cursor-pointer rounded-full px-4 py-2 text-xs font-semibold text-mingle-text-secondary transition-colors hover:text-mingle-white disabled:opacity-60"
+            className="cursor-pointer rounded-full px-4 py-2 text-xs font-semibold text-mingle-text-secondary transition-colors hover:text-mingle-text disabled:opacity-60"
           >
             Remove
           </button>

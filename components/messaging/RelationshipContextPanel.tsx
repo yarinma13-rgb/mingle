@@ -1,3 +1,4 @@
+import { MingleChip } from "@/components/MingleChip";
 import type { MatchFactor } from "@/lib/matching/engine";
 import type { RelationshipStage } from "@/lib/supabase/types";
 import type { RelationshipEventRow } from "@/lib/relationship/persistence";
@@ -20,12 +21,6 @@ const STAGE_HINT: Record<RelationshipStage, string> = {
   relationship: "Moving forward together.",
 };
 
-function scoreGradient(score: number) {
-  if (score >= 70) return "from-mingle-purple to-mingle-cta";
-  if (score >= 45) return "from-mingle-pink to-mingle-purple";
-  return "from-mingle-cta to-mingle-pink";
-}
-
 function timeAgo(iso: string): string {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
   if (minutes < 1) return "Just now";
@@ -45,7 +40,7 @@ function FactorLine({ factor, tone }: { factor: MatchFactor; tone: "aligned" | "
         }`}
       />
       <span>
-        <span className="font-medium text-mingle-white">{factor.label}.</span>{" "}
+        <span className="font-medium text-mingle-text">{factor.label}.</span>{" "}
         {factor.detail}
       </span>
     </li>
@@ -68,13 +63,9 @@ export function RelationshipContextPanel({
   return (
     <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 lg:w-72 lg:shrink-0">
       <div className="flex items-center gap-3">
-        <div
-          className={`flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-br text-white ${scoreGradient(score)}`}
-        >
-          <span className="font-display text-sm font-bold leading-none">{score}%</span>
-        </div>
+        <MingleChip className="text-xs">{score}% match</MingleChip>
         <div>
-          <p className="font-display text-sm font-semibold text-mingle-white">
+          <p className="font-display text-sm font-semibold text-mingle-text">
             A relationship, not an inbox
           </p>
           <p className="text-xs text-mingle-text-secondary">Built on shared fit</p>
@@ -83,9 +74,7 @@ export function RelationshipContextPanel({
 
       <div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-mingle-purple/15 px-2.5 py-1 text-[11px] font-semibold text-mingle-purple">
-            {STAGE_LABEL[stage]}
-          </span>
+          <MingleChip>{STAGE_LABEL[stage]}</MingleChip>
         </div>
         <p className="mt-1.5 text-xs text-mingle-text-secondary">{STAGE_HINT[stage]}</p>
       </div>
@@ -142,9 +131,7 @@ export function RelationshipContextPanel({
                   )}
                 </span>
                 <span className="text-xs">
-                  <span className="font-medium text-mingle-white">
-                    {STAGE_LABEL[event.stage]}
-                  </span>{" "}
+                  <MingleChip>{STAGE_LABEL[event.stage]}</MingleChip>{" "}
                   <span className="text-mingle-text-secondary">
                     {timeAgo(event.created_at)}
                   </span>

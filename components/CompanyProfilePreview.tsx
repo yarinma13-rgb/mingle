@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
+import { MingleChip } from "@/components/MingleChip";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 
 function ChipRow({ items }: { items: string[] }) {
@@ -10,12 +11,7 @@ function ChipRow({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span
-          key={item}
-          className="rounded-full bg-mingle-purple/15 px-3 py-1.5 text-xs font-medium text-mingle-white"
-        >
-          {item}
-        </span>
+        <MingleChip key={item}>{item}</MingleChip>
       ))}
     </div>
   );
@@ -30,7 +26,7 @@ function Section({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-white">
+      <h2 className="font-display text-sm font-semibold text-mingle-text">
         {title}
       </h2>
       {children}
@@ -69,12 +65,12 @@ export function CompanyProfilePreview({
               className="h-20 w-20 rounded-2xl object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-mingle-white">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-white">
               {initial || "?"}
             </div>
           )}
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-white">
+            <h1 className="font-display text-2xl font-bold text-mingle-text">
               {profile.companyName || "Your company"}
             </h1>
             <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -122,7 +118,7 @@ export function CompanyProfilePreview({
 
         <Link
           href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-mingle-white"
+          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white"
         >
           Looks good
         </Link>

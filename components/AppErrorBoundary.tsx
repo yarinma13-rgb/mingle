@@ -21,7 +21,7 @@ export class AppErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-mingle-bg px-6 text-center">
-          <p className="font-display text-xl font-bold text-mingle-white">
+          <p className="font-display text-xl font-bold text-mingle-text">
             Something went wrong
           </p>
           <p className="mt-2 max-w-sm text-sm text-mingle-text-secondary">
@@ -30,7 +30,7 @@ export class AppErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={() => this.setState({ hasError: false })}
-            className="mt-6 rounded-full bg-mingle-cta px-8 py-3 font-display text-sm font-semibold text-mingle-white"
+            className="mt-6 rounded-full bg-mingle-cta px-8 py-3 font-display text-sm font-semibold text-white"
           >
             Try again
           </button>

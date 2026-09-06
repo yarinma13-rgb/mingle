@@ -39,7 +39,7 @@ export function MobileBottomNav({
             className="w-full rounded-t-2xl border-t border-mingle-border bg-mingle-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-display text-sm font-semibold text-mingle-white">
+              <span className="font-display text-sm font-semibold text-mingle-text">
                 More
               </span>
               <button
@@ -60,9 +60,9 @@ export function MobileBottomNav({
                     key={item.label}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium ${
+                    className={`flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium ${
                       active
-                        ? "bg-mingle-cta/10 text-mingle-cta"
+                        ? "bg-mingle-lavender text-mingle-purple"
                         : "text-mingle-text-secondary"
                     }`}
                   >
@@ -88,7 +88,7 @@ export function MobileBottomNav({
               key={item.label}
               href={item.href}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? "text-mingle-cta" : "text-mingle-text-secondary"
+                active ? "text-mingle-purple" : "text-mingle-text-secondary"
               }`}
             >
               <Icon size={20} />
@@ -100,7 +100,7 @@ export function MobileBottomNav({
           type="button"
           onClick={() => setMoreOpen(true)}
           className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-            moreActive ? "text-mingle-cta" : "text-mingle-text-secondary"
+            moreActive ? "text-mingle-purple" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />

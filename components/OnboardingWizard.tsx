@@ -180,7 +180,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             {intro.eyebrow}
           </span>
-          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-white sm:text-3xl">
+          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-text sm:text-3xl">
             {intro.headline}
           </h1>
           <p className="mt-2 text-sm text-mingle-text-secondary">
@@ -196,7 +196,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
             exit={{ opacity: 0, x: -16 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
-            <h2 className="text-center font-display text-lg font-semibold text-mingle-white">
+            <h2 className="text-center font-display text-lg font-semibold text-mingle-text">
               {currentQuestion.question}
             </h2>
 
@@ -223,10 +223,10 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                         ? selectSingle("q1", option)
                         : toggleMulti(currentQuestion.key as "q2" | "q3", option)
                     }
-                    className={`rounded-full border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                    className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                       selected
-                        ? "border-mingle-purple bg-mingle-purple/15 text-mingle-white"
-                        : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-purple/50"
+                        ? "border-mingle-purple bg-mingle-lavender text-mingle-text"
+                        : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-purple/50"
                     }`}
                   >
                     {option}
@@ -249,7 +249,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               type="button"
               onClick={handleBack}
               disabled={saving}
-              className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+              className="mingle-btn-secondary disabled:opacity-50"
             >
               Back
             </button>
@@ -264,10 +264,10 @@ export function OnboardingWizard({ path }: { path: UserType }) {
             whileTap={
               isAnswered(currentQuestion.key) ? { scale: 0.97 } : undefined
             }
-            className={`rounded-full px-8 py-3.5 font-display text-sm font-semibold transition-colors ${
+            className={`font-display text-sm ${
               isAnswered(currentQuestion.key)
-                ? "bg-mingle-cta text-mingle-white"
-                : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
+                ? "mingle-btn-primary"
+                : "mingle-btn-secondary cursor-not-allowed opacity-45"
             }`}
           >
             {saving ? "Saving…" : "Continue"}
@@ -318,7 +318,7 @@ function WizardError({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70"
+        className="mingle-btn-secondary"
       >
         Try again
       </button>
@@ -343,7 +343,7 @@ function OnboardingComplete({ path }: { path: UserType }) {
           <MingleLogo variant="mark" size={56} className="relative" />
         </div>
 
-        <h1 className="mt-8 font-display text-3xl font-bold text-mingle-white">
+        <h1 className="mt-8 font-display text-3xl font-bold text-mingle-text">
           You&rsquo;re all set
         </h1>
         <p className="mt-3 max-w-sm text-base text-mingle-text-secondary">
@@ -352,7 +352,7 @@ function OnboardingComplete({ path }: { path: UserType }) {
 
         <Link
           href={path === "talent" ? "/profile/build" : "/company-profile/build"}
-          className="mt-10 rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-mingle-white"
+          className="mingle-btn-primary mt-10"
         >
           Build my profile
         </Link>

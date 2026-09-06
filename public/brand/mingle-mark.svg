@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" fill="none">
+  <defs>
+    <linearGradient id="lg-left" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#F65F7C"/>
+      <stop offset="100%" stop-color="#D83A52"/>
+    </linearGradient>
+    <linearGradient id="lg-right" x1="0.5" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4A90D9"/>
+      <stop offset="100%" stop-color="#0073EA"/>
+    </linearGradient>
+    <linearGradient id="lg-blend" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C94570"/>
+      <stop offset="40%" stop-color="#9D5CF2"/>
+      <stop offset="100%" stop-color="#0073EA"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left head -->
+  <circle cx="62" cy="30" r="22" fill="url(#lg-left)"/>
+  <!-- Right head -->
+  <circle cx="178" cy="30" r="22" fill="url(#lg-right)"/>
+
+  <!-- Left figure: rounded leg + arm reaching right to V center -->
+  <path d="
+    M 40 70
+    Q 40 56, 56 56
+    L 68 56
+    Q 84 56, 84 70
+    L 84 90
+    L 120 124
+    L 84 158
+    L 84 196
+    Q 84 210, 68 210
+    L 56 210
+    Q 40 210, 40 196
+    Z
+  " fill="url(#lg-left)"/>
+
+  <!-- Right figure: rounded leg + arm reaching left to V center -->
+  <path d="
+    M 200 70
+    Q 200 56, 184 56
+    L 172 56
+    Q 156 56, 156 70
+    L 156 90
+    L 120 124
+    L 156 158
+    L 156 196
+    Q 156 210, 172 210
+    L 184 210
+    Q 200 210, 200 196
+    Z
+  " fill="url(#lg-right)"/>
+
+  <!-- Center overlap shadow (where left arm tucks behind right) -->
+  <path d="
+    M 84 90
+    L 120 124
+    L 156 90
+    L 156 100
+    L 120 134
+    L 84 100
+    Z
+  " fill="url(#lg-blend)" opacity="0.55"/>
+</svg>

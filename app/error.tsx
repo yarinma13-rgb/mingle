@@ -16,7 +16,7 @@ export default function Error({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mingle-bg px-6 text-center">
-      <p className="font-display text-xl font-bold text-mingle-white">
+      <p className="font-display text-xl font-bold text-mingle-text">
         Something went wrong
       </p>
       <p className="mt-2 max-w-sm text-sm text-mingle-text-secondary">
@@ -25,7 +25,7 @@ export default function Error({
       <button
         type="button"
         onClick={() => retry()}
-        className="mt-6 rounded-full bg-mingle-cta px-8 py-3 font-display text-sm font-semibold text-mingle-white"
+        className="mt-6 rounded-full bg-mingle-cta px-8 py-3 font-display text-sm font-semibold text-white"
       >
         Try again
       </button>

@@ -1,8 +1,8 @@
 # mingle — תיעוד טכני של המערכת
 
 מסמך זה נכתב עבור סוכן קוד או מפתח/ת שמצטרפים לפרויקט. הוא משקף את מצב הקוד נכון
-ל-2026-09-01: Phases 1–8 מאושרים, ואחריהם פולוש פיילוט (toasts, מצבי ריק, Terms/Privacy,
-Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playwright).
+ל-2026-09-02: Phases 1–8 מאושרים, ואחריהם פולוש פיילוט (toasts, מצבי ריק, Terms/Privacy,
+Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playwright, מייל בקשת חיבור).
 
 מקורות אמת נוספים: `../PRODUCT_SPEC.md` ו-`../BRIDGE.md` (תיקייה אחת מעל שורש `mingle/`) —
 המפרט המוצרי המקורי. מסמך זה מתאר את המימוש בפועל.
@@ -47,6 +47,10 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 - **ניטור (אופציונלי, חינני בלי מפתח):** Sentry (`NEXT_PUBLIC_SENTRY_DSN`) ו-PostHog
   (`NEXT_PUBLIC_POSTHOG_KEY`, אופציונלי `NEXT_PUBLIC_POSTHOG_HOST`). אתחול ב-
   `instrumentation.ts` / `instrumentation-client.ts`. בלי מפתח: no-op, בלי קריסה.
+- **מייל טרנזקציוני (Resend):** רק בקשת חיבור חדשה. שולח `noreply@mingle.careers`
+  דרך ה-SDK בצד שרת. מפתח: `RESEND_API_KEY` ב-`.env.local` (לא `NEXT_PUBLIC_`).
+  קישור באפליקציה: `NEXT_PUBLIC_APP_URL` או `https://mingle.careers`. בלי מפתח או
+  כשל Resend: הבקשה נשמרת כרגיל, המייל לא נשלח.
 - **חשבונות בדיקה:** בין היתר `phase4.talent@mingle.test`, `phase4.company@mingle.test`.
 
 ---
@@ -76,11 +80,12 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 
 ## 4. פיצ'רים והחלטות הנדסיות
 
-**קיים היום:** theme כהה/בהיר · הרשמה ו-onboarding · אשפי פרופיל · צפייה חוצת-צד ·
+**קיים היום:** theme בהיר אחיד (Figtree) · הרשמה ו-onboarding · אשפי פרופיל · צפייה חוצת-צד ·
 Dashboard · מנוע התאמה · Discovery · שמירות · חיבורים · MINGLE · צ'אט · התראות · מסלול
 קשר · Board לחברה · funnel אמיתי בדשבורד החברה · toasts · מצבי ריק במסכי ליבה · Terms (`/legal/terms`) ו-Privacy
 (`/legal/privacy`) · Sentry/PostHog scaffolding · smoke test Playwright · העלאת CV
-אופציונלית לטאלנט (PDF, bucket פרטי).
+אופציונלית לטאלנט (PDF, bucket פרטי) · מייל בקשת חיבור (Resend, אופציונלי) ·
+command palette (`Cmd+K` / `Ctrl+K`) במסכים הפנימיים.
 
 **החלטות מכוונות:**
 - `MATCH_WEIGHTS` ב-`lib/matching/engine.ts` — לא להחזיר לדוגמה שבמפרט.
@@ -92,6 +97,8 @@ Dashboard · מנוע התאמה · Discovery · שמירות · חיבורים 
   (אותו כלל תצוגה כמו עמודות ה-Board). בלי אירועים השלב הוא Connected. קריאה בלבד.
 - graceful degradation לכל תלות בטבלה חדשה.
 - ניטור/אנליטיקה: אותו דפוס — בלי מפתח אין דיווח ואין קריסה.
+- **מייל מוצר:** רק בקשת חיבור חדשה (כולל resend אחרי decline/cancel). לא על קבלה
+  הדדית, הודעות, או שלבי קשר. Auth confirmation / איפוס סיסמה נשארים ב-Supabase SMTP.
 - כותרת ה-MINGLE היא טקסט לבן `It's a mingle`. הסימן הגדול (`variant="mark"` size 72)
   נשאר בצבעי המותג.
 - **Rate limiting (פיילוט קטן):** ספירה על שורות קיימות בחלון מתגלגל, בלי טבלה חדשה.
@@ -106,20 +113,37 @@ Dashboard · מנוע התאמה · Discovery · שמירות · חיבורים 
 - **Discovery סינון שרת:** `industry` / `location` (ilike) ו־`style` (`contains` על
   `work_style` או `work_environment`) ב־PostgREST, pagination של 12. `computeMatch` ו־
   `MATCH_WEIGHTS` לא משתנים; דירוג הציון הוא בתוך העמוד הנוכחי. סווייפ נשאר כמו שהיה.
+- **Command palette:** `Cmd+K` / `Ctrl+K` במסכים אחרי התחברות (לא Welcome / Auth /
+  Onboarding). רשימה לפי `user_type`: talent = Dashboard, Discover, Connections,
+  Conversations, My profile; company = Dashboard, Candidates, Pipeline,
+  Conversations, Board, My profile. סינון טקסט חופשי.
+- **עיצוב (2026-09-03):** פלטפורמה בהירה (Figtree). פלטה רשמית ב-`globals.css`:
+  ורוד `#F65F7C`, ורוד כהה `#D83A52`, כחול `#0073EA` (CTA), סגול-חיבור `#9D5CF2`
+  (אמצע ה-blend בלוגו — לא fill שטוח בנכס). גרדיאנט חיבור:
+  `--mingle-connection-gradient`. CTA pill. תגיות `.mingle-chip` (לבנדר + כחול).
+  לוגו: `public/brand/mingle-mark.jpg` ב-`MingleLogo`. `mingle-word.png` הוצא משימוש.
 
 **מובייל (QA בקוד):** viewport `device-width` + `viewportFit: cover`; `overflow-x: clip`;
 קלט 16px מתחת ל-768px; safe-area בהדר ובניווט תחתון; טאבי קשר בגלילה אופקית עם יעד מגע
 גדול יותר; גובה צ'אט ב-`dvh` במסכים צרים.
 
-**נותר לפיילוט:** אימות מייל ב-Supabase; דיפלוי; ניקוי/הפרדת סביבות; מפתחות Sentry/PostHog
-אמיתיים; QA ידני על production.
+**נותר לפיילוט:** דיפלוי; ניקוי/הפרדת סביבות; מפתחות Sentry/PostHog אמיתיים;
+`RESEND_API_KEY` אמיתי למיילי בקשות חיבור; QA ידני על production.
 
 ---
 
 ## 5. תקשורת
 
-אין API חיצוני. קריאות PostgREST דרך supabase-js. Realtime: `postgres_changes` על
-`messages`. טיפוסים ב-`lib/supabase/types.ts`, אימות Zod.
+קריאות PostgREST דרך supabase-js. Realtime: `postgres_changes` על `messages`.
+טיפוסים ב-`lib/supabase/types.ts`, אימות Zod.
+
+Resend: server action `notifyConnectionRequest` אחרי שליחת בקשה מוצלחת. לא חושף את
+המפתח לדפדפן.
+
+אימות מייל (Confirm signup): הקישור בתבנית חייב להיות
+`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup` — לא `code`.
+`/auth/confirm` קורא ל-`verifyOtp`. `/auth/callback` עם `exchangeCodeForSession` נשאר
+ל-OAuth / PKCE `code` בלבד.
 
 ---
 
@@ -140,8 +164,8 @@ TypeScript בכל הקוד:
 
 ## 7. גבולות גזרה
 
-**לא לגעת בלי סיבה:** theme ב-`globals.css` כולל nested dark בהדר; RLS; `MATCH_WEIGHTS`;
-`STAGE_RANK` / `currentStage`; המסקוט לא בשימוש.
+**לא לגעת בלי סיבה:** RLS; `MATCH_WEIGHTS`;
+`STAGE_RANK` / `currentStage`; המסקוט לא בשימוש. Theme: light אחיד ב-`globals.css` (לא dual dark/light).
 
 **רגיש:**
 - `proxy.ts` — `PROTECTED_PREFIXES` ו-`matcher` יחד. מוגן כרגע גם `/board`.
@@ -157,7 +181,8 @@ TypeScript בכל הקוד:
 
 ## 8. API חיצוני
 
-אין. PostgREST של Supabase רק לסקריפטים ידניים, עם אותן RLS.
+Resend REST דרך חבילת `resend` בשרת בלבד, למייל בקשת חיבור. PostgREST של Supabase
+לסקריפטים ידניים, עם אותן RLS. אין service role בריפו.
 
 ---
 
@@ -168,6 +193,7 @@ cd mingle
 npm install
 # .env.local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 # אופציונלי: NEXT_PUBLIC_SENTRY_DSN, NEXT_PUBLIC_POSTHOG_KEY, NEXT_PUBLIC_POSTHOG_HOST
+# אופציונלי: RESEND_API_KEY, NEXT_PUBLIC_APP_URL (קישור במייל בקשת החיבור)
 # מיגרציות 0001–0010 ב-SQL Editor
 npm run dev
 ```
@@ -199,4 +225,4 @@ Placeholders ב-`.env.example`.
 
 ---
 
-*עודכן לפי הקוד בפועל, 2026-09-01. לעדכן אחרי שינוי ארכיטקטורה, סכמה, או גבולות גזרה.*
+*עודכן לפי הקוד בפועל, 2026-09-02. לעדכן אחרי שינוי ארכיטקטורה, סכמה, או גבולות גזרה.*

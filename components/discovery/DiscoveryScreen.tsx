@@ -14,6 +14,7 @@ import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
+import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 
 export type DiscoveryCard = {
@@ -55,17 +56,11 @@ function verdictLabel(verdict: MatchFactor["verdict"]) {
   }
 }
 
-function scoreGradient(score: number) {
-  if (score >= 70) return "from-mingle-purple to-mingle-cta";
-  if (score >= 45) return "from-mingle-pink to-mingle-purple";
-  return "from-mingle-cta to-mingle-pink";
-}
-
 function FactorRow({ factor }: { factor: MatchFactor }) {
   return (
     <div className="flex flex-col gap-0.5 py-1.5">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-medium text-mingle-white">
+        <span className="text-xs font-medium text-mingle-text">
           {factor.label}
           <span className="ml-1.5 text-mingle-text-secondary">
             {factor.weight}%
@@ -210,7 +205,7 @@ function DiscoveryCardView({
             {card.initial}
           </div>
           <div>
-            <p className="font-display text-base font-semibold text-mingle-white">
+            <p className="font-display text-base font-semibold text-mingle-text">
               {card.name}
             </p>
             <p className="text-sm text-mingle-text-secondary">
@@ -222,16 +217,9 @@ function DiscoveryCardView({
           </div>
         </div>
 
-        <div
-          className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-br text-white ${scoreGradient(card.score)}`}
-        >
-          <span className="font-display text-base font-bold leading-none">
-            {card.score}%
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-wide opacity-80">
-            match
-          </span>
-        </div>
+        <MingleChip className="shrink-0 text-[11px]">
+          {card.score}% match
+        </MingleChip>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -299,7 +287,7 @@ function DiscoveryCardView({
       <div className="flex items-center gap-3">
         <Link
           href={`/profile/view/${card.userId}`}
-          className="rounded-full bg-mingle-cta px-6 py-2.5 font-display text-xs font-semibold text-mingle-white"
+          className="rounded-full bg-mingle-cta px-6 py-2.5 font-display text-xs font-semibold text-white"
         >
           View profile
         </Link>
@@ -310,7 +298,7 @@ function DiscoveryCardView({
           className={`rounded-full px-6 py-2.5 font-display text-xs font-semibold transition-colors disabled:opacity-60 ${
             saved
               ? "bg-mingle-purple/15 text-mingle-purple"
-              : "bg-mingle-bg text-mingle-white hover:bg-mingle-bg/70"
+              : "bg-mingle-bg text-mingle-text hover:bg-mingle-bg/70"
           }`}
         >
           {saved ? "Saved" : "Save"}
@@ -318,7 +306,7 @@ function DiscoveryCardView({
         <button
           type="button"
           onClick={() => onRemove(card.userId)}
-          className="ml-auto rounded-full px-6 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-white"
+          className="ml-auto rounded-full px-6 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
         >
           Skip
         </button>
@@ -368,7 +356,7 @@ export function DiscoveryScreen({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="font-display text-lg font-semibold text-mingle-white">
+        <h2 className="font-display text-lg font-semibold text-mingle-text">
           {title}
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">{subtitle}</p>

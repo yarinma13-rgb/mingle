@@ -1,61 +1,90 @@
 @import "tailwindcss";
 
 :root {
-  /* MINGLE design system — see PRODUCT_SPEC.md section 8.
-     Dark is the default (Welcome through profile creation).
-     Accent colors (pink/purple/cta) are identical in both themes and
-     never change between the blocks below. */
-  --mingle-bg: #0f1420;
-  --mingle-product-bg: #171d2b;
-  --mingle-surface: #202738;
-  --mingle-pink: #e2378d;
-  --mingle-purple: #7362e2;
-  --mingle-cta: #4d42db;
+  /* Official palette — sampled from the 2026 brand mark. Replaces
+     #E2378D / #7362E2 / #4D42DB. Source of truth for color is this file. */
+  --mingle-pink: #f65f7c;
+  --mingle-pink-deep: #d83a52;
+  --mingle-blue: #0073ea;
+  /* Midpoint of the mark's pink→blue overlap (violet, not a flat fill
+     in the asset). Use for chips/text. The blend itself is the
+     connection gradient — match / mingle moments only. */
+  --mingle-purple: #9d5cf2;
+  --mingle-indigo: #0073ea;
+  --mingle-cta: #0073ea;
+  --mingle-connection-gradient: linear-gradient(
+    135deg,
+    #f65f7c 0%,
+    #9d5cf2 48%,
+    #0073ea 100%
+  );
+  --mingle-background: #f7f8fc;
+  --mingle-bg: #f7f8fc;
+  --mingle-lavender: #eef4fb;
+  --mingle-product-bg: #eef4fb;
   --mingle-white: #ffffff;
-  --mingle-text-secondary: #e1e4ea;
-  --mingle-border: rgba(255, 255, 255, 0.08);
-  --mingle-mascot-backdrop: #01041e;
-}
-
-/* Explicit dark block, matching :root exactly — needed so a
-   data-theme="dark" element nested inside a light-themed subtree (the
-   dashboard's top bar) can win the cascade and revert to dark, rather
-   than inheriting the light values from its ancestor. */
-[data-theme="dark"] {
-  --mingle-bg: #0f1420;
-  --mingle-product-bg: #171d2b;
-  --mingle-surface: #202738;
-  --mingle-white: #ffffff;
-  --mingle-text-secondary: #e1e4ea;
-  --mingle-border: rgba(255, 255, 255, 0.08);
-  --mingle-mascot-backdrop: #01041e;
-}
-
-/* Light theme — Dashboard and everything after profile completion
-   (discovery, matches, conversations, profile viewing, settings). */
-[data-theme="light"] {
-  --mingle-bg: #f6f4fc;
-  --mingle-product-bg: #f6f4fc;
   --mingle-surface: #ffffff;
-  --mingle-white: #1b1930;
-  --mingle-text-secondary: #6e6c8a;
-  --mingle-border: #e9e4f7;
-  --mingle-mascot-backdrop: #ffffff;
+  --mingle-text: #252238;
+  --mingle-text-secondary: #77738a;
+  --mingle-text-muted: #a5a1b3;
+  --mingle-border: #d9e4f2;
+  --mingle-success: #00ca72;
+  --mingle-warning: #ffcc00;
+  --mingle-error: #d83a52;
+  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
+  --mingle-radius-sm: 6px;
+  --mingle-radius: 10px;
+  --mingle-radius-card: 16px;
+  --mingle-radius-lg: 20px;
+  --mingle-mascot-backdrop: #f7f8fc;
+  --font-display: var(--font-figtree);
+  --font-sans: var(--font-figtree);
+}
+
+/* Nested data-theme used to flip header/shell colors. Both now resolve
+   to the same light tokens so leftover attributes cannot restore navy. */
+[data-theme="dark"],
+[data-theme="light"] {
+  --mingle-bg: #f7f8fc;
+  --mingle-product-bg: #eef4fb;
+  --mingle-surface: #ffffff;
+  --mingle-white: #ffffff;
+  --mingle-text: #252238;
+  --mingle-text-secondary: #77738a;
+  --mingle-text-muted: #a5a1b3;
+  --mingle-border: #d9e4f2;
+  --mingle-mascot-backdrop: #f7f8fc;
 }
 
 @theme inline {
   --color-mingle-bg: var(--mingle-bg);
+  --color-mingle-background: var(--mingle-background);
   --color-mingle-product: var(--mingle-product-bg);
+  --color-mingle-lavender: var(--mingle-lavender);
   --color-mingle-surface: var(--mingle-surface);
+  --color-mingle-white: var(--mingle-white);
   --color-mingle-pink: var(--mingle-pink);
+  --color-mingle-pink-deep: var(--mingle-pink-deep);
+  --color-mingle-blue: var(--mingle-blue);
   --color-mingle-purple: var(--mingle-purple);
   --color-mingle-cta: var(--mingle-cta);
-  --color-mingle-white: var(--mingle-white);
+  --color-mingle-indigo: var(--mingle-indigo);
+  --color-mingle-text: var(--mingle-text);
   --color-mingle-text-secondary: var(--mingle-text-secondary);
+  --color-mingle-muted: var(--mingle-text-muted);
   --color-mingle-border: var(--mingle-border);
+  --color-mingle-success: var(--mingle-success);
+  --color-mingle-warning: var(--mingle-warning);
+  --color-mingle-error: var(--mingle-error);
 
-  --font-display: var(--font-poppins);
-  --font-sans: var(--font-inter);
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-mingle: var(--mingle-shadow);
+  --radius-mingle-sm: var(--mingle-radius-sm);
+  --radius-mingle: var(--mingle-radius);
+  --radius-mingle-card: var(--mingle-radius-card);
+  --radius-mingle-lg: var(--mingle-radius-lg);
 }
 
 html {
@@ -64,13 +93,11 @@ html {
 
 body {
   background: var(--mingle-bg);
-  color: var(--mingle-white);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  color: var(--mingle-text);
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
 }
 
-/* iOS zooms any focused control under 16px. Keep desktop density, stop
-   the zoom on phones. */
 @media (max-width: 767px) {
   input,
   textarea,
@@ -79,9 +106,6 @@ body {
   }
 }
 
-/* Native <button> defaults to cursor: default in every browser — links
-   already get a pointer cursor automatically, but every button in the
-   app needs this explicitly or clickable actions read as inert. */
 button:not(:disabled) {
   cursor: pointer;
 }
@@ -91,19 +115,88 @@ button:disabled {
 }
 
 .mingle-gradient-text {
-  background: linear-gradient(120deg, var(--mingle-pink), var(--mingle-purple));
+  background: var(--mingle-connection-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .mingle-gradient-border {
-  border-image: linear-gradient(120deg, var(--mingle-pink), var(--mingle-purple)) 1;
+  border-image: var(--mingle-connection-gradient) 1;
 }
 
-/* MINGLE moment confetti — burst from the M, then a gravity fall.
-   Burst target and fall distance are computed in JS as custom properties.
-   Each phase is monotonic: one vector to the burst, then only +Y down. */
+.mingle-connection-fill {
+  background: var(--mingle-connection-gradient);
+}
+
+.mingle-btn-primary {
+  border-radius: 9999px;
+  background: var(--mingle-blue);
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  color: var(--mingle-white);
+  transition: background-color 0.15s ease;
+}
+
+.mingle-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mingle-blue) 88%, black);
+}
+
+.mingle-btn-primary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--mingle-blue) 78%, black);
+}
+
+.mingle-btn-primary:disabled {
+  opacity: 0.45;
+}
+
+.mingle-btn-secondary {
+  border-radius: 9999px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  color: var(--mingle-blue);
+}
+
+.mingle-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--mingle-lavender);
+  padding: 0.2rem 0.65rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mingle-blue);
+}
+
+.mingle-chip-pink {
+  color: var(--mingle-pink);
+}
+
+/*
+  Official mark: public/brand/mingle-mark.jpg (light-field 2026 asset).
+  No separate wordmark. A transparent PNG would still be cleaner at small sizes.
+*/
+.mingle-logo-mask {
+  display: inline-block;
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.mingle-banner {
+  background: linear-gradient(180deg, var(--mingle-background), var(--mingle-lavender));
+  box-shadow: var(--mingle-shadow);
+}
+
 @keyframes mingle-confetti-burst {
   0% {
     opacity: 0;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { KpiTile } from "@/components/dashboard/KpiTile";
 import { EmptyState } from "@/components/EmptyState";
+import { MingleChip } from "@/components/MingleChip";
 import {
   GaugeIcon,
   PeopleIcon,
@@ -60,8 +61,8 @@ export function TalentDashboard({
         />
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+      <div className="mingle-banner rounded-2xl border border-mingle-border p-6">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Suggested next step
         </h2>
         <p className="mt-2 text-sm text-mingle-text-secondary">
@@ -70,17 +71,14 @@ export function TalentDashboard({
             : "Explore companies below and start a conversation when one feels right."}
         </p>
         {profileCompletion < 100 && (
-          <Link
-            href="/profile/build"
-            className="mt-4 inline-block rounded-full bg-mingle-cta px-6 py-2.5 font-display text-xs font-semibold text-mingle-white"
-          >
+          <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
             Finish my profile
           </Link>
         )}
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6 shadow-mingle">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Recommended companies
         </h2>
 
@@ -100,12 +98,10 @@ export function TalentDashboard({
                 className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-purple/50"
               >
                 <div className="flex items-center justify-between">
-                  <p className="font-display text-sm font-semibold text-mingle-white">
+                  <p className="font-display text-sm font-semibold text-mingle-text">
                     {company.companyName}
                   </p>
-                  <span className="text-xs font-medium text-mingle-purple">
-                    {company.matchScore}%
-                  </span>
+                  <MingleChip>{company.matchScore}% match</MingleChip>
                 </div>
                 <p className="text-xs text-mingle-text-secondary">
                   {company.mission}

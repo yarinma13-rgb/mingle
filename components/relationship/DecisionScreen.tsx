@@ -95,13 +95,13 @@ export function DecisionScreen({
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <h2 className="font-display text-lg font-semibold text-mingle-white">Decision</h2>
+          <h2 className="font-display text-lg font-semibold text-mingle-text">Decision</h2>
           <p className="mt-1 text-sm text-mingle-text-secondary">
             Your decision about {otherName} is recorded.
           </p>
         </div>
         <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-8 text-center">
-          <p className="font-display text-base font-semibold text-mingle-white">
+          <p className="font-display text-base font-semibold text-mingle-text">
             {chosen?.label}
           </p>
           <p className="mt-2 text-sm text-mingle-text-secondary">{chosen?.confirmed}</p>
@@ -113,7 +113,7 @@ export function DecisionScreen({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="font-display text-lg font-semibold text-mingle-white">
+        <h2 className="font-display text-lg font-semibold text-mingle-text">
           What feels right?
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -132,7 +132,7 @@ export function DecisionScreen({
             disabled={saving}
             className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 text-left transition-colors hover:border-mingle-purple/50 disabled:opacity-60"
           >
-            <p className="font-display text-sm font-semibold text-mingle-white">
+            <p className="font-display text-sm font-semibold text-mingle-text">
               {option.label}
             </p>
             <p className="text-xs text-mingle-text-secondary">{option.description}</p>

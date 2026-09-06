@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sendOrAcceptConnection } from "@/lib/connections/persistence";
+import { notifyConnectionRequest } from "@/lib/email/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
 import { MingleMomentOverlay } from "@/components/mingle-moment/MingleMomentOverlay";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import type { ConnectionStatus } from "@/lib/supabase/types";
 
@@ -36,12 +38,7 @@ function ChipRow({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span
-          key={item}
-          className="rounded-full bg-mingle-purple/15 px-3 py-1.5 text-xs font-medium text-mingle-white"
-        >
-          {item}
-        </span>
+        <MingleChip key={item}>{item}</MingleChip>
       ))}
     </div>
   );
@@ -56,7 +53,7 @@ function Section({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-white">
+      <h2 className="font-display text-sm font-semibold text-mingle-text">
         {title}
       </h2>
       {children}
@@ -138,6 +135,7 @@ export function ProfileDetailShell({
       } else if (result.outcome === "sent") {
         setConnectionState({ status: "pending", isRequester: true });
         toast("Request sent.");
+        void notifyConnectionRequest(targetUserId);
       } else if (result.outcome === "already-connected") {
         setConnectionState({ status: "accepted", isRequester: true });
       } else {
@@ -202,7 +200,7 @@ export function ProfileDetailShell({
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 self-start text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-white"
+          className="flex items-center gap-1.5 self-start text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
         >
           <BackArrowIcon />
           Back
@@ -223,12 +221,12 @@ export function ProfileDetailShell({
               className="h-20 w-20 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-mingle-white">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple font-display text-xl font-bold text-white">
               {initial || "?"}
             </div>
           )}
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-white">
+            <h1 className="font-display text-2xl font-bold text-mingle-text">
               {name}
             </h1>
             <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -319,7 +317,7 @@ export function ProfileDetailShell({
               className={`rounded-full px-8 py-3.5 text-center font-display text-sm font-semibold transition-colors ${
                 connectDisabled
                   ? "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary"
-                  : "bg-mingle-cta text-mingle-white"
+                  : "bg-mingle-cta text-white"
               }`}
             >
               {connecting ? "Sending…" : connectLabel}
@@ -328,7 +326,7 @@ export function ProfileDetailShell({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="rounded-full bg-mingle-surface px-8 py-3.5 text-center font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
+              className="rounded-full bg-mingle-surface px-8 py-3.5 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
             >
               {saving ? "Saving…" : saved ? "Saved" : "Save for later"}
             </button>

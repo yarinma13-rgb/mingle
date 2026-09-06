@@ -1,56 +1,39 @@
 import Image from "next/image";
-import markSrc from "@/public/brand/mingle-mark.jpg";
-import wordSrc from "@/public/brand/mingle-word.png";
+import logoSrc from "@/public/brand/mingle-mark.jpg";
 
 type MingleLogoProps = {
-  /** "mark" — just the M icon. "lockup" — mark + wordmark side by side. */
+  /** "mark" and "lockup" both render the official M. No separate wordmark. */
   variant?: "mark" | "lockup";
-  /** Stack the mark above the wordmark instead of side by side. Only applies to "lockup". */
   stacked?: boolean;
-  /** Height in pixels of the mark. */
   size?: number;
   className?: string;
   priority?: boolean;
-  /** Override image alt. Pass empty string when the mark is decorative. */
   alt?: string;
 };
 
 /**
- * The official MINGLE logo. Single source of truth per PRODUCT_SPEC.md section 9 —
- * never recreate with text, never type "MINGLE" as a replacement.
+ * Official mingle mark from public/brand/mingle-mark.jpg.
+ * Never recreate with SVG/text. Do not type "mingle" as a replacement.
  */
 export function MingleLogo({
   variant = "lockup",
-  stacked = false,
   size = 40,
   className = "",
   priority = false,
   alt,
 }: MingleLogoProps) {
+  const width = (size * logoSrc.width) / logoSrc.height;
+  const markAlt = alt === undefined ? "mingle" : alt;
+
   return (
-    <div
-      className={`inline-flex items-center ${
-        stacked ? "flex-col gap-3" : "gap-2.5"
-      } ${className}`}
-    >
-      <Image
-        src={markSrc}
-        alt={alt ?? (variant === "mark" ? "mingle" : "")}
-        height={size}
-        width={(size * markSrc.width) / markSrc.height}
-        priority={priority}
-        className="rounded-[22%] object-contain"
-      />
-      {variant === "lockup" && (
-        <Image
-          src={wordSrc}
-          alt="mingle"
-          height={size * 0.6}
-          width={(size * 0.6 * wordSrc.width) / wordSrc.height}
-          priority={priority}
-          className="object-contain"
-        />
-      )}
-    </div>
+    <Image
+      src={logoSrc}
+      alt={markAlt}
+      height={size}
+      width={width}
+      priority={priority}
+      className={`inline-block h-auto max-w-full object-contain ${className}`}
+      style={{ height: size, width }}
+    />
   );
 }

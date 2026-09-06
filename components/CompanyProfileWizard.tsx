@@ -280,7 +280,7 @@ export function CompanyProfileWizard() {
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             Build your company profile
           </span>
-          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-white sm:text-3xl">
+          <h1 className="mt-2 font-display text-2xl font-bold text-mingle-text sm:text-3xl">
             {step === 1
               ? "Who you are"
               : multiQuestion
@@ -379,7 +379,7 @@ export function CompanyProfileWizard() {
                         className="h-12 w-12 rounded-xl object-cover"
                       />
                     )}
-                    <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70">
+                    <label className="cursor-pointer rounded-full bg-mingle-surface px-4 py-2 text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70">
                       {uploadingLogo ? "Uploading…" : "Choose logo"}
                       <input
                         type="file"
@@ -408,7 +408,7 @@ export function CompanyProfileWizard() {
                   disabled={saving}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-mingle-white disabled:opacity-60"
+                  className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {saving ? "Saving…" : "Continue"}
                 </motion.button>
@@ -433,7 +433,7 @@ export function CompanyProfileWizard() {
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-full border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
-                            ? "border-mingle-purple bg-mingle-purple/15 text-mingle-white"
+                            ? "border-mingle-purple bg-mingle-purple/15 text-mingle-text"
                             : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-purple/50"
                         }`}
                       >
@@ -454,7 +454,7 @@ export function CompanyProfileWizard() {
                     type="button"
                     onClick={goBack}
                     disabled={saving}
-                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
                   >
                     Back
                   </button>
@@ -472,7 +472,7 @@ export function CompanyProfileWizard() {
                     }
                     className={`rounded-full px-8 py-3.5 font-display text-sm font-semibold transition-colors ${
                       profile[multiKey].length > 0
-                        ? "bg-mingle-cta text-mingle-white"
+                        ? "bg-mingle-cta text-white"
                         : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
                     }`}
                   >
@@ -499,7 +499,7 @@ export function CompanyProfileWizard() {
                     rows={3}
                     maxLength={1200}
                     placeholder="The kind of person who does well on your team"
-                    className="w-full resize-none rounded-2xl border-2 border-mingle-surface bg-mingle-surface p-4 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
                   />
                 </div>
 
@@ -518,7 +518,7 @@ export function CompanyProfileWizard() {
                     rows={3}
                     maxLength={1200}
                     placeholder="What your company is building and why it matters"
-                    className="w-full resize-none rounded-2xl border-2 border-mingle-surface bg-mingle-surface p-4 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
+                    className="w-full resize-none rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none"
                   />
                 </div>
 
@@ -533,7 +533,7 @@ export function CompanyProfileWizard() {
                     type="button"
                     onClick={goBack}
                     disabled={saving}
-                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
                   >
                     Back
                   </button>
@@ -545,7 +545,7 @@ export function CompanyProfileWizard() {
                     whileTap={reflectionValid ? { scale: 0.97 } : undefined}
                     className={`rounded-full px-8 py-3.5 font-display text-sm font-semibold transition-colors ${
                       reflectionValid
-                        ? "bg-mingle-cta text-mingle-white"
+                        ? "bg-mingle-cta text-white"
                         : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
                     }`}
                   >
@@ -562,7 +562,7 @@ export function CompanyProfileWizard() {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-mingle-surface bg-mingle-surface px-4 py-3 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
 
 function Field({
   label,
@@ -620,7 +620,7 @@ function CompanyWizardError({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70"
+        className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70"
       >
         Try again
       </button>

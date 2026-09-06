@@ -24,8 +24,8 @@ export default function GlobalError({
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0F1420",
-          color: "#FFFFFF",
+          background: "#F7F8FC",
+          color: "#252238",
           fontFamily: "system-ui, sans-serif",
           textAlign: "center",
           padding: "24px",
@@ -33,7 +33,7 @@ export default function GlobalError({
       >
         <title>mingle</title>
         <p style={{ fontSize: "20px", fontWeight: 700 }}>Something went wrong</p>
-        <p style={{ marginTop: "8px", fontSize: "14px", color: "#E1E4EA" }}>
+        <p style={{ marginTop: "8px", fontSize: "14px", color: "#77738A" }}>
           Try again in a moment.
         </p>
         <button
@@ -43,7 +43,7 @@ export default function GlobalError({
             marginTop: "24px",
             border: 0,
             borderRadius: "999px",
-            background: "#4D42DB",
+            background: "#0073EA",
             color: "#FFFFFF",
             padding: "12px 32px",
             fontWeight: 600,

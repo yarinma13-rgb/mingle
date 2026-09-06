@@ -14,7 +14,7 @@ export function CompanyPipelineFunnel({ funnel }: { funnel: CompanyFunnel }) {
     <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
       <div className="flex items-center gap-3">
         <IconBadge icon={FunnelIcon} accent="purpleCta" size={32} iconSize={15} />
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Your pipeline
         </h2>
         <Link
@@ -45,11 +45,11 @@ export function CompanyPipelineFunnel({ funnel }: { funnel: CompanyFunnel }) {
                   </span>
                   <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-mingle-bg">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple"
+                      className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue"
                       style={{ width: `${width}%` }}
                     />
                   </div>
-                  <span className="w-6 shrink-0 text-right text-xs font-medium text-mingle-white">
+                  <span className="w-6 shrink-0 text-right text-xs font-medium text-mingle-text">
                     {count}
                   </span>
                 </div>

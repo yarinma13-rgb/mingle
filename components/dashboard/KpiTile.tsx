@@ -9,10 +9,10 @@ type KpiTileProps = {
 
 export function KpiTile({ icon, label, value, accent }: KpiTileProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-surface p-5">
+    <div className="flex flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle">
       <IconBadge icon={icon} accent={accent} size={40} iconSize={19} />
       <div>
-        <p className="font-display text-2xl font-bold text-mingle-white">
+        <p className="font-display text-2xl font-bold text-mingle-text">
           {value}
         </p>
         <p className="mt-0.5 text-xs text-mingle-text-secondary">{label}</p>

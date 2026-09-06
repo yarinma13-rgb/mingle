@@ -56,7 +56,7 @@ export function SplashScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.35, ease: "easeOut" }}
           whileTap={{ scale: 0.97 }}
-          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple px-8 py-4 font-display text-base font-semibold text-mingle-white"
+          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink to-mingle-purple px-8 py-4 font-display text-base font-semibold text-white"
         >
           Get Started
         </motion.button>

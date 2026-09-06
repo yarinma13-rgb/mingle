@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { acceptConnection, declineConnection } from "@/lib/connections/persistence";
 import { MingleMomentOverlay } from "@/components/mingle-moment/MingleMomentOverlay";
 import { EmptyState } from "@/components/EmptyState";
+import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 
 export type ConnectionDisplayRow = {
@@ -33,7 +34,7 @@ function PersonRow({
           {row.initial}
         </div>
         <div className="min-w-0">
-          <p className="truncate font-display text-sm font-semibold text-mingle-white">
+          <p className="truncate font-display text-sm font-semibold text-mingle-text">
             {row.name}
           </p>
           <p className="truncate text-xs text-mingle-text-secondary">
@@ -116,7 +117,7 @@ export function ConnectionsScreen({
       ) : (
         <>
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Requests you&rsquo;ve received
         </h2>
         {incoming.length === 0 ? (
@@ -132,7 +133,7 @@ export function ConnectionsScreen({
                     type="button"
                     onClick={() => handleAccept(row)}
                     disabled={busyId === row.connectionId}
-                    className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-mingle-white disabled:opacity-60"
+                    className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white disabled:opacity-60"
                   >
                     Accept
                   </button>
@@ -140,7 +141,7 @@ export function ConnectionsScreen({
                     type="button"
                     onClick={() => handleDecline(row)}
                     disabled={busyId === row.connectionId}
-                    className="rounded-full bg-mingle-bg px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-white disabled:opacity-60"
+                    className="rounded-full bg-mingle-bg px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text disabled:opacity-60"
                   >
                     Decline
                   </button>
@@ -152,7 +153,7 @@ export function ConnectionsScreen({
       </div>
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Sent
         </h2>
         {outgoing.length === 0 ? (
@@ -163,9 +164,7 @@ export function ConnectionsScreen({
           <div className="mt-4 flex flex-col gap-3">
             {outgoing.map((row) => (
               <PersonRow key={row.connectionId} row={row}>
-                <span className="shrink-0 rounded-full bg-mingle-bg px-3 py-1.5 text-xs font-medium text-mingle-text-secondary">
-                  Pending
-                </span>
+                <MingleChip className="shrink-0">Pending</MingleChip>
               </PersonRow>
             ))}
           </div>
@@ -173,7 +172,7 @@ export function ConnectionsScreen({
       </div>
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-white">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
           Your connections
         </h2>
         {accepted.length === 0 ? (
@@ -187,7 +186,7 @@ export function ConnectionsScreen({
               <PersonRow key={row.connectionId} row={row}>
                 <Link
                   href={`/conversations/${row.connectionId}`}
-                  className="shrink-0 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-mingle-white"
+                  className="shrink-0 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
                 >
                   Message
                 </Link>

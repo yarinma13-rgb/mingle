@@ -112,7 +112,7 @@ export default async function ConversationsListPage() {
           />
         ) : (
           <>
-            <h2 className="font-display text-sm font-semibold text-mingle-white">
+            <h2 className="font-display text-sm font-semibold text-mingle-text">
               Conversations
             </h2>
             <div className="mt-4 flex flex-col gap-2">
@@ -127,7 +127,7 @@ export default async function ConversationsListPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-display text-sm font-semibold text-mingle-white">
+                      <p className="truncate font-display text-sm font-semibold text-mingle-text">
                         {row.name}
                       </p>
                       <span className="shrink-0 text-xs text-mingle-text-secondary">
@@ -137,7 +137,7 @@ export default async function ConversationsListPage() {
                     <p
                       className={`truncate text-xs ${
                         row.unreadCount > 0
-                          ? "font-semibold text-mingle-white"
+                          ? "font-semibold text-mingle-text"
                           : "text-mingle-text-secondary"
                       }`}
                     >

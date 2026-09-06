@@ -29,7 +29,7 @@ export function PhaseStub({
           Development-only checkpoint
         </span>
 
-        <h1 className="mt-4 font-display text-3xl font-bold text-mingle-white">
+        <h1 className="mt-4 font-display text-3xl font-bold text-mingle-text">
           {headline}
         </h1>
 
@@ -37,7 +37,7 @@ export function PhaseStub({
 
         <Link
           href={backHref}
-          className="mt-10 rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-white transition-colors hover:bg-mingle-surface/70"
+          className="mt-10 rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70"
         >
           {backLabel}
         </Link>

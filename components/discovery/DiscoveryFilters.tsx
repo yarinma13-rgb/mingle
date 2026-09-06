@@ -5,7 +5,7 @@ import {
 } from "@/lib/discovery/filters";
 
 const fieldClass =
-  "w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2.5 text-sm text-mingle-white placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
+  "w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-purple focus:outline-none";
 
 export function DiscoveryFiltersForm({
   filters,
@@ -20,7 +20,7 @@ export function DiscoveryFiltersForm({
       method="get"
       className="rounded-2xl border border-mingle-border bg-mingle-surface p-4 sm:p-5"
     >
-      <p className="text-sm font-medium text-mingle-white">
+      <p className="text-sm font-medium text-mingle-text">
         Narrow who you see
       </p>
       <p className="mt-1 text-xs text-mingle-text-secondary">
@@ -63,13 +63,13 @@ export function DiscoveryFiltersForm({
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="submit"
-          className="cursor-pointer rounded-full bg-mingle-cta px-5 py-2.5 font-display text-xs font-semibold text-mingle-white"
+          className="cursor-pointer rounded-full bg-mingle-cta px-5 py-2.5 font-display text-xs font-semibold text-white"
         >
           Apply filters
         </button>
         <Link
           href="/discover"
-          className="cursor-pointer rounded-full px-5 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-white"
+          className="cursor-pointer rounded-full px-5 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
         >
           Clear
         </Link>
@@ -96,7 +96,7 @@ export function DiscoveryPagination({
       {page > 1 ? (
         <Link
           href={discoveryQueryString(filters, page - 1)}
-          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-white"
+          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-text"
         >
           Previous
         </Link>
@@ -109,7 +109,7 @@ export function DiscoveryPagination({
       {page < pageCount ? (
         <Link
           href={discoveryQueryString(filters, page + 1)}
-          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-white"
+          className="cursor-pointer rounded-full bg-mingle-surface px-5 py-2.5 font-display text-xs font-semibold text-mingle-text"
         >
           Next
         </Link>

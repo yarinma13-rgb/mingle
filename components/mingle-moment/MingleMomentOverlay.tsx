@@ -11,17 +11,10 @@ import { MingleLogo } from "@/components/MingleLogo";
 // 0deg = right, 90deg = up. 20–160deg is the upper fan (up and to the
 // sides). Palette stays inside PRODUCT_SPEC section 8.
 const CONFETTI_COLORS = [
-  "#E2378D",
-  "#F06AA8",
-  "#C41F75",
-  "#7362E2",
-  "#9588EA",
-  "#5A48C9",
-  "#4D42DB",
-  "#7A72E8",
-  "#3A31B8",
-  "#FFFFFF",
-  "#E1E4EA",
+  "#F65F7C",
+  "#D83A52",
+  "#9D5CF2",
+  "#0073EA",
 ];
 const CONFETTI_COUNT = 28;
 
@@ -105,13 +98,13 @@ export function MingleMomentOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#0F1420] px-6"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6"
     >
       <button
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="absolute right-5 top-5 z-[2] flex h-9 w-9 items-center justify-center rounded-full text-white/50 transition-colors hover:text-white"
+        className="absolute right-5 top-5 z-[2] flex h-9 w-9 items-center justify-center rounded-full text-mingle-text-secondary transition-colors hover:text-mingle-text"
       >
         <svg
           width="18"
@@ -157,7 +150,7 @@ export function MingleMomentOverlay({
         >
           <span
             aria-hidden
-            className="absolute h-32 w-32 rounded-full bg-gradient-to-br from-mingle-pink to-mingle-purple opacity-40 blur-3xl"
+            className="absolute h-40 w-40 rounded-full bg-mingle-blue/15 blur-3xl"
           />
           <MingleLogo variant="mark" size={72} className="relative" priority />
         </motion.div>
@@ -166,7 +159,7 @@ export function MingleMomentOverlay({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
-          className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-white sm:text-5xl"
+          className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl"
         >
           It&rsquo;s a mingle
         </motion.h1>
@@ -175,7 +168,7 @@ export function MingleMomentOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.35, delay: 0.85 }}
-          className="mt-4 max-w-xs text-sm text-white/70"
+          className="mt-4 max-w-xs text-sm text-mingle-text-secondary"
         >
           You and {matchName} both want to get to know each other.
         </motion.p>

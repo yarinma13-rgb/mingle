@@ -63,7 +63,7 @@ export function ExploreScreen({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="font-display text-lg font-semibold text-mingle-white">
+        <h2 className="font-display text-lg font-semibold text-mingle-text">
           Explore the relationship
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -78,7 +78,7 @@ export function ExploreScreen({
             href={action.href}
             className="flex flex-col gap-1.5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 transition-colors hover:border-mingle-purple/50"
           >
-            <p className="font-display text-sm font-semibold text-mingle-white">
+            <p className="font-display text-sm font-semibold text-mingle-text">
               {action.label}
             </p>
             <p className="text-xs text-mingle-text-secondary">{action.description}</p>

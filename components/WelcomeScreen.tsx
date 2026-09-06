@@ -3,11 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { TalentGlyph, CompanyGlyph } from "@/components/PathGlyph";
-import markSrc from "@/public/brand/mingle-mark.jpg";
 
 type Path = "talent" | "company";
 
@@ -46,14 +44,9 @@ export function WelcomeScreen() {
       {/* M mark, faint, in the background */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.07] sm:h-[680px] sm:w-[680px]"
+        className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.12] sm:h-[680px] sm:w-[680px]"
       >
-        <Image
-          src={markSrc}
-          alt=""
-          fill
-          className="object-contain blur-[1px]"
-        />
+        <MingleLogo variant="mark" size={520} alt="" />
       </div>
 
       <AnimatePresence
@@ -71,9 +64,9 @@ export function WelcomeScreen() {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="relative z-10 flex w-full max-w-xl flex-col items-center text-center"
           >
-            <MingleLogo variant="lockup" size={44} priority className="mb-12" />
+            <MingleLogo variant="lockup" size={56} priority className="mb-12" />
 
-            <h1 className="font-display text-[1.75rem] font-bold leading-tight text-mingle-white sm:text-5xl">
+            <h1 className="font-display text-[1.75rem] font-bold leading-tight text-mingle-text sm:text-5xl">
               Careers start with{" "}
               <span className="mingle-gradient-text">connection</span>
             </h1>
@@ -95,10 +88,10 @@ export function WelcomeScreen() {
                     onClick={() => setSelected(card.id)}
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`flex flex-col items-start rounded-2xl border-2 bg-mingle-surface p-6 text-left transition-colors ${
+                    className={`flex flex-col items-start rounded-2xl border bg-mingle-white p-6 text-left shadow-mingle transition-colors ${
                       isSelected
-                        ? "border-mingle-purple shadow-[0_0_0_3px_rgba(115,98,226,0.25)]"
-                        : "border-transparent hover:border-mingle-purple/60"
+                        ? "border-mingle-purple"
+                        : "border-mingle-border hover:border-mingle-purple/60"
                     }`}
                   >
                     <span className="relative flex h-12 w-12 items-center justify-center">
@@ -110,7 +103,7 @@ export function WelcomeScreen() {
                       />
                       <Glyph active={isSelected} className="relative" />
                     </span>
-                    <span className="mt-4 font-display text-base font-semibold text-mingle-white">
+                    <span className="mt-4 font-display text-base font-semibold text-mingle-text">
                       {card.title}
                     </span>
                     <span className="mt-1.5 text-sm text-mingle-text-secondary">
@@ -127,10 +120,10 @@ export function WelcomeScreen() {
               onClick={handleGetStarted}
               whileHover={selected ? { scale: 1.03 } : undefined}
               whileTap={selected ? { scale: 0.97 } : undefined}
-              className={`mt-10 w-full rounded-full px-8 py-4 font-display text-base font-semibold transition-colors sm:w-auto ${
+              className={`mt-10 w-full font-display text-base sm:w-auto ${
                 selected
-                  ? "bg-mingle-cta text-mingle-white cursor-pointer"
-                  : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
+                  ? "mingle-btn-primary cursor-pointer"
+                  : "mingle-btn-secondary cursor-not-allowed opacity-45"
               }`}
             >
               Get Started
