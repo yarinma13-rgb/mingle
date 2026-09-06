@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreIcon, XIcon } from "@/components/dashboard/icons";
+import { isNavHrefActive } from "@/lib/dashboard/nav-active";
 
 type NavItem = {
   label: string;
@@ -23,7 +24,9 @@ export function MobileBottomNav({
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreActive = moreItems.some((item) => pathname === item.href);
+  const moreActive = moreItems.some((item) =>
+    isNavHrefActive(pathname, item.href),
+  );
 
   return (
     <>
@@ -54,15 +57,14 @@ export function MobileBottomNav({
             <div className="flex flex-col gap-1">
               {moreItems.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href;
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
                     className={`flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium ${
-                      active
-                        ? "bg-mingle-lavender text-mingle-blue"
+                      isNavHrefActive(pathname, item.href)
+                        ? "bg-mingle-lavender text-mingle-accent-blue"
                         : "text-mingle-text-secondary"
                     }`}
                   >
@@ -82,13 +84,13 @@ export function MobileBottomNav({
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active = isNavHrefActive(pathname, item.href);
           return (
             <Link
               key={item.label}
               href={item.href}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? "text-mingle-blue" : "text-mingle-text-secondary"
+                active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
               }`}
             >
               <Icon size={20} />
@@ -100,7 +102,7 @@ export function MobileBottomNav({
           type="button"
           onClick={() => setMoreOpen(true)}
           className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-            moreActive ? "text-mingle-blue" : "text-mingle-text-secondary"
+            moreActive ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />

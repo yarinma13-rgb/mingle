@@ -11,7 +11,7 @@ export function LegalShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-screen flex-1 flex-col bg-mingle-bg px-4 py-10 sm:px-10 sm:py-12">
+    <main className="flex min-h-screen flex-1 flex-col px-4 py-10 sm:px-10 sm:py-12">
       <div className="mx-auto w-full max-w-2xl">
         <Link href="/" className="inline-flex">
           <MingleLogo variant="lockup" size={28} />

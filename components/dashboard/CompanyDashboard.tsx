@@ -52,9 +52,9 @@ export function CompanyDashboard({
     : null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="mingle-banner rounded-2xl border border-mingle-border p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-text">
+    <div className="flex flex-col gap-8">
+      <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
+        <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Suggested next step
         </h2>
         <p className="mt-2 text-sm text-mingle-text-secondary">
@@ -113,10 +113,10 @@ export function CompanyDashboard({
         <CompanyPipelineFunnel funnel={funnel} />
 
         <div className="flex flex-col gap-6">
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
             <div className="flex items-center gap-3">
               <IconBadge icon={PeopleIcon} accent="pinkPurple" size={32} iconSize={15} />
-              <h2 className="font-display text-sm font-semibold text-mingle-text">
+              <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
                 Your team
               </h2>
             </div>
@@ -138,10 +138,10 @@ export function CompanyDashboard({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
             <div className="flex items-center gap-3">
               <IconBadge icon={CalendarIcon} accent="ctaPink" size={32} iconSize={15} />
-              <h2 className="font-display text-sm font-semibold text-mingle-text">
+              <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
                 Upcoming interviews
               </h2>
             </div>
@@ -153,9 +153,9 @@ export function CompanyDashboard({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-sm font-semibold text-mingle-text">
+      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
             Candidates
           </h2>
           {avgScore !== null && (
@@ -226,7 +226,7 @@ export function CompanyDashboard({
                 <Link
                   key={candidate.userId}
                   href={`/profile/view/${candidate.userId}`}
-                  className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-4"
+                  className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-[0_8px_24px_rgba(0,115,234,0.1)]"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-mingle-text">

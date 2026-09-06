@@ -12,6 +12,11 @@
   --mingle-purple: #9d5cf2;
   --mingle-indigo: #0073ea;
   --mingle-cta: #0073ea;
+  /* Saturated accents for icons and small highlights only — not
+     backgrounds, not replacements for the brand tokens above. */
+  --mingle-accent-pink: #ea1e63;
+  --mingle-accent-purple: #7b2ff7;
+  --mingle-accent-blue: #3e6be0;
   --mingle-connection-gradient: linear-gradient(
     135deg,
     #f65f7c 0%,
@@ -68,6 +73,9 @@
   --color-mingle-blue: var(--mingle-blue);
   --color-mingle-purple: var(--mingle-purple);
   --color-mingle-cta: var(--mingle-cta);
+  --color-mingle-accent-pink: var(--mingle-accent-pink);
+  --color-mingle-accent-purple: var(--mingle-accent-purple);
+  --color-mingle-accent-blue: var(--mingle-accent-blue);
   --color-mingle-indigo: var(--mingle-indigo);
   --color-mingle-text: var(--mingle-text);
   --color-mingle-text-secondary: var(--mingle-text-secondary);
@@ -91,8 +99,16 @@ html {
   overflow-x: clip;
 }
 
+.mingle-app-canvas {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 85% 60% at 0% 0%, #fdeaf1 0%, transparent 52%),
+    radial-gradient(ellipse 75% 55% at 100% 0%, #e9effe 0%, transparent 50%),
+    radial-gradient(ellipse 65% 50% at 90% 100%, #f1e8fe 0%, transparent 48%),
+    linear-gradient(180deg, #ffffff 0%, #f4f1fa 100%);
+}
+
 body {
-  background: var(--mingle-bg);
   color: var(--mingle-text);
   font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
@@ -157,6 +173,16 @@ button:disabled {
   padding: 0.7rem 1.5rem;
   font-weight: 600;
   color: var(--mingle-blue);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mingle-btn-secondary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--mingle-blue) 35%, var(--mingle-border));
+  background: var(--mingle-lavender);
+  box-shadow: 0 4px 16px rgba(0, 115, 234, 0.08);
 }
 
 .mingle-chip {
@@ -246,10 +272,27 @@ button:disabled {
   will-change: transform, opacity;
 }
 
+.mingle-moment-overlay {
+  animation: mingle-moment-in 0.28s ease-out;
+}
+
+@keyframes mingle-moment-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mingle-confetti-piece {
     animation-name: mingle-confetti-fade;
     animation-duration: 2.1s;
     animation-timing-function: ease;
+  }
+
+  .mingle-moment-overlay {
+    animation: none;
   }
 }

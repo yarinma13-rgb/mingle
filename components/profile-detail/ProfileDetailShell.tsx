@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -8,11 +9,18 @@ import { sendOrAcceptConnection } from "@/lib/connections/persistence";
 import { notifyConnectionRequest } from "@/lib/email/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
-import { MingleMomentOverlay } from "@/components/mingle-moment/MingleMomentOverlay";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import type { ConnectionStatus } from "@/lib/supabase/types";
+
+const MingleMomentOverlay = dynamic(
+  () =>
+    import("@/components/mingle-moment/MingleMomentOverlay").then((mod) => ({
+      default: mod.MingleMomentOverlay,
+    })),
+  { ssr: false },
+);
 
 function BackArrowIcon({ size = 18 }: { size?: number }) {
   return (
@@ -118,6 +126,9 @@ export function ProfileDetailShell({
   const [saved, setSaved] = useState(initiallySaved);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showMingleMoment, setShowMingleMoment] = useState(false);
+  const [mingleConnectionId, setMingleConnectionId] = useState<string | null>(
+    null,
+  );
 
   const isSelf = viewerId === targetUserId;
   const isPendingIncoming =
@@ -131,6 +142,7 @@ export function ProfileDetailShell({
       const result = await sendOrAcceptConnection(supabase, viewerId, targetUserId);
       if (result.outcome === "mutual") {
         setConnectionState({ status: "accepted", isRequester: false });
+        setMingleConnectionId(result.connection.id);
         setShowMingleMoment(true);
       } else if (result.outcome === "sent") {
         setConnectionState({ status: "pending", isRequester: true });
@@ -187,7 +199,11 @@ export function ProfileDetailShell({
         <MingleMomentOverlay
           matchName={name}
           matchUserId={targetUserId}
-          onClose={() => setShowMingleMoment(false)}
+          connectionId={mingleConnectionId ?? undefined}
+          onClose={() => {
+            setShowMingleMoment(false);
+            setMingleConnectionId(null);
+          }}
         />
       )}
 

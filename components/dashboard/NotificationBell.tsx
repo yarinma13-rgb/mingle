@@ -64,11 +64,11 @@ export function NotificationBell({ userId }: { userId: string }) {
         type="button"
         aria-label="Notifications"
         onClick={toggleOpen}
-        className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:text-mingle-text"
+        className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-accent-blue transition-colors hover:text-mingle-accent-purple"
       >
         <BellIcon size={16} />
         {items.length > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-mingle-pink px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-mingle-accent-pink px-1 text-[10px] font-semibold text-white">
             {items.length > 9 ? "9+" : items.length}
           </span>
         )}

@@ -27,7 +27,7 @@ export function TalentDashboard({
   companies: CompanyRow[];
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <KpiTile
           icon={GaugeIcon}
@@ -61,8 +61,8 @@ export function TalentDashboard({
         />
       </div>
 
-      <div className="mingle-banner rounded-2xl border border-mingle-border p-6">
-        <h2 className="font-display text-sm font-semibold text-mingle-text">
+      <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
+        <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Suggested next step
         </h2>
         <p className="mt-2 text-sm text-mingle-text-secondary">
@@ -77,8 +77,8 @@ export function TalentDashboard({
         )}
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6 shadow-mingle">
-        <h2 className="font-display text-sm font-semibold text-mingle-text">
+      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 shadow-mingle">
+        <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Recommended companies
         </h2>
 
@@ -95,7 +95,7 @@ export function TalentDashboard({
               <Link
                 key={company.userId}
                 href={`/profile/view/${company.userId}`}
-                className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-blue/50"
+                className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-[0_8px_24px_rgba(0,115,234,0.1)]"
               >
                 <div className="flex items-center justify-between">
                   <p className="font-display text-sm font-semibold text-mingle-text">

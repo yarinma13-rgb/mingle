@@ -2,14 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 // Mascot temporarily removed from this screen — see components/MascotMagnet.tsx,
 // component and pose assets are kept, just not rendered here for now.
 
-// Confetti burst origin is the M mark. Angle is computed in JS:
-// 0deg = right, 90deg = up. 20–160deg is the upper fan.
-// Colors are the 2026 brand tokens only — no white/pale tints on lavender.
 const CONFETTI_COLORS = [
   "#F65F7C",
   "#D83A52",
@@ -53,26 +49,43 @@ function generateConfettiSpecs(): ConfettiSpec[] {
   });
 }
 
-function useConfettiSpecs(): ConfettiSpec[] {
+function usePrefersReducedMotion(): boolean {
+  const [reduce, setReduce] = useState(true);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(media.matches);
+    const onChange = () => setReduce(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+  return reduce;
+}
+
+function useConfettiSpecs(enabled: boolean): ConfettiSpec[] {
   const [specs, setSpecs] = useState<ConfettiSpec[]>([]);
   useEffect(() => {
+    if (!enabled) {
+      setSpecs([]);
+      return;
+    }
     Promise.resolve().then(() => setSpecs(generateConfettiSpecs()));
-  }, []);
+  }, [enabled]);
   return specs;
 }
 
 export function MingleMomentOverlay({
   matchName,
-  matchUserId,
+  connectionId,
   onClose,
 }: {
   matchName: string;
-  matchUserId: string;
+  matchUserId?: string;
+  connectionId?: string;
   onClose: () => void;
 }) {
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
-  const confetti = useConfettiSpecs();
+  const reduceMotion = usePrefersReducedMotion();
+  const confetti = useConfettiSpecs(!reduceMotion);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -88,18 +101,15 @@ export function MingleMomentOverlay({
   }, [reduceMotion]);
 
   const startConversation = () => {
+    const dest = connectionId
+      ? `/conversations/${connectionId}`
+      : "/conversations";
+    router.push(dest);
     onClose();
-    if (matchUserId) router.push(`/profile/view/${matchUserId}`);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6"
-    >
+    <div className="mingle-moment-overlay fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6">
       <button
         type="button"
         onClick={onClose}
@@ -142,50 +152,30 @@ export function MingleMomentOverlay({
       </div>
 
       <div className="relative z-[2] flex flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-          className="relative flex items-center justify-center"
-        >
+        <div className="relative flex items-center justify-center">
           <span
             aria-hidden
             className="absolute h-40 w-40 rounded-full bg-mingle-blue/15 blur-3xl"
           />
           <MingleLogo variant="mark" size={72} className="relative" priority />
-        </motion.div>
+        </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
-          className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl"
-        >
+        <h1 className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl">
           It&rsquo;s a mingle
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35, delay: 0.85 }}
-          className="mt-4 max-w-xs text-sm text-mingle-text-secondary"
-        >
+        <p className="mt-4 max-w-xs text-sm text-mingle-text-secondary">
           You and {matchName} both want to get to know each other.
-        </motion.p>
+        </p>
 
-        <motion.button
+        <button
           type="button"
           onClick={startConversation}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 1.3, ease: "easeOut" }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
           className="mt-8 w-full max-w-xs rounded-full bg-mingle-cta px-8 py-3.5 font-display text-sm font-semibold text-white"
         >
           Start conversation
-        </motion.button>
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 }

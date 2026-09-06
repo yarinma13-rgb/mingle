@@ -9,7 +9,8 @@ import "./globals.css";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${figtree.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-mingle-bg font-sans text-mingle-text">
+      <body className="mingle-app-canvas min-h-full flex flex-col font-sans text-mingle-text">
         <AppErrorBoundary>
           <ToastProvider>
             <Suspense fallback={null}>

@@ -61,10 +61,33 @@ export function whyMatchReasons(
   return reasons.slice(0, 5);
 }
 
+const SCORE_CACHE = new Map<string, number>();
+const SCORE_CACHE_LIMIT = 200;
+
+function scoreCacheKey(
+  talent: ProfileState,
+  company: CompanyProfileState,
+): string {
+  return JSON.stringify([
+    talent.workStyle,
+    talent.drives,
+    talent.lookingFor,
+    talent.industry,
+    company.workEnvironment,
+    company.values,
+    company.lookingFor,
+    company.industry,
+  ]);
+}
+
 export function matchScore(
   talent: ProfileState,
   company: CompanyProfileState,
 ): number {
+  const key = scoreCacheKey(talent, company);
+  const cached = SCORE_CACHE.get(key);
+  if (cached !== undefined) return cached;
+
   const pairs: [string[], string[]][] = [
     [talent.workStyle, company.workEnvironment],
     [talent.drives, company.values],
@@ -82,7 +105,13 @@ export function matchScore(
     talent.industry.toLowerCase() === company.industry.toLowerCase();
 
   const raw = (shared / total) * 70 + (sameIndustry ? 15 : 0) + 15;
-  return Math.min(98, Math.max(60, Math.round(raw)));
+  const score = Math.min(98, Math.max(60, Math.round(raw)));
+  if (SCORE_CACHE.size >= SCORE_CACHE_LIMIT) {
+    const oldest = SCORE_CACHE.keys().next().value;
+    if (oldest !== undefined) SCORE_CACHE.delete(oldest);
+  }
+  SCORE_CACHE.set(key, score);
+  return score;
 }
 
 export const TALENT_EXPLORE_PROMPTS = [

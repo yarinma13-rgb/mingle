@@ -33,10 +33,22 @@ const TALENT_ITEMS: CommandItem[] = [
     keywords: ["chat", "messages"],
   },
   {
+    id: "saved",
+    label: "Saved",
+    href: "/saved",
+    keywords: ["bookmark", "later"],
+  },
+  {
     id: "profile",
     label: "My profile",
     href: "/profile/build",
     keywords: ["account", "edit"],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/settings",
+    keywords: ["account", "sign out", "logout"],
   },
 ];
 
@@ -46,6 +58,12 @@ const COMPANY_ITEMS: CommandItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     keywords: ["home", "overview"],
+  },
+  {
+    id: "roles",
+    label: "Roles",
+    href: "/roles",
+    keywords: ["jobs", "hiring", "open"],
   },
   {
     id: "candidates",
@@ -72,10 +90,28 @@ const COMPANY_ITEMS: CommandItem[] = [
     keywords: ["kanban", "stages", "columns"],
   },
   {
+    id: "interviews",
+    label: "Interviews",
+    href: "/interviews",
+    keywords: ["calendar", "schedule"],
+  },
+  {
+    id: "team",
+    label: "Team",
+    href: "/team",
+    keywords: ["members", "invite"],
+  },
+  {
     id: "profile",
     label: "My profile",
     href: "/company-profile/build",
     keywords: ["company", "account", "edit"],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/settings",
+    keywords: ["account", "sign out", "logout"],
   },
 ];
 
@@ -103,6 +139,11 @@ const ENABLED_PREFIXES = [
   "/board",
   "/profile",
   "/company-profile",
+  "/settings",
+  "/roles",
+  "/interviews",
+  "/team",
+  "/saved",
 ];
 
 export function isCommandPalettePath(pathname: string): boolean {

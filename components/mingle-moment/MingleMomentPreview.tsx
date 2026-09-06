@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { MingleMomentOverlay } from "@/components/mingle-moment/MingleMomentOverlay";
+import dynamic from "next/dynamic";
+
+const MingleMomentOverlay = dynamic(
+  () =>
+    import("@/components/mingle-moment/MingleMomentOverlay").then((mod) => ({
+      default: mod.MingleMomentOverlay,
+    })),
+  { ssr: false },
+);
 
 export function MingleMomentPreview() {
   const [open, setOpen] = useState(true);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-mingle-bg px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center px-6">
       {open ? (
         <MingleMomentOverlay
           matchName="Yarin Cohen"

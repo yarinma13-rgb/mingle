@@ -24,6 +24,7 @@ export function MingleLogo({
 }: MingleLogoProps) {
   const width = (size * logoSrc.width) / logoSrc.height;
   const markAlt = alt === undefined ? "mingle" : alt;
+  const pixelSize = Math.ceil(size);
 
   return (
     <Image
@@ -32,6 +33,8 @@ export function MingleLogo({
       height={size}
       width={width}
       priority={priority}
+      quality={70}
+      sizes={`${pixelSize}px`}
       className={`inline-block h-auto max-w-full object-contain ${className}`}
       style={{ height: size, width }}
     />

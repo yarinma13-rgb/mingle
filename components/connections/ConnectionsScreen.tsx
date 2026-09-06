@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { acceptConnection, declineConnection } from "@/lib/connections/persistence";
-import { MingleMomentOverlay } from "@/components/mingle-moment/MingleMomentOverlay";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
+
+const MingleMomentOverlay = dynamic(
+  () =>
+    import("@/components/mingle-moment/MingleMomentOverlay").then((mod) => ({
+      default: mod.MingleMomentOverlay,
+    })),
+  { ssr: false },
+);
 
 export type ConnectionDisplayRow = {
   connectionId: string;
@@ -101,6 +109,7 @@ export function ConnectionsScreen({
         <MingleMomentOverlay
           matchName={mingleMatch.name}
           matchUserId={mingleMatch.userId}
+          connectionId={mingleMatch.connectionId}
           onClose={() => setMingleMatch(null)}
         />
       )}

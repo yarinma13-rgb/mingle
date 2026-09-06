@@ -317,14 +317,24 @@ function companyStageFactor(
   };
 }
 
-/**
- * Computes a deterministic weighted match score between one talent
- * profile and one company profile, plus a full transparent breakdown of
- * every factor — including ones that didn't align, not just the ones
- * that did. Every profile gets a real score; nothing is hard-filtered
- * out for low overlap.
- */
-export function computeMatch(
+const MATCH_CACHE = new Map<string, MatchResult>();
+const MATCH_CACHE_LIMIT = 200;
+
+function matchCacheKey(
+  talent: TalentMatchInput,
+  company: CompanyMatchInput,
+): string {
+  return JSON.stringify([
+    talent.careerGoal,
+    talent.companyTypes,
+    talent.profile,
+    company.connectingAbout,
+    company.culturePriorities,
+    company.profile,
+  ]);
+}
+
+function computeMatchUncached(
   talent: TalentMatchInput,
   company: CompanyMatchInput,
 ): MatchResult {
@@ -343,4 +353,27 @@ export function computeMatch(
   );
 
   return { score: Math.min(100, Math.max(0, score)), factors };
+}
+
+/**
+ * Computes a deterministic weighted match score between one talent
+ * profile and one company profile, plus a full transparent breakdown of
+ * every factor — including ones that didn't align, not just the ones
+ * that did. Every profile gets a real score; nothing is hard-filtered
+ * out for low overlap.
+ */
+export function computeMatch(
+  talent: TalentMatchInput,
+  company: CompanyMatchInput,
+): MatchResult {
+  const key = matchCacheKey(talent, company);
+  const cached = MATCH_CACHE.get(key);
+  if (cached) return cached;
+  const result = computeMatchUncached(talent, company);
+  if (MATCH_CACHE.size >= MATCH_CACHE_LIMIT) {
+    const oldest = MATCH_CACHE.keys().next().value;
+    if (oldest !== undefined) MATCH_CACHE.delete(oldest);
+  }
+  MATCH_CACHE.set(key, result);
+  return result;
 }

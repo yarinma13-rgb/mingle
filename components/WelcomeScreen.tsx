@@ -46,7 +46,7 @@ export function WelcomeScreen() {
         aria-hidden
         className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.12] sm:h-[680px] sm:w-[680px]"
       >
-        <MingleLogo variant="mark" size={520} alt="" />
+        <MingleLogo variant="mark" size={160} alt="" />
       </div>
 
       <AnimatePresence
