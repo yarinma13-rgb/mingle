@@ -6,7 +6,10 @@ import {
   DiscoveryFiltersForm,
   DiscoveryPagination,
 } from "@/components/discovery/DiscoveryFilters";
-import { parseDiscoveryFilters } from "@/lib/discovery/filters";
+import {
+  discoveryFiltersActive,
+  parseDiscoveryFilters,
+} from "@/lib/discovery/filters";
 import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
@@ -43,6 +46,9 @@ export default async function DiscoverPage({
           ?.options ?? [])
       : (COMPANY_QUESTIONS.find((question) => question.key === "workEnvironment")
           ?.options ?? []);
+  const valueOptions =
+    PROFILE_QUESTIONS.find((question) => question.key === "drives")?.options ??
+    [];
 
   const [savedUserIds, { cards, total, pageSize }] = await Promise.all([
     loadSavedUserIds(supabase, user.id),
@@ -54,10 +60,18 @@ export default async function DiscoverPage({
     ),
   ]);
 
-  const filtersActive = Boolean(
-    filters.industry || filters.location || filters.style,
-  );
-  const screenKey = `${filters.industry}|${filters.location}|${filters.style}|${filters.page}`;
+  const filtersActive = discoveryFiltersActive(filters);
+  const screenKey = [
+    filters.industry,
+    filters.location,
+    filters.style,
+    filters.role,
+    filters.workModel,
+    filters.yearsMin,
+    filters.yearsMax,
+    filters.values.join(","),
+    filters.page,
+  ].join("|");
 
   const title =
     userRow.user_type === "company"
@@ -85,7 +99,12 @@ export default async function DiscoverPage({
       userSubtitle={userRow.user_type === "company" ? "Recruiter" : "Talent"}
     >
       <div className="flex flex-col gap-6">
-        <DiscoveryFiltersForm filters={filters} styleOptions={styleOptions} />
+        <DiscoveryFiltersForm
+          filters={filters}
+          styleOptions={styleOptions}
+          valueOptions={valueOptions}
+          audience={userRow.user_type === "company" ? "company" : "talent"}
+        />
         <DiscoveryScreen
           key={screenKey}
           title={title}

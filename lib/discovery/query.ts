@@ -10,9 +10,12 @@ import {
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DISCOVERY_PAGE_SIZE,
+  EXPERIENCE_TOLERANCE_YEARS,
+  isWorkModelOption,
   sanitizeIlike,
   type DiscoveryFilters,
 } from "@/lib/discovery/filters";
+import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 
 export type DiscoveryLoadResult = {
@@ -34,6 +37,8 @@ export async function loadDiscoveryPage(
   const industry = sanitizeIlike(filters.industry);
   const location = sanitizeIlike(filters.location);
   const style = styleOptions.includes(filters.style) ? filters.style : "";
+  const role = sanitizeIlike(filters.role);
+  const workModel = isWorkModelOption(filters.workModel) ? filters.workModel : "";
 
   if (viewer.userType === "company") {
     let query = supabase
@@ -45,6 +50,33 @@ export async function loadDiscoveryPage(
     if (industry) query = query.ilike("industry", `%${industry}%`);
     if (location) query = query.ilike("location", `%${location}%`);
     if (style) query = query.contains("work_style", [style]);
+    if (workModel) query = query.contains("work_style", [workModel]);
+    if (role) {
+      query = query.or(
+        `current_job_title.ilike.%${role}%,headline.ilike.%${role}%`,
+      );
+    }
+    if (filters.yearsMin != null) {
+      query = query.gte(
+        "years_experience",
+        Math.max(0, filters.yearsMin - EXPERIENCE_TOLERANCE_YEARS),
+      );
+    }
+    if (filters.yearsMax != null) {
+      query = query.lte(
+        "years_experience",
+        filters.yearsMax + EXPERIENCE_TOLERANCE_YEARS,
+      );
+    }
+    if (filters.values.length > 0) {
+      const driveOptions =
+        PROFILE_QUESTIONS.find((question) => question.key === "drives")
+          ?.options ?? [];
+      const values = filters.values.filter((value) =>
+        driveOptions.includes(value),
+      );
+      if (values.length > 0) query = query.overlaps("drives", values);
+    }
 
     const [ownInput, listed] = await Promise.all([
       loadCompanyMatchInput(supabase, viewer.id),
