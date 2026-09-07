@@ -8,12 +8,19 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const pathParam = searchParams.get("path");
   const path: UserType = pathParam === "company" ? "company" : "talent";
+  const next =
+    searchParams.get("next") === "/auth/update-password"
+      ? "/auth/update-password"
+      : null;
 
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user && data.user.email) {
+      if (next) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
       // Only creates the row if it doesn't already exist, so a returning
       // user's existing type (and onboarding progress) is never touched —
       // the proxy already redirects them to their real onboarding path if

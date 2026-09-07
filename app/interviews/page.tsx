@@ -3,7 +3,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { requireShellUser } from "@/lib/dashboard/require-shell-user";
 
 export default async function InterviewsPage() {
-  const { user, accountLabel, initials } = await requireShellUser({
+  const { user, shellAvatar } = await requireShellUser({
     userType: "company",
   });
 
@@ -13,9 +13,8 @@ export default async function InterviewsPage() {
       userId={user.id}
       title="Interviews"
       searchPlaceholder="Search candidates or roles"
-      userName={accountLabel}
-      userInitials={initials}
       userSubtitle="Recruiter"
+      {...shellAvatar}
     >
       <div className="flex flex-col gap-6">
         <p className="max-w-xl text-sm leading-relaxed text-mingle-text-secondary">

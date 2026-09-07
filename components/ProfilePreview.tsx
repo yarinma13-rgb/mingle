@@ -6,7 +6,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { MingleLogo } from "@/components/MingleLogo";
 import { MingleChip } from "@/components/MingleChip";
 import { TalentCvField } from "@/components/profile/TalentCvField";
-import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
+import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
+import { GenderField } from "@/components/profile/GenderField";
+import { personInitials, type Gender } from "@/lib/profile/avatar";
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { Database } from "@/lib/supabase/types";
 
@@ -43,14 +45,17 @@ export function ProfilePreview({
   userId,
   supabase,
   onCvChanged,
+  onPhotoChanged,
+  onGenderChanged,
 }: {
   profile: ProfileState;
   userId: string | null;
   supabase: SupabaseClient<Database>;
   onCvChanged: (next: { cvPath: string | null; cvFileName: string | null }) => void;
+  onPhotoChanged: (photo: string | null) => void;
+  onGenderChanged: (gender: Gender) => void;
 }) {
-  const initials =
-    `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.toUpperCase();
+  const initials = personInitials(profile.firstName, profile.lastName);
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
   return (
@@ -69,15 +74,17 @@ export function ProfilePreview({
         </div>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <TalentPhotoImg
-            photo={profile.profilePhoto}
-            className="h-20 w-20 rounded-full object-cover"
-            fallback={
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
-                {initials || "?"}
-              </div>
-            }
-          />
+          {userId ? (
+            <TalentPhotoField
+              variant="hero"
+              supabase={supabase}
+              userId={userId}
+              photo={profile.profilePhoto}
+              initials={initials}
+              gender={profile.gender}
+              onChanged={onPhotoChanged}
+            />
+          ) : null}
           <div>
             <h1 className="font-display text-2xl font-bold text-mingle-text">
               {fullName || "Your name"}
@@ -90,6 +97,13 @@ export function ProfilePreview({
             </p>
           </div>
         </div>
+
+        <Section title="About you">
+          <GenderField
+            value={profile.gender}
+            onChange={onGenderChanged}
+          />
+        </Section>
 
         <Section title="Experience">
           <p className="text-sm text-mingle-text-secondary">

@@ -8,6 +8,8 @@ import { acceptConnection, declineConnection } from "@/lib/connections/persisten
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
 
 const MingleMomentOverlay = dynamic(
   () =>
@@ -23,6 +25,8 @@ export type ConnectionDisplayRow = {
   name: string;
   subtitle: string;
   initial: string;
+  photo: string | null;
+  gender: Gender | null;
 };
 
 function PersonRow({
@@ -38,9 +42,12 @@ function PersonRow({
         href={`/profile/view/${row.userId}`}
         className="flex min-w-0 items-center gap-3"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
-          {row.initial}
-        </div>
+        <Avatar
+          photo={row.photo}
+          initials={row.initial}
+          gender={row.gender}
+          size="md"
+        />
         <div className="min-w-0">
           <p className="truncate font-display text-sm font-semibold text-mingle-text">
             {row.name}

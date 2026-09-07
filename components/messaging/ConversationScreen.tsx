@@ -11,6 +11,8 @@ import {
 } from "@/lib/messaging/persistence";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { EmptyState } from "@/components/EmptyState";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
 
 function SendIcon({ size = 18 }: { size?: number }) {
   return (
@@ -74,6 +76,8 @@ export function ConversationScreen({
   otherName,
   otherSubtitle,
   otherInitial,
+  otherPhoto = null,
+  otherGender = null,
   otherUserId,
   whyConnected,
   initialMessages,
@@ -83,6 +87,8 @@ export function ConversationScreen({
   otherName: string;
   otherSubtitle: string;
   otherInitial: string;
+  otherPhoto?: string | null;
+  otherGender?: Gender | null;
   otherUserId: string;
   whyConnected: string;
   initialMessages: MessageRow[];
@@ -147,9 +153,12 @@ export function ConversationScreen({
           <BackArrowIcon />
         </Link>
         <Link href={`/profile/view/${otherUserId}`} className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
-            {otherInitial}
-          </div>
+          <Avatar
+            photo={otherPhoto}
+            initials={otherInitial}
+            gender={otherGender}
+            size="md"
+          />
           <div className="min-w-0">
             <p className="truncate font-display text-sm font-semibold text-mingle-text">
               {otherName}

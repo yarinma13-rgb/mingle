@@ -11,12 +11,13 @@ import {
   loadAcceptedConnections,
   type ConnectionRow,
 } from "@/lib/connections/persistence";
-import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
+import { loadDisplayInfoForUsers, type ConnectionDisplayInfo } from "@/lib/connections/enrich";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 
 function toDisplayRows(
   rows: ConnectionRow[],
   otherIdFn: (row: ConnectionRow) => string,
-  info: Map<string, { name: string; subtitle: string; initial: string }>,
+  info: Map<string, ConnectionDisplayInfo>,
 ): ConnectionDisplayRow[] {
   return rows
     .map((row) => {
@@ -66,8 +67,11 @@ export default async function ConnectionsPage() {
     info,
   );
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(
+    supabase,
+    user,
+    userRow.user_type === "company",
+  );
 
   return (
     <DashboardShell
@@ -79,8 +83,10 @@ export default async function ConnectionsPage() {
           ? "Search candidates or roles"
           : "Search companies"
       }
-      userName={accountLabel}
-      userInitials={initials}
+      userName={chrome.userName}
+      userInitials={chrome.initials}
+      userGender={chrome.gender}
+      userPhoto={chrome.photo}
       userSubtitle={userRow.user_type === "company" ? "Recruiter" : "Talent"}
     >
       <ConnectionsScreen incoming={incoming} outgoing={outgoing} accepted={accepted} />

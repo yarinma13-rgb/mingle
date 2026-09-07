@@ -5,6 +5,8 @@ import { MingleChip } from "@/components/MingleChip";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
 import {
   GaugeIcon,
   PeopleIcon,
@@ -21,6 +23,9 @@ export type CandidateRow = {
   location: string;
   matchScore: number;
   updatedAt: string;
+  initials: string;
+  gender: Gender | null;
+  photo: string | null;
 };
 
 function timeAgo(iso: string): string {
@@ -118,7 +123,7 @@ export function CompanyDashboard({
         <CompanyPipelineFunnel funnel={funnel} />
 
         <div className="flex flex-col gap-6">
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
             <div className="flex items-center gap-3">
               <IconBadge icon={PeopleIcon} accent="blue" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -127,9 +132,10 @@ export function CompanyDashboard({
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-                  {accountLabel.charAt(0).toUpperCase()}
-                </div>
+                <Avatar
+                  initials={accountLabel.slice(0, 2).toUpperCase() || "?"}
+                  size="sm"
+                />
                 <div>
                   <p className="text-sm font-medium text-mingle-text">
                     {accountLabel}
@@ -143,7 +149,7 @@ export function CompanyDashboard({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
+          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
             <div className="flex items-center gap-3">
               <IconBadge icon={CalendarIcon} accent="waiting" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -231,7 +237,7 @@ export function CompanyDashboard({
                 <Link
                   key={candidate.userId}
                   href={`/profile/view/${candidate.userId}`}
-                  className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-[0_8px_24px_rgba(0,115,234,0.1)]"
+                  className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-mingle"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-mingle-text">

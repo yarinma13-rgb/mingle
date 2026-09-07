@@ -10,6 +10,8 @@ import {
   currentStage,
   type RelationshipEventRow,
 } from "@/lib/relationship/persistence";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
+import type { Gender } from "@/lib/profile/avatar";
 type ConnectionRow = Database["public"]["Tables"]["connections"]["Row"];
 
 export type RelationshipPageContext = {
@@ -24,6 +26,9 @@ export type RelationshipPageContext = {
   stage: ReturnType<typeof currentStage>;
   accountLabel: string;
   initials: string;
+  userGender: Gender | null;
+  userPhoto: string | null;
+  userName: string;
 };
 
 export async function loadRelationshipPageContext(
@@ -43,6 +48,8 @@ export async function loadRelationshipPageContext(
     name: "mingle user",
     subtitle: "",
     initial: "?",
+    photo: null,
+    gender: null,
   };
 
   let matchScore = 0;
@@ -84,8 +91,7 @@ export async function loadRelationshipPageContext(
     // Table not migrated yet — stage falls back to "connected" below.
   }
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(supabase, user, userType === "company");
 
   return {
     userType,
@@ -97,7 +103,10 @@ export async function loadRelationshipPageContext(
     exploreFactors,
     timeline,
     stage: currentStage(timeline),
-    accountLabel,
-    initials,
+    accountLabel: chrome.userName,
+    initials: chrome.initials,
+    userGender: chrome.gender,
+    userPhoto: chrome.photo,
+    userName: chrome.userName,
   };
 }

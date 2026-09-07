@@ -23,6 +23,10 @@ import {
 } from "@/components/dashboard/icons";
 import type { UserType } from "@/lib/supabase/types";
 import { isNavHrefActive } from "@/lib/dashboard/nav-active";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
+import { ThemeSwitch } from "@/components/theme/ThemeSwitch";
+import { SeePlansButton } from "@/components/plans/SeePlansButton";
 
 type NavItem = {
   label: string;
@@ -50,8 +54,8 @@ const COMPANY_NAV_MORE = COMPANY_NAV.slice(4);
 const TALENT_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: GridIcon },
   { label: "Discover", href: "/discover", icon: CompassIcon },
-  { label: "Connections", href: "/connections", icon: PeopleIcon, dividerAfter: true },
-  { label: "Conversations", href: "/conversations", icon: MessageIcon },
+  { label: "Connections", href: "/connections", icon: PeopleIcon },
+  { label: "Conversations", href: "/conversations", icon: MessageIcon, dividerAfter: true },
   { label: "Saved", href: "/saved", icon: BookmarkIcon },
   { label: "My profile", href: "/profile/build", icon: UserIcon },
   { label: "Settings", href: "/settings", icon: GearIcon },
@@ -66,6 +70,8 @@ type DashboardShellProps = {
   searchPlaceholder: string;
   userName: string;
   userInitials: string;
+  userGender?: Gender | null;
+  userPhoto?: string | null;
   userSubtitle: string;
   children: React.ReactNode;
 };
@@ -77,6 +83,8 @@ export function DashboardShell({
   searchPlaceholder,
   userName,
   userInitials,
+  userGender = null,
+  userPhoto = null,
   userSubtitle,
   children,
 }: DashboardShellProps) {
@@ -96,12 +104,9 @@ export function DashboardShell({
 
   return (
     <div className="flex min-h-screen flex-col bg-transparent">
-      <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-mingle-white/75 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md sm:gap-6 sm:px-6">
-        <div className="sm:hidden">
-          <MingleLogo variant="mark" size={64} priority />
-        </div>
-        <div className="hidden sm:block">
-          <MingleLogo variant="lockup" size={72} priority />
+      <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6 md:bg-transparent">
+        <div className="md:hidden">
+          <MingleLogo variant="mark" size={72} priority />
         </div>
 
         <div className="hidden flex-1 justify-center md:flex">
@@ -132,12 +137,17 @@ export function DashboardShell({
             <SearchIcon size={16} />
           </button>
 
+          <SeePlansButton compact />
+
           <NotificationBell userId={userId} />
 
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-              {userInitials}
-            </div>
+            <Avatar
+              photo={userPhoto}
+              initials={userInitials}
+              gender={userGender}
+              size="sm"
+            />
             <div className="hidden leading-tight sm:block">
               <p className="text-sm font-semibold text-mingle-text">
                 {userName}
@@ -151,7 +161,10 @@ export function DashboardShell({
       </header>
 
       <div className="flex flex-1">
-        <aside className="hidden w-[5.75rem] shrink-0 flex-col items-center bg-transparent px-2 py-8 md:flex">
+        <aside className="hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch bg-transparent px-2 py-5 md:flex">
+          <div className="mb-5 flex w-full items-center justify-center px-1">
+            <MingleLogo variant="mark" size={58} priority />
+          </div>
           {navItems.map((item) => {
             const active = isNavHrefActive(pathname, item.href);
             const Icon = item.icon;
@@ -165,22 +178,24 @@ export function DashboardShell({
                   <span
                     className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-colors ${
                       active
-                        ? "bg-[#e8edf8]"
-                        : "bg-transparent group-hover:bg-[#eef2f9]"
+                        ? "bg-mingle-nav-active-bg"
+                        : "bg-transparent group-hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
                     <Icon
                       size={20}
                       className={
                         active
-                          ? "text-[#5b65b8]"
-                          : "text-[#8b90c4] group-hover:text-[#5b65b8]"
+                          ? "text-mingle-nav-active"
+                          : "text-mingle-nav-idle group-hover:text-mingle-nav-active"
                       }
                     />
                   </span>
                   <span
                     className={`max-w-[4.75rem] text-center text-[10px] font-medium leading-tight ${
-                      active ? "text-[#5b65b8]" : "text-[#8b90c4]"
+                      active
+                        ? "text-mingle-nav-active"
+                        : "text-mingle-nav-idle"
                     }`}
                   >
                     {item.label}
@@ -189,12 +204,15 @@ export function DashboardShell({
                 {item.dividerAfter ? (
                   <div
                     aria-hidden
-                    className="my-2 h-px w-10 bg-[#d5d8ec]"
+                    className="my-3 h-px w-[3.25rem] bg-mingle-nav-divider"
                   />
                 ) : null}
               </div>
             );
           })}
+          <div className="mt-auto flex w-full flex-col items-center pb-2 pt-6">
+            <ThemeSwitch />
+          </div>
         </aside>
 
         <main className="min-w-0 flex-1 px-5 pb-24 pt-8 sm:px-10 sm:py-9 md:pb-10">
@@ -211,6 +229,8 @@ export function DashboardShell({
         moreItems={moreItems}
         userName={userName}
         userInitials={userInitials}
+        userGender={userGender}
+        userPhoto={userPhoto}
         userSubtitle={userSubtitle}
         profileHref={
           isCompany ? "/company-profile/build" : "/profile/build"

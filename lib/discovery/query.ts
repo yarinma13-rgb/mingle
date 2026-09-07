@@ -13,6 +13,7 @@ import {
   sanitizeIlike,
   type DiscoveryFilters,
 } from "@/lib/discovery/filters";
+import { companyInitials, personInitials } from "@/lib/profile/avatar";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -82,7 +83,9 @@ export async function loadDiscoveryPage(
         name: `${profile.firstName} ${profile.lastName}`.trim(),
         subtitle: profile.headline,
         meta: [profile.location, profile.industry].filter(Boolean).join(" · "),
-        initial: `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.toUpperCase(),
+        initial: personInitials(profile.firstName, profile.lastName),
+        photo: profile.profilePhoto,
+        gender: profile.gender,
         score: result.score,
         factors: result.factors,
       };
@@ -143,7 +146,9 @@ export async function loadDiscoveryPage(
       name: profile.companyName,
       subtitle: profile.mission,
       meta: [profile.industry, profile.location].filter(Boolean).join(" · "),
-      initial: profile.companyName.charAt(0).toUpperCase(),
+      initial: companyInitials(profile.companyName),
+      photo: profile.logo,
+      gender: null,
       score: result.score,
       factors: result.factors,
     };

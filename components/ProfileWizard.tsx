@@ -13,6 +13,8 @@ import { MingleLogo } from "@/components/MingleLogo";
 import { ProfilePreview } from "@/components/ProfilePreview";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
+import { GenderField } from "@/components/profile/GenderField";
+import { personInitials, type Gender } from "@/lib/profile/avatar";
 import {
   loadProfile,
   saveProfilePatch,
@@ -109,6 +111,8 @@ export function ProfileWizard() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<BasicProfileValues>({
     resolver: zodResolver(basicProfileSchema),
@@ -120,8 +124,12 @@ export function ProfileWizard() {
       yearsExperience: profile.yearsExperience ?? undefined,
       currentRole: profile.currentRole,
       industry: profile.industry,
+      gender: profile.gender ?? undefined,
     } as BasicProfileValues,
   });
+  const watchedFirstName = watch("firstName");
+  const watchedLastName = watch("lastName");
+  const watchedGender = watch("gender");
 
   const persistAndAdvance = async (
     patch: Partial<{
@@ -137,6 +145,7 @@ export function ProfileWizard() {
       work_style: string[];
       looking_for: string[];
       beyond_cv: string;
+      gender: Gender | null;
     }>,
     nextProfile: ProfileState,
     nextStep: number,
@@ -171,6 +180,7 @@ export function ProfileWizard() {
         years_experience: values.yearsExperience,
         current_job_title: values.currentRole,
         industry: values.industry,
+        gender: values.gender,
       },
       nextProfile,
       2,
@@ -228,6 +238,24 @@ export function ProfileWizard() {
         onCvChanged={({ cvPath, cvFileName }) =>
           setProfile((prev) => ({ ...prev, cvPath, cvFileName }))
         }
+        onPhotoChanged={(photo) => {
+          setProfile((prev) => {
+            const updated = { ...prev, profilePhoto: photo };
+            if (userId) {
+              void saveProfileCompletion(
+                supabase,
+                userId,
+                profileCompletion(updated),
+              );
+            }
+            return updated;
+          });
+        }}
+        onGenderChanged={(gender) => {
+          const nextProfile = { ...profile, gender };
+          setProfile(nextProfile);
+          void persistAndAdvance({ gender }, nextProfile, TOTAL_STEPS);
+        }}
       />
     );
   }
@@ -349,11 +377,24 @@ export function ProfileWizard() {
                   </Field>
                 </div>
 
+                <GenderField
+                  value={watchedGender}
+                  error={errors.gender?.message}
+                  onChange={(gender) =>
+                    setValue("gender", gender, { shouldValidate: true })
+                  }
+                />
+
                 {userId ? (
                   <TalentPhotoField
                     supabase={supabase}
                     userId={userId}
                     photo={profile.profilePhoto}
+                    initials={personInitials(
+                      watchedFirstName ?? "",
+                      watchedLastName ?? "",
+                    )}
+                    gender={watchedGender ?? profile.gender}
                     onChanged={(next) => {
                       setProfile((prev) => {
                         const updated = { ...prev, profilePhoto: next };

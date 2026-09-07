@@ -43,6 +43,8 @@ export default async function ExplorePage({
       }
       userName={ctx.accountLabel}
       userInitials={ctx.initials}
+      userGender={ctx.userGender}
+      userPhoto={ctx.userPhoto}
       userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
     >
       <div className="mb-5">

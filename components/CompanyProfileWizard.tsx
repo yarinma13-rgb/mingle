@@ -376,7 +376,7 @@ export function CompanyProfileWizard() {
                       <img
                         src={profile.logo}
                         alt=""
-                        className="h-12 w-12 rounded-xl object-cover"
+                        className="h-14 w-14 rounded-xl object-cover"
                       />
                     )}
                     <label className="mingle-btn-secondary cursor-pointer text-xs">

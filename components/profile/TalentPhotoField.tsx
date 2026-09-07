@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
-import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
+import { Avatar } from "@/components/Avatar";
 import {
   isTalentPhotoUnavailable,
   removeTalentPhoto,
@@ -11,12 +11,16 @@ import {
   TALENT_PHOTO_MAX_BYTES,
   uploadTalentPhoto,
 } from "@/lib/profile/photo";
+import type { Gender } from "@/lib/profile/avatar";
 
 type TalentPhotoFieldProps = {
   supabase: SupabaseClient<Database>;
   userId: string;
   photo: string | null;
   onChanged: (photo: string | null) => void;
+  initials?: string;
+  gender?: Gender | null;
+  variant?: "field" | "hero";
 };
 
 export function TalentPhotoField({
@@ -24,6 +28,9 @@ export function TalentPhotoField({
   userId,
   photo,
   onChanged,
+  initials = "?",
+  gender = null,
+  variant = "field",
 }: TalentPhotoFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -70,42 +77,66 @@ export function TalentPhotoField({
     }
   };
 
+  const avatar = (
+    <Avatar
+      photo={photo}
+      initials={initials}
+      gender={gender}
+      size={variant === "hero" ? "xl" : "lg"}
+    />
+  );
+  const picker = (
+    <>
+      <label className="mingle-btn-secondary cursor-pointer text-xs">
+        {busy ? "Working…" : photo ? "Replace photo" : "Choose photo"}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          className="hidden"
+          disabled={busy}
+          onChange={(event) => handlePick(event.target.files?.[0])}
+        />
+      </label>
+      {photo && (
+        <button
+          type="button"
+          onClick={handleRemove}
+          disabled={busy}
+          className="cursor-pointer rounded-full px-4 py-2 text-xs font-semibold text-mingle-text-secondary transition-colors hover:text-mingle-text disabled:opacity-60"
+        >
+          Remove
+        </button>
+      )}
+    </>
+  );
+
+  if (variant === "hero") {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        {avatar}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {picker}
+        </div>
+        <p className="text-xs text-mingle-text-secondary">
+          JPEG, PNG, or WebP, up to{" "}
+          {Math.round(TALENT_PHOTO_MAX_BYTES / (1024 * 1024))} MB.
+        </p>
+        {message && (
+          <p className="text-xs text-mingle-text-secondary">{message}</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
         Profile photo (optional)
       </label>
       <div className="flex flex-wrap items-center gap-3">
-        <TalentPhotoImg
-          photo={photo}
-          className="h-12 w-12 rounded-full object-cover"
-          fallback={
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-mingle-lavender text-xs font-semibold text-mingle-text-secondary">
-              Photo
-            </div>
-          }
-        />
-        <label className="mingle-btn-secondary cursor-pointer text-xs">
-          {busy ? "Working…" : photo ? "Replace photo" : "Choose photo"}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-            className="hidden"
-            disabled={busy}
-            onChange={(event) => handlePick(event.target.files?.[0])}
-          />
-        </label>
-        {photo && (
-          <button
-            type="button"
-            onClick={handleRemove}
-            disabled={busy}
-            className="cursor-pointer rounded-full px-4 py-2 text-xs font-semibold text-mingle-text-secondary transition-colors hover:text-mingle-text disabled:opacity-60"
-          >
-            Remove
-          </button>
-        )}
+        {avatar}
+        {picker}
       </div>
       <p className="mt-1.5 text-xs text-mingle-text-secondary">
         JPEG, PNG, or WebP, up to{" "}

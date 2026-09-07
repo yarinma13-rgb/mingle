@@ -14,6 +14,8 @@ import {
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
 
 export type BoardCandidate = {
   connectionId: string;
@@ -21,6 +23,8 @@ export type BoardCandidate = {
   name: string;
   subtitle: string;
   initial: string;
+  photo: string | null;
+  gender: Gender | null;
   timeline: RelationshipEventRow[];
 };
 
@@ -202,9 +206,12 @@ export function CompanyBoardScreen({
                             if (draggingId) event.preventDefault();
                           }}
                         >
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-                            {card.initial}
-                          </div>
+                          <Avatar
+                            photo={card.photo}
+                            initials={card.initial}
+                            gender={card.gender}
+                            size="sm"
+                          />
                           <div className="min-w-0">
                             <p className="truncate font-display text-sm font-semibold text-mingle-text">
                               {card.name}

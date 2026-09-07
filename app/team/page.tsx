@@ -1,8 +1,9 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { requireShellUser } from "@/lib/dashboard/require-shell-user";
+import { Avatar } from "@/components/Avatar";
 
 export default async function TeamPage() {
-  const { user, accountLabel, initials } = await requireShellUser({
+  const { user, accountLabel, shellAvatar } = await requireShellUser({
     userType: "company",
   });
 
@@ -12,9 +13,8 @@ export default async function TeamPage() {
       userId={user.id}
       title="Team"
       searchPlaceholder="Search candidates or roles"
-      userName={accountLabel}
-      userInitials={initials}
       userSubtitle="Recruiter"
+      {...shellAvatar}
     >
       <div className="flex max-w-lg flex-col gap-6">
         <p className="text-sm leading-relaxed text-mingle-text-secondary">
@@ -26,9 +26,12 @@ export default async function TeamPage() {
             Members
           </h2>
           <div className="mt-5 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-              {initials}
-            </div>
+            <Avatar
+              photo={shellAvatar.userPhoto}
+              initials={shellAvatar.userInitials}
+              gender={shellAvatar.userGender}
+              size="md"
+            />
             <div>
               <p className="text-sm font-semibold text-mingle-text">
                 {accountLabel}

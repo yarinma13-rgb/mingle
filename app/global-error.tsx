@@ -31,6 +31,11 @@ export default function GlobalError({
           padding: "24px",
         }}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem("mingle-theme")==="dark"){document.body.style.background="#0F1420";document.body.style.color="#F3F5F9";var s=document.querySelector("p:nth-of-type(2)");if(s)s.style.color="#E1E4EA";}}catch(e){}})();`,
+          }}
+        />
         <title>mingle</title>
         <p style={{ fontSize: "20px", fontWeight: 700 }}>Something went wrong</p>
         <p style={{ marginTop: "8px", fontSize: "14px", color: "#77738A" }}>

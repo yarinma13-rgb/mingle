@@ -6,7 +6,7 @@ import { requireShellUser } from "@/lib/dashboard/require-shell-user";
 import { toCompanyProfile } from "@/lib/profile-detail/adapters";
 
 export default async function RolesPage() {
-  const { supabase, user, accountLabel, initials } = await requireShellUser({
+  const { supabase, user, shellAvatar } = await requireShellUser({
     userType: "company",
   });
 
@@ -24,9 +24,8 @@ export default async function RolesPage() {
       userId={user.id}
       title="Roles"
       searchPlaceholder="Search candidates or roles"
-      userName={accountLabel}
-      userInitials={initials}
       userSubtitle="Recruiter"
+      {...shellAvatar}
     >
       <div className="flex flex-col gap-6">
         <p className="max-w-xl text-sm leading-relaxed text-mingle-text-secondary">

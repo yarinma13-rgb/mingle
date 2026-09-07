@@ -39,6 +39,9 @@ export async function GET(request: Request) {
     });
 
     if (!error && data.user?.email) {
+      if (type === "recovery") {
+        return NextResponse.redirect(`${origin}/auth/update-password`);
+      }
       const path = resolvePath(pathParam, data.user.user_metadata?.user_type);
       await ensureUserProfile(supabase, data.user.id, data.user.email, path);
       return NextResponse.redirect(`${origin}/onboarding/${path}`);

@@ -5,6 +5,8 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { EmptyState } from "@/components/EmptyState";
 import { loadAcceptedConnections } from "@/lib/connections/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
+import { Avatar } from "@/components/Avatar";
 
 function timeAgo(iso: string): string {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
@@ -82,6 +84,8 @@ export default async function ConversationsListPage() {
         name: display.name,
         subtitle: display.subtitle,
         initial: display.initial,
+        photo: display.photo,
+        gender: display.gender,
         preview: lastMessage ? lastMessage.body : "Say hello",
         timestamp: lastMessage ? timeAgo(lastMessage.created_at) : timeAgo(connection.updated_at),
         unreadCount,
@@ -89,8 +93,11 @@ export default async function ConversationsListPage() {
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(
+    supabase,
+    user,
+    userRow.user_type === "company",
+  );
 
   return (
     <DashboardShell
@@ -100,8 +107,10 @@ export default async function ConversationsListPage() {
       searchPlaceholder={
         userRow.user_type === "company" ? "Search candidates or roles" : "Search companies"
       }
-      userName={accountLabel}
-      userInitials={initials}
+      userName={chrome.userName}
+      userInitials={chrome.initials}
+      userGender={chrome.gender}
+      userPhoto={chrome.photo}
       userSubtitle={userRow.user_type === "company" ? "Recruiter" : "Talent"}
     >
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
@@ -124,9 +133,12 @@ export default async function ConversationsListPage() {
                   href={`/conversations/${row.connectionId}`}
                   className="flex items-center gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-blue/50"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
-                    {row.initial}
-                  </div>
+                  <Avatar
+                    photo={row.photo}
+                    initials={row.initial}
+                    gender={row.gender}
+                    size="md"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="truncate font-display text-sm font-semibold text-mingle-text">

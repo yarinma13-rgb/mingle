@@ -100,7 +100,7 @@ export function TalentDashboard({
               <Link
                 key={company.userId}
                 href={`/profile/view/${company.userId}`}
-                className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-[0_8px_24px_rgba(0,115,234,0.1)]"
+                className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-mingle"
               >
                 <div className="flex items-center justify-between">
                   <p className="font-display text-sm font-semibold text-mingle-text">

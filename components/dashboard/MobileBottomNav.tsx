@@ -6,6 +6,10 @@ import { usePathname } from "next/navigation";
 import { MoreIcon, XIcon } from "@/components/dashboard/icons";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { isNavHrefActive } from "@/lib/dashboard/nav-active";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
+import { ThemeSwitch } from "@/components/theme/ThemeSwitch";
+import { SeePlansButton } from "@/components/plans/SeePlansButton";
 
 type NavItem = {
   label: string;
@@ -29,6 +33,8 @@ export function MobileBottomNav({
   moreItems,
   userName,
   userInitials,
+  userGender = null,
+  userPhoto = null,
   userSubtitle,
   profileHref,
 }: {
@@ -36,6 +42,8 @@ export function MobileBottomNav({
   moreItems: NavItem[];
   userName: string;
   userInitials: string;
+  userGender?: Gender | null;
+  userPhoto?: string | null;
   userSubtitle: string;
   profileHref: string;
 }) {
@@ -78,9 +86,12 @@ export function MobileBottomNav({
               onClick={() => setMoreOpen(false)}
               className="mb-4 flex items-center gap-3 rounded-2xl border border-mingle-border bg-mingle-bg px-3.5 py-3"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-                {userInitials}
-              </div>
+              <Avatar
+                photo={userPhoto}
+                initials={userInitials}
+                gender={userGender}
+                size="md"
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-mingle-text">
                   {userName}
@@ -144,6 +155,14 @@ export function MobileBottomNav({
               >
                 Privacy Policy
               </Link>
+            </div>
+
+            <div className="mt-4 px-1">
+              <SeePlansButton />
+            </div>
+
+            <div className="mt-4 flex items-center justify-between rounded-[10px] border border-mingle-border bg-mingle-bg px-3.5 py-3">
+              <ThemeSwitch compact />
             </div>
 
             <div className="mt-4 px-1">

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import logoSrc from "@/public/brand/mingle-mark.jpg";
 
 type MingleLogoProps = {
@@ -7,36 +6,45 @@ type MingleLogoProps = {
   stacked?: boolean;
   size?: number;
   className?: string;
+  /** Kept for call-site compatibility. Masked span is not a next/image. */
   priority?: boolean;
   alt?: string;
 };
 
 /**
- * Official mingle mark from public/brand/mingle-mark.jpg.
- * Never recreate with SVG/text. Do not type "mingle" as a replacement.
+ * Official mingle mark. Never recreate with SVG/text. Do not type "MINGLE"
+ * as a replacement.
+ *
+ * TODO(brand-assets): `mingle-mark.jpg` has a baked light field and no alpha.
+ * Until a transparent PNG/SVG ships, the shape is a CSS `mask-image` painted
+ * with the brand connection gradient (same approach as the old MINGLE-moment
+ * knockout).
  */
+const DISPLAY_SCALE = 1.16;
+
 export function MingleLogo({
   variant = "lockup",
   size = 40,
   className = "",
-  priority = false,
   alt,
 }: MingleLogoProps) {
-  const width = (size * logoSrc.width) / logoSrc.height;
+  void variant;
+  const displaySize = Math.round(size * DISPLAY_SCALE);
+  const width = (displaySize * logoSrc.width) / logoSrc.height;
   const markAlt = alt === undefined ? "mingle" : alt;
-  const pixelSize = Math.ceil(size);
+  const decorative = markAlt === "";
 
   return (
-    <Image
-      src={logoSrc}
-      alt={markAlt}
-      height={size}
-      width={width}
-      priority={priority}
-      quality={70}
-      sizes={`${pixelSize}px`}
-      className={`inline-block h-auto max-w-full object-contain ${className}`}
-      style={{ height: size, width }}
+    <span
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : markAlt}
+      aria-hidden={decorative ? true : undefined}
+      className={`mingle-logo-mark ${className}`.trim()}
+      style={{
+        width,
+        height: displaySize,
+        ["--mingle-logo-mask" as string]: `url("${logoSrc.src}")`,
+      }}
     />
   );
 }

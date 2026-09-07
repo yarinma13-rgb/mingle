@@ -105,6 +105,7 @@ export interface Database {
           beyond_cv: string | null;
           cv_path: string | null;
           cv_file_name: string | null;
+          gender: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -124,6 +125,7 @@ export interface Database {
           beyond_cv?: string | null;
           cv_path?: string | null;
           cv_file_name?: string | null;
+          gender?: string | null;
         };
         Update: {
           first_name?: string | null;
@@ -140,6 +142,7 @@ export interface Database {
           beyond_cv?: string | null;
           cv_path?: string | null;
           cv_file_name?: string | null;
+          gender?: string | null;
         };
         Relationships: [];
       };

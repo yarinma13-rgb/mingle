@@ -12,6 +12,7 @@ import {
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
 import { loadConnectionStatusWith } from "@/lib/connections/persistence";
 import { loadSavedUserIds } from "@/lib/matching/saved";
+import { companyInitials, personInitials } from "@/lib/profile/avatar";
 
 export default async function ProfileViewPage({
   params,
@@ -85,8 +86,7 @@ export default async function ProfileViewPage({
       { title: "Beyond the CV", text: talent.beyondCv },
     ];
 
-    const initials =
-      `${talent.firstName.charAt(0)}${talent.lastName.charAt(0)}`.toUpperCase();
+    const initials = personInitials(talent.firstName, talent.lastName);
 
     return (
       <main className="flex min-h-screen flex-1 flex-col">
@@ -94,6 +94,7 @@ export default async function ProfileViewPage({
           eyebrow="Talent profile"
           photo={talent.profilePhoto}
           initial={initials}
+          gender={talent.gender}
           name={`${talent.firstName} ${talent.lastName}`.trim()}
           subtitle={talent.headline}
           meta={[talent.location, talent.industry].filter(Boolean).join(" · ")}
@@ -150,7 +151,8 @@ export default async function ProfileViewPage({
       <ProfileDetailShell
         eyebrow="Company profile"
         photo={company.logo}
-        initial={company.companyName.charAt(0).toUpperCase()}
+        initial={companyInitials(company.companyName)}
+        gender={null}
         name={company.companyName}
         subtitle={company.mission}
         meta={[company.industry, company.location].filter(Boolean).join(" · ")}

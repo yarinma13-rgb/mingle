@@ -35,6 +35,8 @@ export default async function DecisionPage({
       }
       userName={ctx.accountLabel}
       userInitials={ctx.initials}
+      userGender={ctx.userGender}
+      userPhoto={ctx.userPhoto}
       userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
     >
       <div className="mb-5">

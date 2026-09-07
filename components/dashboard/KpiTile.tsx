@@ -14,7 +14,7 @@ export function KpiTile({ icon, label, value, accent, href }: KpiTileProps) {
     <Link
       href={href}
       prefetch
-      className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]"
+      className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
     >
       <IconBadge icon={icon} accent={accent} size={40} iconSize={19} />
       <div>

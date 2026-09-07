@@ -16,6 +16,8 @@ import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
+import { Avatar } from "@/components/Avatar";
+import type { Gender } from "@/lib/profile/avatar";
 
 export type DiscoveryCard = {
   userId: string;
@@ -23,6 +25,8 @@ export type DiscoveryCard = {
   subtitle: string;
   meta: string;
   initial: string;
+  photo: string | null;
+  gender: Gender | null;
   score: number;
   factors: MatchFactor[];
 };
@@ -204,9 +208,12 @@ function DiscoveryCardView({
 
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-sm font-bold text-white">
-            {card.initial}
-          </div>
+          <Avatar
+            photo={card.photo}
+            initials={card.initial}
+            gender={card.gender}
+            size="lg"
+          />
           <div>
             <p className="font-display text-base font-semibold text-mingle-text">
               {card.name}
@@ -301,7 +308,7 @@ function DiscoveryCardView({
           className={`rounded-full px-6 py-2.5 font-display text-xs font-semibold transition-colors disabled:opacity-60 ${
             saved
               ? "bg-mingle-blue/15 text-mingle-blue"
-              : "bg-mingle-bg text-mingle-text hover:bg-mingle-bg/70"
+              : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
           }`}
         >
           {saved ? "Saved" : "Save"}

@@ -1,11 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
+import {
+  companyInitials,
+  personInitials,
+  type Gender,
+} from "@/lib/profile/avatar";
 
 export type ConnectionDisplayInfo = {
   name: string;
   subtitle: string;
   initial: string;
+  photo: string | null;
+  gender: Gender | null;
 };
 
 export async function loadDisplayInfoForUsers(
@@ -42,7 +49,9 @@ export async function loadDisplayInfoForUsers(
     map.set(row.user_id, {
       name: name || "Talent",
       subtitle: profile.headline,
-      initial: (profile.firstName.charAt(0) || "?").toUpperCase(),
+      initial: personInitials(profile.firstName, profile.lastName),
+      photo: profile.profilePhoto,
+      gender: profile.gender,
     });
   }
 
@@ -51,7 +60,9 @@ export async function loadDisplayInfoForUsers(
     map.set(row.user_id, {
       name: profile.companyName || "Company",
       subtitle: profile.mission,
-      initial: (profile.companyName.charAt(0) || "?").toUpperCase(),
+      initial: companyInitials(profile.companyName || "?"),
+      photo: profile.logo,
+      gender: null,
     });
   }
 

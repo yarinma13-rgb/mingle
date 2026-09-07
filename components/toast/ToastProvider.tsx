@@ -63,7 +63,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
               transition={{ duration: reduceMotion ? 0.15 : 0.28, ease: "easeOut" }}
-              className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-3 text-sm shadow-lg ${
+              className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-3 text-sm shadow-mingle ${
                 item.kind === "error"
                   ? "border-mingle-pink/40 bg-mingle-surface text-mingle-pink"
                   : "border-mingle-border bg-mingle-white text-mingle-text"

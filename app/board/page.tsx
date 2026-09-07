@@ -12,6 +12,7 @@ import {
   loadTimeline,
   loadTimelinesForConnections,
 } from "@/lib/relationship/persistence";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 
 export default async function BoardPage() {
   const supabase = await createClient();
@@ -62,12 +63,13 @@ export default async function BoardPage() {
       name: display.name,
       subtitle: display.subtitle,
       initial: display.initial,
+      photo: display.photo,
+      gender: display.gender,
       timeline,
     });
   }
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(supabase, user, true);
 
   return (
     <DashboardShell
@@ -75,8 +77,10 @@ export default async function BoardPage() {
       userId={user.id}
       title="Board"
       searchPlaceholder="Search candidates or roles"
-      userName={accountLabel}
-      userInitials={initials}
+      userName={chrome.userName}
+      userInitials={chrome.initials}
+      userGender={chrome.gender}
+      userPhoto={chrome.photo}
       userSubtitle="Recruiter"
     >
       <CompanyBoardScreen actorId={user.id} candidates={candidates} />

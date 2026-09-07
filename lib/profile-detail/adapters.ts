@@ -1,6 +1,7 @@
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import type { Database } from "@/lib/supabase/types";
+import { isGender } from "@/lib/profile/avatar";
 
 type TalentRow = Database["public"]["Tables"]["talent_profiles"]["Row"];
 type CompanyRow = Database["public"]["Tables"]["company_profiles"]["Row"];
@@ -21,6 +22,7 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     beyondCv: row.beyond_cv ?? "",
     cvPath: row.cv_path ?? null,
     cvFileName: row.cv_file_name ?? null,
+    gender: isGender(row.gender) ? row.gender : null,
   };
 }
 

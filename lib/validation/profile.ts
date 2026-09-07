@@ -12,6 +12,9 @@ export const basicProfileSchema = z.object({
     .max(60, "That doesn't look right"),
   currentRole: z.string().trim().min(1, "Enter your current role").max(120),
   industry: z.string().trim().min(1, "Enter your industry").max(120),
+  gender: z.enum(["male", "female", "prefer_not_to_say"], {
+    error: "Choose an option",
+  }),
 });
 
 export type BasicProfileValues = z.infer<typeof basicProfileSchema>;

@@ -50,6 +50,12 @@ const TALENT_ITEMS: CommandItem[] = [
     href: "/settings",
     keywords: ["account", "sign out", "logout"],
   },
+  {
+    id: "plans",
+    label: "See plans",
+    href: "/coming-soon",
+    keywords: ["billing", "upgrade", "soon"],
+  },
 ];
 
 const COMPANY_ITEMS: CommandItem[] = [
@@ -113,6 +119,12 @@ const COMPANY_ITEMS: CommandItem[] = [
     href: "/settings",
     keywords: ["account", "sign out", "logout"],
   },
+  {
+    id: "plans",
+    label: "See plans",
+    href: "/coming-soon",
+    keywords: ["billing", "upgrade", "soon"],
+  },
 ];
 
 export function commandItemsFor(userType: UserType): CommandItem[] {
@@ -144,6 +156,7 @@ const ENABLED_PREFIXES = [
   "/interviews",
   "/team",
   "/saved",
+  "/coming-soon",
 ];
 
 export function isCommandPalettePath(pathname: string): boolean {

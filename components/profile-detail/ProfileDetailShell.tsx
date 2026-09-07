@@ -10,10 +10,11 @@ import { notifyConnectionRequest } from "@/lib/email/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
 import { TalentCvField } from "@/components/profile/TalentCvField";
-import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
+import { Avatar } from "@/components/Avatar";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import type { ConnectionStatus } from "@/lib/supabase/types";
+import type { Gender } from "@/lib/profile/avatar";
 
 const MingleMomentOverlay = dynamic(
   () =>
@@ -80,6 +81,7 @@ type ProfileDetailShellProps = {
   eyebrow: string;
   photo: string | null;
   initial: string;
+  gender?: Gender | null;
   name: string;
   subtitle: string;
   meta: string;
@@ -105,6 +107,7 @@ export function ProfileDetailShell({
   eyebrow,
   photo,
   initial,
+  gender = null,
   name,
   subtitle,
   meta,
@@ -230,15 +233,7 @@ export function ProfileDetailShell({
         </div>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <TalentPhotoImg
-            photo={photo}
-            className="h-20 w-20 rounded-full object-cover"
-            fallback={
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
-                {initial || "?"}
-              </div>
-            }
-          />
+          <Avatar photo={photo} initials={initial} gender={gender} size="xl" />
           <div>
             <h1 className="font-display text-2xl font-bold text-mingle-text">
               {name}

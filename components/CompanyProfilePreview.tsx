@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { MingleChip } from "@/components/MingleChip";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
+import { companyInitials } from "@/lib/profile/avatar";
 
 function ChipRow({ items }: { items: string[] }) {
   if (items.length === 0) return null;
@@ -39,7 +40,7 @@ export function CompanyProfilePreview({
 }: {
   profile: CompanyProfileState;
 }) {
-  const initial = profile.companyName.charAt(0).toUpperCase();
+  const initials = companyInitials(profile.companyName);
 
   return (
     <div className="flex min-h-screen flex-1 justify-center px-6 py-16 sm:px-10">
@@ -62,11 +63,11 @@ export function CompanyProfilePreview({
             <img
               src={profile.logo}
               alt=""
-              className="h-20 w-20 rounded-2xl object-cover"
+              className="h-24 w-24 rounded-2xl object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
-              {initial || "?"}
+            <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-mingle-accent-purple font-display text-xl font-bold text-white">
+              {initials}
             </div>
           )}
           <div>

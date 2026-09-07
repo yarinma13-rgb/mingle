@@ -42,23 +42,56 @@
   --mingle-radius-card: 16px;
   --mingle-radius-lg: 20px;
   --mingle-mascot-backdrop: #f7f8fc;
+  --mingle-nav-active-bg: #e8edf8;
+  --mingle-nav-hover-bg: #eef2f9;
+  --mingle-nav-active: #5b65b8;
+  --mingle-nav-idle: #8b90c4;
+  --mingle-nav-divider: #b8bdd4;
   --font-display: var(--font-figtree);
   --font-sans: var(--font-figtree);
 }
 
-/* Nested data-theme used to flip header/shell colors. Both now resolve
-   to the same light tokens so leftover attributes cannot restore navy. */
-[data-theme="dark"],
 [data-theme="light"] {
+  --mingle-background: #f7f8fc;
   --mingle-bg: #f7f8fc;
+  --mingle-lavender: #eef4fb;
   --mingle-product-bg: #eef4fb;
-  --mingle-surface: #ffffff;
   --mingle-white: #ffffff;
+  --mingle-surface: #ffffff;
   --mingle-text: #252238;
   --mingle-text-secondary: #77738a;
   --mingle-text-muted: #a5a1b3;
   --mingle-border: #d9e4f2;
+  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
   --mingle-mascot-backdrop: #f7f8fc;
+  --mingle-nav-active-bg: #e8edf8;
+  --mingle-nav-hover-bg: #eef2f9;
+  --mingle-nav-active: #5b65b8;
+  --mingle-nav-idle: #8b90c4;
+  --mingle-nav-divider: #b8bdd4;
+}
+
+/* Original dark product surface (#0F1420 family), mapped onto the
+   current token names so new light-era components (KPI, board, chips,
+   sidebar) get a real dark counterpart. Brand accents stay the same. */
+[data-theme="dark"] {
+  --mingle-background: #0f1420;
+  --mingle-bg: #0f1420;
+  --mingle-lavender: #1a2233;
+  --mingle-product-bg: #171d2b;
+  --mingle-white: #202738;
+  --mingle-surface: #202738;
+  --mingle-text: #f3f5f9;
+  --mingle-text-secondary: #e1e4ea;
+  --mingle-text-muted: #9aa3b5;
+  --mingle-border: rgba(255, 255, 255, 0.1);
+  --mingle-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  --mingle-mascot-backdrop: #01041e;
+  --mingle-nav-active-bg: rgba(255, 255, 255, 0.1);
+  --mingle-nav-hover-bg: rgba(255, 255, 255, 0.06);
+  --mingle-nav-active: #d5d9f0;
+  --mingle-nav-idle: #8b90a8;
+  --mingle-nav-divider: rgba(255, 255, 255, 0.16);
 }
 
 @theme inline {
@@ -84,6 +117,11 @@
   --color-mingle-success: var(--mingle-success);
   --color-mingle-warning: var(--mingle-warning);
   --color-mingle-error: var(--mingle-error);
+  --color-mingle-nav-active-bg: var(--mingle-nav-active-bg);
+  --color-mingle-nav-hover-bg: var(--mingle-nav-hover-bg);
+  --color-mingle-nav-active: var(--mingle-nav-active);
+  --color-mingle-nav-idle: var(--mingle-nav-idle);
+  --color-mingle-nav-divider: var(--mingle-nav-divider);
 
   --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
@@ -99,13 +137,32 @@ html {
   overflow-x: clip;
 }
 
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 .mingle-app-canvas {
-  background-color: #ffffff;
+  background-color: var(--mingle-background);
   background-image:
     radial-gradient(ellipse 85% 60% at 0% 0%, #fdeaf1 0%, transparent 52%),
     radial-gradient(ellipse 75% 55% at 100% 0%, #e9effe 0%, transparent 50%),
     radial-gradient(ellipse 65% 50% at 90% 100%, #f1e8fe 0%, transparent 48%),
     linear-gradient(180deg, #ffffff 0%, #f4f1fa 100%);
+}
+
+[data-theme="dark"] .mingle-app-canvas,
+html[data-theme="dark"] .mingle-app-canvas {
+  background-color: #0f1420;
+  background-image:
+    radial-gradient(ellipse 85% 60% at 0% 0%, rgba(234, 30, 99, 0.14) 0%, transparent 52%),
+    radial-gradient(ellipse 75% 55% at 100% 0%, rgba(0, 115, 234, 0.16) 0%, transparent 50%),
+    radial-gradient(ellipse 65% 50% at 90% 100%, rgba(123, 47, 247, 0.12) 0%, transparent 48%),
+    linear-gradient(180deg, #0f1420 0%, #121827 100%);
 }
 
 body {
@@ -150,7 +207,7 @@ button:disabled {
   background: var(--mingle-blue);
   padding: 0.7rem 1.5rem;
   font-weight: 600;
-  color: var(--mingle-white);
+  color: #ffffff;
   transition: background-color 0.15s ease;
 }
 
@@ -197,25 +254,67 @@ button:disabled {
 }
 
 .mingle-chip-pink {
-  color: var(--mingle-pink);
+  color: var(--mingle-pink-deep);
+}
+
+[data-theme="dark"] .mingle-chip {
+  background: color-mix(in srgb, var(--mingle-accent-blue) 22%, var(--mingle-surface));
+  color: #9db7ff;
+}
+
+[data-theme="dark"] .mingle-chip-pink {
+  color: #ff8eab;
+}
+
+[data-theme="dark"] .mingle-btn-secondary {
+  background: var(--mingle-surface);
+  color: #8eb4ff;
+}
+
+[data-theme="dark"] .mingle-btn-secondary:hover:not(:disabled) {
+  background: var(--mingle-lavender);
+  box-shadow: var(--mingle-shadow);
+}
+
+[data-theme="dark"] .mingle-banner {
+  background: linear-gradient(180deg, var(--mingle-product-bg), var(--mingle-lavender));
 }
 
 /*
-  Official mark: public/brand/mingle-mark.jpg (light-field 2026 asset).
-  No separate wordmark. A transparent PNG would still be cleaner at small sizes.
+  TODO(brand-assets): knockout for the JPEG light field.
+  Invert luminance so near-white pixels are transparent; paint the M with
+  the official connection gradient. Replace when a transparent PNG/SVG exists.
 */
-.mingle-logo-mask {
+.mingle-logo-mark {
   display: inline-block;
   flex-shrink: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  vertical-align: middle;
+  background: var(--mingle-connection-gradient);
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-size: contain;
   mask-size: contain;
+  -webkit-mask-image: linear-gradient(#fff, #fff), var(--mingle-logo-mask);
+  -webkit-mask-composite: source-out;
+  mask-image: linear-gradient(#fff, #fff), var(--mingle-logo-mask);
+  mask-mode: alpha, luminance;
+  mask-composite: subtract;
+}
+
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] textarea:-webkit-autofill,
+[data-theme="dark"] select:-webkit-autofill {
+  -webkit-text-fill-color: var(--mingle-text);
+  caret-color: var(--mingle-text);
+  box-shadow: 0 0 0 1000px var(--mingle-white) inset;
+  transition: background-color 9999s ease-out;
+}
+
+[data-theme="dark"] option {
+  background-color: var(--mingle-surface);
+  color: var(--mingle-text);
 }
 
 .mingle-banner {

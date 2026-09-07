@@ -11,6 +11,7 @@ import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { COMPANY_QUESTIONS } from "@/lib/company-profile/questions";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 
 export default async function DiscoverPage({
   searchParams,
@@ -29,8 +30,11 @@ export default async function DiscoverPage({
     .maybeSingle();
   if (!userRow) redirect("/auth");
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(
+    supabase,
+    user,
+    userRow.user_type === "company",
+  );
   const params = await searchParams;
   const filters = parseDiscoveryFilters(params);
   const styleOptions =
@@ -74,8 +78,10 @@ export default async function DiscoverPage({
           ? "Search candidates or roles"
           : "Search companies"
       }
-      userName={accountLabel}
-      userInitials={initials}
+      userName={chrome.userName}
+      userInitials={chrome.initials}
+      userGender={chrome.gender}
+      userPhoto={chrome.photo}
       userSubtitle={userRow.user_type === "company" ? "Recruiter" : "Talent"}
     >
       <div className="flex flex-col gap-6">

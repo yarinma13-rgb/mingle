@@ -11,7 +11,7 @@ export function CompanyPipelineFunnel({ funnel }: { funnel: CompanyFunnel }) {
   const max = Math.max(1, ...FUNNEL_STAGES.map((stage) => funnel.counts[stage.id]));
 
   return (
-    <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
+    <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-7 transition-shadow hover:shadow-mingle">
       <div className="flex items-center gap-3">
         <IconBadge icon={FunnelIcon} accent="purple" size={32} iconSize={15} />
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">

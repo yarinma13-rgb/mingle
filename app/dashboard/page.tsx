@@ -6,6 +6,8 @@ import { TalentDashboard, type CompanyRow } from "@/components/dashboard/TalentD
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
 import { matchScore } from "@/lib/profile-detail/why-match";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
+import { personInitials } from "@/lib/profile/avatar";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -23,8 +25,11 @@ export default async function DashboardPage() {
 
   if (!userRow) redirect("/auth");
 
-  const accountLabel = user.email?.split("@")[0] ?? "You";
-  const initials = accountLabel.slice(0, 2).toUpperCase();
+  const chrome = await loadShellChrome(
+    supabase,
+    user,
+    userRow.user_type === "company",
+  );
 
   if (userRow.user_type === "company") {
     const [{ data: ownProfileRow }, { data: talentRows }, funnel] =
@@ -55,6 +60,9 @@ export default async function DashboardPage() {
           location: talent.location,
           matchScore: ownProfile ? matchScore(talent, ownProfile) : 75,
           updatedAt: row.updated_at,
+          initials: personInitials(talent.firstName, talent.lastName),
+          gender: talent.gender,
+          photo: talent.profilePhoto,
         };
       });
 
@@ -64,14 +72,16 @@ export default async function DashboardPage() {
         userId={user.id}
         title="Dashboard"
         searchPlaceholder="Search candidates or roles"
-        userName={accountLabel}
-        userInitials={initials}
+        userName={chrome.userName}
+        userInitials={chrome.initials}
+        userGender={chrome.gender}
+        userPhoto={chrome.photo}
         userSubtitle="Recruiter"
       >
         <CompanyDashboard
           profileCompletion={userRow.profile_completion}
           candidates={candidates}
-          accountLabel={accountLabel}
+          accountLabel={chrome.userName}
           funnel={funnel}
         />
       </DashboardShell>
@@ -113,8 +123,10 @@ export default async function DashboardPage() {
       userId={user.id}
       title="Dashboard"
       searchPlaceholder="Search companies"
-      userName={accountLabel}
-      userInitials={initials}
+      userName={chrome.userName}
+      userInitials={chrome.initials}
+      userGender={chrome.gender}
+      userPhoto={chrome.photo}
       userSubtitle="Talent"
     >
       <TalentDashboard

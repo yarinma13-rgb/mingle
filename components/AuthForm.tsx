@@ -31,10 +31,13 @@ export function AuthForm({ path }: { path: UserType }) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<AuthFormValues>({ resolver: zodResolver(authSchema) });
 
@@ -212,6 +215,41 @@ export function AuthForm({ path }: { path: UserType }) {
             {errors.password && (
               <p className="mt-1.5 text-xs text-mingle-pink">
                 {errors.password.message}
+              </p>
+            )}
+            <button
+              type="button"
+              disabled={resetBusy}
+              onClick={async () => {
+                setServerError(null);
+                setResetSent(false);
+                const email = getValues("email")?.trim();
+                if (!email) {
+                  setServerError("Enter your email first.");
+                  return;
+                }
+                setResetBusy(true);
+                const origin = window.location.origin;
+                const { error } = await supabase.auth.resetPasswordForEmail(
+                  email,
+                  {
+                    redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+                  },
+                );
+                setResetBusy(false);
+                if (error) {
+                  setServerError(error.message);
+                  return;
+                }
+                setResetSent(true);
+              }}
+              className="mt-2 text-xs font-medium text-mingle-text-secondary underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
+            >
+              {resetBusy ? "Sending…" : "Forgot password"}
+            </button>
+            {resetSent && (
+              <p className="mt-1.5 text-xs text-mingle-text-secondary">
+                If that email is on mingle, we sent a reset link.
               </p>
             )}
           </div>

@@ -44,6 +44,8 @@ export default async function ConversationPage({
         }
         userName={ctx.accountLabel}
         userInitials={ctx.initials}
+        userGender={ctx.userGender}
+        userPhoto={ctx.userPhoto}
         userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
       >
         <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-10 text-center">
@@ -84,6 +86,8 @@ export default async function ConversationPage({
       }
       userName={ctx.accountLabel}
       userInitials={ctx.initials}
+      userGender={ctx.userGender}
+      userPhoto={ctx.userPhoto}
       userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
     >
       <div className="mb-5">
@@ -98,6 +102,8 @@ export default async function ConversationPage({
             otherName={ctx.otherDisplay.name}
             otherSubtitle={ctx.otherDisplay.subtitle}
             otherInitial={ctx.otherDisplay.initial}
+            otherPhoto={ctx.otherDisplay.photo}
+            otherGender={ctx.otherDisplay.gender}
             whyConnected={whyConnected}
             initialMessages={messages}
           />

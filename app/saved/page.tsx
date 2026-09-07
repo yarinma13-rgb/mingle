@@ -4,9 +4,10 @@ import { EmptyState } from "@/components/EmptyState";
 import { requireShellUser } from "@/lib/dashboard/require-shell-user";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
 import { loadSavedUserIds } from "@/lib/matching/saved";
+import { Avatar } from "@/components/Avatar";
 
 export default async function SavedPage() {
-  const { supabase, user, userRow, accountLabel, initials, isCompany } =
+  const { supabase, user, userRow, isCompany, shellAvatar } =
     await requireShellUser();
 
   const savedIds = await loadSavedUserIds(supabase, user.id);
@@ -20,9 +21,8 @@ export default async function SavedPage() {
       searchPlaceholder={
         isCompany ? "Search candidates or roles" : "Search companies"
       }
-      userName={accountLabel}
-      userInitials={initials}
       userSubtitle={isCompany ? "Recruiter" : "Talent"}
+      {...shellAvatar}
     >
       <div className="flex flex-col gap-6">
         <p className="max-w-xl text-sm leading-relaxed text-mingle-text-secondary">
@@ -50,11 +50,14 @@ export default async function SavedPage() {
                 <Link
                   key={id}
                   href={`/profile/view/${id}`}
-                  className="flex items-center gap-4 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.12)]"
+                  className="flex items-center gap-4 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xs font-bold text-white">
-                    {info?.initial ?? "?"}
-                  </div>
+                  <Avatar
+                    photo={info?.photo}
+                    initials={info?.initial ?? "?"}
+                    gender={info?.gender}
+                    size="md"
+                  />
                   <div className="min-w-0">
                     <p className="truncate font-display text-sm font-semibold text-mingle-text">
                       {info?.name ?? "Saved profile"}

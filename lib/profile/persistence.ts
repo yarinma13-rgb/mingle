@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
+import { isGender, type Gender } from "@/lib/profile/avatar";
 
 export type ProfileState = {
   firstName: string;
@@ -18,6 +19,7 @@ export type ProfileState = {
   beyondCv: string;
   cvPath: string | null;
   cvFileName: string | null;
+  gender: Gender | null;
 };
 
 export const EMPTY_PROFILE: ProfileState = {
@@ -35,6 +37,7 @@ export const EMPTY_PROFILE: ProfileState = {
   beyondCv: "",
   cvPath: null,
   cvFileName: null,
+  gender: null,
 };
 
 const TOTAL_STEPS = 6;
@@ -110,6 +113,7 @@ export async function loadProfile(
     beyondCv: data.beyond_cv ?? "",
     cvPath: data.cv_path ?? null,
     cvFileName: data.cv_file_name ?? null,
+    gender: isGender(data.gender) ? data.gender : null,
   };
 }
 
@@ -131,12 +135,25 @@ export async function saveProfilePatch(
     beyond_cv: string;
     cv_path: string | null;
     cv_file_name: string | null;
+    gender: Gender | null;
   }>,
 ) {
+  const { gender, ...rest } = patch;
   const { error } = await supabase
     .from("talent_profiles")
-    .upsert({ user_id: userId, ...patch }, { onConflict: "user_id" });
+    .upsert({ user_id: userId, ...rest }, { onConflict: "user_id" });
   if (error) throw error;
+
+  if (!("gender" in patch)) return;
+  const { error: genderError } = await supabase
+    .from("talent_profiles")
+    .upsert({ user_id: userId, gender: gender ?? null }, { onConflict: "user_id" });
+  if (
+    genderError &&
+    !/gender|schema cache|column/i.test(genderError.message)
+  ) {
+    throw genderError;
+  }
 }
 
 export async function saveProfileCompletion(
