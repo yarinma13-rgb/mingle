@@ -169,7 +169,6 @@ export function DashboardShell({
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <MingleLogo variant="mark" size={50} priority />
             <SeePlansButton compact />
           </div>
 
