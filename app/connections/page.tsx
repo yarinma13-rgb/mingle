@@ -13,6 +13,7 @@ import {
 } from "@/lib/connections/persistence";
 import { loadDisplayInfoForUsers, type ConnectionDisplayInfo } from "@/lib/connections/enrich";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
+import { loadTimelinesForConnections, latestStage } from "@/lib/relationship/persistence";
 
 function toDisplayRows(
   rows: ConnectionRow[],
@@ -58,6 +59,13 @@ export default async function ConnectionsPage() {
   );
 
   const info = await loadDisplayInfoForUsers(supabase, [...otherIds]);
+  const timelines =
+    userRow.user_type === "company"
+      ? await loadTimelinesForConnections(
+          supabase,
+          acceptedRows.map((row) => row.id),
+        )
+      : null;
 
   const incoming = toDisplayRows(incomingRows, (row) => row.requester_id, info);
   const outgoing = toDisplayRows(outgoingRows, (row) => row.recipient_id, info);
@@ -65,7 +73,12 @@ export default async function ConnectionsPage() {
     acceptedRows,
     (row) => (row.requester_id === user.id ? row.recipient_id : row.requester_id),
     info,
-  );
+  ).map((row) => ({
+    ...row,
+    stage: timelines
+      ? latestStage(timelines.get(row.connectionId) ?? [])
+      : undefined,
+  }));
 
   const chrome = await loadShellChrome(
     supabase,
@@ -77,7 +90,7 @@ export default async function ConnectionsPage() {
     <DashboardShell
       userType={userRow.user_type}
       userId={user.id}
-      title="Connections"
+      title={userRow.user_type === "company" ? "Pipeline" : "Connections"}
       searchPlaceholder={
         userRow.user_type === "company"
           ? "Search candidates or roles"
@@ -89,7 +102,12 @@ export default async function ConnectionsPage() {
       userPhoto={chrome.photo}
       userSubtitle={userRow.user_type === "company" ? "Recruiter" : "Talent"}
     >
-      <ConnectionsScreen incoming={incoming} outgoing={outgoing} accepted={accepted} />
+      <ConnectionsScreen
+        incoming={incoming}
+        outgoing={outgoing}
+        accepted={accepted}
+        variant={userRow.user_type === "company" ? "pipeline" : "connections"}
+      />
     </DashboardShell>
   );
 }

@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
+import { CompanyPipelineDonut } from "@/components/dashboard/CompanyPipelineDonut";
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
@@ -107,7 +108,7 @@ export function CompanyDashboard({
           icon={MessageIcon}
           label="Active conversations"
           value={String(funnel.counts.in_conversation)}
-          accent="pink"
+          accent="success"
           href="/conversations"
         />
         <KpiTile
@@ -119,11 +120,13 @@ export function CompanyDashboard({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <CompanyPipelineFunnel funnel={funnel} />
+        <CompanyPipelineDonut funnel={funnel} />
+      </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
             <div className="flex items-center gap-3">
               <IconBadge icon={PeopleIcon} accent="blue" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -161,7 +164,6 @@ export function CompanyDashboard({
               connecting with candidates.
             </p>
           </div>
-        </div>
       </div>
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7">

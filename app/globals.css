@@ -27,7 +27,7 @@
   --mingle-bg: #f7f8fc;
   --mingle-lavender: #eef4fb;
   --mingle-product-bg: #eef4fb;
-  --mingle-sidebar-bg: #c5d4e8;
+  --mingle-sidebar-bg: #323338; /* monday.com left-rail ink, sampled from published product tokens */
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
   --mingle-text: #252238;
@@ -43,11 +43,11 @@
   --mingle-radius-card: 16px;
   --mingle-radius-lg: 20px;
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #e8edf8;
-  --mingle-nav-hover-bg: #eef2f9;
-  --mingle-nav-active: #5b65b8;
-  --mingle-nav-idle: #8b90c4;
-  --mingle-nav-divider: #b8bdd4;
+  --mingle-nav-active-bg: rgba(255, 255, 255, 0.12);
+  --mingle-nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --mingle-nav-active: #ffffff;
+  --mingle-nav-idle: #c5c7d0;
+  --mingle-nav-divider: rgba(255, 255, 255, 0.14);
   --font-display: var(--font-figtree);
   --font-sans: var(--font-figtree);
 }
@@ -57,7 +57,7 @@
   --mingle-bg: #f7f8fc;
   --mingle-lavender: #eef4fb;
   --mingle-product-bg: #eef4fb;
-  --mingle-sidebar-bg: #c5d4e8;
+  --mingle-sidebar-bg: #323338; /* monday.com left-rail ink, sampled from published product tokens */
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
   --mingle-text: #252238;
@@ -66,11 +66,11 @@
   --mingle-border: #d9e4f2;
   --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #e8edf8;
-  --mingle-nav-hover-bg: #eef2f9;
-  --mingle-nav-active: #5b65b8;
-  --mingle-nav-idle: #8b90c4;
-  --mingle-nav-divider: #b8bdd4;
+  --mingle-nav-active-bg: rgba(255, 255, 255, 0.12);
+  --mingle-nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --mingle-nav-active: #ffffff;
+  --mingle-nav-idle: #c5c7d0;
+  --mingle-nav-divider: rgba(255, 255, 255, 0.14);
 }
 
 /* Original dark product surface (#0F1420 family), mapped onto the
@@ -81,7 +81,7 @@
   --mingle-bg: #0f1420;
   --mingle-lavender: #1a2233;
   --mingle-product-bg: #171d2b;
-  --mingle-sidebar-bg: #2e384f;
+  --mingle-sidebar-bg: #292f4c; /* monday.com bg-dark navy, sampled from published product tokens */
   --mingle-white: #202738;
   --mingle-surface: #202738;
   --mingle-text: #f3f5f9;
@@ -296,8 +296,8 @@ button:disabled {
 }
 
 [data-theme="light"] .mingle-app-sidebar {
-  border-right-color: #9aabc4;
-  box-shadow: 8px 0 28px rgba(37, 50, 80, 0.12);
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 8px 0 24px rgba(50, 51, 56, 0.18);
 }
 
 [data-theme="dark"] .mingle-app-sidebar {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MingleChip } from "@/components/MingleChip";
 import type { MatchFactor } from "@/lib/matching/engine";
 import type { RelationshipStage } from "@/lib/supabase/types";
@@ -21,6 +22,24 @@ const STAGE_HINT: Record<RelationshipStage, string> = {
   relationship: "Moving forward together.",
 };
 
+const STAGE_HREF: Record<RelationshipStage, (id: string) => string> = {
+  connected: (id) => `/conversations/${id}/explore`,
+  exploring: (id) => `/conversations/${id}/explore`,
+  in_conversation: (id) => `/conversations/${id}/opportunity`,
+  opportunity: (id) => `/conversations/${id}/decision`,
+  decision: (id) => `/conversations/${id}/decision`,
+  relationship: (id) => `/conversations/${id}`,
+};
+
+const STAGE_CTA: Record<RelationshipStage, string> = {
+  connected: "Start exploring",
+  exploring: "Continue exploring",
+  in_conversation: "Open opportunity",
+  opportunity: "Record a decision",
+  decision: "Review decision",
+  relationship: "Back to chat",
+};
+
 function timeAgo(iso: string): string {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
   if (minutes < 1) return "Just now";
@@ -36,7 +55,7 @@ function FactorLine({ factor, tone }: { factor: MatchFactor; tone: "aligned" | "
       <span
         aria-hidden
         className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${
-          tone === "aligned" ? "bg-mingle-purple" : "bg-mingle-pink"
+          tone === "aligned" ? "bg-mingle-accent-purple" : "bg-mingle-accent-pink"
         }`}
       />
       <span>
@@ -48,12 +67,14 @@ function FactorLine({ factor, tone }: { factor: MatchFactor; tone: "aligned" | "
 }
 
 export function RelationshipContextPanel({
+  connectionId,
   score,
   alignedFactors,
   exploreFactors,
   stage,
   timeline,
 }: {
+  connectionId: string;
   score: number;
   alignedFactors: MatchFactor[];
   exploreFactors: MatchFactor[];
@@ -61,26 +82,29 @@ export function RelationshipContextPanel({
   timeline: RelationshipEventRow[];
 }) {
   return (
-    <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 lg:w-72 lg:shrink-0">
+    <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
       <div className="flex items-center gap-3">
-        <MingleChip className="text-xs">{score}% match</MingleChip>
+        <span
+          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+          style={{ background: "var(--mingle-connection-gradient)" }}
+        >
+          {score}% match
+        </span>
         <div>
           <p className="font-display text-sm font-semibold text-mingle-text">
-            A relationship, not an inbox
+            Why this fit
           </p>
-          <p className="text-xs text-mingle-text-secondary">Built on shared fit</p>
+          <p className="text-xs text-mingle-text-secondary">Shared signals, not a score alone</p>
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center gap-2">
-          <MingleChip>{STAGE_LABEL[stage]}</MingleChip>
-        </div>
-        <p className="mt-1.5 text-xs text-mingle-text-secondary">{STAGE_HINT[stage]}</p>
+      <div className="rounded-xl border border-mingle-border bg-mingle-bg px-3 py-3">
+        <MingleChip>{STAGE_LABEL[stage]}</MingleChip>
+        <p className="mt-2 text-xs text-mingle-text-secondary">{STAGE_HINT[stage]}</p>
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-purple">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-accent-purple">
           Why you connected
         </h3>
         {alignedFactors.length > 0 ? (
@@ -98,7 +122,7 @@ export function RelationshipContextPanel({
 
       {exploreFactors.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-pink">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-accent-pink">
             Worth exploring
           </h3>
           <ul className="mt-2 flex flex-col gap-2">
@@ -122,7 +146,7 @@ export function RelationshipContextPanel({
                     aria-hidden
                     className={`h-2 w-2 shrink-0 rounded-full ${
                       index === timeline.length - 1
-                        ? "bg-mingle-purple"
+                        ? "bg-mingle-accent-blue"
                         : "bg-mingle-border"
                     }`}
                   />
@@ -141,6 +165,13 @@ export function RelationshipContextPanel({
           </ul>
         </div>
       )}
+
+      <Link
+        href={STAGE_HREF[stage](connectionId)}
+        className="mingle-btn-primary text-center text-xs"
+      >
+        {STAGE_CTA[stage]}
+      </Link>
     </div>
   );
 }

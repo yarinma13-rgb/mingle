@@ -20,6 +20,7 @@ import {
   type CompanyProfileState,
 } from "@/lib/company-profile/persistence";
 import { saveProfileCompletion } from "@/lib/profile/persistence";
+import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
 import {
   COMPANY_QUESTIONS,
   COMPANY_STAGE_OPTIONS,
@@ -185,13 +186,10 @@ export function CompanyProfileWizard() {
     key: "workEnvironment" | "values" | "lookingFor",
     option: string,
   ) => {
-    setProfile((prev) => {
-      const list = prev[key];
-      const next = list.includes(option)
-        ? list.filter((item) => item !== option)
-        : [...list, option];
-      return { ...prev, [key]: next };
-    });
+    setProfile((prev) => ({
+      ...prev,
+      [key]: toggleCapped(prev[key], option),
+    }));
   };
 
   const continueMultiStep = (
@@ -424,17 +422,22 @@ export function CompanyProfileWizard() {
                 >
                   {multiQuestion.options.map((option) => {
                     const selected = profile[multiKey].includes(option);
+                    const atCap =
+                      profile[multiKey].length >= MAX_PROFILE_PICKS && !selected;
                     return (
                       <button
                         key={option}
                         type="button"
                         role="checkbox"
                         aria-checked={selected}
+                        disabled={atCap}
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-full border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
                             ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
-                            : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-blue/50"
+                            : atCap
+                              ? "cursor-not-allowed border-mingle-surface bg-mingle-surface text-mingle-text-secondary/40"
+                              : "border-mingle-surface bg-mingle-surface text-mingle-text-secondary hover:border-mingle-blue/50"
                         }`}
                       >
                         {option}
@@ -442,6 +445,9 @@ export function CompanyProfileWizard() {
                     );
                   })}
                 </div>
+                <p className="mt-3 text-center text-xs text-mingle-text-secondary">
+                  {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
+                </p>
 
                 {saveError && (
                   <p className="mt-6 text-center text-sm text-mingle-pink">

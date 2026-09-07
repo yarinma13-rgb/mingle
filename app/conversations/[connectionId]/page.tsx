@@ -88,33 +88,39 @@ export default async function ConversationPage({
       userInitials={ctx.initials}
       userGender={ctx.userGender}
       userPhoto={ctx.userPhoto}
-      userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
-    >
-      <div className="mb-5">
-        <RelationshipTabs connectionId={ctx.connection.id} />
-      </div>
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1">
-          <ConversationScreen
-            conversationId={conversation.id}
-            viewerId={user.id}
-            otherUserId={ctx.otherUserId}
-            otherName={ctx.otherDisplay.name}
-            otherSubtitle={ctx.otherDisplay.subtitle}
-            otherInitial={ctx.otherDisplay.initial}
-            otherPhoto={ctx.otherDisplay.photo}
-            otherGender={ctx.otherDisplay.gender}
-            whyConnected={whyConnected}
-            initialMessages={messages}
-          />
+        userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
+        fillMain
+      >
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="shrink-0">
+          <RelationshipTabs connectionId={ctx.connection.id} />
         </div>
-        <RelationshipContextPanel
-          score={ctx.matchScore}
-          alignedFactors={ctx.alignedFactors}
-          exploreFactors={ctx.exploreFactors}
-          stage={stage}
-          timeline={timeline}
-        />
+        <div className="flex min-h-0 flex-1 flex-col gap-5 lg:flex-row">
+          <div className="min-h-0 min-w-0 flex-1">
+            <ConversationScreen
+              conversationId={conversation.id}
+              viewerId={user.id}
+              otherUserId={ctx.otherUserId}
+              otherName={ctx.otherDisplay.name}
+              otherSubtitle={ctx.otherDisplay.subtitle}
+              otherInitial={ctx.otherDisplay.initial}
+              otherPhoto={ctx.otherDisplay.photo}
+              otherGender={ctx.otherDisplay.gender}
+              whyConnected={whyConnected}
+              initialMessages={messages}
+            />
+          </div>
+          <div className="min-h-0 lg:w-80 lg:shrink-0 lg:overflow-y-auto">
+            <RelationshipContextPanel
+              connectionId={ctx.connection.id}
+              score={ctx.matchScore}
+              alignedFactors={ctx.alignedFactors}
+              exploreFactors={ctx.exploreFactors}
+              stage={stage}
+              timeline={timeline}
+            />
+          </div>
+        </div>
       </div>
     </DashboardShell>
   );

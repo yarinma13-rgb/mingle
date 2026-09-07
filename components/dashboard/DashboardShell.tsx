@@ -74,6 +74,7 @@ type DashboardShellProps = {
   userPhoto?: string | null;
   userSubtitle: string;
   children: React.ReactNode;
+  fillMain?: boolean;
 };
 
 export function DashboardShell({
@@ -87,6 +88,7 @@ export function DashboardShell({
   userPhoto = null,
   userSubtitle,
   children,
+  fillMain = false,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -103,8 +105,8 @@ export function DashboardShell({
   }, [navItems, router]);
 
   return (
-    <div className="flex min-h-screen bg-transparent">
-      <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch px-2 md:flex">
+    <div className="flex h-screen overflow-hidden bg-transparent">
+      <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
           <MingleLogo variant="mark" size={58} priority />
         </div>
@@ -117,17 +119,17 @@ export function DashboardShell({
                 <Link
                   href={item.href}
                   prefetch
-                  className="group flex w-full flex-col items-center gap-1.5 py-3"
+                  className="group flex w-full flex-col items-center gap-1 py-1.5"
                 >
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-colors ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
                       active
                         ? "bg-mingle-nav-active-bg"
                         : "bg-transparent group-hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
                     <Icon
-                      size={20}
+                      size={18}
                       className={
                         active
                           ? "text-mingle-nav-active"
@@ -148,7 +150,7 @@ export function DashboardShell({
                 {item.dividerAfter ? (
                   <div
                     aria-hidden
-                    className="my-3 h-px w-[3.25rem] bg-mingle-nav-divider"
+                    className="my-1.5 h-px w-[2.75rem] bg-mingle-nav-divider"
                   />
                 ) : null}
               </div>
@@ -160,10 +162,15 @@ export function DashboardShell({
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6">
           <div className="md:hidden">
             <MingleLogo variant="mark" size={72} priority />
+          </div>
+
+          <div className="hidden items-center gap-3 md:flex">
+            <MingleLogo variant="mark" size={40} priority />
+            <SeePlansButton compact />
           </div>
 
           <div className="hidden flex-1 justify-center md:flex">
@@ -194,8 +201,6 @@ export function DashboardShell({
               <SearchIcon size={16} />
             </button>
 
-            <SeePlansButton compact />
-
             <NotificationBell userId={userId} />
 
             <div className="flex items-center gap-2.5">
@@ -217,12 +222,28 @@ export function DashboardShell({
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 px-5 pb-24 pt-8 sm:px-10 sm:py-9 md:pb-10">
-          <h1 className="mb-8 font-display text-[1.75rem] font-bold tracking-tight text-mingle-text sm:mb-9 sm:text-3xl">
+        <main
+          className={
+            fillMain
+              ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-4 pt-5 sm:px-10 md:pb-6"
+              : "min-w-0 flex-1 overflow-y-auto px-5 pb-24 pt-8 sm:px-10 sm:py-9 md:pb-10"
+          }
+        >
+          <h1
+            className={`shrink-0 font-display font-bold tracking-tight text-mingle-text ${
+              fillMain
+                ? "mb-4 text-xl sm:text-2xl"
+                : "mb-8 text-[1.75rem] sm:mb-9 sm:text-3xl"
+            }`}
+          >
             {title}
           </h1>
 
-          {children}
+          {fillMain ? (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          ) : (
+            children
+          )}
         </main>
       </div>
 

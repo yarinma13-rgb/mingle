@@ -15,6 +15,7 @@ import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
+import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
 import {
   loadProfile,
   saveProfilePatch,
@@ -188,13 +189,10 @@ export function ProfileWizard() {
   };
 
   const toggleMulti = (key: "drives" | "workStyle" | "lookingFor", option: string) => {
-    setProfile((prev) => {
-      const list = prev[key];
-      const next = list.includes(option)
-        ? list.filter((item) => item !== option)
-        : [...list, option];
-      return { ...prev, [key]: next };
-    });
+    setProfile((prev) => ({
+      ...prev,
+      [key]: toggleCapped(prev[key], option),
+    }));
   };
 
   const continueMultiStep = (
@@ -453,17 +451,22 @@ export function ProfileWizard() {
                 >
                   {multiQuestion.options.map((option) => {
                     const selected = profile[multiKey].includes(option);
+                    const atCap =
+                      profile[multiKey].length >= MAX_PROFILE_PICKS && !selected;
                     return (
                       <button
                         key={option}
                         type="button"
                         role="checkbox"
                         aria-checked={selected}
+                        disabled={atCap}
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
                             ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
-                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
+                            : atCap
+                              ? "cursor-not-allowed border-mingle-border bg-mingle-white text-mingle-text-secondary/40"
+                              : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
                         }`}
                       >
                         {option}
@@ -471,6 +474,9 @@ export function ProfileWizard() {
                     );
                   })}
                 </div>
+                <p className="mt-3 text-center text-xs text-mingle-text-secondary">
+                  {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
+                </p>
 
                 {saveError && (
                   <p className="mt-6 text-center text-sm text-mingle-pink">

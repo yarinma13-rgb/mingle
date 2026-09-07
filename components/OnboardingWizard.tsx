@@ -22,6 +22,7 @@ import {
   ONBOARDING_INTRO,
   type OnboardingQuestion,
 } from "@/lib/onboarding/questions";
+import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
 import type { Database, UserType } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 4;
@@ -126,13 +127,10 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   };
 
   const toggleMulti = (key: "q2" | "q3", option: string) => {
-    setAnswers((prev) => {
-      const list = prev[key];
-      const next = list.includes(option)
-        ? list.filter((item) => item !== option)
-        : [...list, option];
-      return { ...prev, [key]: next };
-    });
+    setAnswers((prev) => ({
+      ...prev,
+      [key]: toggleCapped(prev[key], option),
+    }));
   };
 
   const handleContinue = async () => {
@@ -212,12 +210,18 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                     : (answers[currentQuestion.key as "q2" | "q3"]).includes(
                         option,
                       );
+                const atCap =
+                  currentQuestion.type === "multi" &&
+                  (answers[currentQuestion.key as "q2" | "q3"]).length >=
+                    MAX_PROFILE_PICKS &&
+                  !selected;
                 return (
                   <button
                     key={option}
                     type="button"
                     role={currentQuestion.type === "single" ? "radio" : "checkbox"}
                     aria-checked={selected}
+                    disabled={atCap}
                     onClick={() =>
                       currentQuestion.type === "single"
                         ? selectSingle("q1", option)
@@ -225,8 +229,10 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                     }
                     className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                       selected
-                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
-                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
+                        ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                        : atCap
+                          ? "cursor-not-allowed border-mingle-border bg-mingle-white text-mingle-text-secondary/40"
+                          : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
                     }`}
                   >
                     {option}
@@ -234,6 +240,12 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                 );
               })}
             </div>
+            {currentQuestion.type === "multi" ? (
+              <p className="mt-3 text-center text-xs text-mingle-text-secondary">
+                {(answers[currentQuestion.key as "q2" | "q3"]).length} of{" "}
+                {MAX_PROFILE_PICKS} selected
+              </p>
+            ) : null}
           </motion.div>
         </AnimatePresence>
 

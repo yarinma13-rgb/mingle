@@ -143,7 +143,7 @@ export function ConversationScreen({
   };
 
   return (
-    <div className="flex h-[calc(100dvh-14.5rem)] flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface md:h-[calc(100vh-9rem)]">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-mingle">
       <div className="flex items-center gap-3 border-b border-mingle-border p-4">
         <Link
           href="/conversations"

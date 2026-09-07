@@ -28,13 +28,13 @@ export type BoardCandidate = {
   timeline: RelationshipEventRow[];
 };
 
-const BOARD_COLUMNS: { id: RelationshipStage; label: string }[] = [
-  { id: "connected", label: "Connected" },
-  { id: "exploring", label: "Exploring" },
-  { id: "in_conversation", label: "In conversation" },
-  { id: "opportunity", label: "Opportunity" },
-  { id: "decision", label: "Decision" },
-  { id: "relationship", label: "Relationship" },
+const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
+  { id: "connected", label: "Connected", accent: "var(--mingle-accent-pink)" },
+  { id: "exploring", label: "Exploring", accent: "var(--mingle-accent-purple)" },
+  { id: "in_conversation", label: "In conversation", accent: "var(--mingle-accent-blue)" },
+  { id: "opportunity", label: "Opportunity", accent: "var(--mingle-warning)" },
+  { id: "decision", label: "Decision", accent: "var(--mingle-success)" },
+  { id: "relationship", label: "Relationship", accent: "var(--mingle-purple)" },
 ];
 
 const STAGE_LABEL: Record<RelationshipStage, string> = Object.fromEntries(
@@ -168,14 +168,19 @@ export function CompanyBoardScreen({
                   event.preventDefault();
                   handleDrop(column.id);
                 }}
-                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 ${
+                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-shadow ${
                   isOver
-                    ? "border-mingle-cta"
+                    ? "border-mingle-cta shadow-mingle"
                     : "border-mingle-border"
                 }`}
               >
-                <header className="mb-3 flex items-center justify-between gap-2 px-1">
-                  <h2 className="font-display text-sm font-semibold text-mingle-text">
+                <header className="mb-3 flex items-center justify-between gap-2 border-b border-mingle-border px-1 pb-2">
+                  <h2 className="flex items-center gap-2 font-display text-sm font-semibold text-mingle-text">
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ background: column.accent }}
+                    />
                     {column.label}
                   </h2>
                   <MingleChip>{cards.length}</MingleChip>
@@ -195,8 +200,10 @@ export function CompanyBoardScreen({
                           setDraggingId(null);
                           setOverStage(null);
                         }}
-                        className={`rounded-xl border border-mingle-border bg-mingle-bg p-3 ${
-                          draggingId === card.connectionId ? "opacity-60" : ""
+                        className={`rounded-xl border border-mingle-border bg-mingle-bg p-3 shadow-sm transition-shadow hover:shadow-mingle ${
+                          draggingId === card.connectionId
+                            ? "cursor-grabbing opacity-60"
+                            : "cursor-grab"
                         } ${busyId === card.connectionId ? "pointer-events-none opacity-70" : ""}`}
                       >
                         <Link

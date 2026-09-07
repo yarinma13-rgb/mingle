@@ -77,7 +77,7 @@ export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
           style={{ transform: isDark ? "translateX(20px)" : "translateX(0)" }}
         />
       </button>
-      <span className="text-center text-[10px] font-medium leading-tight text-mingle-text-secondary">
+      <span className="text-center text-[10px] font-medium leading-tight text-mingle-nav-idle">
         Dark mode
       </span>
     </div>
