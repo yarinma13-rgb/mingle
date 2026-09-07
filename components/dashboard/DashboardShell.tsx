@@ -108,7 +108,7 @@ export function DashboardShell({
     <div className="flex h-screen overflow-hidden bg-transparent">
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
-          <MingleLogo variant="mark" size={58} priority />
+          <MingleLogo variant="mark" size={70} priority />
         </div>
         <div className="flex w-full flex-1 flex-col items-center pb-5 pt-1">
           {navItems.map((item) => {
@@ -165,11 +165,11 @@ export function DashboardShell({
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6">
           <div className="md:hidden">
-            <MingleLogo variant="mark" size={72} priority />
+            <MingleLogo variant="mark" size={88} priority />
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <MingleLogo variant="mark" size={40} priority />
+            <MingleLogo variant="mark" size={50} priority />
             <SeePlansButton compact />
           </div>
 

@@ -277,7 +277,7 @@ export function ProfileWizard() {
     <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
       <div className="w-full max-w-lg">
         <div className="mb-10 flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={36} className="mb-6" />
+          <MingleLogo variant="mark" size={44} className="mb-6" />
           <CompletionMeter percent={completionPct} />
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             Build your mingle profile
@@ -638,7 +638,7 @@ function CompletionMeter({ percent }: { percent: number }) {
 function ProfileWizardSkeleton() {
   return (
     <div className="flex min-h-screen flex-1 items-center justify-center px-6">
-      <MingleLogo variant="mark" size={48} className="animate-pulse" />
+      <MingleLogo variant="mark" size={58} className="animate-pulse" />
     </div>
   );
 }
@@ -646,7 +646,7 @@ function ProfileWizardSkeleton() {
 function ProfileWizardError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <MingleLogo variant="mark" size={36} />
+      <MingleLogo variant="mark" size={44} />
       <p className="max-w-xs text-sm text-mingle-text-secondary">
         Something went wrong loading your profile.
       </p>

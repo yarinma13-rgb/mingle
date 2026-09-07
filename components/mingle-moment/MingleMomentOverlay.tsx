@@ -157,7 +157,7 @@ export function MingleMomentOverlay({
             aria-hidden
             className="absolute h-40 w-40 rounded-full bg-mingle-blue/15 blur-3xl"
           />
-          <MingleLogo variant="mark" size={72} className="relative" priority />
+          <MingleLogo variant="mark" size={88} className="relative" priority />
         </div>
 
         <h1 className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl">

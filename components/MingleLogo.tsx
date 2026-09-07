@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import logoSrc from "@/public/brand/mingle-mark.jpg";
+import logoSrc from "@/public/brand/mingle-mark-2026.jpg";
 
 type MingleLogoProps = {
   /** "mark" and "lockup" both render the official M. No separate wordmark. */
@@ -18,10 +18,9 @@ type MingleLogoProps = {
  * Official mingle mark. Never recreate with SVG/text. Do not type "MINGLE"
  * as a replacement.
  *
- * TODO(brand-assets): `mingle-mark.jpg` has a baked light field and no alpha.
- * Until a transparent PNG/SVG ships, the shape is a CSS `mask-image` painted
- * with the brand connection gradient. Mid-tone brand colors in the JPEG would
- * leave a faded mask, so we threshold the field to a binary alpha mask.
+ * TODO(brand-assets): `mingle-mark-2026.jpg` is a JPEG with a baked light
+ * field and no alpha. The shape is a CSS `mask-image` painted with the
+ * brand connection gradient until a transparent PNG/SVG ships.
  */
 const DISPLAY_SCALE = 1.16;
 

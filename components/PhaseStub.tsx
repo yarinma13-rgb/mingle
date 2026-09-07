@@ -23,7 +23,7 @@ export function PhaseStub({
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="flex w-full max-w-md flex-col items-center"
       >
-        <MingleLogo variant="mark" size={48} className="mb-8" />
+        <MingleLogo variant="mark" size={60} className="mb-8" />
 
         <span className="mingle-gradient-text font-display text-sm font-semibold uppercase tracking-[0.2em]">
           Development-only checkpoint

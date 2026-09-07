@@ -27,7 +27,7 @@
   --mingle-bg: #f7f8fc;
   --mingle-lavender: #eef4fb;
   --mingle-product-bg: #eef4fb;
-  --mingle-sidebar-bg: #323338; /* monday.com left-rail ink, sampled from published product tokens */
+  --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
   --mingle-text: #252238;
@@ -43,11 +43,11 @@
   --mingle-radius-card: 16px;
   --mingle-radius-lg: 20px;
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: rgba(255, 255, 255, 0.12);
-  --mingle-nav-hover-bg: rgba(255, 255, 255, 0.08);
-  --mingle-nav-active: #ffffff;
-  --mingle-nav-idle: #c5c7d0;
-  --mingle-nav-divider: rgba(255, 255, 255, 0.14);
+  --mingle-nav-active-bg: #eceff5;
+  --mingle-nav-hover-bg: #f3f4f8;
+  --mingle-nav-active: #323338;
+  --mingle-nav-idle: #676879;
+  --mingle-nav-divider: #e6e9ef;
   --font-display: var(--font-figtree);
   --font-sans: var(--font-figtree);
 }
@@ -57,7 +57,7 @@
   --mingle-bg: #f7f8fc;
   --mingle-lavender: #eef4fb;
   --mingle-product-bg: #eef4fb;
-  --mingle-sidebar-bg: #323338; /* monday.com left-rail ink, sampled from published product tokens */
+  --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
   --mingle-text: #252238;
@@ -66,11 +66,11 @@
   --mingle-border: #d9e4f2;
   --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: rgba(255, 255, 255, 0.12);
-  --mingle-nav-hover-bg: rgba(255, 255, 255, 0.08);
-  --mingle-nav-active: #ffffff;
-  --mingle-nav-idle: #c5c7d0;
-  --mingle-nav-divider: rgba(255, 255, 255, 0.14);
+  --mingle-nav-active-bg: #eceff5;
+  --mingle-nav-hover-bg: #f3f4f8;
+  --mingle-nav-active: #323338;
+  --mingle-nav-idle: #676879;
+  --mingle-nav-divider: #e6e9ef;
 }
 
 /* Original dark product surface (#0F1420 family), mapped onto the
@@ -81,7 +81,7 @@
   --mingle-bg: #0f1420;
   --mingle-lavender: #1a2233;
   --mingle-product-bg: #171d2b;
-  --mingle-sidebar-bg: #292f4c; /* monday.com bg-dark navy, sampled from published product tokens */
+  --mingle-sidebar-bg: #171d2b;
   --mingle-white: #202738;
   --mingle-surface: #202738;
   --mingle-text: #f3f5f9;
@@ -92,9 +92,9 @@
   --mingle-mascot-backdrop: #01041e;
   --mingle-nav-active-bg: rgba(255, 255, 255, 0.1);
   --mingle-nav-hover-bg: rgba(255, 255, 255, 0.06);
-  --mingle-nav-active: #d5d9f0;
-  --mingle-nav-idle: #8b90a8;
-  --mingle-nav-divider: rgba(255, 255, 255, 0.16);
+  --mingle-nav-active: #f3f5f9;
+  --mingle-nav-idle: #9aa3b5;
+  --mingle-nav-divider: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
@@ -292,17 +292,15 @@ button:disabled {
 .mingle-app-sidebar {
   background: var(--mingle-sidebar-bg);
   border-right: 1px solid var(--mingle-nav-divider);
-  box-shadow: 8px 0 24px rgba(37, 50, 80, 0.08);
+  box-shadow: none;
 }
 
 [data-theme="light"] .mingle-app-sidebar {
-  border-right-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 8px 0 24px rgba(50, 51, 56, 0.18);
+  border-right-color: #e6e9ef;
 }
 
 [data-theme="dark"] .mingle-app-sidebar {
-  border-right-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 10px 0 32px rgba(0, 0, 0, 0.45);
+  border-right-color: rgba(255, 255, 255, 0.1);
 }
 
 .mingle-logo-mark {

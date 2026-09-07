@@ -144,7 +144,7 @@ export function AuthForm({ path }: { path: UserType }) {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="flex w-full max-w-sm flex-col items-center"
         >
-          <MingleLogo variant="mark" size={40} className="mb-8" />
+          <MingleLogo variant="mark" size={50} className="mb-8" />
           <h1 className="font-display text-2xl font-bold text-mingle-text">
             Check your email
           </h1>
@@ -166,7 +166,7 @@ export function AuthForm({ path }: { path: UserType }) {
         className="w-full max-w-sm"
       >
         <div className="mb-10 flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={40} priority className="mb-8" />
+          <MingleLogo variant="mark" size={50} priority className="mb-8" />
           <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
             {copy.eyebrow}
           </span>

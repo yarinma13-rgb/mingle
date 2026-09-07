@@ -46,7 +46,7 @@ export function WelcomeScreen() {
         aria-hidden
         className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.12] sm:h-[680px] sm:w-[680px]"
       >
-        <MingleLogo variant="mark" size={160} alt="" />
+        <MingleLogo variant="mark" size={192} alt="" />
       </div>
 
       <AnimatePresence
@@ -64,7 +64,7 @@ export function WelcomeScreen() {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="relative z-10 flex w-full max-w-xl flex-col items-center text-center"
           >
-            <MingleLogo variant="lockup" size={56} priority className="mb-12" />
+            <MingleLogo variant="lockup" size={70} priority className="mb-12" />
 
             <h1 className="font-display text-[1.75rem] font-bold leading-tight text-mingle-text sm:text-5xl">
               Careers start with{" "}

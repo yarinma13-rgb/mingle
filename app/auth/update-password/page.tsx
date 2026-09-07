@@ -14,7 +14,7 @@ export default async function UpdatePasswordPage() {
     <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={40} className="mb-6" />
+          <MingleLogo variant="mark" size={50} className="mb-6" />
           <h1 className="font-display text-2xl font-bold text-mingle-text">
             Set a new password
           </h1>

@@ -67,7 +67,7 @@ export function ProfilePreview({
         className="flex w-full max-w-lg flex-col gap-6"
       >
         <div className="flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={32} className="mb-4" />
+          <MingleLogo variant="mark" size={40} className="mb-4" />
           <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
             Your mingle profile
           </span>
