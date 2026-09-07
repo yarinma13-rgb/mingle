@@ -81,31 +81,36 @@ export function CompanyDashboard({
           icon={GaugeIcon}
           label="Profile completion"
           value={`${profileCompletion}%`}
-          accent="pinkPurple"
+          accent="pink"
+          href="/company-profile/build"
         />
         <KpiTile
           icon={PeopleIcon}
           label="Potential matches"
           value={String(candidates.length)}
-          accent="purpleCta"
+          accent="purple"
+          href="/discover"
         />
         <KpiTile
           icon={CompassIcon}
           label="Connections"
           value={String(funnel.total)}
-          accent="ctaPink"
+          accent="blue"
+          href="/connections"
         />
         <KpiTile
           icon={MessageIcon}
           label="Active conversations"
           value={String(funnel.counts.in_conversation)}
-          accent="pinkCta"
+          accent="pink"
+          href="/conversations"
         />
         <KpiTile
           icon={BriefcaseIcon}
           label="Open opportunities"
           value={String(funnel.counts.opportunity)}
-          accent="purplePink"
+          accent="waiting"
+          href="/board"
         />
       </div>
 
@@ -115,7 +120,7 @@ export function CompanyDashboard({
         <div className="flex flex-col gap-6">
           <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
             <div className="flex items-center gap-3">
-              <IconBadge icon={PeopleIcon} accent="pinkPurple" size={32} iconSize={15} />
+              <IconBadge icon={PeopleIcon} accent="blue" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
                 Your team
               </h2>
@@ -140,7 +145,7 @@ export function CompanyDashboard({
 
           <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-[0_8px_28px_rgba(0,115,234,0.1)]">
             <div className="flex items-center gap-3">
-              <IconBadge icon={CalendarIcon} accent="ctaPink" size={32} iconSize={15} />
+              <IconBadge icon={CalendarIcon} accent="waiting" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
                 Upcoming interviews
               </h2>

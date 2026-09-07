@@ -10,6 +10,7 @@ import { notifyConnectionRequest } from "@/lib/email/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import type { ConnectionStatus } from "@/lib/supabase/types";
@@ -229,18 +230,15 @@ export function ProfileDetailShell({
         </div>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photo}
-              alt=""
-              className="h-20 w-20 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
-              {initial || "?"}
-            </div>
-          )}
+          <TalentPhotoImg
+            photo={photo}
+            className="h-20 w-20 rounded-full object-cover"
+            fallback={
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
+                {initial || "?"}
+              </div>
+            }
+          />
           <div>
             <h1 className="font-display text-2xl font-bold text-mingle-text">
               {name}

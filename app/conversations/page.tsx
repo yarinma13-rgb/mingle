@@ -35,16 +35,18 @@ export default async function ConversationsListPage() {
   const otherIds = acceptedConnections.map((row) =>
     row.requester_id === user.id ? row.recipient_id : row.requester_id,
   );
-  const info = await loadDisplayInfoForUsers(supabase, otherIds);
-
   const connectionIds = acceptedConnections.map((row) => row.id);
-  const { data: conversations } =
+
+  const [info, conversationsResult] = await Promise.all([
+    loadDisplayInfoForUsers(supabase, otherIds),
     connectionIds.length > 0
-      ? await supabase
+      ? supabase
           .from("conversations")
           .select("id, connection_id")
           .in("connection_id", connectionIds)
-      : { data: [] as { id: string; connection_id: string }[] };
+      : Promise.resolve({ data: [] as { id: string; connection_id: string }[] }),
+  ]);
+  const conversations = conversationsResult.data;
 
   const conversationIds = (conversations ?? []).map((row) => row.id);
   const { data: allMessages } =

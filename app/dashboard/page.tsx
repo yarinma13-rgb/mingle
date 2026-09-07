@@ -27,22 +27,22 @@ export default async function DashboardPage() {
   const initials = accountLabel.slice(0, 2).toUpperCase();
 
   if (userRow.user_type === "company") {
-    const { data: ownProfileRow } = await supabase
-      .from("company_profiles")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const [{ data: ownProfileRow }, { data: talentRows }, funnel] =
+      await Promise.all([
+        supabase
+          .from("company_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("talent_profiles")
+          .select("*")
+          .neq("user_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(8),
+        loadCompanyFunnel(supabase, user.id),
+      ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
-
-    const [{ data: talentRows }, funnel] = await Promise.all([
-      supabase
-        .from("talent_profiles")
-        .select("*")
-        .neq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(8),
-      loadCompanyFunnel(supabase, user.id),
-    ]);
 
     const candidates: CandidateRow[] = (talentRows ?? [])
       .filter((row) => row.first_name)
@@ -78,19 +78,20 @@ export default async function DashboardPage() {
     );
   }
 
-  const { data: ownProfileRow } = await supabase
-    .from("talent_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: ownProfileRow }, { data: companyRows }] = await Promise.all([
+    supabase
+      .from("talent_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("company_profiles")
+      .select("*")
+      .neq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+  ]);
   const ownProfile = ownProfileRow ? toTalentProfile(ownProfileRow) : null;
-
-  const { data: companyRows } = await supabase
-    .from("company_profiles")
-    .select("*")
-    .neq("user_id", user.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
 
   const companies: CompanyRow[] = (companyRows ?? [])
     .filter((row) => row.company_name)

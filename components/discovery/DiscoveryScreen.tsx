@@ -176,9 +176,12 @@ function DiscoveryCardView({
       drag={isMobile ? "x" : false}
       dragDirectionLock
       dragMomentum={false}
+      dragElastic={0.18}
       onDragEnd={isMobile ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
-      className="relative flex touch-pan-y flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-6"
+      className={`relative flex flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-6 ${
+        isMobile ? "touch-none cursor-grab" : "touch-pan-y"
+      }`}
     >
       {isMobile && (
         <>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function SignOutButton() {
+export function SignOutButton({ className }: { className?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +22,7 @@ export function SignOutButton() {
       type="button"
       onClick={handleSignOut}
       disabled={busy}
-      className="mingle-btn-secondary text-sm disabled:opacity-60"
+      className={className ?? "mingle-btn-secondary text-sm disabled:opacity-60"}
     >
       {busy ? "Signing out…" : "Sign out"}
     </button>

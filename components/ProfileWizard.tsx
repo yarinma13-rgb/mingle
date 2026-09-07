@@ -12,6 +12,7 @@ import { MingleLogo } from "@/components/MingleLogo";
 // components/MascotMagnet.tsx, component and assets are kept.
 import { ProfilePreview } from "@/components/ProfilePreview";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import {
   loadProfile,
   saveProfilePatch,
@@ -73,8 +74,6 @@ export function ProfileWizard() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [photoError, setPhotoError] = useState<string | null>(null);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -217,35 +216,6 @@ export function ProfileWizard() {
     setStep(step - 1);
   };
 
-  const handlePhotoChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file || !userId) return;
-    setPhotoError(null);
-    setUploadingPhoto(true);
-    try {
-      const path = `${userId}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: publicUrl } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(path);
-      await saveProfilePatch(supabase, userId, {
-        profile_photo: publicUrl.publicUrl,
-      });
-      setProfile((prev) => ({ ...prev, profilePhoto: publicUrl.publicUrl }));
-    } catch {
-      setPhotoError(
-        "Photo upload isn't set up yet — you can skip this for now and add it later.",
-      );
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
   if (loadState === "loading") return <ProfileWizardSkeleton />;
   if (loadState === "error") return <ProfileWizardError onRetry={retry} />;
 
@@ -379,36 +349,28 @@ export function ProfileWizard() {
                   </Field>
                 </div>
 
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
-                    Profile photo (optional)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {profile.profilePhoto && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={profile.profilePhoto}
-                        alt=""
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    )}
-                    <label className="mingle-btn-secondary cursor-pointer text-xs">
-                      {uploadingPhoto ? "Uploading…" : "Choose photo"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handlePhotoChange}
-                        disabled={uploadingPhoto}
-                      />
-                    </label>
-                  </div>
-                  {photoError && (
-                    <p className="mt-1.5 text-xs text-mingle-text-secondary">
-                      {photoError}
-                    </p>
-                  )}
-                </div>
+                {userId ? (
+                  <TalentPhotoField
+                    supabase={supabase}
+                    userId={userId}
+                    photo={profile.profilePhoto}
+                    onChanged={(next) => {
+                      setProfile((prev) => {
+                        const updated = { ...prev, profilePhoto: next };
+                        void saveProfileCompletion(
+                          supabase,
+                          userId,
+                          profileCompletion(updated),
+                        );
+                        return updated;
+                      });
+                    }}
+                  />
+                ) : (
+                  <p className="text-xs text-mingle-text-secondary">
+                    Sign in to add a profile photo.
+                  </p>
+                )}
 
                 {userId && (
                   <TalentCvField

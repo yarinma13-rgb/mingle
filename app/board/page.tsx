@@ -33,11 +33,13 @@ export default async function BoardPage() {
   const otherIds = acceptedRows.map((row) =>
     row.requester_id === user.id ? row.recipient_id : row.requester_id,
   );
-  const info = await loadDisplayInfoForUsers(supabase, otherIds);
-  const timelines = await loadTimelinesForConnections(
-    supabase,
-    acceptedRows.map((row) => row.id),
-  );
+  const [info, timelines] = await Promise.all([
+    loadDisplayInfoForUsers(supabase, otherIds),
+    loadTimelinesForConnections(
+      supabase,
+      acceptedRows.map((row) => row.id),
+    ),
+  ]);
 
   const candidates: BoardCandidate[] = [];
   for (const row of acceptedRows) {

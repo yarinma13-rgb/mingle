@@ -33,31 +33,36 @@ export function TalentDashboard({
           icon={GaugeIcon}
           label="Profile completion"
           value={`${profileCompletion}%`}
-          accent="pinkPurple"
+          accent="pink"
+          href="/profile/build"
         />
         <KpiTile
           icon={PeopleIcon}
           label="Recommended companies"
           value={String(companies.length)}
-          accent="purpleCta"
+          accent="purple"
+          href="/discover"
         />
         <KpiTile
           icon={CompassIcon}
           label="New connections"
           value="0"
-          accent="ctaPink"
+          accent="blue"
+          href="/connections"
         />
         <KpiTile
           icon={MessageIcon}
           label="Active conversations"
           value="0"
-          accent="pinkCta"
+          accent="pink"
+          href="/conversations"
         />
         <KpiTile
           icon={BookmarkIcon}
           label="Saved companies"
           value="0"
-          accent="purplePink"
+          accent="purple"
+          href="/saved"
         />
       </div>
 

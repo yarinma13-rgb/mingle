@@ -35,7 +35,6 @@ export async function loadDiscoveryPage(
   const style = styleOptions.includes(filters.style) ? filters.style : "";
 
   if (viewer.userType === "company") {
-    const ownInput = await loadCompanyMatchInput(supabase, viewer.id);
     let query = supabase
       .from("talent_profiles")
       .select("*", { count: "exact" })
@@ -46,9 +45,11 @@ export async function loadDiscoveryPage(
     if (location) query = query.ilike("location", `%${location}%`);
     if (style) query = query.contains("work_style", [style]);
 
-    const { data, count, error } = await query
-      .order("updated_at", { ascending: false })
-      .range(from, to);
+    const [ownInput, listed] = await Promise.all([
+      loadCompanyMatchInput(supabase, viewer.id),
+      query.order("updated_at", { ascending: false }).range(from, to),
+    ]);
+    const { data, count, error } = listed;
     if (error) {
       return { cards: [], total: 0, page, pageSize: DISCOVERY_PAGE_SIZE };
     }
@@ -95,7 +96,6 @@ export async function loadDiscoveryPage(
     };
   }
 
-  const ownInput = await loadTalentMatchInput(supabase, viewer.id);
   let query = supabase
     .from("company_profiles")
     .select("*", { count: "exact" })
@@ -106,9 +106,11 @@ export async function loadDiscoveryPage(
   if (location) query = query.ilike("location", `%${location}%`);
   if (style) query = query.contains("work_environment", [style]);
 
-  const { data, count, error } = await query
-    .order("updated_at", { ascending: false })
-    .range(from, to);
+  const [ownInput, listed] = await Promise.all([
+    loadTalentMatchInput(supabase, viewer.id),
+    query.order("updated_at", { ascending: false }).range(from, to),
+  ]);
+  const { data, count, error } = listed;
   if (error) {
     return { cards: [], total: 0, page, pageSize: DISCOVERY_PAGE_SIZE };
   }

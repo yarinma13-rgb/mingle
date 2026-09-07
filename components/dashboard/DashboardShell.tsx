@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MingleLogo } from "@/components/MingleLogo";
 import { useCommandPalette } from "@/components/command-palette/CommandPaletteProvider";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
@@ -80,11 +81,18 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { openPalette, enabled: paletteEnabled } = useCommandPalette();
   const isCompany = userType === "company";
   const navItems = isCompany ? COMPANY_NAV : TALENT_NAV;
   const primaryItems = isCompany ? COMPANY_NAV_PRIMARY : TALENT_NAV_PRIMARY;
   const moreItems = isCompany ? COMPANY_NAV_MORE : TALENT_NAV_MORE;
+
+  useEffect(() => {
+    for (const item of navItems) {
+      router.prefetch(item.href);
+    }
+  }, [navItems, router]);
 
   return (
     <div className="flex min-h-screen flex-col bg-transparent">
@@ -151,6 +159,7 @@ export function DashboardShell({
               <div key={item.label} className="flex w-full flex-col items-center">
                 <Link
                   href={item.href}
+                  prefetch
                   className="group flex w-full flex-col items-center gap-1.5 py-3"
                 >
                   <span
@@ -197,7 +206,16 @@ export function DashboardShell({
         </main>
       </div>
 
-      <MobileBottomNav primaryItems={primaryItems} moreItems={moreItems} />
+      <MobileBottomNav
+        primaryItems={primaryItems}
+        moreItems={moreItems}
+        userName={userName}
+        userInitials={userInitials}
+        userSubtitle={userSubtitle}
+        profileHref={
+          isCompany ? "/company-profile/build" : "/profile/build"
+        }
+      />
     </div>
   );
 }

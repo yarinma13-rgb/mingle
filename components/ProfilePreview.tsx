@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { MingleLogo } from "@/components/MingleLogo";
 import { MingleChip } from "@/components/MingleChip";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { Database } from "@/lib/supabase/types";
 
@@ -68,18 +69,15 @@ export function ProfilePreview({
         </div>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          {profile.profilePhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.profilePhoto}
-              alt=""
-              className="h-20 w-20 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
-              {initials || "?"}
-            </div>
-          )}
+          <TalentPhotoImg
+            photo={profile.profilePhoto}
+            className="h-20 w-20 rounded-full object-cover"
+            fallback={
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue font-display text-xl font-bold text-white">
+                {initials || "?"}
+              </div>
+            }
+          />
           <div>
             <h1 className="font-display text-2xl font-bold text-mingle-text">
               {fullName || "Your name"}

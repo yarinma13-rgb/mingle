@@ -2,19 +2,30 @@
 
 import { useSyncExternalStore } from "react";
 
-// Same 768px threshold and useSyncExternalStore pattern as HomeShell's
-// splash variant detection, kept consistent across the app: server has
-// no viewport, so it always renders the desktop assumption until the
-// client hydrates and measures.
-const MOBILE_BREAKPOINT = 768;
+// Match Tailwind `md` (768px) plus real touch phones in landscape, where
+// innerWidth can exceed 768 but the pointer is still coarse. Server has
+// no viewport, so it assumes desktop until hydrate — same pattern as
+// HomeShell splash detection.
+const NARROW = "(max-width: 767.98px)";
+const TOUCH = "(hover: none) and (pointer: coarse)";
 
-function subscribe(callback: () => void) {
-  window.addEventListener("resize", callback);
-  return () => window.removeEventListener("resize", callback);
+function isSwipeViewport() {
+  return (
+    window.matchMedia(NARROW).matches || window.matchMedia(TOUCH).matches
+  );
 }
 
-function getSnapshot() {
-  return window.innerWidth < MOBILE_BREAKPOINT;
+function subscribe(callback: () => void) {
+  const narrow = window.matchMedia(NARROW);
+  const touch = window.matchMedia(TOUCH);
+  window.addEventListener("resize", callback);
+  narrow.addEventListener("change", callback);
+  touch.addEventListener("change", callback);
+  return () => {
+    window.removeEventListener("resize", callback);
+    narrow.removeEventListener("change", callback);
+    touch.removeEventListener("change", callback);
+  };
 }
 
 function getServerSnapshot() {
@@ -22,5 +33,5 @@ function getServerSnapshot() {
 }
 
 export function useIsMobile(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useSyncExternalStore(subscribe, isSwipeViewport, getServerSnapshot);
 }

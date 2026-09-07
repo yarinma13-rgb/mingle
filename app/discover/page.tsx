@@ -31,7 +31,6 @@ export default async function DiscoverPage({
 
   const accountLabel = user.email?.split("@")[0] ?? "You";
   const initials = accountLabel.slice(0, 2).toUpperCase();
-  const savedUserIds = await loadSavedUserIds(supabase, user.id);
   const params = await searchParams;
   const filters = parseDiscoveryFilters(params);
   const styleOptions =
@@ -41,12 +40,15 @@ export default async function DiscoverPage({
       : (COMPANY_QUESTIONS.find((question) => question.key === "workEnvironment")
           ?.options ?? []);
 
-  const { cards, total, pageSize } = await loadDiscoveryPage(
-    supabase,
-    { id: user.id, userType: userRow.user_type },
-    filters,
-    styleOptions,
-  );
+  const [savedUserIds, { cards, total, pageSize }] = await Promise.all([
+    loadSavedUserIds(supabase, user.id),
+    loadDiscoveryPage(
+      supabase,
+      { id: user.id, userType: userRow.user_type },
+      filters,
+      styleOptions,
+    ),
+  ]);
 
   const filtersActive = Boolean(
     filters.industry || filters.location || filters.style,
