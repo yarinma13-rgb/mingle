@@ -284,11 +284,6 @@ button:disabled {
   background: linear-gradient(180deg, var(--mingle-product-bg), var(--mingle-lavender));
 }
 
-/*
-  TODO(brand-assets): knockout for the JPEG light field.
-  Invert luminance so near-white pixels are transparent; paint the M with
-  the official connection gradient. Replace when a transparent PNG/SVG exists.
-*/
 .mingle-app-sidebar {
   background: var(--mingle-sidebar-bg);
   border-right: 1px solid var(--mingle-nav-divider);
@@ -307,30 +302,8 @@ button:disabled {
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
-  background: var(--mingle-connection-gradient);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-image: linear-gradient(#fff, #fff), var(--mingle-logo-mask);
-  -webkit-mask-composite: source-out;
-  mask-image: linear-gradient(#fff, #fff), var(--mingle-logo-mask);
-  mask-mode: alpha, luminance;
-  mask-composite: subtract;
-}
-
-.mingle-logo-mark[data-knockout="ready"] {
-  -webkit-mask-image: var(--mingle-logo-mask);
-  -webkit-mask-composite: source-over;
-  mask-image: var(--mingle-logo-mask);
-  mask-mode: alpha;
-  mask-composite: add;
-}
-
-[data-theme="dark"] .mingle-logo-mark[data-knockout="ready"] {
-  filter: none;
+  object-fit: contain;
+  background: none;
 }
 
 [data-theme="dark"] input:-webkit-autofill,
