@@ -434,24 +434,16 @@ These four are substantial enough to warrant their own short design pass
 before implementation, not a direct jump to code. Each needs at least one
 architecture decision confirmed with the founder first.
 
-### 6.1 Job/Role builder ("Add New Role")
-Nav already has a "Roles" item pointing at `/roles`
-(`DashboardShell.tsx` line 40), but **no `app/roles/` route and no
-roles/jobs database table exist yet** — this is a from-scratch feature, not
-a redesign of an existing one.
-- Founder wants a guided builder, not a big freeform text form — "not
-  everything to type, because it's tiring and we're going for effectiveness
-  and a smart solution."
-- Needs a new `roles` (or `jobs`) table — fields at minimum: title,
-  department, seniority, employment type (full-time/part-time/contract),
-  work model (remote/hybrid/onsite), required skills (multi-select, reuse
-  the skills vocabulary if one already exists in talent profiles — check
-  `talent_profiles` schema), description, status (open/paused/closed),
-  `company_id` FK. See 6.3 for the salary-range field, which lives on this
-  same table but with strict visibility rules.
-- Suggest a short step-by-step builder (similar shape to
-  `CompanyProfileWizard.tsx`) with sensible defaults/templates per role type
-  rather than blank fields, to minimize typing.
+### 6.1 Job/Role builder ("Add New Role") — done 2026-09-08
+Shipped. `app/roles/page.tsx` lists company-owned roles; `components/roles/RoleBuilder.tsx`
+is a 5-step chip-first wizard (title + department, seniority + employment,
+work model from `WORK_MODEL_OPTIONS`, skills capped at 5, optional description).
+Schema: `supabase/migrations/0014_company_roles.sql` (`public.roles`, owner-only
+RLS). `salary_min` / `salary_max` exist on the table for 6.3 and are never
+selected or shown in UI. **Migration is not run until the founder pastes it
+into the Supabase SQL Editor** — the page degrades to an instruction empty
+state if the table is missing. Pipeline counts per role are omitted: connections
+have no `role_id` yet.
 
 ### 6.2 Candidate recommendations (star rating + LinkedIn-verified)
 Clarified by the founder mid-session (no mockup provided, description only):
@@ -606,6 +598,9 @@ filters comfortably"), not more inline form fields cluttering the page:
 7. Run `supabase/migrations/0013_company_logo_storage.sql` manually via the
    Supabase SQL Editor — blocks company logo upload from working end to end
    even though the app code is already correct.
+7b. Run `supabase/migrations/0014_company_roles.sql` in the same SQL Editor —
+    blocks creating roles until `public.roles` exists (the /roles UI is
+    already in the app).
 8. Decide how candidate "distance" gets computed — free-text `location`
    today has no coordinates to measure distance from (geocode on save, or
    collect lat/lng explicitly?) — blocks the distance slider half of 6.5

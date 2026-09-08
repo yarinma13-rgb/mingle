@@ -9,6 +9,13 @@ export type RelationshipStage =
   | "decision"
   | "relationship";
 
+export type RoleStatus = "open" | "paused" | "closed";
+export type RoleEmploymentType =
+  | "full_time"
+  | "part_time"
+  | "contract"
+  | "freelance";
+
 export interface Database {
   public: {
     Tables: {
@@ -280,6 +287,50 @@ export interface Database {
           metadata?: Record<string, unknown>;
         };
         Update: Record<string, never>;
+        Relationships: [];
+      };
+      roles: {
+        Row: {
+          id: string;
+          company_id: string;
+          title: string;
+          department: string | null;
+          seniority: string | null;
+          employment_type: RoleEmploymentType | null;
+          work_model: string | null;
+          required_skills: string[];
+          description: string | null;
+          status: RoleStatus;
+          salary_min: number | null;
+          salary_max: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          company_id: string;
+          title: string;
+          department?: string | null;
+          seniority?: string | null;
+          employment_type?: RoleEmploymentType | null;
+          work_model?: string | null;
+          required_skills?: string[];
+          description?: string | null;
+          status?: RoleStatus;
+          salary_min?: number | null;
+          salary_max?: number | null;
+        };
+        Update: {
+          title?: string;
+          department?: string | null;
+          seniority?: string | null;
+          employment_type?: RoleEmploymentType | null;
+          work_model?: string | null;
+          required_skills?: string[];
+          description?: string | null;
+          status?: RoleStatus;
+          salary_min?: number | null;
+          salary_max?: number | null;
+        };
         Relationships: [];
       };
     };
