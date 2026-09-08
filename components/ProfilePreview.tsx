@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -8,8 +9,14 @@ import { MingleChip } from "@/components/MingleChip";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
+import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
+import { RequestRecommendation } from "@/components/recommendations/RequestRecommendation";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
 import type { ProfileState } from "@/lib/profile/persistence";
+import {
+  loadSubmittedRecommendations,
+  type SubmittedRecommendation,
+} from "@/lib/recommendations/persistence";
 import type { Database } from "@/lib/supabase/types";
 
 function ChipRow({ items }: { items: string[] }) {
@@ -57,6 +64,14 @@ export function ProfilePreview({
 }) {
   const initials = personInitials(profile.firstName, profile.lastName);
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+  const [recommendations, setRecommendations] = useState<SubmittedRecommendation[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    void loadSubmittedRecommendations(supabase, userId)
+      .then(setRecommendations)
+      .catch(() => setRecommendations([]));
+  }, [supabase, userId]);
 
   return (
     <div className="flex min-h-screen flex-1 justify-center px-6 py-16 sm:px-10">
@@ -141,6 +156,15 @@ export function ProfilePreview({
 
         <Section title="Skills">
           <ChipRow items={profile.skills} />
+        </Section>
+
+        <Section title="Recommendations">
+          <RecommendationsList items={recommendations} />
+          {userId ? (
+            <div className={recommendations.length > 0 ? "mt-2" : undefined}>
+              <RequestRecommendation />
+            </div>
+          ) : null}
         </Section>
 
         {profile.salaryExpectation ? (

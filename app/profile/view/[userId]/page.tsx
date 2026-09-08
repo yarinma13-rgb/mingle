@@ -13,6 +13,7 @@ import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters
 import { loadConnectionStatusWith } from "@/lib/connections/persistence";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
+import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
 
 export default async function ProfileViewPage({
   params,
@@ -88,6 +89,7 @@ export default async function ProfileViewPage({
     ];
 
     const initials = personInitials(talent.firstName, talent.lastName);
+    const recommendations = await loadSubmittedRecommendations(supabase, userId);
 
     return (
       <main className="flex min-h-screen flex-1 flex-col">
@@ -108,6 +110,8 @@ export default async function ProfileViewPage({
           initiallySaved={initiallySaved}
           cvPath={talent.cvPath}
           cvFileName={talent.cvFileName}
+          recommendations={recommendations}
+          canRequestRecommendation={viewer.id === userId}
         />
       </main>
     );

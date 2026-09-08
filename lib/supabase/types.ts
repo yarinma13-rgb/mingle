@@ -16,6 +16,9 @@ export type RoleEmploymentType =
   | "contract"
   | "freelance";
 
+export type RecommendationStatus = "pending" | "submitted";
+export type RecommendationDelivery = "whatsapp" | "email";
+
 export interface Database {
   public: {
     Tables: {
@@ -339,9 +342,67 @@ export interface Database {
         };
         Relationships: [];
       };
+      recommendations: {
+        Row: {
+          id: string;
+          candidate_id: string;
+          token: string;
+          recommender_name: string;
+          recommender_contact: string;
+          delivery_method: RecommendationDelivery;
+          status: RecommendationStatus;
+          rating: number | null;
+          body: string | null;
+          recommender_linkedin_sub: string | null;
+          recommender_linkedin_name: string | null;
+          created_at: string;
+          submitted_at: string | null;
+        };
+        Insert: {
+          candidate_id: string;
+          recommender_name: string;
+          recommender_contact: string;
+          delivery_method: RecommendationDelivery;
+          status?: RecommendationStatus;
+          token?: string;
+        };
+        Update: {
+          status?: RecommendationStatus;
+          rating?: number | null;
+          body?: string | null;
+          recommender_linkedin_sub?: string | null;
+          recommender_linkedin_name?: string | null;
+          submitted_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      submit_recommendation: {
+        Args: {
+          p_token: string;
+          p_rating: number;
+          p_body: string;
+          p_linkedin_sub: string;
+          p_linkedin_name: string;
+        };
+        Returns: undefined;
+      };
+      recommendation_request_preview: {
+        Args: { p_token: string };
+        Returns: { status: string; candidate_name: string | null }[];
+      };
+      list_submitted_recommendations: {
+        Args: { p_candidate_id: string };
+        Returns: {
+          id: string;
+          rating: number | null;
+          body: string | null;
+          recommender_name: string;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

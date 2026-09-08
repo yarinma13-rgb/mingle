@@ -13,6 +13,9 @@ import { TalentCvField } from "@/components/profile/TalentCvField";
 import { Avatar } from "@/components/Avatar";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
+import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
+import { RequestRecommendation } from "@/components/recommendations/RequestRecommendation";
+import type { SubmittedRecommendation } from "@/lib/recommendations/persistence";
 import type { ConnectionStatus } from "@/lib/supabase/types";
 import type { Gender } from "@/lib/profile/avatar";
 
@@ -94,6 +97,8 @@ type ProfileDetailShellProps = {
   initiallySaved: boolean;
   cvPath?: string | null;
   cvFileName?: string | null;
+  recommendations?: SubmittedRecommendation[];
+  canRequestRecommendation?: boolean;
 };
 
 const CONNECT_LABEL: Record<ConnectionStatus, string> = {
@@ -120,6 +125,8 @@ export function ProfileDetailShell({
   initiallySaved,
   cvPath = null,
   cvFileName = null,
+  recommendations = [],
+  canRequestRecommendation = false,
 }: ProfileDetailShellProps) {
   const router = useRouter();
   const toast = useToast();
@@ -292,6 +299,17 @@ export function ProfileDetailShell({
             )}
           </Section>
         ))}
+
+        {(recommendations.length > 0 || (canRequestRecommendation && isSelf)) && (
+          <Section title="Recommendations">
+            <RecommendationsList items={recommendations} />
+            {canRequestRecommendation && isSelf ? (
+              <div className={recommendations.length > 0 ? "mt-2" : undefined}>
+                <RequestRecommendation />
+              </div>
+            ) : null}
+          </Section>
+        )}
 
         <Section title="What to explore">
           <ul className="flex flex-col gap-2">

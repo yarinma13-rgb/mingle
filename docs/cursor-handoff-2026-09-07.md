@@ -449,29 +449,27 @@ state if the table is missing. Pipeline counts per role are omitted: connections
 have no `role_id` yet.
 
 ### 6.2 Candidate recommendations (star rating + LinkedIn-verified)
-Clarified by the founder mid-session (no mockup provided, description only):
-a candidate can request a recommendation from a former employer/colleague.
-Flow: candidate triggers a request → sent via WhatsApp or email to the
-recommender → recommender must authenticate with **their own LinkedIn
-account** before they're allowed to submit the recommendation (star rating +
-written text) → it attaches to the candidate's profile.
-- **External dependencies, need founder action before this can be built:**
-  a LinkedIn OAuth app (LinkedIn Developer Portal — same category of setup
-  as the Google/Sentry/PostHog account creations done earlier this project;
-  the agent cannot create this account on her behalf) for the "Sign in with
-  LinkedIn" step, and a decision on WhatsApp delivery — either a raw
-  `wa.me` deep link (no API needed, opens the user's own WhatsApp with a
-  prefilled message) or a real WhatsApp Business API integration (needs its
-  own account/setup). Recommend starting with `wa.me` deep link + the
-  existing Resend email integration (already wired, see `RESEND_API_KEY` in
-  `.env.local`) for the two send channels — no new account needed for a v1.
-- Needs a new table (e.g. `recommendations`): candidate_id,
-  recommender_name, recommender_email/phone, recommender_linkedin_id (set
-  only after their OAuth step), rating (1-5), text, status
-  (pending/submitted), created_at.
-- Display: stars + recommender name/LinkedIn headline on the talent profile
-  view (`components/profile-detail/ProfileDetailShell.tsx` or wherever the
-  public talent profile renders — confirm exact location before building).
+Shipped in app code 2026-09-08. Founder still needs to paste
+`supabase/migrations/0016_recommendations.sql` in the SQL Editor, keep
+`LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` as **server-only Secrets**
+on Vercel (Production + Preview, not `NEXT_PUBLIC_`), and Redeploy after
+this code is on `main`.
+- Candidate: "Request a recommendation" on `/profile/build` and own talent
+  profile. Email goes through Resend (`lib/email/recommendation-request.ts`,
+  same FROM / `appOrigin()` / try-catch as connection requests). WhatsApp is
+  a `wa.me` deep link in a new tab (no Business API).
+- Recommender (often not a mingle user): public `/recommend/[token]`. Sign in
+  with LinkedIn OpenID at `/api/auth/linkedin/callback` (the registered
+  redirect URI). Product only returns name / email / picture; UI shows name
+  plus "מאומת דרך LinkedIn", never a job headline.
+- Submit is `submit_recommendation` (security definer). Public listing is
+  `list_submitted_recommendations` so `recommender_contact` never leaves
+  the table. Identity is bound in an httpOnly cookie, not trusted from the
+  browser.
+- Display: stars + LinkedIn name + verified line on the public talent
+  profile. Do not add `/recommend` to `proxy.ts` protected prefixes.
+- OpenID does not include headline. Do not ask for extra LinkedIn API
+  products unless the founder requests them.
 
 ### 6.3 Salary expectations, hidden both ways, feeds matching
 Schema + private UI shipped 2026-09-08 (option 1 qualitative tag, **not**
@@ -585,9 +583,12 @@ filters comfortably"), not more inline form fields cluttering the page:
 2. Confirm whether the "Find your next opportunity" / "Find your next great
    hire" per-audience copy is fine as-is, or should be unified — blocks
    nothing else, low priority.
-3. Register a LinkedIn OAuth app — blocks 6.2.
-4. Decide WhatsApp delivery approach (deep link vs. Business API) — blocks
-   6.2 (deep link can ship without her action; Business API needs one).
+3. LinkedIn OAuth app is registered. Confirm redirect URI
+   `{APP_URL}/api/auth/linkedin/callback` and Vercel Secrets
+   `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` (not `NEXT_PUBLIC_`).
+   Redeploy after 6.2 is on `main`.
+4. WhatsApp v1 is the `wa.me` deep link (candidate sends from their own
+   chat). Business API is out of scope unless requested later.
 5. Register Google Cloud Console + Microsoft Azure AD OAuth apps for
    Calendar API access — blocks the external-sync half of 6.4 (internal-
    only calendar can ship without this).
@@ -602,6 +603,9 @@ filters comfortably"), not more inline form fields cluttering the page:
     already in the app).
 7c. Run `supabase/migrations/0015_talent_salary_and_skills.sql` — blocks
     talent skills, salary expectation, and salary-fit tags.
+7d. Run `supabase/migrations/0016_recommendations.sql` — blocks requesting
+    and submitting recommendations (the UI degrades if the table/RPCs are
+    missing).
 8. Decide how candidate "distance" gets computed — free-text `location`
    today has no coordinates to measure distance from (geocode on save, or
    collect lat/lng explicitly?) — blocks the distance slider in Discover,
