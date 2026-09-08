@@ -23,7 +23,15 @@ export const roleDraftSchema = z.object({
   workModel: z.enum(WORK_MODEL_OPTIONS),
   requiredSkills: z.array(z.string().trim().min(1)).max(5),
   description: z.string().trim().max(1200),
-});
+  salaryMin: z.number().int().positive().nullable(),
+  salaryMax: z.number().int().positive().nullable(),
+}).refine(
+  (value) =>
+    value.salaryMin == null ||
+    value.salaryMax == null ||
+    value.salaryMin <= value.salaryMax,
+  { message: "Max needs to be at least the min", path: ["salaryMax"] },
+);
 
 export const roleStatusSchema = z.enum(["open", "paused", "closed"]);
 

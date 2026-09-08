@@ -23,6 +23,8 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     cvPath: row.cv_path ?? null,
     cvFileName: row.cv_file_name ?? null,
     gender: isGender(row.gender) ? row.gender : null,
+    skills: row.skills ?? [],
+    salaryExpectation: null,
   };
 }
 

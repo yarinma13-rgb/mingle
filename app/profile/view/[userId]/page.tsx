@@ -83,6 +83,7 @@ export default async function ProfileViewPage({
       { title: "What drives them", chips: talent.drives },
       { title: "How they work", chips: talent.workStyle },
       { title: "What they're looking for", chips: talent.lookingFor },
+      { title: "Skills", chips: talent.skills },
       { title: "Beyond the CV", text: talent.beyondCv },
     ];
 

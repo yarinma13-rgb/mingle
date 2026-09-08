@@ -139,6 +139,18 @@ export function ProfilePreview({
           <ChipRow items={profile.lookingFor} />
         </Section>
 
+        <Section title="Skills">
+          <ChipRow items={profile.skills} />
+        </Section>
+
+        {profile.salaryExpectation ? (
+          <Section title="Salary expectation">
+            <p className="text-sm text-mingle-text-secondary">
+              Saved privately. Companies never see the number.
+            </p>
+          </Section>
+        ) : null}
+
         <Section title="Beyond the CV">
           <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
             {profile.beyondCv}

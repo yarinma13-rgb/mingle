@@ -20,6 +20,8 @@ export type ProfileState = {
   cvPath: string | null;
   cvFileName: string | null;
   gender: Gender | null;
+  skills: string[];
+  salaryExpectation: number | null;
 };
 
 export const EMPTY_PROFILE: ProfileState = {
@@ -38,9 +40,11 @@ export const EMPTY_PROFILE: ProfileState = {
   cvPath: null,
   cvFileName: null,
   gender: null,
+  skills: [],
+  salaryExpectation: null,
 };
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 function hasBasicInfo(p: ProfileState) {
   return Boolean(
@@ -66,13 +70,13 @@ export function resumeStep(p: ProfileState): number {
   if (p.drives.length === 0) return 2;
   if (p.workStyle.length === 0) return 3;
   if (p.lookingFor.length === 0) return 4;
-  if (!hasBeyondCv(p)) return 5;
+  if (p.skills.length === 0) return 5;
+  if (!hasBeyondCv(p)) return 7;
   return TOTAL_STEPS;
 }
 
-/** Six equally-weighted categories per PRODUCT_SPEC.md's profile
- * completion rule: basic info, photo, drives, work style, looking for,
- * beyond the CV. */
+/** Basic info, photo, drives, work style, looking for, skills, beyond the CV.
+ * Salary is optional and private, so it does not affect completion. */
 export function profileCompletion(p: ProfileState): number {
   const categories = [
     hasBasicInfo(p),
@@ -80,6 +84,7 @@ export function profileCompletion(p: ProfileState): number {
     p.drives.length > 0,
     p.workStyle.length > 0,
     p.lookingFor.length > 0,
+    p.skills.length > 0,
     hasBeyondCv(p),
   ];
   const done = categories.filter(Boolean).length;
@@ -114,6 +119,9 @@ export async function loadProfile(
     cvPath: data.cv_path ?? null,
     cvFileName: data.cv_file_name ?? null,
     gender: isGender(data.gender) ? data.gender : null,
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    salaryExpectation:
+      typeof data.salary_expectation === "number" ? data.salary_expectation : null,
   };
 }
 
@@ -136,23 +144,43 @@ export async function saveProfilePatch(
     cv_path: string | null;
     cv_file_name: string | null;
     gender: Gender | null;
+    skills: string[];
+    salary_expectation: number | null;
   }>,
 ) {
-  const { gender, ...rest } = patch;
+  const { gender, skills, salary_expectation, ...rest } = patch;
   const { error } = await supabase
     .from("talent_profiles")
     .upsert({ user_id: userId, ...rest }, { onConflict: "user_id" });
   if (error) throw error;
 
-  if (!("gender" in patch)) return;
-  const { error: genderError } = await supabase
-    .from("talent_profiles")
-    .upsert({ user_id: userId, gender: gender ?? null }, { onConflict: "user_id" });
-  if (
-    genderError &&
-    !/gender|schema cache|column/i.test(genderError.message)
-  ) {
-    throw genderError;
+  if ("gender" in patch) {
+    const { error: genderError } = await supabase
+      .from("talent_profiles")
+      .upsert({ user_id: userId, gender: gender ?? null }, { onConflict: "user_id" });
+    if (
+      genderError &&
+      !/gender|schema cache|column/i.test(genderError.message)
+    ) {
+      throw genderError;
+    }
+  }
+
+  if ("skills" in patch || "salary_expectation" in patch) {
+    const extra: { user_id: string; skills?: string[]; salary_expectation?: number | null } = {
+      user_id: userId,
+    };
+    if ("skills" in patch) extra.skills = skills ?? [];
+    if ("salary_expectation" in patch) extra.salary_expectation = salary_expectation ?? null;
+    const { error: extraError } = await supabase
+      .from("talent_profiles")
+      .upsert(extra, { onConflict: "user_id" });
+    if (
+      extraError &&
+      !/skills|salary_expectation|schema cache|column/i.test(extraError.message)
+    ) {
+      throw extraError;
+    }
   }
 }
 

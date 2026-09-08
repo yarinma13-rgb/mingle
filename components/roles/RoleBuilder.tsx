@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
+import { ChipMultiSelect } from "@/components/ChipMultiSelect";
 import {
   ROLE_DEPARTMENT_OPTIONS,
   ROLE_EMPLOYMENT_OPTIONS,
@@ -22,7 +22,7 @@ import {
 import { roleDraftSchema } from "@/lib/validation/role";
 import type { Database } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 const STEP_COPY: { headline: string; subtext: string }[] = [
   {
@@ -40,6 +40,10 @@ const STEP_COPY: { headline: string; subtext: string }[] = [
   {
     headline: "Skills that matter",
     subtext: "Up to five. You can always edit later.",
+  },
+  {
+    headline: "Role budget",
+    subtext: "Private. Candidates never see the numbers, only a salary fit tag.",
   },
   {
     headline: "A few words",
@@ -112,7 +116,13 @@ export function RoleBuilder({
           : true;
 
   async function finish() {
-    const parsed = roleDraftSchema.safeParse(draft);
+    const parsed = roleDraftSchema.safeParse({
+      ...draft,
+      salaryMin:
+        draft.salaryMin && Number.isFinite(draft.salaryMin) ? draft.salaryMin : null,
+      salaryMax:
+        draft.salaryMax && Number.isFinite(draft.salaryMax) ? draft.salaryMax : null,
+    });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Check the role details");
       return;
@@ -286,36 +296,62 @@ export function RoleBuilder({
           ) : null}
 
           {step === 4 ? (
-            <div>
-              <div className="flex flex-wrap gap-2">
-                {ROLE_SKILL_OPTIONS.map((option) => {
-                  const selected = draft.requiredSkills.includes(option);
-                  const atCap =
-                    draft.requiredSkills.length >= MAX_PROFILE_PICKS && !selected;
-                  return (
-                    <Chip
-                      key={option}
-                      selected={selected}
-                      disabled={atCap}
-                      onClick={() =>
-                        setDraft((prev) => ({
-                          ...prev,
-                          requiredSkills: toggleCapped(prev.requiredSkills, option),
-                        }))
-                      }
-                    >
-                      {option}
-                    </Chip>
-                  );
-                })}
-              </div>
-              <p className="mt-3 text-center text-xs text-mingle-text-secondary">
-                {draft.requiredSkills.length} of {MAX_PROFILE_PICKS} selected
-              </p>
-            </div>
+            <ChipMultiSelect
+              label="Required skills"
+              options={ROLE_SKILL_OPTIONS}
+              selected={draft.requiredSkills}
+              onChange={(requiredSkills) =>
+                setDraft((prev) => ({ ...prev, requiredSkills }))
+              }
+            />
           ) : null}
 
           {step === 5 ? (
+            <div className="grid grid-cols-2 gap-4">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
+                  Min
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  value={draft.salaryMin ?? ""}
+                  onChange={(event) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      salaryMin: event.target.value
+                        ? Number.parseInt(event.target.value, 10)
+                        : null,
+                    }))
+                  }
+                  placeholder="Optional"
+                  className="w-full rounded-2xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
+                  Max
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  value={draft.salaryMax ?? ""}
+                  onChange={(event) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      salaryMax: event.target.value
+                        ? Number.parseInt(event.target.value, 10)
+                        : null,
+                    }))
+                  }
+                  placeholder="Optional"
+                  className="w-full rounded-2xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
+                />
+              </label>
+            </div>
+          ) : null}
+
+          {step === 6 ? (
             <textarea
               value={draft.description}
               onChange={(event) =>

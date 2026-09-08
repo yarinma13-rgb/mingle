@@ -15,7 +15,16 @@ import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
-import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
+import { ChipMultiSelect } from "@/components/ChipMultiSelect";
+import { CustomChipInput } from "@/components/CustomChipInput";
+import {
+  addCustomCapped,
+  extraChipValues,
+  MAX_PROFILE_PICKS,
+  toggleCapped,
+} from "@/lib/profile/pick-limit";
+import { PROFILE_QUESTIONS, BEYOND_CV_SUB_PROMPTS } from "@/lib/profile/questions";
+import { ROLE_SKILL_OPTIONS } from "@/lib/roles/questions";
 import {
   loadProfile,
   saveProfilePatch,
@@ -25,7 +34,6 @@ import {
   EMPTY_PROFILE,
   type ProfileState,
 } from "@/lib/profile/persistence";
-import { PROFILE_QUESTIONS, BEYOND_CV_SUB_PROMPTS } from "@/lib/profile/questions";
 import {
   basicProfileSchema,
   beyondCvSchema,
@@ -33,7 +41,7 @@ import {
 } from "@/lib/validation/profile";
 import type { Database } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -147,6 +155,8 @@ export function ProfileWizard() {
       looking_for: string[];
       beyond_cv: string;
       gender: Gender | null;
+      skills: string[];
+      salary_expectation: number | null;
     }>,
     nextProfile: ProfileState,
     nextStep: number,
@@ -287,14 +297,22 @@ export function ProfileWizard() {
               ? "Your CV tells your story"
               : multiQuestion
                 ? multiQuestion.headline
-                : "Beyond the CV"}
+                : step === 5
+                  ? "Skills"
+                  : step === 6
+                    ? "Salary expectation"
+                    : "Beyond the CV"}
           </h1>
           <p className="mt-2 text-sm text-mingle-text-secondary">
             {step === 1
               ? "We want to know what comes next."
               : multiQuestion
                 ? multiQuestion.subtext
-                : "What should someone know about you before they meet you?"}
+                : step === 5
+                  ? "Technologies and craft. Add your own if it is not listed."
+                  : step === 6
+                    ? "Private. Companies never see the number, only whether you fit a role budget."
+                    : "What should someone know about you before they meet you?"}
           </p>
         </div>
 
@@ -449,7 +467,10 @@ export function ProfileWizard() {
                   aria-label={multiQuestion.headline}
                   className="flex flex-wrap justify-center gap-2.5"
                 >
-                  {multiQuestion.options.map((option) => {
+                  {[
+                    ...multiQuestion.options,
+                    ...extraChipValues(profile[multiKey], multiQuestion.options),
+                  ].map((option) => {
                     const selected = profile[multiKey].includes(option);
                     const atCap =
                       profile[multiKey].length >= MAX_PROFILE_PICKS && !selected;
@@ -474,6 +495,20 @@ export function ProfileWizard() {
                     );
                   })}
                 </div>
+                <CustomChipInput
+                  disabled={profile[multiKey].length >= MAX_PROFILE_PICKS}
+                  onAdd={(value) =>
+                    setProfile((prev) => ({
+                      ...prev,
+                      [multiKey]: addCustomCapped(
+                        prev[multiKey],
+                        value,
+                        MAX_PROFILE_PICKS,
+                        multiQuestion.options,
+                      ),
+                    }))
+                  }
+                />
                 <p className="mt-3 text-center text-xs text-mingle-text-secondary">
                   {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
                 </p>
@@ -518,6 +553,111 @@ export function ProfileWizard() {
             )}
 
             {step === 5 && (
+              <div>
+                <ChipMultiSelect
+                  label="Skills"
+                  chipStyle="square"
+                  options={ROLE_SKILL_OPTIONS}
+                  selected={profile.skills}
+                  onChange={(skills) =>
+                    setProfile((prev) => ({ ...prev, skills }))
+                  }
+                />
+                {saveError && (
+                  <p className="mt-6 text-center text-sm text-mingle-pink">
+                    {saveError}
+                  </p>
+                )}
+                <div className="mt-10 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    disabled={saving}
+                    className="mingle-btn-secondary disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <motion.button
+                    type="button"
+                    onClick={() =>
+                      persistAndAdvance(
+                        { skills: profile.skills },
+                        profile,
+                        6,
+                      )
+                    }
+                    disabled={profile.skills.length === 0 || saving}
+                    className={`font-display text-sm ${
+                      profile.skills.length > 0
+                        ? "mingle-btn-primary"
+                        : "mingle-btn-secondary cursor-not-allowed opacity-45"
+                    }`}
+                  >
+                    {saving ? "Saving…" : "Continue"}
+                  </motion.button>
+                </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
+                  Monthly or annual number, your choice. Keep it consistent.
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={profile.salaryExpectation ?? ""}
+                  onChange={(event) =>
+                    setProfile((prev) => ({
+                      ...prev,
+                      salaryExpectation: event.target.value
+                        ? Number.parseInt(event.target.value, 10)
+                        : null,
+                    }))
+                  }
+                  placeholder="Optional"
+                  className={inputClass}
+                />
+                {saveError && (
+                  <p className="mt-6 text-center text-sm text-mingle-pink">
+                    {saveError}
+                  </p>
+                )}
+                <div className="mt-10 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    disabled={saving}
+                    className="mingle-btn-secondary disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      const salaryExpectation =
+                        profile.salaryExpectation &&
+                        Number.isFinite(profile.salaryExpectation) &&
+                        profile.salaryExpectation > 0
+                          ? profile.salaryExpectation
+                          : null;
+                      persistAndAdvance(
+                        { salary_expectation: salaryExpectation },
+                        { ...profile, salaryExpectation },
+                        7,
+                      );
+                    }}
+                    disabled={saving}
+                    className="mingle-btn-primary font-display text-sm"
+                  >
+                    {saving ? "Saving…" : "Continue"}
+                  </motion.button>
+                </div>
+              </div>
+            )}
+
+            {step === 7 && (
               <div className="flex flex-col items-center">
                 <textarea
                   value={profile.beyondCv}
@@ -588,7 +728,7 @@ export function ProfileWizard() {
           </motion.div>
         </AnimatePresence>
 
-        {step > 1 && step !== 5 ? null : null}
+        {step > 1 && step !== 7 ? null : null}
       </div>
     </div>
   );

@@ -22,7 +22,13 @@ import {
   ONBOARDING_INTRO,
   type OnboardingQuestion,
 } from "@/lib/onboarding/questions";
-import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
+import { CustomChipInput } from "@/components/CustomChipInput";
+import {
+  addCustomCapped,
+  extraChipValues,
+  MAX_PROFILE_PICKS,
+  toggleCapped,
+} from "@/lib/profile/pick-limit";
 import type { Database, UserType } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 4;
@@ -203,7 +209,16 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               aria-label={currentQuestion.question}
               className="mt-6 flex flex-wrap justify-center gap-2.5"
             >
-              {currentQuestion.options.map((option) => {
+              {(currentQuestion.type === "multi"
+                ? [
+                    ...currentQuestion.options,
+                    ...extraChipValues(
+                      answers[currentQuestion.key as "q2" | "q3"],
+                      currentQuestion.options,
+                    ),
+                  ]
+                : currentQuestion.options
+              ).map((option) => {
                 const selected =
                   currentQuestion.type === "single"
                     ? answers.q1 === option
@@ -241,10 +256,30 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               })}
             </div>
             {currentQuestion.type === "multi" ? (
-              <p className="mt-3 text-center text-xs text-mingle-text-secondary">
-                {(answers[currentQuestion.key as "q2" | "q3"]).length} of{" "}
-                {MAX_PROFILE_PICKS} selected
-              </p>
+              <>
+                <CustomChipInput
+                  disabled={
+                    (answers[currentQuestion.key as "q2" | "q3"]).length >=
+                    MAX_PROFILE_PICKS
+                  }
+                  onAdd={(value) => {
+                    const key = currentQuestion.key as "q2" | "q3";
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [key]: addCustomCapped(
+                        prev[key],
+                        value,
+                        MAX_PROFILE_PICKS,
+                        currentQuestion.options,
+                      ),
+                    }));
+                  }}
+                />
+                <p className="mt-3 text-center text-xs text-mingle-text-secondary">
+                  {(answers[currentQuestion.key as "q2" | "q3"]).length} of{" "}
+                  {MAX_PROFILE_PICKS} selected
+                </p>
+              </>
             ) : null}
           </motion.div>
         </AnimatePresence>

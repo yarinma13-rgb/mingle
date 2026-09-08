@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -162,9 +163,12 @@ export function RolesScreen({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
+                  <Link
+                    href={`/roles/${role.id}`}
+                    className="font-display text-base font-semibold tracking-tight text-mingle-text hover:underline"
+                  >
                     {role.title}
-                  </h2>
+                  </Link>
                   <p className="mt-1 text-xs text-mingle-text-secondary">
                     {[role.department, role.seniority, employmentLabel(role.employmentType)]
                       .filter(Boolean)

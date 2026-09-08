@@ -440,7 +440,10 @@ is a 5-step chip-first wizard (title + department, seniority + employment,
 work model from `WORK_MODEL_OPTIONS`, skills capped at 5, optional description).
 Schema: `supabase/migrations/0014_company_roles.sql` (`public.roles`, owner-only
 RLS). `salary_min` / `salary_max` exist on the table for 6.3 and are never
-selected or shown in UI. **Migration is not run until the founder pastes it
+selected or shown in UI. Custom tags: chip lists (role skills, profile
+values, onboarding multi-picks, Discover values) have a small text field
+plus "+" to add a label that is not on the preset list, still capped at 5
+on profile/role picks. **Migration is not run until the founder pastes it
 into the Supabase SQL Editor** — the page degrades to an instruction empty
 state if the table is missing. Pipeline counts per role are omitted: connections
 have no `role_id` yet.
@@ -471,24 +474,20 @@ written text) → it attaches to the candidate's profile.
   public talent profile renders — confirm exact location before building).
 
 ### 6.3 Salary expectations, hidden both ways, feeds matching
-Two new fields, each private to its owner:
-- Talent side: candidate can enter salary expectations on their profile.
-  Never shown to companies directly.
-- Company side: when creating a role (see 6.1), the company sets a budget/
-  salary range for that role. Never shown to candidates directly.
-- The matching algorithm uses both values to compute compatibility (e.g.
-  range overlap) but **only ever surfaces a qualitative signal** — something
-  like "compensation expectations aligned" / "not enough overlap" as a
-  boolean or tier, never the raw numbers, to either side.
-- Founder explicitly asked to "plan the matching/ranking logic more
-  strongly" around this — **before writing matching code**, check how
-  matching/scoring currently works (search for wherever "match" percentage
-  is computed today, likely referenced from `RelationshipContextPanel.tsx`'s
-  `score` prop — trace it back to its source) and design salary-compatibility
-  as one additional weighted signal into that existing scoring, not a
-  parallel separate system. This needs a short design note of its own
-  (weighting, what "overlap" means for open-ended ranges, how to handle a
-  candidate or company that left the field blank) before implementation —
+Schema + private UI shipped 2026-09-08 (option 1 qualitative tag, **not**
+wired into `matchScore` / `why-match.ts`).
+- Talent: `talent_profiles.salary_expectation` via `0015_talent_salary_and_skills.sql`,
+  collected in `ProfileWizard` step 6. `toTalentProfile` always zeros this
+  field so company-facing surfaces never receive the number.
+- Company: `roles.salary_min` / `salary_max` collected in the role builder.
+  Never shown on role cards or candidate views.
+- `/roles/[id]` lists pipeline contacts with `lib/roles/salary-alignment.ts`
+  tags only: aligned (in range or below min), above budget, or not enough info.
+- Matching-engine weighting is still a later design pass. Do not fold this
+  tag into `MATCH_WEIGHTS`.
+- **Distance / radius** (talent or company): still blocked. Founder also
+  asked to collect a commute radius on talent. Same geocode prerequisite as
+  item 8 below. Do not add UI until that decision lands.
   flag back to the founder with a concrete proposal rather than guessing
   the weighting scheme.
 
@@ -543,14 +542,14 @@ this is an extension of it, not a new one from scratch:
 Founder wants these filters added, all exposed through **one small popover/
 modal panel** (her words: "a small window that opens where you can add
 filters comfortably"), not more inline form fields cluttering the page:
-- **Distance** — a slider/range control in kilometers. **Blocked on data**:
+- **Distance** — a slider/range control in kilometers, and later the same
+  radius on the role builder. **Blocked on data**:
   `talent_profiles.location` (`supabase/migrations/0003_phase3_talent_profile.sql`
   line 20) is a free-text field today, not geocoded coordinates — there is
-  no lat/lng to compute distance from. This needs a schema decision first
-  (either geocode `location` server-side on profile save via a geocoding
-  API, or add explicit lat/lng columns collected at profile-build time).
-  Flag this back to the founder before building the slider — it's a
-  prerequisite, not a UI detail.
+  no lat/lng to compute distance from. Same block for a company-level or
+  role-level "willing to accept candidates within X km" field. Needs a
+  schema decision first (geocode `location` on save, or collect lat/lng
+  explicitly). Do not build the slider until that exists.
 - **Years of experience** — range slider, backed by the existing
   `talent_profiles.years_experience` column (already exists, no schema
   change needed). Founder explicitly asked for the range to be forgiving:
@@ -601,7 +600,11 @@ filters comfortably"), not more inline form fields cluttering the page:
 7b. Run `supabase/migrations/0014_company_roles.sql` in the same SQL Editor —
     blocks creating roles until `public.roles` exists (the /roles UI is
     already in the app).
+7c. Run `supabase/migrations/0015_talent_salary_and_skills.sql` — blocks
+    talent skills, salary expectation, and salary-fit tags.
 8. Decide how candidate "distance" gets computed — free-text `location`
    today has no coordinates to measure distance from (geocode on save, or
-   collect lat/lng explicitly?) — blocks the distance slider half of 6.5
-   (the experience/role/hybrid/values filters can ship without this).
+   collect lat/lng explicitly?) — blocks the distance slider in Discover,
+   a radius on the role builder, **and** a commute radius on the talent
+   profile (requested 2026-09-08). Do not build any of these until that
+   decision lands.

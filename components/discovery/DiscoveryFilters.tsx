@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { CustomChipInput } from "@/components/CustomChipInput";
+import {
+  addCustomCapped,
+  extraChipValues,
+} from "@/lib/profile/pick-limit";
 import {
   discoveryActiveFilterCount,
   WORK_MODEL_OPTIONS,
@@ -26,6 +31,9 @@ export function DiscoveryFiltersForm({
   const [open, setOpen] = useState(false);
   const [yearsMin, setYearsMin] = useState(filters.yearsMin ?? 0);
   const [yearsMax, setYearsMax] = useState(filters.yearsMax ?? 0);
+  const [customValues, setCustomValues] = useState(() =>
+    extraChipValues(filters.values, valueOptions),
+  );
   const activeCount = discoveryActiveFilterCount(filters);
   const isCompany = audience === "company";
 
@@ -179,8 +187,7 @@ export function DiscoveryFiltersForm({
                   </label>
                 </div>
 
-                {valueOptions.length > 0 ? (
-                  <fieldset className="mt-4">
+                <fieldset className="mt-4">
                     <legend className="text-xs font-medium text-mingle-text-secondary">
                       Values overlap
                     </legend>
@@ -188,7 +195,7 @@ export function DiscoveryFiltersForm({
                       Keep candidates whose top values include any of these.
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {valueOptions.map((option) => (
+                      {[...valueOptions, ...customValues].map((option) => (
                         <label
                           key={option}
                           className="inline-flex items-center gap-1.5 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1.5 text-xs text-mingle-text"
@@ -203,8 +210,14 @@ export function DiscoveryFiltersForm({
                         </label>
                       ))}
                     </div>
+                    <CustomChipInput
+                      onAdd={(value) =>
+                        setCustomValues((prev) =>
+                          addCustomCapped(prev, value, 20, valueOptions),
+                        )
+                      }
+                    />
                   </fieldset>
-                ) : null}
 
                 <p className="mt-4 rounded-xl border border-dashed border-mingle-border px-3 py-2.5 text-xs text-mingle-text-secondary">
                   Distance in kilometers is waiting on a location decision.

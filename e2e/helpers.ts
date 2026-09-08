@@ -97,9 +97,15 @@ export async function completeTalentProfile(
   await page.getByRole("button", { name: "Career growth", exact: true }).click();
   await page.getByRole("button", { name: "Continue" }).click();
 
+  await expect(page.getByRole("heading", { name: "Skills" })).toBeVisible();
+  await page.getByRole("button", { name: "React", exact: true }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("heading", { name: "Salary expectation" })).toBeVisible();
+  await page.getByRole("button", { name: "Continue" }).click();
+
   await expect(page.getByRole("heading", { name: "Beyond the CV" })).toBeVisible();
   await page.locator("textarea").fill(LONG_TEXT);
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "See my profile" }).click();
 
   await page.getByRole("link", { name: "Looks good" }).click();
   await page.waitForURL(/\/dashboard/, { timeout: 30_000 });

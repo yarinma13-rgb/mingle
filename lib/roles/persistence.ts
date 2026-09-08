@@ -6,7 +6,7 @@ import type {
 } from "@/lib/supabase/types";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, created_at, updated_at";
 
 export type RoleRecord = {
   id: string;
@@ -19,6 +19,8 @@ export type RoleRecord = {
   requiredSkills: string[];
   description: string | null;
   status: RoleStatus;
+  salaryMin: number | null;
+  salaryMax: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -31,6 +33,8 @@ export type RoleDraft = {
   workModel: string;
   requiredSkills: string[];
   description: string;
+  salaryMin: number | null;
+  salaryMax: number | null;
 };
 
 export const EMPTY_ROLE_DRAFT: RoleDraft = {
@@ -41,6 +45,8 @@ export const EMPTY_ROLE_DRAFT: RoleDraft = {
   workModel: "",
   requiredSkills: [],
   description: "",
+  salaryMin: null,
+  salaryMax: null,
 };
 
 type RoleListRow = Pick<
@@ -55,6 +61,8 @@ type RoleListRow = Pick<
   | "required_skills"
   | "description"
   | "status"
+  | "salary_min"
+  | "salary_max"
   | "created_at"
   | "updated_at"
 >;
@@ -71,6 +79,8 @@ function toRecord(row: RoleListRow): RoleRecord {
     requiredSkills: row.required_skills ?? [],
     description: row.description,
     status: row.status,
+    salaryMin: row.salary_min,
+    salaryMax: row.salary_max,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -96,6 +106,8 @@ export function draftFromRole(role: RoleRecord): RoleDraft {
     workModel: role.workModel ?? "",
     requiredSkills: role.requiredSkills,
     description: role.description ?? "",
+    salaryMin: role.salaryMin,
+    salaryMax: role.salaryMax,
   };
 }
 
@@ -129,6 +141,8 @@ export async function createCompanyRole(
       required_skills: draft.requiredSkills,
       description: draft.description.trim() || null,
       status: "open",
+      salary_min: draft.salaryMin,
+      salary_max: draft.salaryMax,
     })
     .select(ROLE_LIST_COLUMNS)
     .single();
@@ -152,6 +166,8 @@ export async function updateCompanyRole(
       work_model: draft.workModel || null,
       required_skills: draft.requiredSkills,
       description: draft.description.trim() || null,
+      salary_min: draft.salaryMin,
+      salary_max: draft.salaryMax,
     })
     .eq("id", roleId)
     .eq("company_id", companyId)
@@ -176,4 +192,19 @@ export async function updateCompanyRoleStatus(
     .single();
   if (error) throw error;
   return toRecord(data);
+}
+
+export async function loadCompanyRole(
+  supabase: SupabaseClient<Database>,
+  roleId: string,
+  companyId: string,
+): Promise<RoleRecord | null> {
+  const { data, error } = await supabase
+    .from("roles")
+    .select(ROLE_LIST_COLUMNS)
+    .eq("id", roleId)
+    .eq("company_id", companyId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? toRecord(data) : null;
 }

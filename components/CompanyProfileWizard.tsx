@@ -20,7 +20,13 @@ import {
   type CompanyProfileState,
 } from "@/lib/company-profile/persistence";
 import { saveProfileCompletion } from "@/lib/profile/persistence";
-import { MAX_PROFILE_PICKS, toggleCapped } from "@/lib/profile/pick-limit";
+import { CustomChipInput } from "@/components/CustomChipInput";
+import {
+  addCustomCapped,
+  extraChipValues,
+  MAX_PROFILE_PICKS,
+  toggleCapped,
+} from "@/lib/profile/pick-limit";
 import {
   COMPANY_QUESTIONS,
   COMPANY_STAGE_OPTIONS,
@@ -420,7 +426,10 @@ export function CompanyProfileWizard() {
                   aria-label={multiQuestion.headline}
                   className="flex flex-wrap justify-center gap-2.5"
                 >
-                  {multiQuestion.options.map((option) => {
+                  {[
+                    ...multiQuestion.options,
+                    ...extraChipValues(profile[multiKey], multiQuestion.options),
+                  ].map((option) => {
                     const selected = profile[multiKey].includes(option);
                     const atCap =
                       profile[multiKey].length >= MAX_PROFILE_PICKS && !selected;
@@ -445,6 +454,20 @@ export function CompanyProfileWizard() {
                     );
                   })}
                 </div>
+                <CustomChipInput
+                  disabled={profile[multiKey].length >= MAX_PROFILE_PICKS}
+                  onAdd={(value) =>
+                    setProfile((prev) => ({
+                      ...prev,
+                      [multiKey]: addCustomCapped(
+                        prev[multiKey],
+                        value,
+                        MAX_PROFILE_PICKS,
+                        multiQuestion.options,
+                      ),
+                    }))
+                  }
+                />
                 <p className="mt-3 text-center text-xs text-mingle-text-secondary">
                   {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
                 </p>
