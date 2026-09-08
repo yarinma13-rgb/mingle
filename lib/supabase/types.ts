@@ -18,6 +18,10 @@ export type RoleEmploymentType =
 
 export type RecommendationStatus = "pending" | "submitted";
 export type RecommendationDelivery = "whatsapp" | "email";
+export type CompanyMemberRole = "owner" | "hr" | "team_lead" | "member";
+export type CompanyMemberStatus = "invited" | "active";
+export type InterviewLocationType = "video" | "in_person";
+export type InterviewStatus = "scheduled" | "completed" | "cancelled";
 
 export interface Database {
   public: {
@@ -118,6 +122,8 @@ export interface Database {
           gender: string | null;
           salary_expectation: number | null;
           skills: string[];
+          latitude: number | null;
+          longitude: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -140,6 +146,8 @@ export interface Database {
           gender?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Update: {
           first_name?: string | null;
@@ -159,6 +167,8 @@ export interface Database {
           gender?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Relationships: [];
       };
@@ -178,6 +188,8 @@ export interface Database {
           who_thrives_here: string | null;
           description: string | null;
           looking_for: string[];
+          latitude: number | null;
+          longitude: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -195,6 +207,8 @@ export interface Database {
           who_thrives_here?: string | null;
           description?: string | null;
           looking_for?: string[];
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Update: {
           company_name?: string | null;
@@ -209,6 +223,8 @@ export interface Database {
           who_thrives_here?: string | null;
           description?: string | null;
           looking_for?: string[];
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Relationships: [];
       };
@@ -376,6 +392,64 @@ export interface Database {
         };
         Relationships: [];
       };
+      company_members: {
+        Row: {
+          id: string;
+          company_id: string;
+          email: string;
+          user_id: string | null;
+          role: CompanyMemberRole;
+          status: CompanyMemberStatus;
+          invited_by: string;
+          created_at: string;
+        };
+        Insert: {
+          company_id: string;
+          email: string;
+          invited_by: string;
+          role?: CompanyMemberRole;
+          status?: CompanyMemberStatus;
+          user_id?: string | null;
+        };
+        Update: {
+          user_id?: string | null;
+          role?: CompanyMemberRole;
+          status?: CompanyMemberStatus;
+        };
+        Relationships: [];
+      };
+      interviews: {
+        Row: {
+          id: string;
+          company_id: string;
+          connection_id: string;
+          scheduled_by: string;
+          scheduled_at: string;
+          duration_minutes: number;
+          location_type: InterviewLocationType;
+          notes: string | null;
+          status: InterviewStatus;
+          created_at: string;
+        };
+        Insert: {
+          company_id: string;
+          connection_id: string;
+          scheduled_by: string;
+          scheduled_at: string;
+          duration_minutes?: number;
+          location_type?: InterviewLocationType;
+          notes?: string | null;
+          status?: InterviewStatus;
+        };
+        Update: {
+          scheduled_at?: string;
+          duration_minutes?: number;
+          location_type?: InterviewLocationType;
+          notes?: string | null;
+          status?: InterviewStatus;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -401,6 +475,19 @@ export interface Database {
           body: string | null;
           recommender_name: string;
         }[];
+      };
+      pending_company_invite: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          company_id: string;
+          company_name: string;
+          role: string;
+        }[];
+      };
+      claim_company_invite: {
+        Args: Record<string, never>;
+        Returns: { company_id: string; company_name: string }[];
       };
     };
     Enums: Record<string, never>;

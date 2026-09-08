@@ -7,6 +7,7 @@ import { RelationshipContextPanel } from "@/components/messaging/RelationshipCon
 import { getOrCreateConversation, loadMessages } from "@/lib/messaging/persistence";
 import { loadRelationshipPageContext } from "@/lib/relationship/pageContext";
 import { loadTimeline, ensureInConversationEvent, currentStage } from "@/lib/relationship/persistence";
+import { loadUpcomingInterviewForConnection } from "@/lib/interviews/persistence";
 
 export default async function ConversationPage({
   params,
@@ -75,6 +76,12 @@ export default async function ConversationPage({
   const stage = currentStage(timeline);
 
   const whyConnected = ctx.alignedFactors[0]?.detail ?? "You connected on mingle.";
+  const upcomingInterview = await loadUpcomingInterviewForConnection(
+    supabase,
+    ctx.connection.id,
+  );
+  const canScheduleInterview =
+    ctx.userType === "company" && ctx.connection.status === "accepted";
 
   return (
     <DashboardShell
@@ -108,6 +115,10 @@ export default async function ConversationPage({
               otherGender={ctx.otherDisplay.gender}
               whyConnected={whyConnected}
               initialMessages={messages}
+              connectionId={ctx.connection.id}
+              canScheduleInterview={canScheduleInterview}
+              companyId={user.id}
+              upcomingInterview={upcomingInterview}
             />
           </div>
           <div className="min-h-0 lg:w-80 lg:shrink-0 lg:overflow-y-auto">

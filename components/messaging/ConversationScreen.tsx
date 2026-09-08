@@ -13,6 +13,11 @@ import { isRateLimitError } from "@/lib/rate-limit";
 import { EmptyState } from "@/components/EmptyState";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
+import {
+  ScheduleInterviewControls,
+  UpcomingInterviewBanner,
+} from "@/components/interviews/ScheduleInterviewControls";
+import type { InterviewRecord } from "@/lib/interviews/persistence";
 
 function SendIcon({ size = 18 }: { size?: number }) {
   return (
@@ -81,6 +86,10 @@ export function ConversationScreen({
   otherUserId,
   whyConnected,
   initialMessages,
+  connectionId,
+  canScheduleInterview = false,
+  companyId = null,
+  upcomingInterview = null,
 }: {
   conversationId: string;
   viewerId: string;
@@ -92,6 +101,10 @@ export function ConversationScreen({
   otherUserId: string;
   whyConnected: string;
   initialMessages: MessageRow[];
+  connectionId?: string;
+  canScheduleInterview?: boolean;
+  companyId?: string | null;
+  upcomingInterview?: InterviewRecord | null;
 }) {
   const [supabase] = useState(() => createClient());
   const [messages, setMessages] = useState(initialMessages);
@@ -166,14 +179,32 @@ export function ConversationScreen({
             <p className="truncate text-xs text-mingle-text-secondary">{otherSubtitle}</p>
           </div>
         </Link>
-        {whyConnected && (
-          <p className="ml-auto hidden max-w-[40%] truncate text-xs text-mingle-text-secondary sm:block">
-            {whyConnected}
-          </p>
-        )}
+        <div className="ml-auto flex min-w-0 shrink-0 items-center gap-3">
+          {whyConnected ? (
+            <p className="hidden max-w-[10rem] truncate text-xs text-mingle-text-secondary xl:block">
+              {whyConnected}
+            </p>
+          ) : null}
+          {canScheduleInterview && connectionId && companyId ? (
+            <ScheduleInterviewControls
+              connectionId={connectionId}
+              companyId={companyId}
+              upcoming={upcomingInterview}
+            />
+          ) : upcomingInterview ? (
+            <div className="hidden sm:block">
+              <UpcomingInterviewBanner interview={upcomingInterview} />
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        {upcomingInterview && !canScheduleInterview ? (
+          <div className="mb-4 sm:hidden">
+            <UpcomingInterviewBanner interview={upcomingInterview} />
+          </div>
+        ) : null}
         {messages.length === 0 ? (
           <EmptyState
             title="No messages yet"

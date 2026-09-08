@@ -20,6 +20,7 @@ import {
   type CompanyProfileState,
 } from "@/lib/company-profile/persistence";
 import { saveProfileCompletion } from "@/lib/profile/persistence";
+import { syncProfileCoordinates } from "@/lib/geocoding/actions";
 import { CustomChipInput } from "@/components/CustomChipInput";
 import {
   addCustomCapped,
@@ -63,6 +64,16 @@ async function fetchCompanyProfileData(
     .single();
   if (userRow && userRow.user_type !== "company") {
     return { kind: "redirect", to: "/onboarding/talent" };
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("company_members")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!membershipError && membership) {
+    return { kind: "redirect", to: "/dashboard" };
   }
 
   try {
@@ -158,6 +169,9 @@ export function CompanyProfileWizard() {
     setSaveError(null);
     try {
       await saveCompanyProfilePatch(supabase, userId, patch);
+      if (typeof patch.location === "string") {
+        void syncProfileCoordinates("company", patch.location, profile.location);
+      }
       await saveProfileCompletion(
         supabase,
         userId,

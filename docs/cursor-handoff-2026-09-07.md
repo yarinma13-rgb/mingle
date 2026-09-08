@@ -483,45 +483,21 @@ wired into `matchScore` / `why-match.ts`).
   tags only: aligned (in range or below min), above budget, or not enough info.
 - Matching-engine weighting is still a later design pass. Do not fold this
   tag into `MATCH_WEIGHTS`.
-- **Distance / radius** (talent or company): still blocked. Founder also
-  asked to collect a commute radius on talent. Same geocode prerequisite as
-  item 8 below. Do not add UI until that decision lands.
-  flag back to the founder with a concrete proposal rather than guessing
-  the weighting scheme.
+- **Distance / radius** on the role builder and talent commute radius are
+  still not built. Discover km filter is 6.5 via Nominatim geocoding.
 
 ### 6.4 Calendar integration (Google/Outlook + internal calendar + team sub-users)
-The largest item in this batch. Founder's framing: the product should cut
-recruiting time, including interview scheduling — needs an in-app calendar
-that can sync with Google Calendar or Outlook, plus the ability for a
-company account to create sub-users (e.g. an HR person, a team lead) so that
-when *they* schedule an interview, it lands on both the Mingle calendar and
-their own connected Google/Outlook calendar.
-- **External dependencies, founder action required first:** a Google Cloud
-  Console OAuth app (Calendar API scope) and a Microsoft/Azure AD app
-  (Outlook/Microsoft Graph Calendar API scope) — both need to be registered
-  by the founder (same pattern as Sentry/PostHog: the agent can guide the
-  console steps but cannot create the app registrations or hold the
-  resulting client secrets on her behalf beyond storing them as env vars
-  once provided, the same way `NEXT_PUBLIC_SENTRY_DSN` etc. were added to
-  Vercel this session).
-- **New DB surface needed:** a `company_members` (or `team_members`) table —
-  company_id, user_id (their own auth.users row, so a sub-user is a real
-  authenticated Mingle user, not just a contact record), role (owner/HR/
-  team_lead/etc.), invited_by, status. This is also the natural home for
-  "Team" in the nav (`DashboardShell.tsx` line 46 already has a "Team" nav
-  item pointing at `/team` — currently presumably unbuilt/stub, confirm
-  before assuming).
-- Interview scheduling needs: a UI to pick a time (checking the scheduler's
-  own connected-calendar free/busy where available), create the interview
-  record, write it to Mingle's own interview list (nav already has an
-  "Interviews" item at `/interviews`, `DashboardShell.tsx` line 45), and —
-  if the sub-user has connected Google/Outlook — push the same event via
-  that provider's Calendar API.
-- **Recommend a v1 scope cut**, to confirm with the founder rather than
-  assume: ship internal Mingle-calendar interview scheduling first (no
-  external OAuth), then layer Google/Outlook push as a second pass once
-  she's registered the OAuth apps. Attempting all of it in one shot is a
-  multi-week scope on its own.
+Internal v1 shipped 2026-09-08 (no Google/Outlook). Schema:
+`supabase/migrations/0017_team_and_interviews.sql`. Founder pastes it in
+the SQL Editor. External calendar OAuth stays blocked (item 5).
+- `/team`: owner invites by name + email + role. Row is `invited`. Email
+  uses the same Resend FROM / try-catch pattern. Invitees hitting company
+  onboarding see "Join the team at {company}" and `claim_company_invite`
+  instead of a new company profile.
+- Conversation: company side gets "Schedule interview" (time, duration,
+  video or in person, note). `/interviews` lists real rows. Talent sees
+  the next scheduled interview in that conversation. Do not add Google or
+  Outlook clients.
 
 ### 6.5 Advanced candidate search filters (item 14 — was missing from the
 ### first draft of this doc, added on review, see founder's verbatim text
@@ -540,14 +516,15 @@ this is an extension of it, not a new one from scratch:
 Founder wants these filters added, all exposed through **one small popover/
 modal panel** (her words: "a small window that opens where you can add
 filters comfortably"), not more inline form fields cluttering the page:
-- **Distance** — a slider/range control in kilometers, and later the same
-  radius on the role builder. **Blocked on data**:
-  `talent_profiles.location` (`supabase/migrations/0003_phase3_talent_profile.sql`
-  line 20) is a free-text field today, not geocoded coordinates — there is
-  no lat/lng to compute distance from. Same block for a company-level or
-  role-level "willing to accept candidates within X km" field. Needs a
-  schema decision first (geocode `location` on save, or collect lat/lng
-  explicitly). Do not build the slider until that exists.
+- **Distance** — km slider in the company Discover filter panel. Location
+  is still free text. On profile save, a server call to OpenStreetMap
+  Nominatim (`lib/geocoding/nominatim.ts`, User-Agent required, no API
+  key) stores `latitude` / `longitude` via `0018_geocoding.sql`.
+  `distanceKm` follows the same URL-filter pattern as `yearsMin`. Haversine
+  in `loadDiscoveryPage()`: if the company or a candidate has no
+  coordinates, they are not dropped. Match scores / `MATCH_WEIGHTS` are
+  unchanged. Do not add a role-builder radius or talent commute radius
+  until asked. Founder still pastes `0018` in the SQL Editor.
 - **Years of experience** — range slider, backed by the existing
   `talent_profiles.years_experience` column (already exists, no schema
   change needed). Founder explicitly asked for the range to be forgiving:
@@ -606,9 +583,9 @@ filters comfortably"), not more inline form fields cluttering the page:
 7d. Run `supabase/migrations/0016_recommendations.sql` — blocks requesting
     and submitting recommendations (the UI degrades if the table/RPCs are
     missing).
-8. Decide how candidate "distance" gets computed — free-text `location`
-   today has no coordinates to measure distance from (geocode on save, or
-   collect lat/lng explicitly?) — blocks the distance slider in Discover,
-   a radius on the role builder, **and** a commute radius on the talent
-   profile (requested 2026-09-08). Do not build any of these until that
-   decision lands.
+7e. Run `0017_team_and_interviews.sql` and `0018_geocoding.sql` — blocks
+    team invites, interview rows, and Discover distance until those
+    columns/RPCs exist.
+8. Talent commute radius on the profile, and a radius on the role builder,
+   are still not built. Discover distance uses geocoded city text via
+   Nominatim. Do not add those extra radius fields until asked.

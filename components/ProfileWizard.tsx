@@ -34,6 +34,7 @@ import {
   EMPTY_PROFILE,
   type ProfileState,
 } from "@/lib/profile/persistence";
+import { syncProfileCoordinates } from "@/lib/geocoding/actions";
 import {
   basicProfileSchema,
   beyondCvSchema,
@@ -166,6 +167,9 @@ export function ProfileWizard() {
     setSaveError(null);
     try {
       await saveProfilePatch(supabase, userId, patch);
+      if (typeof patch.location === "string") {
+        void syncProfileCoordinates("talent", patch.location, profile.location);
+      }
       await saveProfileCompletion(
         supabase,
         userId,

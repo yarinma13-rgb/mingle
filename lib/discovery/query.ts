@@ -15,6 +15,7 @@ import {
   sanitizeIlike,
   type DiscoveryFilters,
 } from "@/lib/discovery/filters";
+import { distanceKmBetween } from "@/lib/geocoding/nominatim";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 
@@ -78,28 +79,62 @@ export async function loadDiscoveryPage(
       if (values.length > 0) query = query.overlaps("drives", values);
     }
 
-    const [ownInput, listed] = await Promise.all([
+    const wantsDistance = filters.distanceKm != null;
+    const listedQuery = wantsDistance
+      ? query.order("updated_at", { ascending: false }).limit(400)
+      : query.order("updated_at", { ascending: false }).range(from, to);
+
+    const [ownInput, listed, viewerCompany] = await Promise.all([
       loadCompanyMatchInput(supabase, viewer.id),
-      query.order("updated_at", { ascending: false }).range(from, to),
+      listedQuery,
+      supabase
+        .from("company_profiles")
+        .select("latitude, longitude")
+        .eq("user_id", viewer.id)
+        .maybeSingle(),
     ]);
     const { data, count, error } = listed;
     if (error) {
       return { cards: [], total: 0, page, pageSize: DISCOVERY_PAGE_SIZE };
     }
 
-    const candidateRows = data ?? [];
-    const { data: prefRows } = candidateRows.length
+    const origin =
+      viewerCompany.data?.latitude != null &&
+      viewerCompany.data?.longitude != null
+        ? {
+            latitude: viewerCompany.data.latitude,
+            longitude: viewerCompany.data.longitude,
+          }
+        : null;
+
+    let candidateRows = data ?? [];
+    if (wantsDistance && origin) {
+      candidateRows = candidateRows.filter((row) => {
+        const distance = distanceKmBetween(origin, {
+          latitude: row.latitude ?? null,
+          longitude: row.longitude ?? null,
+        });
+        return distance == null || distance <= (filters.distanceKm as number);
+      });
+    }
+    const pagedRows = wantsDistance
+      ? candidateRows.slice(from, to + 1)
+      : candidateRows;
+    const total = wantsDistance ? candidateRows.length : (count ?? pagedRows.length);
+    const rowsForCards = wantsDistance ? candidateRows : pagedRows;
+    const distanceByUser = new Map<string, number | null>();
+    const { data: prefRows } = rowsForCards.length
       ? await supabase
           .from("talent_preferences")
           .select("*")
           .in(
             "talent_id",
-            candidateRows.map((row) => row.user_id),
+            rowsForCards.map((row) => row.user_id),
           )
       : { data: [] as never[] };
     const prefsByUser = new Map((prefRows ?? []).map((row) => [row.talent_id, row]));
 
-    const cards: DiscoveryCard[] = candidateRows.map((row) => {
+    const cards: DiscoveryCard[] = rowsForCards.map((row) => {
       const profile = toTalentProfile(row);
       const pref = prefsByUser.get(row.user_id);
       const talentInput: TalentMatchInput = {
@@ -110,11 +145,24 @@ export async function loadDiscoveryPage(
       const result = ownInput
         ? computeMatch(talentInput, ownInput)
         : { score: 0, factors: [] };
+      const km = origin
+        ? distanceKmBetween(origin, {
+            latitude: row.latitude ?? null,
+            longitude: row.longitude ?? null,
+          })
+        : null;
+      distanceByUser.set(row.user_id, km);
       return {
         userId: row.user_id,
         name: `${profile.firstName} ${profile.lastName}`.trim(),
         subtitle: profile.headline,
-        meta: [profile.location, profile.industry].filter(Boolean).join(" · "),
+        meta: [
+          profile.location,
+          profile.industry,
+          wantsDistance && km != null ? `${Math.round(km)} km` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         initial: personInitials(profile.firstName, profile.lastName),
         photo: profile.profilePhoto,
         gender: profile.gender,
@@ -122,10 +170,17 @@ export async function loadDiscoveryPage(
         factors: result.factors,
       };
     });
-    cards.sort((a, b) => b.score - a.score);
+    cards.sort((a, b) => {
+      if (wantsDistance && origin) {
+        const da = distanceByUser.get(a.userId) ?? Number.POSITIVE_INFINITY;
+        const db = distanceByUser.get(b.userId) ?? Number.POSITIVE_INFINITY;
+        if (da !== db) return da - db;
+      }
+      return b.score - a.score;
+    });
     return {
-      cards,
-      total: count ?? cards.length,
+      cards: wantsDistance ? cards.slice(from, to + 1) : cards,
+      total,
       page,
       pageSize: DISCOVERY_PAGE_SIZE,
     };

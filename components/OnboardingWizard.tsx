@@ -29,6 +29,11 @@ import {
   MAX_PROFILE_PICKS,
   toggleCapped,
 } from "@/lib/profile/pick-limit";
+import { JoinTeamOffer } from "@/components/team/JoinTeamOffer";
+import {
+  loadPendingCompanyInvite,
+  type PendingInvite,
+} from "@/lib/team/persistence";
 import type { Database, UserType } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 4;
@@ -37,7 +42,13 @@ type LoadState = "loading" | "ready" | "error";
 
 type FetchResult =
   | { kind: "redirect"; to: string }
-  | { kind: "ready"; userId: string; step: number; answers: OnboardingAnswers }
+  | {
+      kind: "ready";
+      userId: string;
+      step: number;
+      answers: OnboardingAnswers;
+      invite: PendingInvite | null;
+    }
   | { kind: "error" };
 
 // Pure data fetch — no setState here. Keeping state updates out of this
@@ -65,11 +76,14 @@ async function fetchWizardData(
 
   try {
     const state = await loadOnboardingState(supabase, user.id, path);
+    const invite =
+      path === "company" ? await loadPendingCompanyInvite(supabase) : null;
     return {
       kind: "ready",
       userId: user.id,
       step: state.step,
       answers: state.answers,
+      invite,
     };
   } catch {
     return { kind: "error" };
@@ -84,6 +98,8 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<OnboardingAnswers>(EMPTY_ANSWERS);
+  const [invite, setInvite] = useState<PendingInvite | null>(null);
+  const [skipInvite, setSkipInvite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -102,6 +118,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     setUserId(result.userId);
     setStep(result.step);
     setAnswers(result.answers);
+    setInvite(result.invite);
     setLoadState("ready");
   };
 
@@ -170,6 +187,12 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   if (loadState === "loading") return <WizardSkeleton />;
   if (loadState === "error") return <WizardError onRetry={retry} />;
+
+  if (invite && !skipInvite) {
+    return (
+      <JoinTeamOffer invite={invite} onSkip={() => setSkipInvite(true)} />
+    );
+  }
 
   if (step > 3 || !currentQuestion) {
     return <OnboardingComplete path={path} />;

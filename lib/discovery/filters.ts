@@ -14,6 +14,7 @@ export type DiscoveryFilters = {
   workModel: string;
   yearsMin: number | null;
   yearsMax: number | null;
+  distanceKm: number | null;
   values: string[];
   page: number;
 };
@@ -41,6 +42,12 @@ function optionalYear(value: string | string[] | undefined): number | null {
   return Math.min(40, raw);
 }
 
+function optionalKm(value: string | string[] | undefined): number | null {
+  const raw = Number.parseInt(oneValue(value), 10);
+  if (!Number.isFinite(raw) || raw <= 0) return null;
+  return Math.min(500, raw);
+}
+
 export function isWorkModelOption(value: string): value is WorkModelOption {
   return (WORK_MODEL_OPTIONS as readonly string[]).includes(value);
 }
@@ -58,6 +65,7 @@ export function parseDiscoveryFilters(
     workModel: isWorkModelOption(workModel) ? workModel : "",
     yearsMin: optionalYear(searchParams.yearsMin),
     yearsMax: optionalYear(searchParams.yearsMax),
+    distanceKm: optionalKm(searchParams.distanceKm),
     values: manyValues(searchParams.values),
     page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
   };
@@ -72,6 +80,7 @@ export function discoveryFiltersActive(filters: DiscoveryFilters): boolean {
       filters.workModel ||
       filters.yearsMin ||
       filters.yearsMax ||
+      filters.distanceKm ||
       filters.values.length,
   );
 }
@@ -85,6 +94,7 @@ export function discoveryActiveFilterCount(filters: DiscoveryFilters): number {
     filters.workModel,
     filters.yearsMin,
     filters.yearsMax,
+    filters.distanceKm,
     filters.values.length ? "values" : "",
   ].filter(Boolean).length;
 }
@@ -101,6 +111,7 @@ export function discoveryQueryString(
   if (filters.workModel) params.set("workModel", filters.workModel);
   if (filters.yearsMin) params.set("yearsMin", String(filters.yearsMin));
   if (filters.yearsMax) params.set("yearsMax", String(filters.yearsMax));
+  if (filters.distanceKm) params.set("distanceKm", String(filters.distanceKm));
   for (const value of filters.values) params.append("values", value);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();

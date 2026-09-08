@@ -1,11 +1,33 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { TeamScreen } from "@/components/team/TeamScreen";
 import { requireShellUser } from "@/lib/dashboard/require-shell-user";
-import { Avatar } from "@/components/Avatar";
+import {
+  isMissingTeamTable,
+  loadTeamMembers,
+  resolveCompanyWorkspaceId,
+  type TeamMemberRow,
+} from "@/lib/team/persistence";
 
 export default async function TeamPage() {
-  const { user, accountLabel, shellAvatar } = await requireShellUser({
+  const { supabase, user, accountLabel, shellAvatar } = await requireShellUser({
     userType: "company",
   });
+
+  const workspaceId = await resolveCompanyWorkspaceId(supabase, user.id);
+  const canInvite = workspaceId === user.id;
+
+  let members: TeamMemberRow[] = [];
+  let tableMissing = false;
+  try {
+    members = await loadTeamMembers(supabase, canInvite ? user.id : workspaceId);
+  } catch (error) {
+    tableMissing = isMissingTeamTable(
+      error && typeof error === "object"
+        ? (error as { message?: string; code?: string })
+        : null,
+    );
+    if (!tableMissing) throw error;
+  }
 
   return (
     <DashboardShell
@@ -16,37 +38,14 @@ export default async function TeamPage() {
       userSubtitle="Recruiter"
       {...shellAvatar}
     >
-      <div className="flex max-w-lg flex-col gap-6">
-        <p className="text-sm leading-relaxed text-mingle-text-secondary">
-          People who can hire from this workspace. You are the account holder
-          for now.
-        </p>
-        <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6 shadow-mingle">
-          <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
-            Members
-          </h2>
-          <div className="mt-5 flex items-center gap-3">
-            <Avatar
-              photo={shellAvatar.userPhoto}
-              initials={shellAvatar.userInitials}
-              gender={shellAvatar.userGender}
-              size="md"
-            />
-            <div>
-              <p className="text-sm font-semibold text-mingle-text">
-                {accountLabel}
-              </p>
-              <p className="text-xs text-mingle-text-secondary">
-                You · Account holder
-              </p>
-            </div>
-          </div>
-          <p className="mt-5 text-sm leading-relaxed text-mingle-text-secondary">
-            Invite teammates once your workspace is ready. Until then,
-            everything you do here stays on this account.
-          </p>
-        </div>
-      </div>
+      <TeamScreen
+        accountLabel={shellAvatar.userName || accountLabel}
+        userPhoto={shellAvatar.userPhoto}
+        userInitials={shellAvatar.userInitials}
+        members={members}
+        tableMissing={tableMissing}
+        canInvite={canInvite}
+      />
     </DashboardShell>
   );
 }

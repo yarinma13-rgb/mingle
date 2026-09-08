@@ -31,6 +31,7 @@ export function DiscoveryFiltersForm({
   const [open, setOpen] = useState(false);
   const [yearsMin, setYearsMin] = useState(filters.yearsMin ?? 0);
   const [yearsMax, setYearsMax] = useState(filters.yearsMax ?? 0);
+  const [distanceKm, setDistanceKm] = useState(filters.distanceKm ?? 0);
   const [customValues, setCustomValues] = useState(() =>
     extraChipValues(filters.values, valueOptions),
   );
@@ -219,11 +220,27 @@ export function DiscoveryFiltersForm({
                     />
                   </fieldset>
 
-                <p className="mt-4 rounded-xl border border-dashed border-mingle-border px-3 py-2.5 text-xs text-mingle-text-secondary">
-                  Distance in kilometers is waiting on a location decision.
-                  Profiles store city as text today, with no coordinates to
-                  measure from. Use the location field until that ships.
-                </p>
+                <div className="mt-4">
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-mingle-text-secondary">
+                    Distance in km
+                    <input
+                      type="range"
+                      name="distanceKm"
+                      min={0}
+                      max={200}
+                      value={distanceKm}
+                      onChange={(event) =>
+                        setDistanceKm(Number.parseInt(event.target.value, 10) || 0)
+                      }
+                      className="accent-mingle-accent-purple"
+                    />
+                    <span>
+                      {distanceKm
+                        ? `Up to ${distanceKm} km. Profiles without coordinates still appear.`
+                        : "Any. Profiles without coordinates are not dropped."}
+                    </span>
+                  </label>
+                </div>
               </>
             ) : null}
 
