@@ -173,7 +173,7 @@ export function AuthForm({ path }: { path: UserType }) {
             onClick={() => setMode("signup")}
             className={`rounded-full px-3 py-2 text-xs font-semibold ${
               mode === "signup"
-                ? "bg-mingle-white text-mingle-text shadow-mingle"
+                ? "bg-mingle-accent-purple text-white"
                 : "text-mingle-text-secondary"
             }`}
           >
@@ -184,7 +184,7 @@ export function AuthForm({ path }: { path: UserType }) {
             onClick={() => setMode("signin")}
             className={`rounded-full px-3 py-2 text-xs font-semibold ${
               mode === "signin"
-                ? "bg-mingle-white text-mingle-text shadow-mingle"
+                ? "bg-mingle-accent-blue text-white"
                 : "text-mingle-text-secondary"
             }`}
           >
@@ -284,7 +284,11 @@ export function AuthForm({ path }: { path: UserType }) {
             disabled={isSubmitting}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="mingle-btn-primary mt-2 disabled:opacity-60"
+            className={`mt-2 rounded-full px-6 py-3 font-display text-base font-semibold text-white disabled:opacity-60 ${
+              mode === "signup"
+                ? "bg-mingle-accent-purple"
+                : "bg-mingle-accent-blue"
+            }`}
           >
             {isSubmitting
               ? mode === "signup"

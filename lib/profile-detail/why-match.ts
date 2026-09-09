@@ -1,9 +1,9 @@
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
+import { overlapCanonical } from "@/lib/matching/synonyms";
 
 function overlap(a: string[], b: string[]): string[] {
-  const bLower = new Set(b.map((item) => item.toLowerCase()));
-  return a.filter((item) => bLower.has(item.toLowerCase()));
+  return overlapCanonical(a, b);
 }
 
 /**

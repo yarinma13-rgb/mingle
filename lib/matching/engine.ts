@@ -1,5 +1,6 @@
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
+import { overlapCanonical } from "@/lib/matching/synonyms";
 
 // Deterministic weighted matching engine (PRODUCT_SPEC.md section 31,
 // weights overridden per explicit product decision — see below). No AI
@@ -48,14 +49,12 @@ export type CompanyMatchInput = {
 
 function overlapFraction(a: string[], b: string[]): number {
   if (a.length === 0 || b.length === 0) return 0;
-  const bLower = new Set(b.map((item) => item.toLowerCase()));
-  const shared = a.filter((item) => bLower.has(item.toLowerCase())).length;
+  const shared = overlapCanonical(a, b).length;
   return shared / Math.max(a.length, b.length);
 }
 
 function sharedItems(a: string[], b: string[]): string[] {
-  const bLower = new Set(b.map((item) => item.toLowerCase()));
-  return a.filter((item) => bLower.has(item.toLowerCase()));
+  return overlapCanonical(a, b);
 }
 
 function verdictFromFraction(fraction: number): MatchVerdict {
