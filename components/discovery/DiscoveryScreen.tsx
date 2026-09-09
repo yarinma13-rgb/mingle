@@ -16,8 +16,8 @@ import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
-import { Avatar } from "@/components/Avatar";
-import type { Gender } from "@/lib/profile/avatar";
+import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
+import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
 
 export type DiscoveryCard = {
   userId: string;
@@ -176,14 +176,14 @@ function DiscoveryCardView({
 
   return (
     <motion.div
-      style={{ x, rotate }}
+      style={{ x, rotate, aspectRatio: "3 / 4" }}
       drag={isMobile ? "x" : false}
       dragDirectionLock
       dragMomentum={false}
       dragElastic={0.18}
       onDragEnd={isMobile ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
-      className={`relative flex flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-6 ${
+      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-surface shadow-mingle ${
         isMobile ? "touch-none cursor-grab" : "touch-pan-y"
       }`}
     >
@@ -192,7 +192,7 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: interestOpacity }}
-            className="pointer-events-none absolute right-4 top-4 -rotate-6 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-3 py-1 text-xs font-bold text-white"
+            className="pointer-events-none absolute right-4 top-4 z-20 -rotate-6 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-3 py-1 text-xs font-bold text-white"
           >
             Interested
           </motion.span>
@@ -206,33 +206,41 @@ function DiscoveryCardView({
         </>
       )}
 
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Avatar
+      <div className="relative min-h-0 flex-[1.15]">
+        <div className="absolute inset-0">
+          <TalentPhotoImg
             photo={card.photo}
-            initials={card.initial}
-            gender={card.gender}
-            size="lg"
+            className="h-full w-full object-cover"
+            fallback={
+              <div
+                className={`flex h-full w-full items-center justify-center ${avatarToneClass(card.gender)}`}
+              >
+                <span className="font-display text-5xl font-bold text-white">
+                  {card.initial}
+                </span>
+              </div>
+            }
           />
-          <div>
-            <p className="font-display text-base font-semibold text-mingle-text">
-              {card.name}
-            </p>
-            <p className="text-sm text-mingle-text-secondary">
-              {card.subtitle}
-            </p>
-            {card.meta && (
-              <p className="text-xs text-mingle-text-secondary">{card.meta}</p>
-            )}
+        </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-5 pb-4 pt-16 text-white">
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate font-display text-xl font-semibold">
+                {card.name}
+              </p>
+              <p className="truncate text-sm text-white/85">{card.subtitle}</p>
+              {card.meta ? (
+                <p className="truncate text-xs text-white/75">{card.meta}</p>
+              ) : null}
+            </div>
+            <MingleChip className="shrink-0 border-white/20 bg-white/15 text-[11px] text-white">
+              {card.score}% match
+            </MingleChip>
           </div>
         </div>
-
-        <MingleChip className="shrink-0 text-[11px]">
-          {card.score}% match
-        </MingleChip>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-purple">
             Why this could be a match
@@ -269,7 +277,7 @@ function DiscoveryCardView({
       </div>
 
       {unknown.length > 0 && (
-        <div>
+        <div className="px-4">
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
@@ -289,15 +297,15 @@ function DiscoveryCardView({
       )}
 
       {isMobile && (
-        <p className="text-center text-[11px] text-mingle-text-secondary">
+        <p className="px-4 text-center text-[11px] text-mingle-text-secondary">
           Swipe right for interested, left to skip — or use the buttons below.
         </p>
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 p-4 pt-0">
         <Link
           href={`/profile/view/${card.userId}`}
-          className="rounded-full bg-mingle-cta px-6 py-2.5 font-display text-xs font-semibold text-white"
+          className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
         >
           View profile
         </Link>
@@ -305,7 +313,7 @@ function DiscoveryCardView({
           type="button"
           onClick={toggleSaveFromButton}
           disabled={saving}
-          className={`rounded-full px-6 py-2.5 font-display text-xs font-semibold transition-colors disabled:opacity-60 ${
+          className={`rounded-full px-4 py-2 font-display text-xs font-semibold transition-colors disabled:opacity-60 ${
             saved
               ? "bg-mingle-blue/15 text-mingle-blue"
               : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
@@ -316,7 +324,7 @@ function DiscoveryCardView({
         <button
           type="button"
           onClick={() => onRemove(card.userId)}
-          className="ml-auto rounded-full px-6 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
+          className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
         >
           Skip
         </button>
@@ -372,7 +380,7 @@ export function DiscoveryScreen({
         <p className="mt-1 text-sm text-mingle-text-secondary">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
           <DiscoveryCardView
             key={card.userId}

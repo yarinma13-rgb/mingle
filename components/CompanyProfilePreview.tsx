@@ -20,16 +20,29 @@ function ChipRow({ items }: { items: string[] }) {
 
 function Section({
   title,
+  onEdit,
   children,
 }: {
   title: string;
+  onEdit?: () => void;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-text">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
+          {title}
+        </h2>
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs font-semibold text-mingle-blue"
+          >
+            Edit
+          </button>
+        ) : null}
+      </div>
       {children}
     </div>
   );
@@ -37,13 +50,15 @@ function Section({
 
 export function CompanyProfilePreview({
   profile,
+  onEditStep,
 }: {
   profile: CompanyProfileState;
+  onEditStep?: (step: number) => void;
 }) {
   const initials = companyInitials(profile.companyName);
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-6 py-16 sm:px-10">
+    <div className="flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -82,10 +97,19 @@ export function CompanyProfilePreview({
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+            {onEditStep ? (
+              <button
+                type="button"
+                onClick={() => onEditStep(1)}
+                className="mt-2 text-xs font-semibold text-mingle-blue"
+              >
+                Edit
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <Section title="About">
+        <Section title="About" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
           <p className="text-sm text-mingle-text-secondary">
             {[profile.companyStage, profile.companySize]
               .filter(Boolean)
@@ -93,25 +117,40 @@ export function CompanyProfilePreview({
           </p>
         </Section>
 
-        <Section title="How we work">
+        <Section
+          title="How we work"
+          onEdit={onEditStep ? () => onEditStep(2) : undefined}
+        >
           <ChipRow items={profile.workEnvironment} />
         </Section>
 
-        <Section title="What we value">
+        <Section
+          title="What we value"
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
+        >
           <ChipRow items={profile.values} />
         </Section>
 
-        <Section title="What we're looking for">
+        <Section
+          title="What we're looking for"
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+        >
           <ChipRow items={profile.lookingFor} />
         </Section>
 
-        <Section title="Who thrives here">
+        <Section
+          title="Who thrives here"
+          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+        >
           <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
             {profile.whoThrivesHere}
           </p>
         </Section>
 
-        <Section title="What we're building">
+        <Section
+          title="What we're building"
+          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+        >
           <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
             {profile.description}
           </p>

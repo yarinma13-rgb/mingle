@@ -34,6 +34,7 @@ import {
   loadPendingCompanyInvite,
   type PendingInvite,
 } from "@/lib/team/persistence";
+import { destinationAfterAuth } from "@/lib/auth/destination";
 import type { Database, UserType } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 4;
@@ -76,6 +77,10 @@ async function fetchWizardData(
 
   try {
     const state = await loadOnboardingState(supabase, user.id, path);
+    if (state.status === "completed") {
+      const next = await destinationAfterAuth(supabase, user.id, path);
+      return { kind: "redirect", to: next };
+    }
     const invite =
       path === "company" ? await loadPendingCompanyInvite(supabase) : null;
     return {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ChipMultiSelect } from "@/components/ChipMultiSelect";
+import { clampSalary, SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
 import {
   ROLE_DEPARTMENT_OPTIONS,
   ROLE_EMPLOYMENT_OPTIONS,
@@ -118,10 +119,8 @@ export function RoleBuilder({
   async function finish() {
     const parsed = roleDraftSchema.safeParse({
       ...draft,
-      salaryMin:
-        draft.salaryMin && Number.isFinite(draft.salaryMin) ? draft.salaryMin : null,
-      salaryMax:
-        draft.salaryMax && Number.isFinite(draft.salaryMax) ? draft.salaryMax : null,
+      salaryMin: clampSalary(draft.salaryMin),
+      salaryMax: clampSalary(draft.salaryMax),
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Check the role details");
@@ -307,20 +306,23 @@ export function RoleBuilder({
           ) : null}
 
           {step === 5 ? (
-            <div className="grid grid-cols-2 gap-4">
-              <label className="block">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block min-w-0">
                 <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
-                  Min
+                  Min (monthly ILS)
                 </span>
                 <input
                   type="number"
                   min={1}
+                  max={SALARY_MAX_MONTHLY_ILS}
                   value={draft.salaryMin ?? ""}
                   onChange={(event) =>
                     setDraft((prev) => ({
                       ...prev,
                       salaryMin: event.target.value
-                        ? Number.parseInt(event.target.value, 10)
+                        ? clampSalary(
+                            Number.parseInt(event.target.value, 10),
+                          )
                         : null,
                     }))
                   }
@@ -328,19 +330,22 @@ export function RoleBuilder({
                   className="w-full rounded-2xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
                 />
               </label>
-              <label className="block">
+              <label className="block min-w-0">
                 <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
-                  Max
+                  Max (monthly ILS)
                 </span>
                 <input
                   type="number"
                   min={1}
+                  max={SALARY_MAX_MONTHLY_ILS}
                   value={draft.salaryMax ?? ""}
                   onChange={(event) =>
                     setDraft((prev) => ({
                       ...prev,
                       salaryMax: event.target.value
-                        ? Number.parseInt(event.target.value, 10)
+                        ? clampSalary(
+                            Number.parseInt(event.target.value, 10),
+                          )
                         : null,
                     }))
                   }

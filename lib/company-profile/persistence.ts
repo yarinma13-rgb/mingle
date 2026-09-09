@@ -35,12 +35,7 @@ const TOTAL_STEPS = 6;
 
 function hasBasicInfo(p: CompanyProfileState) {
   return Boolean(
-    p.companyName &&
-      p.mission &&
-      p.industry &&
-      p.companyStage &&
-      p.companySize &&
-      p.location,
+    p.companyName && p.mission && p.industry && p.companyStage && p.companySize,
   );
 }
 

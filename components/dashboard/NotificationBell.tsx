@@ -16,7 +16,8 @@ function timeAgo(iso: string): string {
 }
 
 function itemHref(item: NotificationItem): string {
-  return item.kind === "message" ? `/conversations/${item.connectionId}` : "/connections";
+  if (item.kind === "message") return `/conversations/${item.connectionId}`;
+  return `/profile/view/${item.userId}`;
 }
 
 function itemText(item: NotificationItem): string {

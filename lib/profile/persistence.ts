@@ -22,6 +22,7 @@ export type ProfileState = {
   gender: Gender | null;
   skills: string[];
   salaryExpectation: number | null;
+  maxCommuteKm: number;
 };
 
 export const EMPTY_PROFILE: ProfileState = {
@@ -42,19 +43,14 @@ export const EMPTY_PROFILE: ProfileState = {
   gender: null,
   skills: [],
   salaryExpectation: null,
+  maxCommuteKm: 0,
 };
 
 const TOTAL_STEPS = 8;
 
 function hasBasicInfo(p: ProfileState) {
   return Boolean(
-    p.firstName &&
-      p.lastName &&
-      p.headline &&
-      p.location &&
-      p.yearsExperience !== null &&
-      p.currentRole &&
-      p.industry,
+    p.firstName && p.lastName && p.headline && p.currentRole && p.industry,
   );
 }
 
@@ -122,6 +118,8 @@ export async function loadProfile(
     skills: Array.isArray(data.skills) ? data.skills : [],
     salaryExpectation:
       typeof data.salary_expectation === "number" ? data.salary_expectation : null,
+    maxCommuteKm:
+      typeof data.max_commute_km === "number" ? data.max_commute_km : 0,
   };
 }
 
@@ -133,7 +131,7 @@ export async function saveProfilePatch(
     last_name: string;
     headline: string;
     location: string;
-    years_experience: number;
+    years_experience: number | null;
     current_job_title: string;
     industry: string;
     profile_photo: string | null;
@@ -146,9 +144,10 @@ export async function saveProfilePatch(
     gender: Gender | null;
     skills: string[];
     salary_expectation: number | null;
+    max_commute_km: number | null;
   }>,
 ) {
-  const { gender, skills, salary_expectation, ...rest } = patch;
+  const { gender, skills, salary_expectation, max_commute_km, ...rest } = patch;
   const { error } = await supabase
     .from("talent_profiles")
     .upsert({ user_id: userId, ...rest }, { onConflict: "user_id" });
@@ -166,18 +165,30 @@ export async function saveProfilePatch(
     }
   }
 
-  if ("skills" in patch || "salary_expectation" in patch) {
-    const extra: { user_id: string; skills?: string[]; salary_expectation?: number | null } = {
+  if (
+    "skills" in patch ||
+    "salary_expectation" in patch ||
+    "max_commute_km" in patch
+  ) {
+    const extra: {
+      user_id: string;
+      skills?: string[];
+      salary_expectation?: number | null;
+      max_commute_km?: number | null;
+    } = {
       user_id: userId,
     };
     if ("skills" in patch) extra.skills = skills ?? [];
     if ("salary_expectation" in patch) extra.salary_expectation = salary_expectation ?? null;
+    if ("max_commute_km" in patch) extra.max_commute_km = max_commute_km ?? null;
     const { error: extraError } = await supabase
       .from("talent_profiles")
       .upsert(extra, { onConflict: "user_id" });
     if (
       extraError &&
-      !/skills|salary_expectation|schema cache|column/i.test(extraError.message)
+      !/skills|salary_expectation|max_commute_km|schema cache|column/i.test(
+        extraError.message,
+      )
     ) {
       throw extraError;
     }

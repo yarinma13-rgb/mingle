@@ -34,14 +34,14 @@ export function WelcomeScreen() {
   const [selected, setSelected] = useState<Path | null>(null);
   const [leaving, setLeaving] = useState(false);
 
-  const handleGetStarted = () => {
-    if (!selected || leaving) return;
+  const choosePath = (path: Path) => {
+    if (leaving) return;
+    setSelected(path);
     setLeaving(true);
   };
 
   return (
     <div className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16">
-      {/* M mark, faint, in the background */}
       <div
         aria-hidden
         className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.12] sm:h-[680px] sm:w-[680px]"
@@ -77,31 +77,18 @@ export function WelcomeScreen() {
 
             <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
               {PATH_CARDS.map((card) => {
-                const isSelected = selected === card.id;
                 const Glyph = card.Glyph;
                 return (
                   <motion.button
                     key={card.id}
                     type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => setSelected(card.id)}
+                    onClick={() => choosePath(card.id)}
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`flex flex-col items-start rounded-2xl border bg-mingle-white p-6 text-left shadow-mingle transition-colors ${
-                      isSelected
-                        ? "border-mingle-blue"
-                        : "border-mingle-border hover:border-mingle-blue/60"
-                    }`}
+                    className="flex min-w-0 flex-col items-start rounded-2xl border border-mingle-border bg-mingle-white p-6 text-left shadow-mingle transition-colors hover:border-mingle-blue/60"
                   >
                     <span className="relative flex h-12 w-12 items-center justify-center">
-                      <span
-                        aria-hidden
-                        className={`absolute h-12 w-12 rounded-full bg-gradient-to-br from-mingle-pink via-mingle-purple to-mingle-blue blur-lg transition-opacity ${
-                          isSelected ? "opacity-40" : "opacity-0"
-                        }`}
-                      />
-                      <Glyph active={isSelected} className="relative" />
+                      <Glyph className="relative" />
                     </span>
                     <span className="mt-4 font-display text-base font-semibold text-mingle-text">
                       {card.title}
@@ -114,20 +101,6 @@ export function WelcomeScreen() {
               })}
             </div>
 
-            <motion.button
-              type="button"
-              disabled={!selected}
-              onClick={handleGetStarted}
-              whileHover={selected ? { scale: 1.03 } : undefined}
-              whileTap={selected ? { scale: 0.97 } : undefined}
-              className={`mt-10 w-full font-display text-base sm:w-auto ${
-                selected
-                  ? "mingle-btn-primary cursor-pointer"
-                  : "mingle-btn-secondary cursor-not-allowed opacity-45"
-              }`}
-            >
-              Get Started
-            </motion.button>
             <p className="mt-8 text-xs text-mingle-text-secondary">
               <Link href="/legal/terms" className="underline underline-offset-2">
                 Terms of Service

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { WORK_MODEL_OPTIONS } from "@/lib/discovery/filters";
+import { SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
 import {
   ROLE_DEPARTMENT_OPTIONS,
   ROLE_SENIORITY_OPTIONS,
@@ -23,8 +24,8 @@ export const roleDraftSchema = z.object({
   workModel: z.enum(WORK_MODEL_OPTIONS),
   requiredSkills: z.array(z.string().trim().min(1)).max(5),
   description: z.string().trim().max(1200),
-  salaryMin: z.number().int().positive().nullable(),
-  salaryMax: z.number().int().positive().nullable(),
+  salaryMin: z.number().int().positive().max(SALARY_MAX_MONTHLY_ILS).nullable(),
+  salaryMax: z.number().int().positive().max(SALARY_MAX_MONTHLY_ILS).nullable(),
 }).refine(
   (value) =>
     value.salaryMin == null ||

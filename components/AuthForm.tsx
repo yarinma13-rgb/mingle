@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { createClient } from "@/lib/supabase/client";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
+import { destinationAfterAuth } from "@/lib/auth/destination";
 import { authSchema, type AuthFormValues } from "@/lib/validation/auth";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
@@ -25,9 +26,12 @@ const PATH_COPY: Record<UserType, { eyebrow: string; headline: string }> = {
   },
 };
 
+type AuthMode = "signup" | "signin";
+
 export function AuthForm({ path }: { path: UserType }) {
   const router = useRouter();
   const supabase = createClient();
+  const [mode, setMode] = useState<AuthMode>("signup");
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -41,13 +45,43 @@ export function AuthForm({ path }: { path: UserType }) {
     formState: { errors },
   } = useForm<AuthFormValues>({ resolver: zodResolver(authSchema) });
 
+  const goAfterAuth = async (userId: string) => {
+    try {
+      await ensureUserProfile(supabase, userId, getValues("email"), path);
+    } catch (profileError) {
+      setServerError(
+        profileError instanceof Error
+          ? profileError.message
+          : "Couldn't set up your profile. Try again.",
+      );
+      setIsSubmitting(false);
+      return;
+    }
+    const next = await destinationAfterAuth(supabase, userId, path);
+    router.push(next);
+    router.refresh();
+  };
+
   const onSubmit = async (values: AuthFormValues) => {
     setServerError(null);
     setIsSubmitting(true);
 
-    // Try sign up first; if the account already exists, fall back to
-    // signing in — a single "Continue" instead of forcing the user to
-    // pick sign-up vs. log-in up front.
+    if (mode === "signin") {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+      if (error || !data.user) {
+        setServerError(error?.message ?? "Couldn't sign in.");
+        setIsSubmitting(false);
+        return;
+      }
+      track(AnalyticsEvent.signIn, { path }, data.user.id);
+      identifyUser(data.user.id, { path });
+      await goAfterAuth(data.user.id);
+      return;
+    }
+
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
       {
         email: values.email,
@@ -56,81 +90,39 @@ export function AuthForm({ path }: { path: UserType }) {
       },
     );
 
-    const signInExisting = async (): Promise<string | null> => {
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-      if (signInError) {
-        setServerError(signInError.message);
-        setIsSubmitting(false);
-        return null;
-      }
-      const signedInId = signInData.user.id;
-      track(AnalyticsEvent.signIn, { path }, signedInId);
-      identifyUser(signedInId, { path });
-      return signedInId;
-    };
-
-    let userId: string | undefined = signUpData?.user?.id;
-
     if (signUpError) {
-      const alreadyExists = /already registered|already exists/i.test(
-        signUpError.message,
-      );
-      if (!alreadyExists) {
-        setServerError(signUpError.message);
-        setIsSubmitting(false);
-        return;
-      }
+      setServerError(signUpError.message);
+      setIsSubmitting(false);
+      return;
+    }
 
-      const signedInId = await signInExisting();
-      if (!signedInId) return;
-      userId = signedInId;
-    } else if (!signUpData.session) {
-      // Anti-enumeration: signUp on an existing confirmed email can
-      // return success with no session and an empty identities array.
-      // That is not a new user waiting to confirm — sign them in.
-      const existingAccount =
-        (signUpData.user?.identities?.length ?? 0) === 0;
+    if (!signUpData.session) {
+      const existingAccount = (signUpData.user?.identities?.length ?? 0) === 0;
       if (existingAccount) {
-        const signedInId = await signInExisting();
-        if (!signedInId) return;
-        userId = signedInId;
-      } else {
-        setAwaitingConfirmation(true);
-        setIsSubmitting(false);
-        track(
-          AnalyticsEvent.signup,
-          { path, awaiting_confirmation: true },
-          userId,
-        );
-        return;
-      }
-    } else if (userId) {
-      track(AnalyticsEvent.signup, { path }, userId);
-      identifyUser(userId, { path });
-    }
-
-    // Belt and suspenders: the migration's trigger is meant to create this
-    // row, but don't let onboarding depend on a trigger having fired.
-    if (userId) {
-      try {
-        await ensureUserProfile(supabase, userId, values.email, path);
-      } catch (profileError) {
-        setServerError(
-          profileError instanceof Error
-            ? profileError.message
-            : "Couldn't set up your profile. Try again.",
-        );
+        setServerError("That email already has an account. Sign in instead.");
+        setMode("signin");
         setIsSubmitting(false);
         return;
       }
+      setAwaitingConfirmation(true);
+      setIsSubmitting(false);
+      track(
+        AnalyticsEvent.signup,
+        { path, awaiting_confirmation: true },
+        signUpData.user?.id,
+      );
+      return;
     }
 
-    router.push(`/onboarding/${path}`);
-    router.refresh();
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      setServerError("Couldn't create your account. Try again.");
+      setIsSubmitting(false);
+      return;
+    }
+    track(AnalyticsEvent.signup, { path }, userId);
+    identifyUser(userId, { path });
+    await goAfterAuth(userId);
   };
 
   const copy = PATH_COPY[path];
@@ -175,6 +167,31 @@ export function AuthForm({ path }: { path: UserType }) {
           </h1>
         </div>
 
+        <div className="mb-5 grid grid-cols-2 gap-2 rounded-full bg-mingle-lavender p-1">
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className={`rounded-full px-3 py-2 text-xs font-semibold ${
+              mode === "signup"
+                ? "bg-mingle-white text-mingle-text shadow-mingle"
+                : "text-mingle-text-secondary"
+            }`}
+          >
+            Sign Up
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className={`rounded-full px-3 py-2 text-xs font-semibold ${
+              mode === "signin"
+                ? "bg-mingle-white text-mingle-text shadow-mingle"
+                : "text-mingle-text-secondary"
+            }`}
+          >
+            Sign In
+          </button>
+        </div>
+
         <form
           method="post"
           onSubmit={handleSubmit(onSubmit)}
@@ -207,7 +224,7 @@ export function AuthForm({ path }: { path: UserType }) {
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
               placeholder="Password"
               {...register("password")}
               className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
@@ -217,41 +234,45 @@ export function AuthForm({ path }: { path: UserType }) {
                 {errors.password.message}
               </p>
             )}
-            <button
-              type="button"
-              disabled={resetBusy}
-              onClick={async () => {
-                setServerError(null);
-                setResetSent(false);
-                const email = getValues("email")?.trim();
-                if (!email) {
-                  setServerError("Enter your email first.");
-                  return;
-                }
-                setResetBusy(true);
-                const origin = window.location.origin;
-                const { error } = await supabase.auth.resetPasswordForEmail(
-                  email,
-                  {
-                    redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
-                  },
-                );
-                setResetBusy(false);
-                if (error) {
-                  setServerError(error.message);
-                  return;
-                }
-                setResetSent(true);
-              }}
-              className="mt-2 text-xs font-medium text-mingle-text-secondary underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
-            >
-              {resetBusy ? "Sending…" : "Forgot password"}
-            </button>
-            {resetSent && (
-              <p className="mt-1.5 text-xs text-mingle-text-secondary">
-                If that email is on mingle, we sent a reset link.
-              </p>
-            )}
+            {mode === "signin" ? (
+              <>
+                <button
+                  type="button"
+                  disabled={resetBusy}
+                  onClick={async () => {
+                    setServerError(null);
+                    setResetSent(false);
+                    const email = getValues("email")?.trim();
+                    if (!email) {
+                      setServerError("Enter your email first.");
+                      return;
+                    }
+                    setResetBusy(true);
+                    const origin = window.location.origin;
+                    const { error } = await supabase.auth.resetPasswordForEmail(
+                      email,
+                      {
+                        redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+                      },
+                    );
+                    setResetBusy(false);
+                    if (error) {
+                      setServerError(error.message);
+                      return;
+                    }
+                    setResetSent(true);
+                  }}
+                  className="mt-2 text-xs font-medium text-mingle-text-secondary underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
+                >
+                  {resetBusy ? "Sending…" : "Forgot password"}
+                </button>
+                {resetSent && (
+                  <p className="mt-1.5 text-xs text-mingle-text-secondary">
+                    If that email is on mingle, we sent a reset link.
+                  </p>
+                )}
+              </>
+            ) : null}
           </div>
 
           {serverError && (
@@ -265,14 +286,17 @@ export function AuthForm({ path }: { path: UserType }) {
             whileTap={{ scale: 0.98 }}
             className="mingle-btn-primary mt-2 disabled:opacity-60"
           >
-            {isSubmitting ? "Continuing…" : "Continue"}
+            {isSubmitting
+              ? mode === "signup"
+                ? "Creating account…"
+                : "Signing in…"
+              : mode === "signup"
+                ? "Sign Up"
+                : "Sign In"}
           </motion.button>
         </form>
 
         <p className="mt-6 text-center text-xs text-mingle-text-secondary">
-          New here or already have an account. Continue either way.
-        </p>
-        <p className="mt-4 text-center text-xs text-mingle-text-secondary">
           By continuing you agree to the{" "}
           <Link href="/legal/terms" className="text-mingle-text underline underline-offset-2">
             Terms of Service

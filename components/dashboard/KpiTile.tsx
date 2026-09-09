@@ -14,14 +14,14 @@ export function KpiTile({ icon, label, value, accent, href }: KpiTileProps) {
     <Link
       href={href}
       prefetch
-      className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
+      className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
     >
       <IconBadge icon={icon} accent={accent} size={40} iconSize={19} />
       <div>
         <p className="font-display text-2xl font-bold text-mingle-text">
           {value}
         </p>
-        <p className="mt-0.5 text-xs text-mingle-text-secondary">{label}</p>
+        <p className="mt-0.5 text-xs leading-snug text-mingle-text-secondary">{label}</p>
       </div>
     </Link>
   );

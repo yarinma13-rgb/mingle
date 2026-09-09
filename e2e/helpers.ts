@@ -44,7 +44,7 @@ export async function signUp(page: Page, path: "talent" | "company", email: stri
   await waitUntilInteractive(page);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.locator("form").getByRole("button", { name: "Sign Up" }).click();
   await page.waitForURL(/\/onboarding\//, { timeout: 60_000 });
   await waitUntilInteractive(page);
 }

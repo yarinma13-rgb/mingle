@@ -25,6 +25,7 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     gender: isGender(row.gender) ? row.gender : null,
     skills: row.skills ?? [],
     salaryExpectation: null,
+    maxCommuteKm: typeof row.max_commute_km === "number" ? row.max_commute_km : 0,
   };
 }
 

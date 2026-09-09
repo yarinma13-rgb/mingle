@@ -17,6 +17,7 @@ import { GenderField } from "@/components/profile/GenderField";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
 import { ChipMultiSelect } from "@/components/ChipMultiSelect";
 import { CustomChipInput } from "@/components/CustomChipInput";
+import { DistanceSlider } from "@/components/DistanceSlider";
 import {
   addCustomCapped,
   extraChipValues,
@@ -40,6 +41,7 @@ import {
   beyondCvSchema,
   type BasicProfileValues,
 } from "@/lib/validation/profile";
+import { clampSalary, SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
 import type { Database } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 8;
@@ -131,7 +133,7 @@ export function ProfileWizard() {
       lastName: profile.lastName,
       headline: profile.headline,
       location: profile.location,
-      yearsExperience: profile.yearsExperience ?? undefined,
+      yearsExperience: profile.yearsExperience,
       currentRole: profile.currentRole,
       industry: profile.industry,
       gender: profile.gender ?? undefined,
@@ -147,7 +149,7 @@ export function ProfileWizard() {
       last_name: string;
       headline: string;
       location: string;
-      years_experience: number;
+      years_experience: number | null;
       current_job_title: string;
       industry: string;
       profile_photo: string | null;
@@ -158,6 +160,7 @@ export function ProfileWizard() {
       gender: Gender | null;
       skills: string[];
       salary_expectation: number | null;
+      max_commute_km: number | null;
     }>,
     nextProfile: ProfileState,
     nextStep: number,
@@ -185,17 +188,24 @@ export function ProfileWizard() {
   };
 
   const onBasicInfoSubmit = (values: BasicProfileValues) => {
-    const nextProfile: ProfileState = { ...profile, ...values };
+    const yearsExperience = values.yearsExperience ?? null;
+    const gender = values.gender ?? null;
+    const nextProfile: ProfileState = {
+      ...profile,
+      ...values,
+      yearsExperience,
+      gender,
+    };
     persistAndAdvance(
       {
         first_name: values.firstName,
         last_name: values.lastName,
         headline: values.headline,
         location: values.location,
-        years_experience: values.yearsExperience,
+        years_experience: yearsExperience,
         current_job_title: values.currentRole,
         industry: values.industry,
-        gender: values.gender,
+        gender,
       },
       nextProfile,
       2,
@@ -214,7 +224,16 @@ export function ProfileWizard() {
     dbColumn: "drives" | "work_style" | "looking_for",
     nextStep: number,
   ) => {
-    persistAndAdvance({ [dbColumn]: profile[key] }, profile, nextStep);
+    persistAndAdvance(
+      key === "lookingFor"
+        ? {
+            looking_for: profile.lookingFor,
+            max_commute_km: profile.maxCommuteKm || null,
+          }
+        : { [dbColumn]: profile[key] },
+      profile,
+      nextStep,
+    );
   };
 
   const beyondCvError = beyondCvSchema.safeParse(profile.beyondCv).success
@@ -268,6 +287,7 @@ export function ProfileWizard() {
           setProfile(nextProfile);
           void persistAndAdvance({ gender }, nextProfile, TOTAL_STEPS);
         }}
+        onEditStep={setStep}
       />
     );
   }
@@ -334,15 +354,15 @@ export function ProfileWizard() {
                 noValidate
                 className="flex flex-col gap-4"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="First name" error={errors.firstName?.message}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field required label="First name" error={errors.firstName?.message}>
                     <input
                       {...register("firstName")}
                       className={inputClass}
                       placeholder="Yarin"
                     />
                   </Field>
-                  <Field label="Last name" error={errors.lastName?.message}>
+                  <Field required label="Last name" error={errors.lastName?.message}>
                     <input
                       {...register("lastName")}
                       className={inputClass}
@@ -351,7 +371,7 @@ export function ProfileWizard() {
                   </Field>
                 </div>
 
-                <Field label="Professional title" error={errors.headline?.message}>
+                <Field required label="Professional title" error={errors.headline?.message}>
                   <input
                     {...register("headline")}
                     className={inputClass}
@@ -359,15 +379,15 @@ export function ProfileWizard() {
                   />
                 </Field>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Current role" error={errors.currentRole?.message}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field required label="Current role" error={errors.currentRole?.message}>
                     <input
                       {...register("currentRole")}
                       className={inputClass}
                       placeholder="Senior PM"
                     />
                   </Field>
-                  <Field label="Industry" error={errors.industry?.message}>
+                  <Field required label="Industry" error={errors.industry?.message}>
                     <input
                       {...register("industry")}
                       className={inputClass}
@@ -376,7 +396,7 @@ export function ProfileWizard() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Location" error={errors.location?.message}>
                     <input
                       {...register("location")}
@@ -388,12 +408,20 @@ export function ProfileWizard() {
                     label="Years of experience"
                     error={errors.yearsExperience?.message}
                   >
-                    <input
-                      type="number"
-                      {...register("yearsExperience", { valueAsNumber: true })}
+                    <select
+                      {...register("yearsExperience", {
+                        setValueAs: (value) =>
+                          value === "" || value == null ? null : Number(value),
+                      })}
                       className={inputClass}
-                      placeholder="5"
-                    />
+                    >
+                      <option value="">Prefer not to say</option>
+                      {Array.from({ length: 41 }, (_, years) => (
+                        <option key={years} value={years}>
+                          {years}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
                 </div>
 
@@ -516,6 +544,23 @@ export function ProfileWizard() {
                 <p className="mt-3 text-center text-xs text-mingle-text-secondary">
                   {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
                 </p>
+                {multiKey === "lookingFor" ? (
+                  <div className="mt-6">
+                    <DistanceSlider
+                      name="maxCommuteKm"
+                      value={profile.maxCommuteKm}
+                      onChange={(maxCommuteKm) =>
+                        setProfile((prev) => ({ ...prev, maxCommuteKm }))
+                      }
+                      label="How far are you willing to commute"
+                      hint={
+                        profile.maxCommuteKm
+                          ? `Up to ${profile.maxCommuteKm} km from home`
+                          : "Any distance"
+                      }
+                    />
+                  </div>
+                ) : null}
 
                 {saveError && (
                   <p className="mt-6 text-center text-sm text-mingle-pink">
@@ -606,17 +651,21 @@ export function ProfileWizard() {
             {step === 6 && (
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
-                  Monthly or annual number, your choice. Keep it consistent.
+                  Monthly salary in ILS. Optional. Capped at{" "}
+                  {SALARY_MAX_MONTHLY_ILS.toLocaleString("en-US")}.
                 </label>
                 <input
                   type="number"
                   min={1}
+                  max={SALARY_MAX_MONTHLY_ILS}
                   value={profile.salaryExpectation ?? ""}
                   onChange={(event) =>
                     setProfile((prev) => ({
                       ...prev,
                       salaryExpectation: event.target.value
-                        ? Number.parseInt(event.target.value, 10)
+                        ? clampSalary(
+                            Number.parseInt(event.target.value, 10),
+                          )
                         : null,
                     }))
                   }
@@ -640,12 +689,9 @@ export function ProfileWizard() {
                   <motion.button
                     type="button"
                     onClick={() => {
-                      const salaryExpectation =
-                        profile.salaryExpectation &&
-                        Number.isFinite(profile.salaryExpectation) &&
-                        profile.salaryExpectation > 0
-                          ? profile.salaryExpectation
-                          : null;
+                      const salaryExpectation = clampSalary(
+                        profile.salaryExpectation,
+                      );
                       persistAndAdvance(
                         { salary_expectation: salaryExpectation },
                         { ...profile, salaryExpectation },
@@ -744,16 +790,19 @@ const inputClass =
 function Field({
   label,
   error,
+  required,
   children,
 }: {
   label: string;
   error?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
         {label}
+        {required ? <span className="text-mingle-pink"> *</span> : null}
       </label>
       {children}
       {error && <p className="mt-1 text-xs text-mingle-error">{error}</p>}

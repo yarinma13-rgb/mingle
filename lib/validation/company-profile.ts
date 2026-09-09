@@ -6,7 +6,7 @@ export const companyBasicInfoSchema = z.object({
   industry: z.string().trim().min(1, "Enter your industry").max(120),
   companyStage: z.string().trim().min(1, "Choose a stage"),
   companySize: z.string().trim().min(1, "Choose a size"),
-  location: z.string().trim().min(1, "Enter your location").max(120),
+  location: z.string().trim().max(120),
 });
 
 export type CompanyBasicInfoValues = z.infer<typeof companyBasicInfoSchema>;

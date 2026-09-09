@@ -124,6 +124,7 @@ export interface Database {
           skills: string[];
           latitude: number | null;
           longitude: number | null;
+          max_commute_km: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -148,6 +149,7 @@ export interface Database {
           skills?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          max_commute_km?: number | null;
         };
         Update: {
           first_name?: string | null;
@@ -169,6 +171,7 @@ export interface Database {
           skills?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          max_commute_km?: number | null;
         };
         Relationships: [];
       };

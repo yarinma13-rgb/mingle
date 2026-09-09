@@ -32,16 +32,29 @@ function ChipRow({ items }: { items: string[] }) {
 
 function Section({
   title,
+  onEdit,
   children,
 }: {
   title: string;
+  onEdit?: () => void;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-text">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
+          {title}
+        </h2>
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs font-semibold text-mingle-blue"
+          >
+            Edit
+          </button>
+        ) : null}
+      </div>
       {children}
     </div>
   );
@@ -54,6 +67,7 @@ export function ProfilePreview({
   onCvChanged,
   onPhotoChanged,
   onGenderChanged,
+  onEditStep,
 }: {
   profile: ProfileState;
   userId: string | null;
@@ -61,6 +75,7 @@ export function ProfilePreview({
   onCvChanged: (next: { cvPath: string | null; cvFileName: string | null }) => void;
   onPhotoChanged: (photo: string | null) => void;
   onGenderChanged: (gender: Gender) => void;
+  onEditStep?: (step: number) => void;
 }) {
   const initials = personInitials(profile.firstName, profile.lastName);
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
@@ -74,7 +89,7 @@ export function ProfilePreview({
   }, [supabase, userId]);
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-6 py-16 sm:px-10">
+    <div className="flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,17 +125,26 @@ export function ProfilePreview({
             <p className="mt-1 text-xs text-mingle-text-secondary">
               {[profile.location, profile.industry].filter(Boolean).join(" · ")}
             </p>
+            {onEditStep ? (
+              <button
+                type="button"
+                onClick={() => onEditStep(1)}
+                className="mt-2 text-xs font-semibold text-mingle-blue"
+              >
+                Edit
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <Section title="About you">
+        <Section title="About you" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
           <GenderField
             value={profile.gender}
             onChange={onGenderChanged}
           />
         </Section>
 
-        <Section title="Experience">
+        <Section title="Experience" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
           <p className="text-sm text-mingle-text-secondary">
             {profile.currentRole}
             {profile.yearsExperience !== null &&
@@ -142,19 +166,33 @@ export function ProfilePreview({
           </Section>
         )}
 
-        <Section title="What drives me">
+        <Section
+          title="What drives me"
+          onEdit={onEditStep ? () => onEditStep(2) : undefined}
+        >
           <ChipRow items={profile.drives} />
         </Section>
 
-        <Section title="How I work">
+        <Section
+          title="How I work"
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
+        >
           <ChipRow items={profile.workStyle} />
         </Section>
 
-        <Section title="What I'm looking for">
+        <Section
+          title="What I'm looking for"
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+        >
           <ChipRow items={profile.lookingFor} />
+          {profile.maxCommuteKm ? (
+            <p className="text-xs text-mingle-text-secondary">
+              Willing to commute up to {profile.maxCommuteKm} km
+            </p>
+          ) : null}
         </Section>
 
-        <Section title="Skills">
+        <Section title="Skills" onEdit={onEditStep ? () => onEditStep(5) : undefined}>
           <ChipRow items={profile.skills} />
         </Section>
 
@@ -167,15 +205,24 @@ export function ProfilePreview({
           ) : null}
         </Section>
 
-        {profile.salaryExpectation ? (
-          <Section title="Salary expectation">
-            <p className="text-sm text-mingle-text-secondary">
-              Saved privately. Companies never see the number.
-            </p>
-          </Section>
-        ) : null}
+        <Section
+          title="Salary expectation"
+          onEdit={onEditStep ? () => onEditStep(6) : undefined}
+        >
+          <p className="text-sm text-mingle-text-secondary">
+            {profile.salaryExpectation
+              ? `${profile.salaryExpectation.toLocaleString("en-US")} ILS / month`
+              : "Not set"}
+          </p>
+          <p className="text-xs text-mingle-text-secondary">
+            (private — not shown to companies)
+          </p>
+        </Section>
 
-        <Section title="Beyond the CV">
+        <Section
+          title="Beyond the CV"
+          onEdit={onEditStep ? () => onEditStep(7) : undefined}
+        >
           <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
             {profile.beyondCv}
           </p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CustomChipInput } from "@/components/CustomChipInput";
+import { DistanceSlider } from "@/components/DistanceSlider";
 import {
   addCustomCapped,
   extraChipValues,
@@ -221,25 +222,16 @@ export function DiscoveryFiltersForm({
                   </fieldset>
 
                 <div className="mt-4">
-                  <label className="flex flex-col gap-1.5 text-xs font-medium text-mingle-text-secondary">
-                    Distance in km
-                    <input
-                      type="range"
-                      name="distanceKm"
-                      min={0}
-                      max={200}
-                      value={distanceKm}
-                      onChange={(event) =>
-                        setDistanceKm(Number.parseInt(event.target.value, 10) || 0)
-                      }
-                      className="accent-mingle-accent-purple"
-                    />
-                    <span>
-                      {distanceKm
+                  <DistanceSlider
+                    value={distanceKm}
+                    onChange={setDistanceKm}
+                    label="Distance in km"
+                    hint={
+                      distanceKm
                         ? `Up to ${distanceKm} km. Profiles without coordinates still appear.`
-                        : "Any. Profiles without coordinates are not dropped."}
-                    </span>
-                  </label>
+                        : "Any. Profiles without coordinates are not dropped."
+                    }
+                  />
                 </div>
               </>
             ) : null}

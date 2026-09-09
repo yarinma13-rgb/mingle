@@ -271,7 +271,7 @@ export function CompanyProfileWizard() {
   if (loadState === "error") return <CompanyWizardError onRetry={retry} />;
 
   if (step >= TOTAL_STEPS) {
-    return <CompanyProfilePreview profile={profile} />;
+    return <CompanyProfilePreview profile={profile} onEditStep={setStep} />;
   }
 
   const completionPct = companyProfileCompletion(profile);
@@ -328,7 +328,7 @@ export function CompanyProfileWizard() {
                 noValidate
                 className="flex flex-col gap-4"
               >
-                <Field label="Company name" error={errors.companyName?.message}>
+                <Field required label="Company name" error={errors.companyName?.message}>
                   <input
                     {...register("companyName")}
                     className={inputClass}
@@ -336,7 +336,7 @@ export function CompanyProfileWizard() {
                   />
                 </Field>
 
-                <Field label="Mission" error={errors.mission?.message}>
+                <Field required label="Mission" error={errors.mission?.message}>
                   <input
                     {...register("mission")}
                     className={inputClass}
@@ -344,8 +344,8 @@ export function CompanyProfileWizard() {
                   />
                 </Field>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Industry" error={errors.industry?.message}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field required label="Industry" error={errors.industry?.message}>
                     <input
                       {...register("industry")}
                       className={inputClass}
@@ -361,8 +361,8 @@ export function CompanyProfileWizard() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Stage" error={errors.companyStage?.message}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field required label="Stage" error={errors.companyStage?.message}>
                     <select {...register("companyStage")} className={inputClass}>
                       <option value="">Select</option>
                       {COMPANY_STAGE_OPTIONS.map((option) => (
@@ -372,7 +372,7 @@ export function CompanyProfileWizard() {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Size" error={errors.companySize?.message}>
+                  <Field required label="Size" error={errors.companySize?.message}>
                     <select {...register("companySize")} className={inputClass}>
                       <option value="">Select</option>
                       {COMPANY_SIZE_OPTIONS.map((option) => (
@@ -610,16 +610,19 @@ const inputClass =
 function Field({
   label,
   error,
+  required,
   children,
 }: {
   label: string;
   error?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
         {label}
+        {required ? <span className="text-mingle-pink"> *</span> : null}
       </label>
       {children}
       {error && <p className="mt-1 text-xs text-mingle-pink">{error}</p>}
