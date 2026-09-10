@@ -29,6 +29,16 @@ function emptyCounts(): FunnelCounts {
   };
 }
 
+export function funnelFromStages(
+  stages: Array<RelationshipStage | undefined>,
+): CompanyFunnel {
+  const counts = emptyCounts();
+  for (const stage of stages) {
+    counts[stage ?? "connected"] += 1;
+  }
+  return { counts, total: stages.length };
+}
+
 /**
  * Snapshot of where each accepted connection sits, using the latest
  * relationship_events row (same display rule as the Board columns).

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +10,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Avatar } from "@/components/Avatar";
+import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
+import { CompanyPipelineDonut } from "@/components/dashboard/CompanyPipelineDonut";
+import {
+  FUNNEL_STAGES,
+  funnelFromStages,
+} from "@/lib/dashboard/funnel";
 import type { Gender } from "@/lib/profile/avatar";
 import type { RelationshipStage } from "@/lib/supabase/types";
 
@@ -31,15 +37,6 @@ export type ConnectionDisplayRow = {
   gender: Gender | null;
   stage?: RelationshipStage;
 };
-
-const PIPELINE_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
-  { id: "connected", label: "Connected", accent: "var(--mingle-accent-pink)" },
-  { id: "exploring", label: "Exploring", accent: "var(--mingle-accent-purple)" },
-  { id: "in_conversation", label: "In conversation", accent: "var(--mingle-accent-blue)" },
-  { id: "opportunity", label: "Opportunity", accent: "var(--mingle-warning)" },
-  { id: "decision", label: "Decision", accent: "var(--mingle-success)" },
-  { id: "relationship", label: "Relationship", accent: "var(--mingle-purple)" },
-];
 
 function PersonRow({
   row,
@@ -125,6 +122,20 @@ export function ConnectionsScreen({
   const nothingYet =
     incoming.length === 0 && outgoing.length === 0 && accepted.length === 0;
 
+  const pipelineFunnel = useMemo(
+    () => funnelFromStages(accepted.map((row) => row.stage)),
+    [accepted],
+  );
+
+  const acceptedByStage = useMemo(() => {
+    const buckets = new Map<RelationshipStage, ConnectionDisplayRow[]>();
+    for (const stage of FUNNEL_STAGES) buckets.set(stage.id, []);
+    for (const row of accepted) {
+      buckets.get(row.stage ?? "connected")?.push(row);
+    }
+    return buckets;
+  }, [accepted]);
+
   return (
     <div className="flex flex-col gap-6">
       {mingleMatch && (
@@ -202,55 +213,65 @@ export function ConnectionsScreen({
               )}
             </div>
           </div>
-          <div className="-mx-4 overflow-x-auto px-4 sm:-mx-8 sm:px-8">
-            <div className="flex min-w-max gap-3 pb-2">
-              {PIPELINE_COLUMNS.map((column) => {
-                const cards = accepted.filter(
-                  (row) => (row.stage ?? "connected") === column.id,
-                );
-                return (
-                  <section
-                    key={column.id}
-                    className="flex w-64 shrink-0 flex-col rounded-2xl border border-mingle-border bg-mingle-surface p-3 shadow-mingle"
-                  >
-                    <header className="mb-3 flex items-center justify-between gap-2 border-b border-mingle-border px-1 pb-2">
-                      <h2 className="flex items-center gap-2 font-display text-sm font-semibold text-mingle-text">
-                        <span
-                          aria-hidden
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: column.accent }}
-                        />
-                        {column.label}
-                      </h2>
-                      <MingleChip>{cards.length}</MingleChip>
-                    </header>
-                    <div className="flex min-h-36 flex-col gap-2">
-                      {cards.length === 0 ? (
-                        <p className="px-1 text-xs text-mingle-text-secondary">
-                          No one at this stage
-                        </p>
-                      ) : (
-                        cards.map((row) => (
-                          <Link
-                            key={row.connectionId}
-                            href={`/conversations/${row.connectionId}`}
-                            className="rounded-xl border border-mingle-border bg-mingle-bg p-3 transition-shadow hover:shadow-mingle"
-                          >
-                            <p className="truncate font-display text-sm font-semibold text-mingle-text">
-                              {row.name}
-                            </p>
-                            <p className="truncate text-xs text-mingle-text-secondary">
-                              {row.subtitle}
-                            </p>
-                          </Link>
-                        ))
-                      )}
-                    </div>
-                  </section>
-                );
-              })}
+          {accepted.length === 0 ? (
+            <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+              <h2 className="font-display text-sm font-semibold text-mingle-text">
+                By stage
+              </h2>
+              <p className="mt-3 text-sm text-mingle-text-secondary">
+                After you accept someone, they land here as a snapshot. Move
+                stages on the board.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <CompanyPipelineFunnel funnel={pipelineFunnel} />
+                <CompanyPipelineDonut funnel={pipelineFunnel} />
+              </div>
+              <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+                <h2 className="font-display text-sm font-semibold text-mingle-text">
+                  By stage
+                </h2>
+                <p className="mt-1 text-xs text-mingle-text-secondary">
+                  Read only. Open the board to drag someone to a new stage.
+                </p>
+                <div className="mt-4 flex flex-col gap-6">
+                  {FUNNEL_STAGES.map((stage) => {
+                    const cards = acceptedByStage.get(stage.id) ?? [];
+                    return (
+                      <section key={stage.id}>
+                        <h3 className="flex items-center justify-between gap-2 border-b border-mingle-border pb-2 font-display text-sm font-semibold text-mingle-text">
+                          {stage.label}
+                          <span className="text-xs font-medium text-mingle-text-secondary">
+                            {cards.length}
+                          </span>
+                        </h3>
+                        {cards.length === 0 ? (
+                          <p className="mt-3 text-xs text-mingle-text-secondary">
+                            No one at this stage
+                          </p>
+                        ) : (
+                          <div className="mt-3 flex flex-col gap-3">
+                            {cards.map((row) => (
+                              <PersonRow key={row.connectionId} row={row}>
+                                <Link
+                                  href={`/conversations/${row.connectionId}`}
+                                  className="shrink-0 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+                                >
+                                  Message
+                                </Link>
+                              </PersonRow>
+                            ))}
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>
