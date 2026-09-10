@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { CompanyDashboard, type CandidateRow } from "@/components/dashboard/CompanyDashboard";
 import { TalentDashboard, type CompanyRow } from "@/components/dashboard/TalentDashboard";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
+import { buildCandidateDna } from "@/lib/matching/dna";
 import { matchScore } from "@/lib/profile-detail/why-match";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
@@ -132,6 +133,7 @@ export default async function DashboardPage() {
       <TalentDashboard
         profileCompletion={userRow.profile_completion}
         companies={companies}
+        dna={ownProfile ? buildCandidateDna(ownProfile) : null}
       />
     </DashboardShell>
   );

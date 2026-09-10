@@ -175,6 +175,28 @@ export function canonicalize(value: string): string {
   return ALIAS_TO_CANONICAL.get(lower) ?? lower;
 }
 
+export function canonicalLabel(value: string): string {
+  const key = canonicalize(value);
+  return key
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/** Collapse synonym chips into one label per canonical group. */
+export function uniqueCanonicalLabels(values: string[]): string[] {
+  const seen = new Set<string>();
+  const labels: string[] = [];
+  for (const value of values) {
+    const key = canonicalize(value);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    labels.push(canonicalLabel(value));
+  }
+  return labels;
+}
+
 export function overlapCanonical(a: string[], b: string[]): string[] {
   const bCanon = new Set(b.map(canonicalize));
   const seen = new Set<string>();

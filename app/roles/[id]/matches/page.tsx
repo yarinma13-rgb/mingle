@@ -9,6 +9,7 @@ import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadPassedUserIds } from "@/lib/matching/passed";
 import { loadMatchFeedbackMap } from "@/lib/matching/feedback";
 import { loadCompanyRole } from "@/lib/roles/persistence";
+import { queueRoleMatches } from "@/lib/admin/reviews";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { notFound } from "next/navigation";
 
@@ -44,6 +45,19 @@ export default async function RoleMatchesPage({
     styleOptions,
     { excludeUserIds: passedUserIds, rankAll: true },
   );
+
+  const { data: companyRow } = await supabase
+    .from("company_profiles")
+    .select("company_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  await queueRoleMatches(supabase, {
+    roleId: role.id,
+    companyId: user.id,
+    jobTitle: role.title,
+    companyName: companyRow?.company_name ?? "",
+    cards: ranked.cards,
+  });
 
   return (
     <DashboardShell

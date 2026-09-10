@@ -16,6 +16,8 @@ import { computeMatch } from "@/lib/matching/engine";
 import { buildMatchReport, type MatchReport } from "@/lib/matching/report";
 import { loadMatchFeedbackAction, type MatchFeedbackAction } from "@/lib/matching/feedback";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
+import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
+import { buildCandidateDna } from "@/lib/matching/dna";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
@@ -129,6 +131,11 @@ export default async function ProfileViewPage({
 
     return (
       <main className="flex min-h-screen flex-1 flex-col">
+        {viewer.id === userId ? (
+          <div className="mx-auto w-full max-w-4xl px-4 pt-10">
+            <CandidateDnaPanel dna={buildCandidateDna(talent)} />
+          </div>
+        ) : null}
         <ProfileDetailShell
           eyebrow="Talent profile"
           photo={talent.profilePhoto}

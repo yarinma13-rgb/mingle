@@ -16,6 +16,7 @@ const PROTECTED_PREFIXES = [
   "/team",
   "/saved",
   "/coming-soon",
+  "/admin",
 ];
 
 export async function proxy(request: NextRequest) {
@@ -86,5 +87,7 @@ export const config = {
     "/saved/:path*",
     "/coming-soon",
     "/coming-soon/:path*",
+    "/admin",
+    "/admin/:path*",
   ],
 };

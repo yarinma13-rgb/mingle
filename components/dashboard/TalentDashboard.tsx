@@ -2,12 +2,14 @@ import Link from "next/link";
 import { KpiTile } from "@/components/dashboard/KpiTile";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
+import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
+import type { CandidateDna } from "@/lib/matching/dna";
 import {
-  GaugeIcon,
-  PeopleIcon,
-  MessageIcon,
-  CompassIcon,
   BookmarkIcon,
+  CompassIcon,
+  GaugeIcon,
+  MessageIcon,
+  PeopleIcon,
 } from "@/components/dashboard/icons";
 
 export type CompanyRow = {
@@ -22,9 +24,11 @@ export type CompanyRow = {
 export function TalentDashboard({
   profileCompletion,
   companies,
+  dna,
 }: {
   profileCompletion: number;
   companies: CompanyRow[];
+  dna: CandidateDna | null;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -81,6 +85,8 @@ export function TalentDashboard({
           </Link>
         )}
       </div>
+
+      {dna ? <CandidateDnaPanel dna={dna} /> : null}
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 shadow-mingle">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">

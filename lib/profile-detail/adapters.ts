@@ -24,7 +24,8 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     cvFileName: row.cv_file_name ?? null,
     gender: isGender(row.gender) ? row.gender : null,
     skills: row.skills ?? [],
-    salaryExpectation: null,
+    salaryExpectation:
+      typeof row.salary_expectation === "number" ? row.salary_expectation : null,
     maxCommuteKm: typeof row.max_commute_km === "number" ? row.max_commute_km : 0,
   };
 }

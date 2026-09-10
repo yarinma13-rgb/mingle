@@ -269,6 +269,74 @@ export interface Database {
         };
         Relationships: [];
       };
+      match_reviews: {
+        Row: {
+          id: string;
+          role_id: string;
+          company_id: string;
+          candidate_id: string;
+          job_title: string | null;
+          company_name: string | null;
+          candidate_name: string | null;
+          status: "pending" | "approved" | "rejected" | "flagged";
+          note: string | null;
+          overall: number | null;
+          role_fit: number | null;
+          company_fit: number | null;
+          motivation_fit: number | null;
+          confidence: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          role_id: string;
+          company_id: string;
+          candidate_id: string;
+          job_title?: string | null;
+          company_name?: string | null;
+          candidate_name?: string | null;
+          status?: "pending" | "approved" | "rejected" | "flagged";
+          note?: string | null;
+          overall?: number | null;
+          role_fit?: number | null;
+          company_fit?: number | null;
+          motivation_fit?: number | null;
+          confidence?: string | null;
+        };
+        Update: {
+          status?: "pending" | "approved" | "rejected" | "flagged";
+          note?: string | null;
+          overall?: number | null;
+          role_fit?: number | null;
+          company_fit?: number | null;
+          motivation_fit?: number | null;
+          confidence?: string | null;
+          job_title?: string | null;
+          company_name?: string | null;
+          candidate_name?: string | null;
+        };
+        Relationships: [];
+      };
+      match_review_audit: {
+        Row: {
+          id: string;
+          review_id: string;
+          actor_id: string;
+          actor_email: string | null;
+          action: string;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          review_id: string;
+          actor_id: string;
+          actor_email?: string | null;
+          action: string;
+          note?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       passed_profiles: {
         Row: {
           id: string;
