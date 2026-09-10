@@ -1,9 +1,5 @@
-import { HomeShell } from "@/components/HomeShell";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-1 flex-col">
-      <HomeShell />
-    </main>
-  );
+  return <LandingPage />;
 }

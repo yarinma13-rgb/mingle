@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Figtree } from "next/font/google";
+import { Figtree, Plus_Jakarta_Sans, Rubik } from "next/font/google";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
@@ -15,8 +15,22 @@ const figtree = Figtree({
   display: "swap",
 });
 
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const rubik = Rubik({
+  variable: "--font-rubik",
+  subsets: ["latin", "hebrew"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "mingle — Careers start with connection",
+  title: "mingle | Worth Talking To",
   description:
     "mingle is the career relationship platform that connects talent and companies before a hiring decision is made.",
 };
@@ -33,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       suppressHydrationWarning
       data-theme="light"
-      className={`${figtree.variable} h-full antialiased`}
+      className={`${figtree.variable} ${plusJakarta.variable} ${rubik.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
