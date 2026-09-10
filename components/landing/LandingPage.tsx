@@ -24,8 +24,11 @@ export function LandingPage() {
             <Link href={AUTH_HREF} className="landing-nav-signin">
               Sign in
             </Link>
+            <Link href={START_HREF} className="landing-btn landing-btn-secondary">
+              Book a demo
+            </Link>
             <Link href={START_HREF} className="landing-btn landing-btn-primary">
-              Get started free
+              Start for free
             </Link>
           </div>
         </div>
@@ -35,17 +38,14 @@ export function LandingPage() {
         <section className="landing-hero" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
             <div className="landing-hero-copy">
+              <p className="landing-hero-brand">mingle</p>
               <h1 id="landing-hero-title" className="landing-hero-title">
-                Transform the way you{" "}
-                <span className="landing-hero-title-gradient">connect</span>
+                Transform the way you connect.
               </h1>
               <p className="landing-hero-lead">
-                Career relationships that start with a real Match Report, so
-                talent and companies talk only when Role Fit, Company Fit, and
+                Relationship software for talent and companies. Start with a
+                Match Report, then talk only when Role Fit, Company Fit, and
                 Motivation Fit already line up.
-              </p>
-              <p className="landing-hero-he" lang="he" dir="rtl">
-                קשרים תעסוקתיים שמתחילים בשיחה אמיתית, לא רק בקורות חיים.
               </p>
 
               <div className="landing-hero-actions">
@@ -53,7 +53,7 @@ export function LandingPage() {
                   href={START_HREF}
                   className="landing-btn landing-btn-primary landing-btn-lg"
                 >
-                  Get started free
+                  Start free
                 </Link>
                 <Link
                   href={AUTH_HREF}
@@ -65,7 +65,7 @@ export function LandingPage() {
 
               <ul className="landing-hero-proof">
                 <li>No credit card required</li>
-                <li>Two minutes to get started</li>
+                <li>2 minutes to get started</li>
               </ul>
             </div>
 
@@ -201,6 +201,8 @@ export function LandingPage() {
                   </div>
                 </div>
 
+                <div className="landing-float landing-float-photo" />
+
                 <article className="landing-float landing-float-match">
                   <div className="landing-mock-top">
                     <div>
@@ -274,7 +276,7 @@ export function LandingPage() {
                 </article>
 
                 <article className="landing-float landing-float-company">
-                  <span className="landing-avatar landing-avatar-purple">R</span>
+                  <span className="landing-avatar landing-avatar-purple">N</span>
                   <div>
                     <strong>Northwind Labs</strong>
                     <div className="landing-float-tags">
@@ -287,6 +289,43 @@ export function LandingPage() {
                     </div>
                   </div>
                 </article>
+
+                <svg
+                  className="landing-collage-arcs"
+                  viewBox="0 0 520 420"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M40 300 C 120 180, 220 140, 320 90"
+                    stroke="url(#landingArc)"
+                    strokeWidth="2"
+                    strokeDasharray="4 6"
+                    opacity="0.55"
+                  />
+                  <path
+                    d="M180 360 C 260 300, 360 280, 470 210"
+                    stroke="url(#landingArc)"
+                    strokeWidth="2"
+                    strokeDasharray="4 6"
+                    opacity="0.4"
+                  />
+                  <defs>
+                    <linearGradient
+                      id="landingArc"
+                      x1="40"
+                      y1="300"
+                      x2="470"
+                      y2="90"
+                    >
+                      <stop stopColor="var(--mingle-accent-blue)" />
+                      <stop
+                        offset="1"
+                        stopColor="var(--mingle-accent-pink)"
+                      />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </div>
             </div>
           </div>
@@ -295,16 +334,18 @@ export function LandingPage() {
         <section className="landing-trust" aria-label="Trusted by teams">
           <div className="landing-shell">
             <p className="landing-trust-copy">
-              Built for teams that hire through relationships, not spray and
-              pray.
+              Trusted by relationship-first teams hiring across startups and
+              scaleups
             </p>
-            <div className="landing-trust-row">
-              <span>Talent teams</span>
-              <span>Founders</span>
-              <span>Agencies</span>
-              <span>Operators</span>
-              <span>People leaders</span>
-            </div>
+            <ul className="landing-trust-row">
+              <li>Northwind</li>
+              <li>Brightline</li>
+              <li>Orbit Labs</li>
+              <li>Cedar & Co</li>
+              <li>PulseHire</li>
+              <li>Kiteworks</li>
+              <li>Studio Nine</li>
+            </ul>
           </div>
         </section>
 
