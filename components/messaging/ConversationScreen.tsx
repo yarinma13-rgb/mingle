@@ -18,6 +18,7 @@ import {
   UpcomingInterviewBanner,
 } from "@/components/interviews/ScheduleInterviewControls";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
+import { notifyPushMessage } from "@/lib/push/actions";
 
 function SendIcon({ size = 18 }: { size?: number }) {
   return (
@@ -144,6 +145,7 @@ export function ConversationScreen({
       const sent = await sendMessage(supabase, conversationId, viewerId, body);
       setMessages((prev) => [...prev, sent]);
       setDraft("");
+      void notifyPushMessage(otherUserId);
     } catch (error) {
       setSendError(
         isRateLimitError(error)

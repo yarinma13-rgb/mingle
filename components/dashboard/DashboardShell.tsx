@@ -27,6 +27,7 @@ import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
 import { ThemeSwitch } from "@/components/theme/ThemeSwitch";
 import { SeePlansButton } from "@/components/plans/SeePlansButton";
+import { PushRegistrar } from "@/components/push/PushRegistrar";
 
 type NavItem = {
   label: string;
@@ -106,6 +107,7 @@ export function DashboardShell({
 
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
+      <PushRegistrar />
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
           <MingleLogo variant="mark" size={41} priority />

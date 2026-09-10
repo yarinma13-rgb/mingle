@@ -129,6 +129,27 @@ export async function signedTalentPhotoUrl(
   return data.signedUrl;
 }
 
+export async function resolveTalentPhotoUrls(
+  supabase: SupabaseClient<Database>,
+  photos: (string | null | undefined)[],
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const unique = [...new Set(photos.filter((item): item is string => Boolean(item)))];
+  const paths: string[] = [];
+  for (const photo of unique) {
+    if (isPublicPhotoUrl(photo)) map.set(photo, photo);
+    else paths.push(photo);
+  }
+  if (paths.length === 0) return map;
+  const { data } = await supabase.storage
+    .from(TALENT_PHOTO_BUCKET)
+    .createSignedUrls(paths, 60 * 60);
+  for (const row of data ?? []) {
+    if (row.path && row.signedUrl) map.set(row.path, row.signedUrl);
+  }
+  return map;
+}
+
 export async function resolveTalentPhotoUrl(
   supabase: SupabaseClient<Database>,
   photo: string | null,

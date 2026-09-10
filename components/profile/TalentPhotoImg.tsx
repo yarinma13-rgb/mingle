@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { StorageImage } from "@/components/media/StorageImage";
 import {
   isPublicPhotoUrl,
   resolveTalentPhotoUrl,
@@ -11,10 +12,12 @@ export function TalentPhotoImg({
   photo,
   className,
   fallback,
+  sizes = "80px",
 }: {
   photo: string | null;
   className?: string;
   fallback: React.ReactNode;
+  sizes?: string;
 }) {
   const [src, setSrc] = useState<string | null>(() =>
     photo && isPublicPhotoUrl(photo) ? photo : null,
@@ -40,8 +43,5 @@ export function TalentPhotoImg({
   }, [photo]);
 
   if (!src) return fallback;
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" className={className} />
-  );
+  return <StorageImage src={src} className={className} sizes={sizes} />;
 }

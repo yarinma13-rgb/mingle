@@ -18,6 +18,7 @@ import {
   type MatchFeedbackAction,
   type NotFitReason,
 } from "@/lib/matching/feedback";
+import { notifyPushMatch } from "@/lib/push/actions";
 import type { MatchReport } from "@/lib/matching/report";
 import {
   MatchFeedbackActions,
@@ -83,6 +84,7 @@ function DiscoveryCardView({
       await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
       setFeedback("interested");
       toast("Marked interested.");
+      void notifyPushMatch(card.userId);
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -170,7 +172,8 @@ function DiscoveryCardView({
         <div className="absolute inset-0">
           <TalentPhotoImg
             photo={card.photo}
-            className="h-full w-full object-cover"
+            className="h-full w-full"
+            sizes="(max-width: 640px) 100vw, 420px"
             fallback={
               <div
                 className={`flex h-full w-full items-center justify-center ${avatarToneClass(card.gender)}`}

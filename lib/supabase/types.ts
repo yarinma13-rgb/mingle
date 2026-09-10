@@ -495,6 +495,29 @@ export interface Database {
         };
         Relationships: [];
       };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+        };
+        Update: {
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+        };
+        Relationships: [];
+      };
       passed_profiles: {
         Row: {
           id: string;
@@ -761,6 +784,10 @@ export interface Database {
       claim_company_invite: {
         Args: Record<string, never>;
         Returns: { company_id: string; company_name: string }[];
+      };
+      list_related_push_subscriptions: {
+        Args: { p_user_id: string };
+        Returns: { endpoint: string; p256dh: string; auth: string }[];
       };
     };
     Enums: Record<string, never>;

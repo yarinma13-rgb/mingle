@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
+import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import {
   companyInitials,
   personInitials,
@@ -64,6 +65,14 @@ export async function loadDisplayInfoForUsers(
       photo: profile.logo,
       gender: null,
     });
+  }
+
+  const photoUrls = await resolveTalentPhotoUrls(supabase, [
+    ...[...map.values()].map((info) => info.photo),
+  ]);
+  for (const info of map.values()) {
+    const resolved = info.photo ? photoUrls.get(info.photo) : null;
+    if (resolved) info.photo = resolved;
   }
 
   return map;

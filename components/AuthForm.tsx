@@ -31,7 +31,7 @@ type AuthMode = "signup" | "signin";
 export function AuthForm({ path }: { path: UserType }) {
   const router = useRouter();
   const supabase = createClient();
-  const [mode, setMode] = useState<AuthMode>("signup");
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);

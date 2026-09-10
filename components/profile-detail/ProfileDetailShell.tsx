@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sendOrAcceptConnection } from "@/lib/connections/persistence";
 import { notifyConnectionRequest } from "@/lib/email/actions";
+import { notifyPushMatch, notifyPushConnection } from "@/lib/push/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
 import { passProfile } from "@/lib/matching/passed";
@@ -170,6 +171,7 @@ export function ProfileDetailShell({
         setConnectionState({ status: "accepted", isRequester: false });
         setMingleConnectionId(result.connection.id);
         setShowMingleMoment(true);
+        void notifyPushConnection(targetUserId);
       } else if (result.outcome === "sent") {
         setConnectionState({ status: "pending", isRequester: true });
         toast("Request sent.");
@@ -200,6 +202,7 @@ export function ProfileDetailShell({
       setSaved(true);
       setFeedback("interested");
       toast("Marked interested.");
+      void notifyPushMatch(targetUserId);
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {

@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
 
+const ONBOARDING_STEPS = 4;
+
 export async function destinationAfterAuth(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -8,18 +10,13 @@ export async function destinationAfterAuth(
 ): Promise<string> {
   const { data } = await supabase
     .from("users")
-    .select("user_type, onboarding_status, profile_completion")
+    .select("user_type, onboarding_status, onboarding_step")
     .eq("id", userId)
     .maybeSingle();
   const type = data?.user_type ?? path;
-  if (
-    data?.onboarding_status === "completed" &&
-    (data.profile_completion ?? 0) >= 100
-  ) {
-    return "/dashboard";
-  }
-  if (data?.onboarding_status === "completed") {
-    return type === "company" ? "/company-profile/build" : "/profile/build";
-  }
+  const onboarded =
+    data?.onboarding_status === "completed" ||
+    (data?.onboarding_step ?? 0) >= ONBOARDING_STEPS;
+  if (onboarded) return "/dashboard";
   return `/onboarding/${type}`;
 }

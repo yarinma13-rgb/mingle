@@ -3,6 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CustomChipInput } from "@/components/CustomChipInput";
+import { SuggestInput } from "@/components/SuggestInput";
+import {
+  INDUSTRY_SUGGESTIONS,
+  LOCATION_SUGGESTIONS,
+  TITLE_SUGGESTIONS,
+} from "@/lib/suggest/lists";
 import { DistanceSlider } from "@/components/DistanceSlider";
 import {
   addCustomCapped,
@@ -84,32 +90,38 @@ export function DiscoveryFiltersForm({
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5 text-xs font-medium text-mingle-text-secondary">
                 Industry
-                <input
+                <SuggestInput
                   type="search"
                   name="industry"
+                  listId="discover-industry"
+                  suggestions={INDUSTRY_SUGGESTIONS}
                   defaultValue={filters.industry}
-                  placeholder="Technology"
+                  placeholder=""
                   className={fieldClass}
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-xs font-medium text-mingle-text-secondary">
                 Location
-                <input
+                <SuggestInput
                   type="search"
                   name="location"
+                  listId="discover-location"
+                  suggestions={LOCATION_SUGGESTIONS}
                   defaultValue={filters.location}
-                  placeholder="Tel Aviv"
+                  placeholder=""
                   className={fieldClass}
                 />
               </label>
               {isCompany ? (
                 <label className="flex flex-col gap-1.5 text-xs font-medium text-mingle-text-secondary sm:col-span-2">
                   Role or title
-                  <input
+                  <SuggestInput
                     type="search"
                     name="role"
+                    listId="discover-role"
+                    suggestions={TITLE_SUGGESTIONS}
                     defaultValue={filters.role}
-                    placeholder="Product designer"
+                    placeholder=""
                     className={fieldClass}
                   />
                 </label>

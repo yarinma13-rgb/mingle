@@ -4,15 +4,18 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ChipMultiSelect } from "@/components/ChipMultiSelect";
+import { SkillFieldChips } from "@/components/profile/SkillFieldChips";
+import { SuggestInput } from "@/components/SuggestInput";
+import { TITLE_SUGGESTIONS } from "@/lib/suggest/lists";
 import { clampSalary, SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
 import {
   ROLE_DEPARTMENT_OPTIONS,
   ROLE_EMPLOYMENT_OPTIONS,
   ROLE_SENIORITY_OPTIONS,
-  ROLE_SKILL_OPTIONS,
   ROLE_TITLE_SUGGESTIONS,
   WORK_MODEL_OPTIONS,
 } from "@/lib/roles/questions";
+import { matchSkillField, skillOptionsForField } from "@/lib/skills/options";
 import {
   createCompanyRole,
   isMissingRolesTable,
@@ -100,6 +103,11 @@ export function RoleBuilder({
 }) {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState<RoleDraft>(initialDraft);
+  const [skillField, setSkillField] = useState<string | null>(
+    () =>
+      matchSkillField(initialDraft.title) ??
+      matchSkillField(initialDraft.department),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const copy = STEP_COPY[step - 1];
@@ -229,13 +237,15 @@ export function RoleBuilder({
                 <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
                   Role title
                 </span>
-                <input
+                <SuggestInput
                   value={draft.title}
                   onChange={(event) =>
                     setDraft((prev) => ({ ...prev, title: event.target.value }))
                   }
                   maxLength={120}
-                  placeholder="Software engineer"
+                  listId="role-title"
+                  suggestions={TITLE_SUGGESTIONS}
+                  placeholder=""
                   className="w-full rounded-2xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
                 />
               </label>
@@ -303,14 +313,20 @@ export function RoleBuilder({
           ) : null}
 
           {step === 4 ? (
-            <ChipMultiSelect
-              label="Required skills"
-              options={ROLE_SKILL_OPTIONS}
-              selected={draft.requiredSkills}
-              onChange={(requiredSkills) =>
-                setDraft((prev) => ({ ...prev, requiredSkills }))
-              }
-            />
+            <div>
+              <SkillFieldChips
+                selected={skillField}
+                onSelect={setSkillField}
+              />
+              <ChipMultiSelect
+                label="Required skills"
+                options={skillOptionsForField(skillField ?? draft.title)}
+                selected={draft.requiredSkills}
+                onChange={(requiredSkills) =>
+                  setDraft((prev) => ({ ...prev, requiredSkills }))
+                }
+              />
+            </div>
           ) : null}
 
           {step === 5 ? (

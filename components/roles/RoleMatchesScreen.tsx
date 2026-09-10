@@ -17,6 +17,7 @@ import {
   type NotFitReason,
 } from "@/lib/matching/feedback";
 import { useToast } from "@/components/toast/ToastProvider";
+import { notifyPushMatch } from "@/lib/push/actions";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 
 const TOP_N = 5;
@@ -45,6 +46,7 @@ function ResultCard({
       await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
       setFeedback("interested");
       toast("Marked interested.");
+      void notifyPushMatch(card.userId);
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {

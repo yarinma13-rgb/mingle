@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
+import { destinationAfterAuth } from "@/lib/auth/destination";
 import type { UserType } from "@/lib/supabase/types";
 
 export async function GET(request: Request) {
@@ -21,12 +22,9 @@ export async function GET(request: Request) {
       if (next) {
         return NextResponse.redirect(`${origin}${next}`);
       }
-      // Only creates the row if it doesn't already exist, so a returning
-      // user's existing type (and onboarding progress) is never touched —
-      // the proxy already redirects them to their real onboarding path if
-      // this query param picked the wrong one.
       await ensureUserProfile(supabase, data.user.id, data.user.email, path);
-      return NextResponse.redirect(`${origin}/onboarding/${path}`);
+      const dest = await destinationAfterAuth(supabase, data.user.id, path);
+      return NextResponse.redirect(`${origin}${dest}`);
     }
   }
 

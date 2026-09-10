@@ -25,7 +25,14 @@ import {
   toggleCapped,
 } from "@/lib/profile/pick-limit";
 import { PROFILE_QUESTIONS, BEYOND_CV_SUB_PROMPTS } from "@/lib/profile/questions";
-import { ROLE_SKILL_OPTIONS } from "@/lib/roles/questions";
+import { SkillFieldChips } from "@/components/profile/SkillFieldChips";
+import { SuggestInput } from "@/components/SuggestInput";
+import { matchSkillField, skillOptionsForField } from "@/lib/skills/options";
+import {
+  INDUSTRY_SUGGESTIONS,
+  LOCATION_SUGGESTIONS,
+  TITLE_SUGGESTIONS,
+} from "@/lib/suggest/lists";
 import {
   loadProfile,
   saveProfilePatch,
@@ -142,6 +149,7 @@ export function ProfileWizard() {
   const watchedFirstName = watch("firstName");
   const watchedLastName = watch("lastName");
   const watchedGender = watch("gender");
+  const watchedIndustry = watch("industry");
 
   const persistAndAdvance = async (
     patch: Partial<{
@@ -359,49 +367,65 @@ export function ProfileWizard() {
                     <input
                       {...register("firstName")}
                       className={inputClass}
-                      placeholder="Yarin"
+                      placeholder=""
                     />
                   </Field>
                   <Field required label="Last name" error={errors.lastName?.message}>
                     <input
                       {...register("lastName")}
                       className={inputClass}
-                      placeholder="Cohen"
+                      placeholder=""
                     />
                   </Field>
                 </div>
 
                 <Field required label="Professional title" error={errors.headline?.message}>
-                  <input
+                  <SuggestInput
                     {...register("headline")}
+                    listId="talent-headline"
+                    suggestions={TITLE_SUGGESTIONS}
                     className={inputClass}
-                    placeholder="Product Manager"
+                    placeholder=""
                   />
                 </Field>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field required label="Current role" error={errors.currentRole?.message}>
-                    <input
+                    <SuggestInput
                       {...register("currentRole")}
+                      listId="talent-current-role"
+                      suggestions={TITLE_SUGGESTIONS}
                       className={inputClass}
-                      placeholder="Senior PM"
+                      placeholder=""
                     />
                   </Field>
                   <Field required label="Industry" error={errors.industry?.message}>
-                    <input
+                    <SuggestInput
                       {...register("industry")}
+                      listId="talent-industry"
+                      suggestions={INDUSTRY_SUGGESTIONS}
                       className={inputClass}
-                      placeholder="Technology"
+                      placeholder=""
                     />
+                    <div className="mt-3">
+                      <SkillFieldChips
+                        selected={matchSkillField(watchedIndustry)}
+                        onSelect={(field) =>
+                          setValue("industry", field, { shouldValidate: true })
+                        }
+                      />
+                    </div>
                   </Field>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Location" error={errors.location?.message}>
-                    <input
+                    <SuggestInput
                       {...register("location")}
+                      listId="talent-location"
+                      suggestions={LOCATION_SUGGESTIONS}
                       className={inputClass}
-                      placeholder="Tel Aviv"
+                      placeholder=""
                     />
                   </Field>
                   <Field
@@ -603,10 +627,16 @@ export function ProfileWizard() {
 
             {step === 5 && (
               <div>
+                <SkillFieldChips
+                  selected={matchSkillField(profile.industry)}
+                  onSelect={(field) =>
+                    setProfile((prev) => ({ ...prev, industry: field }))
+                  }
+                />
                 <ChipMultiSelect
                   label="Skills"
                   chipStyle="square"
-                  options={ROLE_SKILL_OPTIONS}
+                  options={skillOptionsForField(profile.industry)}
                   selected={profile.skills}
                   onChange={(skills) =>
                     setProfile((prev) => ({ ...prev, skills }))
@@ -630,7 +660,7 @@ export function ProfileWizard() {
                     type="button"
                     onClick={() =>
                       persistAndAdvance(
-                        { skills: profile.skills },
+                        { skills: profile.skills, industry: profile.industry },
                         profile,
                         6,
                       )
@@ -803,8 +833,8 @@ function Field({
       <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
         {label}
         {required ? <span className="text-mingle-pink"> *</span> : null}
+        <span className="mt-1.5 block font-normal">{children}</span>
       </label>
-      {children}
       {error && <p className="mt-1 text-xs text-mingle-error">{error}</p>}
     </div>
   );

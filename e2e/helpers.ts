@@ -81,13 +81,13 @@ export async function completeTalentProfile(
   await expect(
     page.getByRole("heading", { name: "Your CV tells your story" }),
   ).toBeVisible({ timeout: 30_000 });
-  await page.getByPlaceholder("Yarin").fill(firstName);
-  await page.getByPlaceholder("Cohen").fill(lastName);
-  await page.getByPlaceholder("Product Manager").fill("Product Manager");
-  await page.getByPlaceholder("Senior PM").fill("Senior PM");
-  await page.getByPlaceholder("Technology").fill("Technology");
-  await page.getByPlaceholder("Tel Aviv").fill("Tel Aviv");
-  await page.getByPlaceholder("5").fill("5");
+  await page.getByLabel(/First name/).fill(firstName);
+  await page.getByLabel(/Last name/).fill(lastName);
+  await page.getByLabel(/Professional title/).fill("Product Manager");
+  await page.getByLabel(/Current role/).fill("Senior PM");
+  await page.getByLabel(/^Industry/).fill("Technology");
+  await page.getByLabel(/^Location/).fill("Tel Aviv");
+  await page.getByLabel(/Years of experience/).selectOption("5");
   await page.getByRole("button", { name: "Continue" }).click();
 
   await page.getByRole("button", { name: "Growth", exact: true }).click();
@@ -113,13 +113,13 @@ export async function completeTalentProfile(
 }
 
 export async function completeCompanyProfile(page: Page, companyName: string) {
-  await expect(page.getByPlaceholder("Nova Labs")).toBeVisible({ timeout: 30_000 });
-  await page.getByPlaceholder("Nova Labs").fill(companyName);
+  await expect(page.getByLabel(/Company name/)).toBeVisible({ timeout: 30_000 });
+  await page.getByLabel(/Company name/).fill(companyName);
   await page
     .getByPlaceholder("Building the tools that help teams move faster")
     .fill("Build honest career relationships");
-  await page.getByPlaceholder("Technology").fill("Technology");
-  await page.getByPlaceholder("Tel Aviv").fill("Tel Aviv");
+  await page.getByLabel(/^Industry/).fill("Technology");
+  await page.getByLabel(/^Location/).fill("Tel Aviv");
   await page.locator("select").nth(0).selectOption("Seed");
   await page.locator("select").nth(1).selectOption("11 to 50");
   await page.getByRole("button", { name: "Continue" }).click();

@@ -8,6 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { MingleLogo } from "@/components/MingleLogo";
+import { StorageImage } from "@/components/media/StorageImage";
+import { SuggestInput } from "@/components/SuggestInput";
+import {
+  INDUSTRY_SUGGESTIONS,
+  LOCATION_SUGGESTIONS,
+} from "@/lib/suggest/lists";
 // Mascot temporarily removed from loading states — see
 // components/MascotMagnet.tsx, component and assets are kept.
 import { CompanyProfilePreview } from "@/components/CompanyProfilePreview";
@@ -332,7 +338,7 @@ export function CompanyProfileWizard() {
                   <input
                     {...register("companyName")}
                     className={inputClass}
-                    placeholder="Nova Labs"
+                    placeholder=""
                   />
                 </Field>
 
@@ -346,17 +352,21 @@ export function CompanyProfileWizard() {
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field required label="Industry" error={errors.industry?.message}>
-                    <input
+                    <SuggestInput
                       {...register("industry")}
+                      listId="company-industry"
+                      suggestions={INDUSTRY_SUGGESTIONS}
                       className={inputClass}
-                      placeholder="Technology"
+                      placeholder=""
                     />
                   </Field>
                   <Field label="Location" error={errors.location?.message}>
-                    <input
+                    <SuggestInput
                       {...register("location")}
+                      listId="company-location"
+                      suggestions={LOCATION_SUGGESTIONS}
                       className={inputClass}
-                      placeholder="Tel Aviv"
+                      placeholder=""
                     />
                   </Field>
                 </div>
@@ -390,11 +400,10 @@ export function CompanyProfileWizard() {
                   </label>
                   <div className="flex items-center gap-3">
                     {profile.logo && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <StorageImage
                         src={profile.logo}
-                        alt=""
-                        className="h-14 w-14 rounded-xl object-cover"
+                        className="h-14 w-14 rounded-xl"
+                        sizes="56px"
                       />
                     )}
                     <label className="mingle-btn-secondary cursor-pointer text-xs">
@@ -623,8 +632,8 @@ function Field({
       <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
         {label}
         {required ? <span className="text-mingle-pink"> *</span> : null}
+        <span className="mt-1.5 block font-normal">{children}</span>
       </label>
-      {children}
       {error && <p className="mt-1 text-xs text-mingle-pink">{error}</p>}
     </div>
   );

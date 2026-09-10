@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { acceptConnection, declineConnection } from "@/lib/connections/persistence";
+import { notifyPushConnection } from "@/lib/push/actions";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
@@ -100,6 +101,7 @@ export function ConnectionsScreen({
       setIncoming((prev) => prev.filter((r) => r.connectionId !== row.connectionId));
       setAccepted((prev) => [{ ...row, stage: "connected" }, ...prev]);
       setMingleMatch(row);
+      void notifyPushConnection(row.userId);
     } catch {
       toast("Couldn't accept that. Try again in a moment.", "error");
     } finally {

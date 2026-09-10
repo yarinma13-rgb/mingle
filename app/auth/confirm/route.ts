@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
+import { destinationAfterAuth } from "@/lib/auth/destination";
 import type { UserType } from "@/lib/supabase/types";
 
 const OTP_TYPES = new Set<EmailOtpType>([
@@ -44,7 +45,8 @@ export async function GET(request: Request) {
       }
       const path = resolvePath(pathParam, data.user.user_metadata?.user_type);
       await ensureUserProfile(supabase, data.user.id, data.user.email, path);
-      return NextResponse.redirect(`${origin}/onboarding/${path}`);
+      const dest = await destinationAfterAuth(supabase, data.user.id, path);
+      return NextResponse.redirect(`${origin}${dest}`);
     }
   }
 

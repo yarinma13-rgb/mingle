@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
+import { StorageImage } from "@/components/media/StorageImage";
 import { MingleChip } from "@/components/MingleChip";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { companyInitials } from "@/lib/profile/avatar";
@@ -74,11 +75,10 @@ export function CompanyProfilePreview({
 
         <div className="flex flex-col items-center gap-3 text-center">
           {profile.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <StorageImage
               src={profile.logo}
-              alt=""
-              className="h-24 w-24 rounded-2xl object-cover"
+              className="h-24 w-24 rounded-2xl"
+              sizes="96px"
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-mingle-accent-purple font-display text-xl font-bold text-white">

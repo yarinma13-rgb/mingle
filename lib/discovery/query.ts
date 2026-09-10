@@ -19,6 +19,7 @@ import {
 import { distanceKmBetween } from "@/lib/geocoding/nominatim";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
+import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -202,6 +203,14 @@ export async function loadDiscoveryPage(
       }
       return b.score - a.score;
     });
+    const photoUrls = await resolveTalentPhotoUrls(
+      supabase,
+      cards.map((card) => card.photo),
+    );
+    for (const card of cards) {
+      const resolved = card.photo ? photoUrls.get(card.photo) : null;
+      if (resolved) card.photo = resolved;
+    }
     return {
       cards: rankAll
         ? cards
@@ -281,6 +290,14 @@ export async function loadDiscoveryPage(
     };
   });
   cards.sort((a, b) => b.score - a.score);
+  const photoUrls = await resolveTalentPhotoUrls(
+    supabase,
+    cards.map((card) => card.photo),
+  );
+  for (const card of cards) {
+    const resolved = card.photo ? photoUrls.get(card.photo) : null;
+    if (resolved) card.photo = resolved;
+  }
   return {
     cards,
     total: count ?? cards.length,

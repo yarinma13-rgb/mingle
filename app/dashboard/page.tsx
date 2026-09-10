@@ -9,6 +9,7 @@ import { matchScore } from "@/lib/profile-detail/why-match";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 import { personInitials } from "@/lib/profile/avatar";
+import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -66,6 +67,14 @@ export default async function DashboardPage() {
           photo: talent.profilePhoto,
         };
       });
+    const photoUrls = await resolveTalentPhotoUrls(
+      supabase,
+      candidates.map((row) => row.photo),
+    );
+    for (const row of candidates) {
+      const resolved = row.photo ? photoUrls.get(row.photo) : null;
+      if (resolved) row.photo = resolved;
+    }
 
     return (
       <DashboardShell

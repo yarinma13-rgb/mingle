@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
+import { PushOptIn } from "@/components/push/PushOptIn";
 
 type SettingsHubProps = {
   email: string;
@@ -168,6 +169,11 @@ export function SettingsHub({
             {section.id === "security" ? (
               <div className="border-t border-mingle-border px-5 py-5">
                 <ChangePasswordForm />
+              </div>
+            ) : null}
+            {section.id === "notifications" ? (
+              <div className="border-t border-mingle-border px-5 py-5">
+                <PushOptIn />
               </div>
             ) : null}
           </section>
