@@ -1,11 +1,20 @@
-export type IconAccent = "pink" | "purple" | "blue" | "success" | "waiting";
+export type IconAccent =
+  | "pink"
+  | "magenta"
+  | "purple"
+  | "violet"
+  | "blue"
+  | "success"
+  | "waiting";
 
 /** @deprecated Use IconAccent */
 export type GradientAccent = IconAccent;
 
 const FILLS: Record<IconAccent, string> = {
   pink: "bg-mingle-accent-pink",
+  magenta: "bg-mingle-accent-magenta",
   purple: "bg-mingle-accent-purple",
+  violet: "bg-mingle-accent-violet",
   blue: "bg-mingle-accent-blue",
   success: "bg-mingle-success",
   waiting: "bg-mingle-warning",

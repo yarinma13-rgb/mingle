@@ -15,7 +15,9 @@
   /* Saturated accents for icons and small highlights only — not
      backgrounds, not replacements for the brand tokens above. */
   --mingle-accent-pink: #ea1e63;
+  --mingle-accent-magenta: #c42a9b;
   --mingle-accent-purple: #7b2ff7;
+  --mingle-accent-violet: #5548e8;
   --mingle-accent-blue: #3e6be0;
   --mingle-connection-gradient: linear-gradient(
     135deg,
@@ -111,7 +113,9 @@
   --color-mingle-purple: var(--mingle-purple);
   --color-mingle-cta: var(--mingle-cta);
   --color-mingle-accent-pink: var(--mingle-accent-pink);
+  --color-mingle-accent-magenta: var(--mingle-accent-magenta);
   --color-mingle-accent-purple: var(--mingle-accent-purple);
+  --color-mingle-accent-violet: var(--mingle-accent-violet);
   --color-mingle-accent-blue: var(--mingle-accent-blue);
   --color-mingle-indigo: var(--mingle-indigo);
   --color-mingle-text: var(--mingle-text);

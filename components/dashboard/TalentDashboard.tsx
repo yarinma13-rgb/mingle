@@ -54,14 +54,14 @@ export function TalentDashboard({
           icon={MessageIcon}
           label="Active conversations"
           value="0"
-          accent="pink"
+          accent="magenta"
           href="/conversations"
         />
         <KpiTile
           icon={BookmarkIcon}
           label="Saved companies"
           value="0"
-          accent="purple"
+          accent="violet"
           href="/saved"
         />
       </div>

@@ -108,7 +108,7 @@ export function DashboardShell({
     <div className="flex h-screen overflow-hidden bg-transparent">
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
-          <MingleLogo variant="mark" size={70} priority />
+          <MingleLogo variant="mark" size={41} priority />
         </div>
         <div className="flex w-full flex-1 flex-col items-center pb-5 pt-1">
           {navItems.map((item) => {
