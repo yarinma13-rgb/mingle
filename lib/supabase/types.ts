@@ -337,6 +337,164 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      model_versions: {
+        Row: {
+          id: string;
+          model_name: string;
+          version: string;
+          embedding_model: string | null;
+          ranking_model: string | null;
+          feature_version: string | null;
+          weights_json: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: {
+          model_name: string;
+          version: string;
+          embedding_model?: string | null;
+          ranking_model?: string | null;
+          feature_version?: string | null;
+          weights_json?: Record<string, unknown>;
+        };
+        Update: {
+          model_name?: string;
+          version?: string;
+          embedding_model?: string | null;
+          ranking_model?: string | null;
+          feature_version?: string | null;
+          weights_json?: Record<string, unknown>;
+        };
+        Relationships: [];
+      };
+      match_feature_snapshots: {
+        Row: {
+          id: string;
+          match_id: string | null;
+          features_json: Record<string, unknown>;
+          model_version: string | null;
+          created_at: string;
+        };
+        Insert: {
+          match_id?: string | null;
+          features_json?: Record<string, unknown>;
+          model_version?: string | null;
+        };
+        Update: {
+          match_id?: string | null;
+          features_json?: Record<string, unknown>;
+          model_version?: string | null;
+        };
+        Relationships: [];
+      };
+      match_evidence: {
+        Row: {
+          id: string;
+          match_id: string | null;
+          feature: string | null;
+          evidence_type: string | null;
+          source: string | null;
+          source_reference: string | null;
+          candidate_value: string | null;
+          company_value: string | null;
+          contribution: number | null;
+          confidence: string | null;
+          created_at: string;
+        };
+        Insert: {
+          match_id?: string | null;
+          feature?: string | null;
+          evidence_type?: string | null;
+          source?: string | null;
+          source_reference?: string | null;
+          candidate_value?: string | null;
+          company_value?: string | null;
+          contribution?: number | null;
+          confidence?: string | null;
+        };
+        Update: {
+          match_id?: string | null;
+          feature?: string | null;
+          evidence_type?: string | null;
+          source?: string | null;
+          source_reference?: string | null;
+          candidate_value?: string | null;
+          company_value?: string | null;
+          contribution?: number | null;
+          confidence?: string | null;
+        };
+        Relationships: [];
+      };
+      interview_feedback: {
+        Row: {
+          id: string;
+          match_id: string | null;
+          interviewer_id: string | null;
+          technical_fit: number | null;
+          role_fit: number | null;
+          team_fit: number | null;
+          motivation_fit: number | null;
+          recommendation: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          match_id?: string | null;
+          interviewer_id?: string | null;
+          technical_fit?: number | null;
+          role_fit?: number | null;
+          team_fit?: number | null;
+          motivation_fit?: number | null;
+          recommendation?: string | null;
+          notes?: string | null;
+        };
+        Update: {
+          match_id?: string | null;
+          interviewer_id?: string | null;
+          technical_fit?: number | null;
+          role_fit?: number | null;
+          team_fit?: number | null;
+          motivation_fit?: number | null;
+          recommendation?: string | null;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
+      employment_outcomes: {
+        Row: {
+          id: string;
+          match_id: string | null;
+          hire_date: string | null;
+          day_30_status: string | null;
+          day_30_feedback: string | null;
+          day_90_status: string | null;
+          day_90_feedback: string | null;
+          retained: boolean | null;
+          satisfaction_score: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          match_id?: string | null;
+          hire_date?: string | null;
+          day_30_status?: string | null;
+          day_30_feedback?: string | null;
+          day_90_status?: string | null;
+          day_90_feedback?: string | null;
+          retained?: boolean | null;
+          satisfaction_score?: number | null;
+        };
+        Update: {
+          match_id?: string | null;
+          hire_date?: string | null;
+          day_30_status?: string | null;
+          day_30_feedback?: string | null;
+          day_90_status?: string | null;
+          day_90_feedback?: string | null;
+          retained?: boolean | null;
+          satisfaction_score?: number | null;
+        };
+        Relationships: [];
+      };
       passed_profiles: {
         Row: {
           id: string;
