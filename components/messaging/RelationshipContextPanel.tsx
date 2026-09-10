@@ -1,3 +1,4 @@
+import { MatchScoreRing } from "@/components/dashboard/MatchScoreRing";
 import Link from "next/link";
 import { MingleChip } from "@/components/MingleChip";
 import type { MatchFactor } from "@/lib/matching/engine";
@@ -83,13 +84,8 @@ export function RelationshipContextPanel({
 }) {
   return (
     <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
-      <div className="flex items-center gap-3">
-        <span
-          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-          style={{ background: "var(--mingle-connection-gradient)" }}
-        >
-          {score}% match
-        </span>
+      <div className="flex items-center gap-4">
+        <MatchScoreRing score={score} size={68} stroke={6} label="Overall Match" />
         <div>
           <p className="font-display text-sm font-semibold text-mingle-text">
             Why this fit

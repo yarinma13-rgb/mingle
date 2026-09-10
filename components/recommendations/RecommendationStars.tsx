@@ -2,19 +2,25 @@ export function RecommendationStars({
   rating,
   interactive = false,
   onChange,
+  size = 22,
 }: {
   rating: number;
   interactive?: boolean;
   onChange?: (value: number) => void;
+  size?: number;
 }) {
   return (
-    <div className="flex items-center gap-1" role={interactive ? "radiogroup" : "img"} aria-label={`${rating} of 5`}>
+    <div
+      className="flex items-center gap-1"
+      role={interactive ? "radiogroup" : "img"}
+      aria-label={`${rating} of 5`}
+    >
       {[1, 2, 3, 4, 5].map((value) => {
         const filled = value <= rating;
         const star = (
           <svg
-            width="22"
-            height="22"
+            width={size}
+            height={size}
             viewBox="0 0 24 24"
             aria-hidden
             className={filled ? "text-mingle-pink" : "text-mingle-border"}

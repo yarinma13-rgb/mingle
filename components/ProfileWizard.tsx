@@ -540,7 +540,11 @@ export function ProfileWizard() {
                         onClick={() => toggleMulti(multiKey, option)}
                         className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
                           selected
-                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            ? multiKey === "drives"
+                              ? "border-mingle-accent-pink bg-[color-mix(in_srgb,var(--mingle-accent-pink)_12%,white)] text-mingle-text"
+                              : multiKey === "workStyle"
+                                ? "border-mingle-accent-violet bg-[color-mix(in_srgb,var(--mingle-accent-violet)_12%,white)] text-mingle-text"
+                                : "border-mingle-accent-blue bg-mingle-lavender text-mingle-text"
                             : atCap
                               ? "cursor-not-allowed border-mingle-border bg-mingle-white text-mingle-text-secondary/40"
                               : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
@@ -636,6 +640,7 @@ export function ProfileWizard() {
                 <ChipMultiSelect
                   label="Skills"
                   chipStyle="square"
+                  accent="blue"
                   options={skillOptionsForField(profile.industry)}
                   selected={profile.skills}
                   onChange={(skills) =>

@@ -262,7 +262,23 @@ button:disabled {
 }
 
 .mingle-chip-pink {
+  background: color-mix(in srgb, var(--mingle-accent-pink) 14%, var(--mingle-lavender));
   color: var(--mingle-pink-deep);
+}
+
+.mingle-chip-blue {
+  background: color-mix(in srgb, var(--mingle-accent-blue) 14%, var(--mingle-lavender));
+  color: var(--mingle-accent-blue);
+}
+
+.mingle-chip-green {
+  background: color-mix(in srgb, var(--mingle-success) 16%, var(--mingle-lavender));
+  color: color-mix(in srgb, var(--mingle-success) 72%, black);
+}
+
+.mingle-chip-violet {
+  background: color-mix(in srgb, var(--mingle-accent-violet) 14%, var(--mingle-lavender));
+  color: var(--mingle-accent-violet);
 }
 
 [data-theme="dark"] .mingle-chip {
@@ -271,7 +287,23 @@ button:disabled {
 }
 
 [data-theme="dark"] .mingle-chip-pink {
+  background: color-mix(in srgb, var(--mingle-accent-pink) 24%, var(--mingle-surface));
   color: #ff8eab;
+}
+
+[data-theme="dark"] .mingle-chip-blue {
+  background: color-mix(in srgb, var(--mingle-accent-blue) 24%, var(--mingle-surface));
+  color: #9db7ff;
+}
+
+[data-theme="dark"] .mingle-chip-green {
+  background: color-mix(in srgb, var(--mingle-success) 22%, var(--mingle-surface));
+  color: #5ee0a0;
+}
+
+[data-theme="dark"] .mingle-chip-violet {
+  background: color-mix(in srgb, var(--mingle-accent-violet) 24%, var(--mingle-surface));
+  color: #b5a8ff;
 }
 
 [data-theme="dark"] .mingle-btn-secondary {

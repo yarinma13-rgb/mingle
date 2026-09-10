@@ -7,6 +7,10 @@ import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { matchScore } from "@/lib/profile-detail/why-match";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
+import {
+  loadCompanyKpiTrends,
+  loadTalentKpiTrends,
+} from "@/lib/dashboard/kpi-trends";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
@@ -34,7 +38,7 @@ export default async function DashboardPage() {
   );
 
   if (userRow.user_type === "company") {
-    const [{ data: ownProfileRow }, { data: talentRows }, funnel] =
+    const [{ data: ownProfileRow }, { data: talentRows }, funnel, trends] =
       await Promise.all([
         supabase
           .from("company_profiles")
@@ -48,6 +52,7 @@ export default async function DashboardPage() {
           .order("updated_at", { ascending: false })
           .limit(8),
         loadCompanyFunnel(supabase, user.id),
+        loadCompanyKpiTrends(supabase, user.id),
       ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
 
@@ -93,12 +98,18 @@ export default async function DashboardPage() {
           candidates={candidates}
           accountLabel={chrome.userName}
           funnel={funnel}
+          trends={{
+            connections: trends.connections.percent,
+            conversations: trends.conversations.percent,
+            opportunities: trends.opportunities.percent,
+          }}
         />
       </DashboardShell>
     );
   }
 
-  const [{ data: ownProfileRow }, { data: companyRows }] = await Promise.all([
+  const [{ data: ownProfileRow }, { data: companyRows }, talentTrends] =
+    await Promise.all([
     supabase
       .from("talent_profiles")
       .select("*")
@@ -110,6 +121,7 @@ export default async function DashboardPage() {
       .neq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(6),
+    loadTalentKpiTrends(supabase, user.id),
   ]);
   const ownProfile = ownProfileRow ? toTalentProfile(ownProfileRow) : null;
 
@@ -140,6 +152,10 @@ export default async function DashboardPage() {
       userSubtitle="Talent"
     >
       <TalentDashboard
+        trends={{
+          connections: talentTrends.connections.percent,
+          conversations: talentTrends.conversations.percent,
+        }}
         profileCompletion={userRow.profile_completion}
         companies={companies}
         dna={ownProfile ? buildCandidateDna(ownProfile) : null}

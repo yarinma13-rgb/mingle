@@ -55,17 +55,23 @@ function BackArrowIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-function ChipRow({ items }: { items: string[] }) {
-  if (items.length === 0) return null;
+function ChipRow({
+  items,
+  tone = "purple",
+}: {
+  items: string[];
+  tone?: "purple" | "pink" | "blue" | "green" | "violet";
+}) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {items.map((item) => (
-        <MingleChip key={item}>{item}</MingleChip>
+        <MingleChip key={item} tone={tone}>
+          {item}
+        </MingleChip>
       ))}
     </div>
   );
 }
-
 function Section({
   title,
   children,
@@ -360,7 +366,20 @@ export function ProfileDetailShell({
 
         {sections.map((section) => (
           <Section key={section.title} title={section.title}>
-            {section.chips && <ChipRow items={section.chips} />}
+            {section.chips && (
+              <ChipRow
+                items={section.chips}
+                tone={
+                  /motivation|drive|value/i.test(section.title)
+                    ? "pink"
+                    : /skill|capabilit|professional/i.test(section.title)
+                      ? "blue"
+                      : /work|style|culture/i.test(section.title)
+                        ? "violet"
+                        : "purple"
+                }
+              />
+            )}
             {section.text && (
               <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
                 {section.text}

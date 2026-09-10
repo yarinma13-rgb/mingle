@@ -1,3 +1,4 @@
+import { StatusChip } from "@/components/StatusChip";
 import { EmptyState } from "@/components/EmptyState";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 
@@ -54,13 +55,9 @@ export function InterviewsScreen({
             {formatWhen(interview.scheduledAt)} · {interview.durationMinutes} min ·{" "}
             {interview.locationType === "video" ? "Video" : "In person"}
           </p>
-          <p className="mt-1 text-xs text-mingle-text-secondary">
-            {interview.status === "scheduled"
-              ? "Scheduled"
-              : interview.status === "completed"
-                ? "Completed"
-                : "Cancelled"}
-          </p>
+          <div className="mt-2">
+            <StatusChip status={interview.status} />
+          </div>
           {interview.notes ? (
             <p className="mt-2 text-sm text-mingle-text-secondary">{interview.notes}</p>
           ) : null}

@@ -96,7 +96,7 @@ export function CandidateDnaPanel({
                 {dna.motivations.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {dna.motivations.map((item) => (
-                      <MingleChip key={item}>{item}</MingleChip>
+                      <MingleChip key={item} tone="pink">{item}</MingleChip>
                     ))}
                   </div>
                 ) : null}
@@ -107,7 +107,7 @@ export function CandidateDnaPanel({
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {dna.workStyle.map((item) => (
-                        <MingleChip key={item}>{item}</MingleChip>
+                        <MingleChip key={item} tone="blue">{item}</MingleChip>
                       ))}
                     </div>
                   </div>

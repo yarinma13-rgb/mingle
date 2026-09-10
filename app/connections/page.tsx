@@ -14,6 +14,11 @@ import {
 import { loadDisplayInfoForUsers, type ConnectionDisplayInfo } from "@/lib/connections/enrich";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 import { loadTimelinesForConnections, latestStage } from "@/lib/relationship/persistence";
+import { loadCompanyRoles } from "@/lib/roles/persistence";
+import {
+  emptyFunnelCounts,
+  type PipelineBarRow,
+} from "@/components/connections/PipelineSegmentBars";
 
 function toDisplayRows(
   rows: ConnectionRow[],
@@ -80,6 +85,26 @@ export default async function ConnectionsPage() {
       : undefined,
   }));
 
+
+  let roleBars: PipelineBarRow[] = [];
+  if (userRow.user_type === "company") {
+    try {
+      const roles = await loadCompanyRoles(supabase, user.id);
+      roleBars = roles
+        .filter((role) => role.status === "open" || role.status === "paused")
+        .map((role) => ({
+          id: role.id,
+          label: role.title,
+          // Roles are not yet linked to connection stages in schema.
+          // Show an empty bar so the layout matches the mock; counts stay honest.
+          counts: emptyFunnelCounts(),
+          href: `/roles/${role.id}/matches`,
+        }));
+    } catch {
+      roleBars = [];
+    }
+  }
+
   const chrome = await loadShellChrome(
     supabase,
     user,
@@ -107,6 +132,7 @@ export default async function ConnectionsPage() {
         outgoing={outgoing}
         accepted={accepted}
         variant={userRow.user_type === "company" ? "pipeline" : "connections"}
+        roleBars={roleBars}
       />
     </DashboardShell>
   );

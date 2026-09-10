@@ -44,11 +44,17 @@ export function CompanyDashboard({
   candidates,
   accountLabel,
   funnel,
+  trends,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
   accountLabel: string;
   funnel: CompanyFunnel;
+  trends?: {
+    connections?: number | null;
+    conversations?: number | null;
+    opportunities?: number | null;
+  };
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -103,6 +109,7 @@ export function CompanyDashboard({
           value={String(funnel.total)}
           accent="blue"
           href="/connections"
+          trendPercent={trends?.connections ?? null}
         />
         <KpiTile
           icon={MessageIcon}
@@ -110,6 +117,7 @@ export function CompanyDashboard({
           value={String(funnel.counts.in_conversation)}
           accent="success"
           href="/conversations"
+          trendPercent={trends?.conversations ?? null}
         />
         <KpiTile
           icon={BriefcaseIcon}
@@ -117,6 +125,7 @@ export function CompanyDashboard({
           value={String(funnel.counts.opportunity)}
           accent="waiting"
           href="/board"
+          trendPercent={trends?.opportunities ?? null}
         />
       </div>
 

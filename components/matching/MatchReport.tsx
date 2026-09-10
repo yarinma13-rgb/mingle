@@ -14,6 +14,7 @@ import {
   type NotFitReason,
 } from "@/lib/matching/feedback";
 import { IconBadge, type IconAccent } from "@/components/dashboard/IconBadge";
+import { MatchScoreRing } from "@/components/dashboard/MatchScoreRing";
 import {
   BriefcaseIcon,
   ClockIcon,
@@ -145,16 +146,16 @@ export function MatchReportBody({
 
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
-          Overall Match
-        </p>
-        <p className="font-display text-lg font-semibold text-mingle-text">
-          {report.overall}{" "}
-          <span className="text-sm font-medium text-mingle-text-secondary">
+      <div className="flex items-center gap-4">
+        <MatchScoreRing score={report.overall} size={76} stroke={7} />
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
+            Overall Match
+          </p>
+          <p className="font-display text-sm font-semibold text-mingle-text">
             {report.strength}
-          </span>
-        </p>
+          </p>
+        </div>
       </div>
       <FitBars axes={report.axes} />
       <p className={`text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}>

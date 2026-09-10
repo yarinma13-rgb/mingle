@@ -25,10 +25,15 @@ export function TalentDashboard({
   profileCompletion,
   companies,
   dna,
+  trends,
 }: {
   profileCompletion: number;
   companies: CompanyRow[];
   dna: CandidateDna | null;
+  trends?: {
+    connections?: number | null;
+    conversations?: number | null;
+  };
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -53,6 +58,7 @@ export function TalentDashboard({
           value="0"
           accent="blue"
           href="/connections"
+          trendPercent={trends?.connections ?? null}
         />
         <KpiTile
           icon={MessageIcon}
@@ -60,6 +66,7 @@ export function TalentDashboard({
           value="0"
           accent="magenta"
           href="/conversations"
+          trendPercent={trends?.conversations ?? null}
         />
         <KpiTile
           icon={BookmarkIcon}

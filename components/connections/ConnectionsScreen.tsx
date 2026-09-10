@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusChip } from "@/components/StatusChip";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -16,6 +17,11 @@ import {
   FUNNEL_STAGES,
   funnelFromStages,
 } from "@/lib/dashboard/funnel";
+import {
+  PipelineSegmentBars,
+  countsFromStages,
+  type PipelineBarRow,
+} from "@/components/connections/PipelineSegmentBars";
 import type { Gender } from "@/lib/profile/avatar";
 import type { RelationshipStage } from "@/lib/supabase/types";
 
@@ -78,11 +84,13 @@ export function ConnectionsScreen({
   outgoing,
   accepted: initialAccepted,
   variant = "connections",
+  roleBars = [],
 }: {
   incoming: ConnectionDisplayRow[];
   outgoing: ConnectionDisplayRow[];
   accepted: ConnectionDisplayRow[];
   variant?: "connections" | "pipeline";
+  roleBars?: PipelineBarRow[];
 }) {
   const toast = useToast();
   const [supabase] = useState(() => createClient());
@@ -206,7 +214,7 @@ export function ConnectionsScreen({
                 <div className="mt-4 flex flex-col gap-3">
                   {outgoing.map((row) => (
                     <PersonRow key={row.connectionId} row={row}>
-                      <MingleChip className="shrink-0">Pending</MingleChip>
+                      <StatusChip status="pending" label="Pending" />
                     </PersonRow>
                   ))}
                 </div>
@@ -225,6 +233,17 @@ export function ConnectionsScreen({
             </div>
           ) : (
             <>
+              <PipelineSegmentBars
+                title="Pipeline overview"
+                rows={[
+                  {
+                    id: "all",
+                    label: "All relationships",
+                    counts: countsFromStages(accepted.map((row) => row.stage)),
+                  },
+                  ...roleBars,
+                ]}
+              />
               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 <CompanyPipelineFunnel funnel={pipelineFunnel} />
                 <CompanyPipelineDonut funnel={pipelineFunnel} />
@@ -323,7 +342,7 @@ export function ConnectionsScreen({
           <div className="mt-4 flex flex-col gap-3">
             {outgoing.map((row) => (
               <PersonRow key={row.connectionId} row={row}>
-                <MingleChip className="shrink-0">Pending</MingleChip>
+                <StatusChip status="pending" label="Pending" />
               </PersonRow>
             ))}
           </div>
