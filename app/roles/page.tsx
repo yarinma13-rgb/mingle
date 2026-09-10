@@ -7,10 +7,15 @@ import {
   type RoleRecord,
 } from "@/lib/roles/persistence";
 
-export default async function RolesPage() {
+export default async function RolesPage({
+  searchParams,
+}: PageProps<"/roles">) {
   const { supabase, user, shellAvatar } = await requireShellUser({
     userType: "company",
   });
+  const params = await searchParams;
+  const startInBuilder =
+    (Array.isArray(params.new) ? params.new[0] : params.new) === "1";
 
   let roles: RoleRecord[] = [];
   let tableMissing = false;
@@ -38,6 +43,7 @@ export default async function RolesPage() {
         companyId={user.id}
         initialRoles={roles}
         tableMissing={tableMissing}
+        startInBuilder={startInBuilder}
       />
     </DashboardShell>
   );

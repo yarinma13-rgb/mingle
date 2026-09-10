@@ -28,17 +28,21 @@ export function RolesScreen({
   companyId,
   initialRoles,
   tableMissing,
+  startInBuilder = false,
 }: {
   companyId: string;
   initialRoles: RoleRecord[];
   tableMissing: boolean;
+  startInBuilder?: boolean;
 }) {
   const router = useRouter();
   const toast = useToast();
   const [supabase] = useState(() => createClient());
   const [roles, setRoles] = useState(initialRoles);
   const [filter, setFilter] = useState<FilterId>("all");
-  const [mode, setMode] = useState<"list" | "builder">("list");
+  const [mode, setMode] = useState<"list" | "builder">(
+    startInBuilder ? "builder" : "list",
+  );
   const [editing, setEditing] = useState<RoleRecord | null>(null);
 
   const visible = useMemo(
@@ -121,9 +125,14 @@ export function RolesScreen({
           Open roles your team is hiring for. Candidates will not see these
           until you choose to share them.
         </p>
-        <button type="button" onClick={openCreate} className="mingle-btn-primary text-xs">
-          Create role
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={openCreate} className="mingle-btn-primary text-xs">
+            Create role
+          </button>
+          <Link href="/roles/paste" className="mingle-btn-secondary text-xs">
+            Paste a job description instead
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -186,6 +195,12 @@ export function RolesScreen({
                 ))}
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/roles/${role.id}/matches`}
+                  className="mingle-btn-primary text-xs"
+                >
+                  View matches
+                </Link>
                 <button
                   type="button"
                   onClick={() => openEdit(role)}

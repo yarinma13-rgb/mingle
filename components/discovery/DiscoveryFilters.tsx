@@ -23,11 +23,13 @@ export function DiscoveryFiltersForm({
   styleOptions,
   valueOptions = [],
   audience,
+  formAction = "/discover",
 }: {
   filters: DiscoveryFilters;
   styleOptions: string[];
   valueOptions?: string[];
   audience: "company" | "talent";
+  formAction?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [yearsMin, setYearsMin] = useState(filters.yearsMin ?? 0);
@@ -55,7 +57,7 @@ export function DiscoveryFiltersForm({
           onClick={() => setOpen(false)}
         >
           <form
-            action="/discover"
+            action={formAction}
             method="get"
             onClick={(event) => event.stopPropagation()}
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle"

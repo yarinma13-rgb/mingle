@@ -32,7 +32,11 @@ export async function loadDiscoveryPage(
   viewer: { id: string; userType: UserType },
   filters: DiscoveryFilters,
   styleOptions: string[],
-  scope: { excludeUserIds?: string[]; onlyUserIds?: string[] } = {},
+  scope: {
+    excludeUserIds?: string[];
+    onlyUserIds?: string[];
+    rankAll?: boolean;
+  } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
   const from = (page - 1) * DISCOVERY_PAGE_SIZE;
@@ -93,9 +97,10 @@ export async function loadDiscoveryPage(
     }
     }
 
+    const rankAll = Boolean(scope.rankAll);
     const wantsDistance = Boolean(filters.distanceKm != null && !onlyUserIds);
     const listedQuery =
-      wantsDistance || onlyUserIds
+      wantsDistance || onlyUserIds || rankAll
         ? query.order("updated_at", { ascending: false }).limit(400)
         : query.order("updated_at", { ascending: false }).range(from, to);
 
@@ -198,8 +203,12 @@ export async function loadDiscoveryPage(
       return b.score - a.score;
     });
     return {
-      cards: wantsDistance ? cards.slice(from, to + 1) : cards,
-      total,
+      cards: rankAll
+        ? cards
+        : wantsDistance
+          ? cards.slice(from, to + 1)
+          : cards,
+      total: rankAll ? cards.length : total,
       page,
       pageSize: DISCOVERY_PAGE_SIZE,
     };

@@ -369,6 +369,8 @@ export interface Database {
           status: RoleStatus;
           salary_min: number | null;
           salary_max: number | null;
+          source_jd: string | null;
+          source_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -384,6 +386,8 @@ export interface Database {
           status?: RoleStatus;
           salary_min?: number | null;
           salary_max?: number | null;
+          source_jd?: string | null;
+          source_url?: string | null;
         };
         Update: {
           title?: string;
@@ -396,6 +400,8 @@ export interface Database {
           status?: RoleStatus;
           salary_min?: number | null;
           salary_max?: number | null;
+          source_jd?: string | null;
+          source_url?: string | null;
         };
         Relationships: [];
       };

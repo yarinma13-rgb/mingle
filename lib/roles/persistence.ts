@@ -6,7 +6,7 @@ import type {
 } from "@/lib/supabase/types";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at";
 
 export type RoleRecord = {
   id: string;
@@ -21,6 +21,8 @@ export type RoleRecord = {
   status: RoleStatus;
   salaryMin: number | null;
   salaryMax: number | null;
+  sourceJd: string | null;
+  sourceUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -35,6 +37,8 @@ export type RoleDraft = {
   description: string;
   salaryMin: number | null;
   salaryMax: number | null;
+  sourceJd: string;
+  sourceUrl: string;
 };
 
 export const EMPTY_ROLE_DRAFT: RoleDraft = {
@@ -47,6 +51,8 @@ export const EMPTY_ROLE_DRAFT: RoleDraft = {
   description: "",
   salaryMin: null,
   salaryMax: null,
+  sourceJd: "",
+  sourceUrl: "",
 };
 
 type RoleListRow = Pick<
@@ -63,6 +69,8 @@ type RoleListRow = Pick<
   | "status"
   | "salary_min"
   | "salary_max"
+  | "source_jd"
+  | "source_url"
   | "created_at"
   | "updated_at"
 >;
@@ -81,6 +89,8 @@ function toRecord(row: RoleListRow): RoleRecord {
     status: row.status,
     salaryMin: row.salary_min,
     salaryMax: row.salary_max,
+    sourceJd: row.source_jd ?? null,
+    sourceUrl: row.source_url ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -108,6 +118,8 @@ export function draftFromRole(role: RoleRecord): RoleDraft {
     description: role.description ?? "",
     salaryMin: role.salaryMin,
     salaryMax: role.salaryMax,
+    sourceJd: role.sourceJd ?? "",
+    sourceUrl: role.sourceUrl ?? "",
   };
 }
 
@@ -143,6 +155,8 @@ export async function createCompanyRole(
       status: "open",
       salary_min: draft.salaryMin,
       salary_max: draft.salaryMax,
+      source_jd: draft.sourceJd.trim() || null,
+      source_url: draft.sourceUrl.trim() || null,
     })
     .select(ROLE_LIST_COLUMNS)
     .single();
@@ -168,6 +182,8 @@ export async function updateCompanyRole(
       description: draft.description.trim() || null,
       salary_min: draft.salaryMin,
       salary_max: draft.salaryMax,
+      source_jd: draft.sourceJd.trim() || null,
+      source_url: draft.sourceUrl.trim() || null,
     })
     .eq("id", roleId)
     .eq("company_id", companyId)

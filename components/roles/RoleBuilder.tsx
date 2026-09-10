@@ -130,8 +130,16 @@ export function RoleBuilder({
     setError(null);
     try {
       const saved = editingId
-        ? await updateCompanyRole(supabase, editingId, companyId, parsed.data)
-        : await createCompanyRole(supabase, companyId, parsed.data);
+        ? await updateCompanyRole(supabase, editingId, companyId, {
+            ...parsed.data,
+            sourceJd: draft.sourceJd,
+            sourceUrl: draft.sourceUrl,
+          })
+        : await createCompanyRole(supabase, companyId, {
+            ...parsed.data,
+            sourceJd: draft.sourceJd,
+            sourceUrl: draft.sourceUrl,
+          });
       onSaved(saved);
     } catch (caught) {
       const missing = isMissingRolesTable(
