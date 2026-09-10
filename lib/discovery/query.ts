@@ -31,6 +31,7 @@ export async function loadDiscoveryPage(
   viewer: { id: string; userType: UserType },
   filters: DiscoveryFilters,
   styleOptions: string[],
+  scope: { excludeUserIds?: string[]; onlyUserIds?: string[] } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
   const from = (page - 1) * DISCOVERY_PAGE_SIZE;
@@ -41,6 +42,12 @@ export async function loadDiscoveryPage(
   const role = sanitizeIlike(filters.role);
   const workModel = isWorkModelOption(filters.workModel) ? filters.workModel : "";
 
+  const onlyUserIds = scope.onlyUserIds;
+  const excludeUserIds = scope.excludeUserIds ?? [];
+  if (onlyUserIds && onlyUserIds.length === 0) {
+    return { cards: [], total: 0, page, pageSize: DISCOVERY_PAGE_SIZE };
+  }
+
   if (viewer.userType === "company") {
     let query = supabase
       .from("talent_profiles")
@@ -48,6 +55,11 @@ export async function loadDiscoveryPage(
       .neq("user_id", viewer.id)
       .not("first_name", "is", null)
       .neq("first_name", "");
+    if (onlyUserIds) query = query.in("user_id", onlyUserIds);
+    else if (excludeUserIds.length > 0) {
+      query = query.not("user_id", "in", `(${excludeUserIds.join(",")})`);
+    }
+    if (!onlyUserIds) {
     if (industry) query = query.ilike("industry", `%${industry}%`);
     if (location) query = query.ilike("location", `%${location}%`);
     if (style) query = query.contains("work_style", [style]);
@@ -78,11 +90,13 @@ export async function loadDiscoveryPage(
       );
       if (values.length > 0) query = query.overlaps("drives", values);
     }
+    }
 
-    const wantsDistance = filters.distanceKm != null;
-    const listedQuery = wantsDistance
-      ? query.order("updated_at", { ascending: false }).limit(400)
-      : query.order("updated_at", { ascending: false }).range(from, to);
+    const wantsDistance = Boolean(filters.distanceKm != null && !onlyUserIds);
+    const listedQuery =
+      wantsDistance || onlyUserIds
+        ? query.order("updated_at", { ascending: false }).limit(400)
+        : query.order("updated_at", { ascending: false }).range(from, to);
 
     const [ownInput, listed, viewerCompany] = await Promise.all([
       loadCompanyMatchInput(supabase, viewer.id),
@@ -192,13 +206,21 @@ export async function loadDiscoveryPage(
     .neq("user_id", viewer.id)
     .not("company_name", "is", null)
     .neq("company_name", "");
-  if (industry) query = query.ilike("industry", `%${industry}%`);
-  if (location) query = query.ilike("location", `%${location}%`);
-  if (style) query = query.contains("work_environment", [style]);
+  if (onlyUserIds) query = query.in("user_id", onlyUserIds);
+  else if (excludeUserIds.length > 0) {
+    query = query.not("user_id", "in", `(${excludeUserIds.join(",")})`);
+  }
+  if (!onlyUserIds) {
+    if (industry) query = query.ilike("industry", `%${industry}%`);
+    if (location) query = query.ilike("location", `%${location}%`);
+    if (style) query = query.contains("work_environment", [style]);
+  }
 
   const [ownInput, listed] = await Promise.all([
     loadTalentMatchInput(supabase, viewer.id),
-    query.order("updated_at", { ascending: false }).range(from, to),
+    onlyUserIds
+      ? query.order("updated_at", { ascending: false }).limit(400)
+      : query.order("updated_at", { ascending: false }).range(from, to),
   ]);
   const { data, count, error } = listed;
   if (error) {

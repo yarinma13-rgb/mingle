@@ -245,6 +245,20 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      passed_profiles: {
+        Row: {
+          id: string;
+          user_id: string;
+          passed_user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          passed_user_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       connections: {
         Row: {
           id: string;

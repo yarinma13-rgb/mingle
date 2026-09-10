@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   motion,
   useMotionValue,
@@ -11,6 +12,7 @@ import {
 } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
+import { passProfile, unpassProfile } from "@/lib/matching/passed";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
@@ -82,11 +84,15 @@ function FactorRow({ factor }: { factor: MatchFactor }) {
 function DiscoveryCardView({
   card,
   initiallySaved,
-  onRemove,
+  swipeEnabled,
+  onPass,
+  onHide,
 }: {
   card: DiscoveryCard;
   initiallySaved: boolean;
-  onRemove: (userId: string) => void;
+  swipeEnabled: boolean;
+  onPass: (userId: string) => void;
+  onHide: (userId: string) => void;
 }) {
   const toast = useToast();
   const isMobile = useIsMobile();
@@ -147,10 +153,8 @@ function DiscoveryCardView({
     await expressInterest();
   };
 
-  const flyOffAndRemove = (direction: 1 | -1) => {
-    animate(x, direction * 600, { duration: 0.28, ease: "easeIn" }).then(() => {
-      onRemove(card.userId);
-    });
+  const flyOff = (direction: 1 | -1, after: () => void) => {
+    animate(x, direction * 600, { duration: 0.28, ease: "easeIn" }).then(after);
   };
 
   const handleDragEnd = (
@@ -166,9 +170,9 @@ function DiscoveryCardView({
 
     if (passedRight) {
       expressInterest();
-      flyOffAndRemove(1);
+      flyOff(1, () => onHide(card.userId));
     } else if (passedLeft) {
-      flyOffAndRemove(-1);
+      flyOff(-1, () => onPass(card.userId));
     } else {
       animate(x, 0, { type: "spring", stiffness: 420, damping: 32 });
     }
@@ -177,17 +181,17 @@ function DiscoveryCardView({
   return (
     <motion.div
       style={{ x, rotate, aspectRatio: "3 / 4" }}
-      drag={isMobile ? "x" : false}
+      drag={isMobile && swipeEnabled ? "x" : false}
       dragDirectionLock
       dragMomentum={false}
       dragElastic={0.18}
-      onDragEnd={isMobile ? handleDragEnd : undefined}
+      onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
       className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-surface shadow-mingle ${
         isMobile ? "touch-none cursor-grab" : "touch-pan-y"
       }`}
     >
-      {isMobile && (
+      {isMobile && swipeEnabled && (
         <>
           <motion.span
             aria-hidden
@@ -296,7 +300,7 @@ function DiscoveryCardView({
         </div>
       )}
 
-      {isMobile && (
+      {isMobile && swipeEnabled && (
         <p className="px-4 text-center text-[11px] text-mingle-text-secondary">
           Swipe right for interested, left to skip — or use the buttons below.
         </p>
@@ -323,7 +327,7 @@ function DiscoveryCardView({
         </button>
         <button
           type="button"
-          onClick={() => onRemove(card.userId)}
+          onClick={() => onPass(card.userId)}
           className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
         >
           Skip
@@ -338,19 +342,48 @@ export function DiscoveryScreen({
   subtitle,
   cards: initialCards,
   savedUserIds,
+  viewerId,
+  mode = "feed",
   emptyBody,
 }: {
   title: string;
   subtitle: string;
   cards: DiscoveryCard[];
   savedUserIds: string[];
+  viewerId: string;
+  mode?: "feed" | "passed";
   emptyBody?: string;
 }) {
+  const toast = useToast();
+  const router = useRouter();
+  const [supabase] = useState(() => createClient());
   const [cards, setCards] = useState(initialCards);
   const savedSet = new Set(savedUserIds);
+  const isPassed = mode === "passed";
 
-  const removeCard = (userId: string) => {
+  const hideCard = (userId: string) => {
     setCards((prev) => prev.filter((card) => card.userId !== userId));
+  };
+
+  const persistPass = async (userId: string) => {
+    try {
+      await passProfile(supabase, viewerId, userId);
+    } catch {
+      toast("Couldn't save that skip.", "error");
+    }
+    hideCard(userId);
+    router.refresh();
+  };
+
+  const restore = async (userId: string) => {
+    try {
+      await unpassProfile(supabase, viewerId, userId);
+      hideCard(userId);
+      router.refresh();
+      toast("Back in Discover. You can view them again there.");
+    } catch {
+      toast("Couldn't restore that profile.", "error");
+    }
   };
 
   if (cards.length === 0) {
@@ -361,11 +394,13 @@ export function DiscoveryScreen({
           body={
             emptyBody ??
             (initialCards.length === 0
-              ? "Nobody to discover yet. Check back once more people join mingle."
+              ? isPassed
+                ? "Nobody passed yet. Skipped profiles will show up here."
+                : "Nobody to discover yet. Check back once more people join mingle."
               : "That is everyone for now. Check back later for more.")
           }
-          actionHref="/dashboard"
-          actionLabel="Back to dashboard"
+          actionHref={isPassed ? "/discover" : "/dashboard"}
+          actionLabel={isPassed ? "Back to Discover" : "Back to dashboard"}
         />
       </div>
     );
@@ -380,16 +415,54 @@ export function DiscoveryScreen({
         <p className="mt-1 text-sm text-mingle-text-secondary">{subtitle}</p>
       </div>
 
-      <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => (
-          <DiscoveryCardView
-            key={card.userId}
-            card={card}
-            initiallySaved={savedSet.has(card.userId)}
-            onRemove={removeCard}
-          />
-        ))}
-      </div>
+      {isPassed ? (
+        <div className="flex flex-col gap-3">
+          {cards.map((card) => (
+            <div
+              key={card.userId}
+              className="flex min-w-0 flex-wrap items-center gap-3 rounded-2xl border border-mingle-border bg-mingle-surface p-4"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-sm font-semibold text-mingle-text">
+                  {card.name}
+                </p>
+                <p className="truncate text-xs text-mingle-text-secondary">
+                  {card.subtitle}
+                </p>
+              </div>
+              <MingleChip className="shrink-0 text-[11px]">
+                {card.score}% match
+              </MingleChip>
+              <Link
+                href={`/profile/view/${card.userId}`}
+                className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+              >
+                View profile
+              </Link>
+              <button
+                type="button"
+                onClick={() => void restore(card.userId)}
+                className="rounded-full bg-mingle-lavender px-4 py-2 font-display text-xs font-semibold text-mingle-text"
+              >
+                View again
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map((card) => (
+            <DiscoveryCardView
+              key={card.userId}
+              card={card}
+              initiallySaved={savedSet.has(card.userId)}
+              swipeEnabled
+              onPass={persistPass}
+              onHide={hideCard}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
