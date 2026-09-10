@@ -215,6 +215,10 @@
   align-items: center;
   min-height: 360px;
   perspective: 1200px;
+  overflow: hidden;
+  padding: 1.25rem 0.75rem 1.5rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .landing-hero-glow {
@@ -246,6 +250,7 @@
 .landing-mock {
   position: relative;
   width: min(100%, 360px);
+  max-width: 100%;
   border-radius: 22px;
   border: 1px solid var(--mingle-border);
   background: var(--mingle-surface);
@@ -254,6 +259,7 @@
     0 2px 0 color-mix(in srgb, #fff 70%, transparent) inset;
   padding: 1.25rem 1.3rem 1.35rem;
   transform: rotate(4.5deg) translateY(4px);
+  transform-origin: center center;
   animation: landing-mock-float 5s ease-in-out infinite;
 }
 
@@ -756,6 +762,8 @@
   .landing-hero-visual {
     min-height: 0;
     order: 2;
+    overflow: hidden;
+    padding: 0.75rem 0.25rem 1rem;
   }
 
   .landing-hero-copy {
@@ -763,9 +771,27 @@
   }
 
   .landing-mock {
-    width: min(100%, 320px);
-    transform: rotate(2.5deg);
+    width: 100%;
+    max-width: 100%;
+    transform: none;
     animation: none;
+    padding: 1.1rem 1rem 1.15rem;
+  }
+
+  .landing-mock-score strong {
+    font-size: 1.7rem;
+  }
+
+  .landing-hero-actions {
+    width: 100%;
+  }
+
+  .landing-hero-actions .landing-btn {
+    width: 100%;
+  }
+
+  .landing-shell {
+    padding-inline: 1rem;
   }
 
   .landing-fit-grid,
