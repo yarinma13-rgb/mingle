@@ -14,6 +14,7 @@ import {
 import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { loadPassedUserIds } from "@/lib/matching/passed";
+import { loadMatchFeedbackMap } from "@/lib/matching/feedback";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { COMPANY_QUESTIONS } from "@/lib/company-profile/questions";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
@@ -55,9 +56,10 @@ export default async function DiscoverPage({
     PROFILE_QUESTIONS.find((question) => question.key === "drives")?.options ??
     [];
 
-  const [savedUserIds, passedUserIds] = await Promise.all([
+  const [savedUserIds, passedUserIds, feedbackByUser] = await Promise.all([
     loadSavedUserIds(supabase, user.id),
     loadPassedUserIds(supabase, user.id),
+    loadMatchFeedbackMap(supabase, user.id),
   ]);
   const { cards, total, pageSize } = await loadDiscoveryPage(
     supabase,
@@ -148,6 +150,7 @@ export default async function DiscoverPage({
           subtitle={subtitle}
           cards={cards}
           savedUserIds={savedUserIds}
+          feedbackByUser={feedbackByUser}
           emptyBody={
             viewPassed
               ? undefined

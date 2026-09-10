@@ -5,15 +5,53 @@ import {
   type ProfileDetailSection,
 } from "@/components/profile-detail/ProfileDetailShell";
 import {
-  whyMatchReasons,
   TALENT_EXPLORE_PROMPTS,
   COMPANY_EXPLORE_PROMPTS,
 } from "@/lib/profile-detail/why-match";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
 import { loadConnectionStatusWith } from "@/lib/connections/persistence";
 import { loadSavedUserIds } from "@/lib/matching/saved";
+import { loadTalentMatchInput, loadCompanyMatchInput } from "@/lib/matching/context";
+import { computeMatch } from "@/lib/matching/engine";
+import { buildMatchReport, type MatchReport } from "@/lib/matching/report";
+import { loadMatchFeedbackAction, type MatchFeedbackAction } from "@/lib/matching/feedback";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, UserType } from "@/lib/supabase/types";
+
+async function loadViewerMatchReport(
+  supabase: SupabaseClient<Database>,
+  viewerId: string,
+  viewerType: UserType,
+  targetId: string,
+  targetType: UserType,
+): Promise<{
+  report: MatchReport | null;
+  feedback: MatchFeedbackAction | null;
+}> {
+  if (viewerId === targetId || viewerType === targetType) {
+    return { report: null, feedback: null };
+  }
+  const [talent, company, feedback] = await Promise.all([
+    loadTalentMatchInput(
+      supabase,
+      viewerType === "talent" ? viewerId : targetId,
+    ),
+    loadCompanyMatchInput(
+      supabase,
+      viewerType === "company" ? viewerId : targetId,
+    ),
+    loadMatchFeedbackAction(supabase, viewerId, targetId),
+  ]);
+  if (!talent || !company) return { report: null, feedback };
+  const result = computeMatch(talent, company);
+  const audience = viewerType === "talent" ? "talent" : "company";
+  return {
+    report: buildMatchReport(result, talent, company, audience),
+    feedback,
+  };
+}
 
 export default async function ProfileViewPage({
   params,
@@ -47,6 +85,16 @@ export default async function ProfileViewPage({
   const savedIds =
     viewer.id === userId ? [] : await loadSavedUserIds(supabase, viewer.id);
   const initiallySaved = savedIds.includes(userId);
+  const matchBundle =
+    viewerUser && viewer.id !== userId
+      ? await loadViewerMatchReport(
+          supabase,
+          viewer.id,
+          viewerUser.user_type,
+          userId,
+          targetUser.user_type,
+        )
+      : { report: null, feedback: null };
 
   if (targetUser.user_type === "talent") {
     const { data: talentRow } = await supabase
@@ -56,18 +104,6 @@ export default async function ProfileViewPage({
       .maybeSingle();
     if (!talentRow) notFound();
     const talent = toTalentProfile(talentRow);
-
-    let whyMatch: string[] | null = null;
-    if (viewerUser?.user_type === "company") {
-      const { data: companyRow } = await supabase
-        .from("company_profiles")
-        .select("*")
-        .eq("user_id", viewer.id)
-        .maybeSingle();
-      if (companyRow) {
-        whyMatch = whyMatchReasons(talent, toCompanyProfile(companyRow));
-      }
-    }
 
     const sections: ProfileDetailSection[] = [
       {
@@ -102,7 +138,9 @@ export default async function ProfileViewPage({
           subtitle={talent.headline}
           meta={[talent.location, talent.industry].filter(Boolean).join(" · ")}
           sections={sections}
-          whyMatch={whyMatch}
+          whyMatch={null}
+          matchReport={matchBundle.report}
+          initialFeedback={matchBundle.feedback}
           whatToExplore={TALENT_EXPLORE_PROMPTS}
           viewerId={viewer.id}
           targetUserId={userId}
@@ -124,18 +162,6 @@ export default async function ProfileViewPage({
     .maybeSingle();
   if (!companyRow) notFound();
   const company = toCompanyProfile(companyRow);
-
-  let whyMatch: string[] | null = null;
-  if (viewerUser?.user_type === "talent") {
-    const { data: talentRow } = await supabase
-      .from("talent_profiles")
-      .select("*")
-      .eq("user_id", viewer.id)
-      .maybeSingle();
-    if (talentRow) {
-      whyMatch = whyMatchReasons(toTalentProfile(talentRow), company);
-    }
-  }
 
   const sections: ProfileDetailSection[] = [
     {
@@ -162,7 +188,9 @@ export default async function ProfileViewPage({
         subtitle={company.mission}
         meta={[company.industry, company.location].filter(Boolean).join(" · ")}
         sections={sections}
-        whyMatch={whyMatch}
+        whyMatch={null}
+        matchReport={matchBundle.report}
+        initialFeedback={matchBundle.feedback}
         whatToExplore={COMPANY_EXPLORE_PROMPTS}
         viewerId={viewer.id}
         targetUserId={userId}

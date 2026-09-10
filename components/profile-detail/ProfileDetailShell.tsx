@@ -9,6 +9,14 @@ import { sendOrAcceptConnection } from "@/lib/connections/persistence";
 import { notifyConnectionRequest } from "@/lib/email/actions";
 import { isRateLimitError } from "@/lib/rate-limit";
 import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
+import { passProfile } from "@/lib/matching/passed";
+import { recordMatchFeedback, type MatchFeedbackAction, type NotFitReason } from "@/lib/matching/feedback";
+import type { MatchReport } from "@/lib/matching/report";
+import {
+  AskMingleButton,
+  MatchFeedbackActions,
+  MatchReportBody,
+} from "@/components/matching/MatchReport";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { Avatar } from "@/components/Avatar";
 import { MingleChip } from "@/components/MingleChip";
@@ -90,6 +98,8 @@ type ProfileDetailShellProps = {
   meta: string;
   sections: ProfileDetailSection[];
   whyMatch: string[] | null;
+  matchReport?: MatchReport | null;
+  initialFeedback?: MatchFeedbackAction | null;
   whatToExplore: string[];
   viewerId: string;
   targetUserId: string;
@@ -118,6 +128,8 @@ export function ProfileDetailShell({
   meta,
   sections,
   whyMatch,
+  matchReport = null,
+  initialFeedback = null,
   whatToExplore,
   viewerId,
   targetUserId,
@@ -135,6 +147,9 @@ export function ProfileDetailShell({
   const [connecting, setConnecting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(initiallySaved);
+  const [feedback, setFeedback] = useState<MatchFeedbackAction | null>(
+    initialFeedback,
+  );
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showMingleMoment, setShowMingleMoment] = useState(false);
   const [mingleConnectionId, setMingleConnectionId] = useState<string | null>(
@@ -173,6 +188,43 @@ export function ProfileDetailShell({
       toast(message, "error");
     } finally {
       setConnecting(false);
+    }
+  };
+
+  const handleInterested = async () => {
+    if (saving || isSelf) return;
+    setSaving(true);
+    try {
+      await saveProfile(supabase, viewerId, targetUserId);
+      await recordMatchFeedback(supabase, viewerId, targetUserId, "interested");
+      setSaved(true);
+      setFeedback("interested");
+      toast("Marked interested.");
+    } catch {
+      toast("Couldn't save that. Try again in a moment.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleNotFit = async (reason: NotFitReason) => {
+    if (saving || isSelf) return;
+    setSaving(true);
+    try {
+      await recordMatchFeedback(
+        supabase,
+        viewerId,
+        targetUserId,
+        "not_fit",
+        reason,
+      );
+      await passProfile(supabase, viewerId, targetUserId);
+      setFeedback("not_fit");
+      toast("Saved as not a fit.");
+    } catch {
+      toast("Couldn't save that. Try again in a moment.", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -270,7 +322,21 @@ export function ProfileDetailShell({
           </Section>
         )}
 
-        {whyMatch && (
+        {matchReport ? (
+          <Section title="Match Report">
+            <MatchReportBody report={matchReport} />
+            <div className="mt-3 flex flex-col gap-3">
+              <MatchFeedbackActions
+                audience={matchReport.audience}
+                action={feedback}
+                busy={saving}
+                onInterested={() => void handleInterested()}
+                onNotFit={(reason) => void handleNotFit(reason)}
+              />
+              <AskMingleButton report={matchReport} />
+            </div>
+          </Section>
+        ) : whyMatch ? (
           <Section title="Why this could be a match">
             <ul className="flex flex-col gap-2">
               {whyMatch.map((reason) => (
@@ -287,7 +353,7 @@ export function ProfileDetailShell({
               ))}
             </ul>
           </Section>
-        )}
+        ) : null}
 
         {sections.map((section) => (
           <Section key={section.title} title={section.title}>

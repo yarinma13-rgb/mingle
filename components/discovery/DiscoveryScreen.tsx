@@ -11,8 +11,18 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { saveProfile, unsaveProfile } from "@/lib/matching/saved";
+import { saveProfile } from "@/lib/matching/saved";
 import { passProfile, unpassProfile } from "@/lib/matching/passed";
+import {
+  recordMatchFeedback,
+  type MatchFeedbackAction,
+  type NotFitReason,
+} from "@/lib/matching/feedback";
+import type { MatchReport } from "@/lib/matching/report";
+import {
+  MatchFeedbackActions,
+  MatchReportBody,
+} from "@/components/matching/MatchReport";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
@@ -31,65 +41,23 @@ export type DiscoveryCard = {
   gender: Gender | null;
   score: number;
   factors: MatchFactor[];
+  report: MatchReport;
 };
 
 const SWIPE_DISTANCE_THRESHOLD = 110;
 const SWIPE_VELOCITY_THRESHOLD = 500;
 
-function verdictColor(verdict: MatchFactor["verdict"]) {
-  switch (verdict) {
-    case "aligned":
-      return "text-mingle-purple";
-    case "partial":
-      return "text-mingle-cta";
-    case "not-aligned":
-      return "text-mingle-pink";
-    default:
-      return "text-mingle-text-secondary";
-  }
-}
-
-function verdictLabel(verdict: MatchFactor["verdict"]) {
-  switch (verdict) {
-    case "aligned":
-      return "Aligned";
-    case "partial":
-      return "Partial";
-    case "not-aligned":
-      return "Not aligned";
-    default:
-      return "Not enough data";
-  }
-}
-
-function FactorRow({ factor }: { factor: MatchFactor }) {
-  return (
-    <div className="flex flex-col gap-0.5 py-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-medium text-mingle-text">
-          {factor.label}
-          <span className="ml-1.5 text-mingle-text-secondary">
-            {factor.weight}%
-          </span>
-        </span>
-        <span className={`text-xs font-semibold ${verdictColor(factor.verdict)}`}>
-          {verdictLabel(factor.verdict)}
-        </span>
-      </div>
-      <p className="text-xs text-mingle-text-secondary">{factor.detail}</p>
-    </div>
-  );
-}
-
 function DiscoveryCardView({
   card,
-  initiallySaved,
+  initialFeedback,
+  viewerId,
   swipeEnabled,
   onPass,
   onHide,
 }: {
   card: DiscoveryCard;
-  initiallySaved: boolean;
+  initialFeedback: MatchFeedbackAction | null;
+  viewerId: string;
   swipeEnabled: boolean;
   onPass: (userId: string) => void;
   onHide: (userId: string) => void;
@@ -97,35 +65,24 @@ function DiscoveryCardView({
   const toast = useToast();
   const isMobile = useIsMobile();
   const [supabase] = useState(() => createClient());
-  const [saved, setSaved] = useState(initiallySaved);
+  const [feedback, setFeedback] = useState<MatchFeedbackAction | null>(
+    initialFeedback,
+  );
   const [saving, setSaving] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
-  // Drag-driven position for the mobile swipe gesture. Stays at 0 and
-  // inert on desktop, since drag is never enabled there.
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-10, 10]);
   const interestOpacity = useTransform(x, [20, 120], [0, 1]);
   const skipOpacity = useTransform(x, [-120, -20], [1, 0]);
 
-  const aligned = card.factors.filter((f) => f.verdict === "aligned");
-  const notAligned = card.factors.filter(
-    (f) => f.verdict === "not-aligned" || f.verdict === "partial",
-  );
-  const unknown = card.factors.filter((f) => f.verdict === "unknown");
-
-  // Swipe right and the Save button both express interest through the
-  // exact same persisted action — swipe is just a faster way to reach it.
   const expressInterest = async () => {
-    if (saved) return;
+    if (feedback === "interested") return;
     setSaving(true);
     try {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        await saveProfile(supabase, data.user.id, card.userId);
-        setSaved(true);
-        toast("Saved for later.");
-      }
+      await saveProfile(supabase, viewerId, card.userId);
+      await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
+      setFeedback("interested");
+      toast("Marked interested.");
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -133,24 +90,23 @@ function DiscoveryCardView({
     }
   };
 
-  const toggleSaveFromButton = async () => {
-    if (saved) {
-      setSaving(true);
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          await unsaveProfile(supabase, data.user.id, card.userId);
-          setSaved(false);
-          toast("Removed from saved.");
-        }
-      } catch {
-        toast("Couldn't update that. Try again in a moment.", "error");
-      } finally {
-        setSaving(false);
-      }
-      return;
+  const markNotFit = async (reason: NotFitReason) => {
+    setSaving(true);
+    try {
+      await recordMatchFeedback(
+        supabase,
+        viewerId,
+        card.userId,
+        "not_fit",
+        reason,
+      );
+      setFeedback("not_fit");
+      onPass(card.userId);
+    } catch {
+      toast("Couldn't save that. Try again in a moment.", "error");
+    } finally {
+      setSaving(false);
     }
-    await expressInterest();
   };
 
   const flyOff = (direction: 1 | -1, after: () => void) => {
@@ -238,100 +194,45 @@ function DiscoveryCardView({
               ) : null}
             </div>
             <MingleChip className="shrink-0 border-white/20 bg-white/15 text-[11px] text-white">
-              {card.score}% match
+              {card.score} {card.report.strength}
             </MingleChip>
           </div>
         </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-purple">
-            Why this could be a match
-          </h3>
-          {aligned.length > 0 ? (
-            <div className="divide-y divide-mingle-border">
-              {aligned.map((factor) => (
-                <FactorRow key={factor.key} factor={factor} />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-1.5 text-xs text-mingle-text-secondary">
-              Nothing strongly aligned yet.
-            </p>
-          )}
-        </div>
-
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-pink">
-            What doesn&rsquo;t align yet
-          </h3>
-          {notAligned.length > 0 ? (
-            <div className="divide-y divide-mingle-border">
-              {notAligned.map((factor) => (
-                <FactorRow key={factor.key} factor={factor} />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-1.5 text-xs text-mingle-text-secondary">
-              Nothing stands out as misaligned.
-            </p>
-          )}
-        </div>
+        <MatchReportBody report={card.report} compact />
       </div>
-
-      {unknown.length > 0 && (
-        <div className="px-4">
-          <button
-            type="button"
-            onClick={() => setExpanded((prev) => !prev)}
-            className="text-xs font-medium text-mingle-text-secondary underline decoration-dotted"
-          >
-            {expanded ? "Hide" : "Show"} {unknown.length} factor
-            {unknown.length > 1 ? "s" : ""} without enough data yet
-          </button>
-          {expanded && (
-            <div className="mt-1 divide-y divide-mingle-border">
-              {unknown.map((factor) => (
-                <FactorRow key={factor.key} factor={factor} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {isMobile && swipeEnabled && (
         <p className="px-4 text-center text-[11px] text-mingle-text-secondary">
-          Swipe right for interested, left to skip — or use the buttons below.
+          Swipe right for interested, left to skip, or use the buttons below.
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 p-4 pt-0">
-        <Link
-          href={`/profile/view/${card.userId}`}
-          className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-        >
-          View profile
-        </Link>
-        <button
-          type="button"
-          onClick={toggleSaveFromButton}
-          disabled={saving}
-          className={`rounded-full px-4 py-2 font-display text-xs font-semibold transition-colors disabled:opacity-60 ${
-            saved
-              ? "bg-mingle-blue/15 text-mingle-blue"
-              : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
-          }`}
-        >
-          {saved ? "Saved" : "Save"}
-        </button>
-        <button
-          type="button"
-          onClick={() => onPass(card.userId)}
-          className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
-        >
-          Skip
-        </button>
+      <div className="flex flex-col gap-2 p-4 pt-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/profile/view/${card.userId}`}
+            className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          >
+            View profile
+          </Link>
+          <button
+            type="button"
+            onClick={() => onPass(card.userId)}
+            className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
+          >
+            Skip
+          </button>
+        </div>
+        <MatchFeedbackActions
+          audience={card.report.audience}
+          action={feedback}
+          busy={saving}
+          onInterested={() => void expressInterest()}
+          onNotFit={(reason) => void markNotFit(reason)}
+        />
       </div>
     </motion.div>
   );
@@ -341,7 +242,7 @@ export function DiscoveryScreen({
   title,
   subtitle,
   cards: initialCards,
-  savedUserIds,
+  feedbackByUser = {},
   viewerId,
   mode = "feed",
   emptyBody,
@@ -350,6 +251,7 @@ export function DiscoveryScreen({
   subtitle: string;
   cards: DiscoveryCard[];
   savedUserIds: string[];
+  feedbackByUser?: Record<string, MatchFeedbackAction>;
   viewerId: string;
   mode?: "feed" | "passed";
   emptyBody?: string;
@@ -358,7 +260,6 @@ export function DiscoveryScreen({
   const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [cards, setCards] = useState(initialCards);
-  const savedSet = new Set(savedUserIds);
   const isPassed = mode === "passed";
 
   const hideCard = (userId: string) => {
@@ -431,7 +332,7 @@ export function DiscoveryScreen({
                 </p>
               </div>
               <MingleChip className="shrink-0 text-[11px]">
-                {card.score}% match
+                {card.score} {card.report.strength}
               </MingleChip>
               <Link
                 href={`/profile/view/${card.userId}`}
@@ -455,7 +356,8 @@ export function DiscoveryScreen({
             <DiscoveryCardView
               key={card.userId}
               card={card}
-              initiallySaved={savedSet.has(card.userId)}
+              initialFeedback={feedbackByUser[card.userId] ?? null}
+              viewerId={viewerId}
               swipeEnabled
               onPass={persistPass}
               onHide={hideCard}

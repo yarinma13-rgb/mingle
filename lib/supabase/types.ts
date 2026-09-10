@@ -245,6 +245,30 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      match_feedback: {
+        Row: {
+          id: string;
+          actor_id: string;
+          target_user_id: string;
+          action: "interested" | "not_fit";
+          reason: string | null;
+          free_text: string | null;
+          created_at: string;
+        };
+        Insert: {
+          actor_id: string;
+          target_user_id: string;
+          action: "interested" | "not_fit";
+          reason?: string | null;
+          free_text?: string | null;
+        };
+        Update: {
+          action?: "interested" | "not_fit";
+          reason?: string | null;
+          free_text?: string | null;
+        };
+        Relationships: [];
+      };
       passed_profiles: {
         Row: {
           id: string;

@@ -7,6 +7,7 @@ import {
   type TalentMatchInput,
   type CompanyMatchInput,
 } from "@/lib/matching/engine";
+import { buildMatchReport, emptyMatchReport } from "@/lib/matching/report";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DISCOVERY_PAGE_SIZE,
@@ -159,6 +160,9 @@ export async function loadDiscoveryPage(
       const result = ownInput
         ? computeMatch(talentInput, ownInput)
         : { score: 0, factors: [] };
+      const report = ownInput
+        ? buildMatchReport(result, talentInput, ownInput, "company")
+        : emptyMatchReport("company", result.score);
       const km = origin
         ? distanceKmBetween(origin, {
             latitude: row.latitude ?? null,
@@ -182,6 +186,7 @@ export async function loadDiscoveryPage(
         gender: profile.gender,
         score: result.score,
         factors: result.factors,
+        report,
       };
     });
     cards.sort((a, b) => {
@@ -250,6 +255,9 @@ export async function loadDiscoveryPage(
     const result = ownInput
       ? computeMatch(ownInput, companyInput)
       : { score: 0, factors: [] };
+    const report = ownInput
+      ? buildMatchReport(result, ownInput, companyInput, "talent")
+      : emptyMatchReport("talent", result.score);
     return {
       userId: row.user_id,
       name: profile.companyName,
@@ -260,6 +268,7 @@ export async function loadDiscoveryPage(
       gender: null,
       score: result.score,
       factors: result.factors,
+      report,
     };
   });
   cards.sort((a, b) => b.score - a.score);
