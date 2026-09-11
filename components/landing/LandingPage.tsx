@@ -15,7 +15,7 @@ const poppins = Poppins({
 });
 
 const AUTH_HREF = "/auth";
-const DEMO_HREF = "/start?intent=demo";
+const DEMO_HREF = "/contact";
 
 export function LandingPage() {
   return (
