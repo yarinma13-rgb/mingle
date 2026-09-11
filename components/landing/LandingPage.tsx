@@ -1,21 +1,37 @@
 import Link from "next/link";
+import { Poppins, Heebo } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
 import "./landing.css";
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-landing-poppins",
+  display: "swap",
+});
+
+const heebo = Heebo({
+  subsets: ["hebrew", "latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-landing-heebo",
+  display: "swap",
+});
+
 const START_HREF = "/start";
 const AUTH_HREF = "/auth";
+const DEMO_HREF = "/start?intent=demo";
 
 export function LandingPage() {
   return (
-    <div className="landing">
+    <div className={`landing ${poppins.variable} ${heebo.variable}`}>
       <header className="landing-nav">
         <div className="landing-shell landing-nav-inner">
           <Link href="/" className="landing-nav-brand" aria-label="mingle home">
-            <MingleLogo variant="lockup" size={40} priority />
+            <MingleLogo variant="lockup" size={38} priority />
           </Link>
 
           <nav className="landing-nav-links" aria-label="Primary">
-            <a href="#fit">The fit</a>
+            <a href="#why">Why mingle</a>
             <a href="#how">How it works</a>
             <a href="#match">Match Report</a>
           </nav>
@@ -24,11 +40,8 @@ export function LandingPage() {
             <Link href={AUTH_HREF} className="landing-nav-signin">
               Sign in
             </Link>
-            <Link href={START_HREF} className="landing-btn landing-btn-secondary">
+            <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost">
               Book a demo
-            </Link>
-            <Link href={START_HREF} className="landing-btn landing-btn-primary">
-              Start for free
             </Link>
           </div>
         </div>
@@ -38,294 +51,89 @@ export function LandingPage() {
         <section className="landing-hero" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
             <div className="landing-hero-copy">
-              <p className="landing-hero-brand">mingle</p>
+              <p className="landing-hero-eyebrow">Career relationships, done right</p>
               <h1 id="landing-hero-title" className="landing-hero-title">
-                Transform the way you connect.
+                Work feels better when the{" "}
+                <span className="landing-hero-title-accent">fit is real</span>
               </h1>
               <p className="landing-hero-lead">
-                Relationship software for talent and companies. Start with a
-                Match Report, then talk only when Role Fit, Company Fit, and
-                Motivation Fit already line up.
+                mingle helps talent and companies meet through Role Fit, Company
+                Fit, and Motivation Fit — so every conversation starts with
+                signal, not noise.
+              </p>
+              <p className="landing-hero-he" lang="he" dir="rtl">
+                קשרים תעסוקתיים שמתחילים בהתאמה אמיתית, לא רק בקורות חיים.
               </p>
 
               <div className="landing-hero-actions">
                 <Link
                   href={START_HREF}
-                  className="landing-btn landing-btn-primary landing-btn-lg"
+                  className="landing-btn landing-btn-pulse landing-btn-lg"
                 >
-                  Start free
-                </Link>
-                <Link
-                  href={AUTH_HREF}
-                  className="landing-btn landing-btn-secondary landing-btn-lg"
-                >
-                  Sign in
+                  Get started
                 </Link>
               </div>
 
-              <ul className="landing-hero-proof">
-                <li>No credit card required</li>
-                <li>2 minutes to get started</li>
-              </ul>
+              <p className="landing-hero-note">
+                Free to start · No credit card · Talent or company in under
+                2 minutes
+              </p>
             </div>
 
             <div className="landing-hero-visual" aria-hidden="true">
-              <div className="landing-collage">
-                <div className="landing-collage-dash">
-                  <div className="landing-collage-search">
-                    Search talent, roles, conversations
-                  </div>
-                  <div className="landing-collage-dash-grid">
-                    <div className="landing-collage-panel">
-                      <p className="landing-collage-kicker">Notifications</p>
-                      <div className="landing-collage-row">
-                        <span className="landing-avatar landing-avatar-pink">
-                          M
-                        </span>
-                        <div>
-                          <strong>New Match Report</strong>
-                          <span>Maya scored 88 with your role</span>
-                        </div>
-                      </div>
-                      <div className="landing-collage-row">
-                        <span className="landing-avatar landing-avatar-blue">
-                          A
-                        </span>
-                        <div>
-                          <strong>Conversation started</strong>
-                          <span>Alex replied to your note</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="landing-collage-panel">
-                      <p className="landing-collage-kicker">Top matches</p>
-                      <div className="landing-collage-faces">
-                        <span className="landing-avatar landing-avatar-pink">
-                          M
-                        </span>
-                        <span className="landing-avatar landing-avatar-purple">
-                          J
-                        </span>
-                        <span className="landing-avatar landing-avatar-blue">
-                          R
-                        </span>
-                        <span className="landing-avatar landing-avatar-violet">
-                          S
-                        </span>
-                      </div>
-                      <div className="landing-collage-mini-bars">
-                        <div className="landing-mini-bar">
-                          <span>Role</span>
-                          <i>
-                            <b
-                              className="landing-mini-fill-role"
-                              style={{ width: "92%", display: "block", height: "100%" }}
-                            />
-                          </i>
-                        </div>
-                        <div className="landing-mini-bar">
-                          <span>Company</span>
-                          <i>
-                            <b
-                              className="landing-mini-fill-company"
-                              style={{ width: "84%", display: "block", height: "100%" }}
-                            />
-                          </i>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="landing-collage-panel landing-collage-perf">
-                      <p className="landing-collage-kicker">Pipeline mix</p>
-                      <div className="landing-donut">
-                        <svg viewBox="0 0 120 120" className="landing-donut-svg">
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="40"
-                            fill="none"
-                            stroke="#eef4fb"
-                            strokeWidth="16"
-                          />
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="40"
-                            fill="none"
-                            stroke="var(--mingle-accent-pink)"
-                            strokeWidth="16"
-                            strokeDasharray="70 251"
-                            transform="rotate(-90 60 60)"
-                          />
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="40"
-                            fill="none"
-                            stroke="var(--mingle-accent-purple)"
-                            strokeWidth="16"
-                            strokeDasharray="55 251"
-                            strokeDashoffset="-70"
-                            transform="rotate(-90 60 60)"
-                          />
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="40"
-                            fill="none"
-                            stroke="var(--mingle-accent-blue)"
-                            strokeWidth="16"
-                            strokeDasharray="40 251"
-                            strokeDashoffset="-125"
-                            transform="rotate(-90 60 60)"
-                          />
-                        </svg>
-                        <div className="landing-donut-center">
-                          <strong>24</strong>
-                          <span>active</span>
-                        </div>
-                      </div>
-                      <ul className="landing-donut-legend">
-                        <li>
-                          <i className="landing-dot-role" /> Exploring
-                        </li>
-                        <li>
-                          <i className="landing-dot-company" /> In conversation
-                        </li>
-                        <li>
-                          <i className="landing-dot-motivation" /> Opportunity
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="landing-float landing-float-photo" />
-
-                <article className="landing-float landing-float-match">
-                  <div className="landing-mock-top">
+              <div className="landing-hero-blob landing-hero-blob-a" />
+              <div className="landing-hero-blob landing-hero-blob-b" />
+              <div className="landing-hero-stage">
+                <article className="landing-product">
+                  <header className="landing-product-head">
                     <div>
-                      <div className="landing-mock-label">Match Report</div>
-                      <p className="landing-mock-name">
-                        Maya · Product Designer
-                      </p>
+                      <p className="landing-product-kicker">Match Report</p>
+                      <h2>Maya · Product Designer</h2>
                     </div>
-                    <div className="landing-mock-score">
+                    <div className="landing-product-score">
                       <strong>88</strong>
                       <span>Strong Match</span>
                     </div>
-                  </div>
-                  <div className="landing-mock-bars">
-                    <div className="landing-mock-bar-row">
-                      <div className="landing-mock-bar-meta">
+                  </header>
+
+                  <div className="landing-product-bars">
+                    <div className="landing-product-bar">
+                      <div className="landing-product-bar-meta">
                         <span>Role Fit</span>
                         <span>92</span>
                       </div>
-                      <div className="landing-mock-track">
-                        <div className="landing-mock-fill landing-mock-fill-role" />
-                      </div>
+                      <i>
+                        <b style={{ width: "92%" }} className="fill-role" />
+                      </i>
                     </div>
-                    <div className="landing-mock-bar-row">
-                      <div className="landing-mock-bar-meta">
+                    <div className="landing-product-bar">
+                      <div className="landing-product-bar-meta">
                         <span>Company Fit</span>
                         <span>84</span>
                       </div>
-                      <div className="landing-mock-track">
-                        <div className="landing-mock-fill landing-mock-fill-company" />
-                      </div>
+                      <i>
+                        <b style={{ width: "84%" }} className="fill-company" />
+                      </i>
                     </div>
-                    <div className="landing-mock-bar-row">
-                      <div className="landing-mock-bar-meta">
+                    <div className="landing-product-bar">
+                      <div className="landing-product-bar-meta">
                         <span>Motivation Fit</span>
                         <span>88</span>
                       </div>
-                      <div className="landing-mock-track">
-                        <div className="landing-mock-fill landing-mock-fill-motivation" />
-                      </div>
+                      <i>
+                        <b
+                          style={{ width: "88%" }}
+                          className="fill-motivation"
+                        />
+                      </i>
                     </div>
                   </div>
-                </article>
 
-                <article className="landing-float landing-float-activity">
-                  <p className="landing-collage-kicker">My activities</p>
-                  <div className="landing-activity-row">
-                    <span className="landing-activity-icon">1</span>
-                    <div>
-                      <strong>Follow up with Maya</strong>
-                      <span>Match Report ready to review</span>
-                    </div>
-                    <em>Today</em>
-                  </div>
-                  <div className="landing-activity-row">
-                    <span className="landing-activity-icon">2</span>
-                    <div>
-                      <strong>Intro call with Alex</strong>
-                      <span>In conversation stage</span>
-                    </div>
-                    <em>Thu</em>
-                  </div>
-                  <div className="landing-activity-row">
-                    <span className="landing-activity-icon">3</span>
-                    <div>
-                      <strong>Share role brief</strong>
-                      <span>Product Designer · Tel Aviv</span>
-                    </div>
-                    <em>Fri</em>
-                  </div>
+                  <p className="landing-product-note">
+                    Why it fits: end-to-end product craft, weekly shipping loops,
+                    and a team that already talks like partners.
+                  </p>
                 </article>
-
-                <article className="landing-float landing-float-company">
-                  <span className="landing-avatar landing-avatar-purple">N</span>
-                  <div>
-                    <strong>Northwind Labs</strong>
-                    <div className="landing-float-tags">
-                      <span className="landing-tag landing-tag-blue">
-                        Series A
-                      </span>
-                      <span className="landing-tag landing-tag-pink">
-                        Product
-                      </span>
-                    </div>
-                  </div>
-                </article>
-
-                <svg
-                  className="landing-collage-arcs"
-                  viewBox="0 0 520 420"
-                  fill="none"
-                  aria-hidden
-                >
-                  <path
-                    d="M40 300 C 120 180, 220 140, 320 90"
-                    stroke="url(#landingArc)"
-                    strokeWidth="2"
-                    strokeDasharray="4 6"
-                    opacity="0.55"
-                  />
-                  <path
-                    d="M180 360 C 260 300, 360 280, 470 210"
-                    stroke="url(#landingArc)"
-                    strokeWidth="2"
-                    strokeDasharray="4 6"
-                    opacity="0.4"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="landingArc"
-                      x1="40"
-                      y1="300"
-                      x2="470"
-                      y2="90"
-                    >
-                      <stop stopColor="var(--mingle-accent-blue)" />
-                      <stop
-                        offset="1"
-                        stopColor="var(--mingle-accent-pink)"
-                      />
-                    </linearGradient>
-                  </defs>
-                </svg>
               </div>
             </div>
           </div>
@@ -334,7 +142,7 @@ export function LandingPage() {
         <section className="landing-trust" aria-label="Trusted by teams">
           <div className="landing-shell">
             <p className="landing-trust-copy">
-              Trusted by relationship-first teams hiring across startups and
+              Built for relationship-first teams hiring across startups and
               scaleups
             </p>
             <ul className="landing-trust-row">
@@ -343,49 +151,40 @@ export function LandingPage() {
               <li>Orbit Labs</li>
               <li>Cedar & Co</li>
               <li>PulseHire</li>
-              <li>Kiteworks</li>
               <li>Studio Nine</li>
             </ul>
           </div>
         </section>
 
-        <section id="fit" className="landing-section">
+        <section id="why" className="landing-section landing-section-soft">
           <div className="landing-shell">
-            <div className="landing-section-head">
+            <div className="landing-section-head landing-section-head-center">
               <h2>Three fits. One conversation worth having.</h2>
               <p>
-                mingle scores the relationship across Role Fit, Company Fit, and
-                Motivation Fit before either side spends a week in interviews.
+                Skip spray-and-pray. mingle scores the relationship before either
+                side spends a week in interviews.
               </p>
             </div>
+
             <div className="landing-fit-grid">
-              <article className="landing-fit-card">
-                <div
-                  className="landing-fit-dot landing-fit-dot-role"
-                  aria-hidden
-                />
+              <article className="landing-fit">
+                <span className="landing-fit-dot fill-role" aria-hidden />
                 <h3>Role Fit</h3>
                 <p>
                   Career goals, industry, and experience lined up with what the
                   seat actually needs day to day.
                 </p>
               </article>
-              <article className="landing-fit-card">
-                <div
-                  className="landing-fit-dot landing-fit-dot-company"
-                  aria-hidden
-                />
+              <article className="landing-fit">
+                <span className="landing-fit-dot fill-company" aria-hidden />
                 <h3>Company Fit</h3>
                 <p>
                   Work style, location, and stage preference that match how the
                   team really builds and decides.
                 </p>
               </article>
-              <article className="landing-fit-card">
-                <div
-                  className="landing-fit-dot landing-fit-dot-motivation"
-                  aria-hidden
-                />
+              <article className="landing-fit">
+                <span className="landing-fit-dot fill-motivation" aria-hidden />
                 <h3>Motivation Fit</h3>
                 <p>
                   Values and drivers that stay true after the first call, not
@@ -396,127 +195,121 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="how" className="landing-section landing-section-tight">
+        <section id="how" className="landing-section">
           <div className="landing-shell">
-            <div className="landing-section-head">
-              <h2>From profile to conversation in three steps</h2>
-              <p>Equal depth for talent and companies. No swipe theater.</p>
+            <div className="landing-section-head landing-section-head-center">
+              <h2>Match → Explore → Experience → Decide</h2>
+              <p>
+                A clear path from first signal to a real decision — equal depth
+                for talent and companies.
+              </p>
             </div>
-            <div className="landing-steps">
-              <article className="landing-step">
-                <div className="landing-step-num" aria-hidden>
-                  1
+
+            <ol className="landing-steps">
+              <li>
+                <span className="landing-step-num">1</span>
+                <div>
+                  <h3>Match</h3>
+                  <p>
+                    Build your side once. See who already lines up across the
+                    three fits.
+                  </p>
                 </div>
-                <h3>Build your side</h3>
-                <p>
-                  Share goals, motivations, and how you work so the Match Report
-                  has something real to score.
-                </p>
-              </article>
-              <article className="landing-step">
-                <div className="landing-step-num" aria-hidden>
-                  2
+              </li>
+              <li>
+                <span className="landing-step-num">2</span>
+                <div>
+                  <h3>Explore</h3>
+                  <p>
+                    Open a Match Report together. Talk about the real gaps and
+                    strengths first.
+                  </p>
                 </div>
-                <h3>See who fits</h3>
-                <p>
-                  Discover people and teams with Role, Company, and Motivation
-                  Fit already on the table.
-                </p>
-              </article>
-              <article className="landing-step">
-                <div className="landing-step-num" aria-hidden>
-                  3
+              </li>
+              <li>
+                <span className="landing-step-num">3</span>
+                <div>
+                  <h3>Experience</h3>
+                  <p>
+                    Move through the relationship with context — not cold
+                    applications and ghosting.
+                  </p>
                 </div>
-                <h3>Start the relationship</h3>
-                <p>
-                  Connect, explore, and decide together. Careers start with
-                  connection, not a cold application.
-                </p>
-              </article>
-            </div>
+              </li>
+              <li>
+                <span className="landing-step-num">4</span>
+                <div>
+                  <h3>Decide</h3>
+                  <p>
+                    Choose with confidence when both sides already know why it
+                    might work.
+                  </p>
+                </div>
+              </li>
+            </ol>
           </div>
         </section>
 
-        <section id="match" className="landing-section">
-          <div className="landing-shell landing-deep">
-            <div className="landing-deep-copy">
+        <section id="match" className="landing-section landing-section-tint">
+          <div className="landing-shell landing-split">
+            <div className="landing-split-copy">
               <h2>A Match Report you can act on</h2>
               <p>
-                Not a black box score. Clear axes, clear reasons, and a shared
-                language for both sides before the first meeting.
+                Not a black-box score. Clear axes, clear reasons, and a shared
+                language before the first meeting.
               </p>
-              <ul className="landing-deep-list">
+              <ul className="landing-checklist">
                 <li>
                   Overall match with confidence, not a mysterious percentage
-                  alone.
+                  alone
                 </li>
                 <li>
-                  Role, Company, and Motivation Fit broken out so you know what
-                  to talk about.
+                  Role, Company, and Motivation Fit broken out for both sides
                 </li>
                 <li>
-                  Why it fits and where it might not, so nobody walks in blind.
+                  Why it fits and where it might not — nobody walks in blind
                 </li>
               </ul>
             </div>
 
-            <article
-              className="landing-match-card"
-              aria-label="Sample Match Report"
-            >
-              <div className="landing-match-card-head">
+            <article className="landing-report" aria-label="Sample Match Report">
+              <div className="landing-report-top">
                 <h3>Match Report</h3>
-                <span className="landing-match-pill">Strong Match</span>
+                <span>Strong Match</span>
               </div>
-              <div className="landing-match-overall">
+              <div className="landing-report-score">
                 <strong>88</strong>
                 <span>out of 100</span>
               </div>
-              <div className="landing-match-axes">
-                <div className="landing-match-axis">
-                  <span>Role Fit</span>
-                  <div className="landing-match-axis-track">
-                    <div
-                      className="landing-match-axis-fill"
-                      style={{
-                        width: "92%",
-                        background: "var(--mingle-accent-pink)",
-                      }}
-                    />
+              <div className="landing-product-bars">
+                <div className="landing-product-bar">
+                  <div className="landing-product-bar-meta">
+                    <span>Role Fit</span>
+                    <span>92</span>
                   </div>
-                  <span>92</span>
+                  <i>
+                    <b style={{ width: "92%" }} className="fill-role" />
+                  </i>
                 </div>
-                <div className="landing-match-axis">
-                  <span>Company Fit</span>
-                  <div className="landing-match-axis-track">
-                    <div
-                      className="landing-match-axis-fill"
-                      style={{
-                        width: "84%",
-                        background: "var(--mingle-accent-purple)",
-                      }}
-                    />
+                <div className="landing-product-bar">
+                  <div className="landing-product-bar-meta">
+                    <span>Company Fit</span>
+                    <span>84</span>
                   </div>
-                  <span>84</span>
+                  <i>
+                    <b style={{ width: "84%" }} className="fill-company" />
+                  </i>
                 </div>
-                <div className="landing-match-axis">
-                  <span>Motivation Fit</span>
-                  <div className="landing-match-axis-track">
-                    <div
-                      className="landing-match-axis-fill"
-                      style={{
-                        width: "88%",
-                        background: "var(--mingle-accent-blue)",
-                      }}
-                    />
+                <div className="landing-product-bar">
+                  <div className="landing-product-bar-meta">
+                    <span>Motivation Fit</span>
+                    <span>88</span>
                   </div>
-                  <span>88</span>
+                  <i>
+                    <b style={{ width: "88%" }} className="fill-motivation" />
+                  </i>
                 </div>
               </div>
-              <p className="landing-match-note">
-                What matters most here: ownership of end to end product craft,
-                and a team that already ships in weekly loops.
-              </p>
             </article>
           </div>
         </section>
@@ -524,19 +317,12 @@ export function LandingPage() {
         <section className="landing-banner">
           <div className="landing-shell">
             <div className="landing-banner-inner">
-              <div>
-                <h2>Ready to meet who is worth talking to?</h2>
-                <p>
-                  Create your free profile, pick talent or company, and open
-                  your first Match Report.
-                </p>
-              </div>
-              <Link
-                href={START_HREF}
-                className="landing-btn landing-btn-on-gradient"
-              >
-                Get started free
-              </Link>
+              <h2>Ready to meet who is worth talking to?</h2>
+              <p>
+                Create your free profile, choose talent or company, and open
+                your first Match Report. Prefer a walkthrough first? Use Book a
+                demo above.
+              </p>
             </div>
           </div>
         </section>
@@ -544,10 +330,10 @@ export function LandingPage() {
 
       <footer className="landing-footer">
         <div className="landing-shell landing-footer-inner">
+          <MingleLogo variant="lockup" size={32} />
           <div className="landing-footer-links">
-            <Link href={START_HREF}>Get started</Link>
-            <Link href="/legal/terms">Terms of Service</Link>
-            <Link href="/legal/privacy">Privacy Policy</Link>
+            <Link href="/legal/terms">Terms</Link>
+            <Link href="/legal/privacy">Privacy</Link>
           </div>
           <p className="landing-footer-copy">
             © {new Date().getFullYear()} mingle
