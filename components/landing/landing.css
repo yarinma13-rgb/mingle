@@ -261,27 +261,14 @@
 .landing-hero-title {
   margin: 0;
   font-family: var(--ld-display);
-  font-size: clamp(2.15rem, 4.2vw, 3.35rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.05rem, 4vw, 3.1rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   color: #1c1b2e;
 }
 
-.landing-hero-highlight {
-  display: inline;
-  padding: 0.05em 0.22em;
-  border-radius: 0.28em;
-  color: #1c1b2e;
-  background: linear-gradient(
-    110deg,
-    color-mix(in srgb, var(--ld-pink-soft) 90%, white),
-    color-mix(in srgb, var(--ld-purple-soft) 88%, white),
-    color-mix(in srgb, var(--ld-blue-soft) 90%, white)
-  );
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
+
 
 .landing-hero-lead {
   margin: 1.05rem 0 0;
@@ -292,8 +279,22 @@
   color: var(--ld-muted);
 }
 
+.landing-hero-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ld-indigo);
+}
+
+.landing-hero-value {
+  margin: 0.85rem 0 0;
+  max-width: 36rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--ld-text);
+}
+
 .landing-audience {
-  list-style: none;
   margin: 1.35rem 0 0;
   padding: 0;
   display: flex;
@@ -301,18 +302,22 @@
   gap: 0.45rem;
 }
 
-.landing-audience li {
+.landing-audience button {
+  border: none;
+  cursor: pointer;
   border-radius: 10px;
   padding: 0.45rem 0.8rem;
+  font-family: var(--ld-display);
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ld-muted);
   background: var(--ld-grey-soft);
 }
 
-.landing-audience li.is-active {
+.landing-audience button.is-active {
   color: var(--ld-indigo);
   background: var(--ld-purple-soft);
+  font-weight: 600;
 }
 
 .landing-hero-actions {
@@ -344,6 +349,255 @@
   background:
     radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--ld-purple-soft) 70%, transparent), transparent 58%),
     linear-gradient(180deg, color-mix(in srgb, var(--ld-lavender) 75%, white), white);
+}
+
+.landing-match-stage-report {
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+  padding: 1.4rem 1rem 1.6rem;
+}
+
+.landing-hero-report-wrap {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 420px);
+}
+
+.landing-mingle-confetti-report {
+  inset: -8% -6% auto;
+  height: 55%;
+  z-index: 3;
+}
+
+.landing-hero-report {
+  position: relative;
+  z-index: 2;
+  border-radius: 22px;
+  background: var(--ld-white);
+  border: 1px solid var(--ld-line);
+  box-shadow: 0 22px 48px rgba(28, 27, 46, 0.1);
+  overflow: hidden;
+}
+
+.landing-hero-report-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.05rem 1.15rem 0.85rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ld-lavender) 55%, white),
+    white
+  );
+  border-bottom: 1px solid var(--ld-line);
+}
+
+.landing-hero-report-role {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ld-text);
+}
+
+.landing-hero-report-meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ld-muted);
+}
+
+.landing-hero-report-count {
+  margin: 0;
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ld-indigo);
+  background: color-mix(in srgb, var(--ld-purple-soft) 70%, white);
+}
+
+.landing-hero-report-card {
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.landing-hero-report-rank {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.landing-hero-report-rank span {
+  font-size: 1.15rem;
+}
+
+.landing-hero-report-rank strong {
+  font-family: var(--ld-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ld-text);
+  line-height: 1;
+}
+
+.landing-hero-report-rank em {
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ld-muted);
+}
+
+.landing-hero-report-name {
+  margin: 0.35rem 0 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ld-text);
+}
+
+.landing-hero-report-fits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin-bottom: 0.95rem;
+}
+
+.landing-hero-report-fits div {
+  border-radius: 12px;
+  padding: 0.55rem 0.45rem;
+  text-align: center;
+  background: var(--ld-grey-soft);
+}
+
+.landing-hero-report-fits span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ld-muted);
+}
+
+.landing-hero-report-fits b {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ld-text);
+}
+
+.landing-why-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.landing-why-list li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ld-text);
+}
+
+.landing-why-list li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+}
+
+.landing-why-list li.is-good::before {
+  content: "✓";
+  color: #1f9d6a;
+}
+
+.landing-why-list li.is-warn::before {
+  content: "⚠";
+  color: #c47a12;
+}
+
+.landing-why-list-lg li {
+  font-size: 0.88rem;
+  padding-block: 0.15rem;
+}
+
+.landing-hero-report-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--ld-line);
+  flex-wrap: wrap;
+}
+
+.landing-hero-report-foot > span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ld-indigo);
+}
+
+.landing-hero-report-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.landing-hero-report-actions span {
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ld-muted);
+  background: var(--ld-grey-soft);
+}
+
+.landing-hero-report-actions span.is-love {
+  color: white;
+  background: linear-gradient(135deg, var(--ld-pink), var(--ld-purple));
+}
+
+.landing-hero-mingle-pill {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.95rem auto 0;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ld-white);
+  border: 1px solid var(--ld-line);
+  box-shadow: 0 10px 28px rgba(28, 27, 46, 0.08);
+  width: fit-content;
+  animation: landing-mascot-pop 5s ease-in-out infinite;
+}
+
+.landing-hero-mingle-pill span {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ld-text);
+}
+
+.landing-why-card .landing-report-top {
+  align-items: flex-start;
+}
+
+.landing-why-card .landing-report-top h3 {
+  max-width: 16rem;
+  line-height: 1.25;
+}
+
+.landing-why-card .landing-why-list {
+  padding: 0.35rem 1.15rem 1.15rem;
 }
 
 .landing-match-glow {
@@ -652,6 +906,7 @@
 @media (prefers-reduced-motion: reduce) {
   .landing-mingle-confetti-piece,
   .landing-mingle-core,
+  .landing-hero-mingle-pill,
   .landing-match-glow {
     animation: none;
   }
@@ -718,10 +973,10 @@
 .landing-moment-copy h2 {
   margin: 0;
   font-family: var(--ld-display);
-  font-size: clamp(1.55rem, 2.8vw, 2.2rem);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.18;
+  font-size: clamp(1.45rem, 2.6vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .landing-section-head p,
@@ -1039,6 +1294,14 @@
     min-height: 0;
   }
 
+  .landing-match-stage-report {
+    padding: 1rem 0.5rem 1.2rem;
+  }
+
+  .landing-hero-report-fits {
+    grid-template-columns: 1fr;
+  }
+
   .landing-match-center {
     order: 2;
     width: 100%;
@@ -1069,4 +1332,44 @@
   .landing-banner-inner {
     text-align: left;
   }
+}
+
+
+.landing-mingle-mark-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin-inline: auto;
+}
+
+.landing-mingle-mark-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ld-blue) 16%, transparent);
+  filter: blur(22px);
+}
+
+.landing-mingle-mark {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-mingle-title {
+  margin: 1rem 0 0;
+  font-family: var(--ld-display);
+  font-size: clamp(1.55rem, 2.4vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ld-text);
+  text-align: center;
+}
+
+.landing-mingle-core {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  animation: landing-mascot-pop 5s ease-in-out infinite;
 }
