@@ -23,7 +23,8 @@ export function LandingPage() {
       <header className="landing-nav">
         <div className="landing-shell landing-nav-inner">
           <Link href="/" className="landing-nav-brand" aria-label="mingle home">
-            <MingleLogo variant="lockup" size={36} priority />
+            <MingleLogo variant="mark" size={30} priority />
+            <span className="landing-nav-wordmark">mingle</span>
           </Link>
 
           <nav className="landing-nav-links" aria-label="Primary">
@@ -332,7 +333,10 @@ export function LandingPage() {
 
       <footer className="landing-footer">
         <div className="landing-shell landing-footer-inner">
-          <MingleLogo variant="lockup" size={32} />
+          <div className="landing-footer-brand">
+            <MingleLogo variant="mark" size={28} />
+            <span className="landing-nav-wordmark">mingle</span>
+          </div>
           <div className="landing-footer-links">
             <Link href="/legal/terms">Terms</Link>
             <Link href="/legal/privacy">Privacy</Link>

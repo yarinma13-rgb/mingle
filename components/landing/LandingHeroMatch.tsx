@@ -6,6 +6,9 @@ import { MingleLogo } from "@/components/MingleLogo";
 
 const START_HREF = "/start";
 
+/** Full confetti cycle: burst, then quiet until the next pop at 2.5s. */
+const CONFETTI_CYCLE_S = 2.5;
+
 const AUDIENCES = [
   {
     id: "companies",
@@ -34,14 +37,20 @@ const AUDIENCES = [
   },
 ] as const;
 
-const CONFETTI_COLORS = ["#F65F7C", "#D83A52", "#9D5CF2", "#0073EA", "#EA1E63", "#7B2FF7"];
+const CONFETTI_COLORS = [
+  "#F65F7C",
+  "#D83A52",
+  "#9D5CF2",
+  "#0073EA",
+  "#EA1E63",
+  "#7B2FF7",
+];
 
 type ConfettiSpec = {
   id: number;
   color: string;
   size: number;
   delay: number;
-  duration: number;
   burstX: number;
   burstY: number;
   fallY: number;
@@ -50,18 +59,18 @@ type ConfettiSpec = {
 };
 
 function generateConfettiSpecs(): ConfettiSpec[] {
-  return Array.from({ length: 28 }, (_, i) => {
-    const angleDeg = 15 + Math.random() * 150;
+  return Array.from({ length: 30 }, (_, i) => {
+    const angleDeg = 12 + Math.random() * 156;
     const rad = (angleDeg * Math.PI) / 180;
-    const distance = 70 + Math.random() * 130;
+    const distance = 75 + Math.random() * 125;
     const spin = Math.random() < 0.5 ? 1 : -1;
     const rotBurst = spin * (36 + Math.random() * 70);
     return {
       id: i,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
       size: 5 + Math.random() * 5,
-      delay: (i % 8) * 0.08,
-      duration: 2.2 + Math.random() * 0.5,
+      // Tiny stagger so one explosion reads as a burst, not a spray over time
+      delay: (i % 10) * 0.02,
       burstX: Math.cos(rad) * distance,
       burstY: -Math.sin(rad) * distance,
       fallY: 90 + Math.random() * 100,
@@ -148,89 +157,147 @@ export function LandingHeroMatch() {
   );
 
   return (
-    <div className="landing-match-stage landing-match-stage-report" aria-hidden="true">
+    <div className="landing-match-stage" aria-hidden="true">
       <div className="landing-match-glow" />
 
-      <div className="landing-hero-report-wrap">
-        <div className="landing-mingle-confetti landing-mingle-confetti-report">
-          {confetti.map((piece) => (
-            <span
-              key={piece.id}
-              className="landing-mingle-confetti-piece"
-              style={{
-                width: piece.size,
-                height: piece.size * 2.2,
-                backgroundColor: piece.color,
-                animationDelay: `${piece.delay}s`,
-                animationDuration: `${piece.duration}s`,
-                ["--burst-x" as string]: `${piece.burstX}px`,
-                ["--burst-y" as string]: `${piece.burstY}px`,
-                ["--fall-y" as string]: `${piece.fallY}px`,
-                ["--rot-burst" as string]: `${piece.rotBurst}deg`,
-                ["--rot-end" as string]: `${piece.rotEnd}deg`,
-              }}
-            />
-          ))}
+      <article className="landing-profile landing-profile-talent">
+        <div className="landing-profile-top">
+          <span className="landing-avatar landing-avatar-talent" />
+          <div>
+            <p className="landing-profile-kicker">Candidate</p>
+            <p className="landing-profile-title">Maya R.</p>
+          </div>
+          <span className="landing-profile-badge">96%</span>
         </div>
 
-        <article className="landing-hero-report">
-          <header className="landing-hero-report-head">
-            <div>
-              <p className="landing-hero-report-role">Senior Product Manager</p>
-              <p className="landing-hero-report-meta">
-                Tech company · Tel Aviv · Hybrid
-              </p>
-            </div>
-            <p className="landing-hero-report-count">12 Strong Matches</p>
-          </header>
+        <p className="landing-profile-role">Senior Product Manager</p>
 
-          <div className="landing-hero-report-card">
-            <div className="landing-hero-report-rank">
-              <span>🥇</span>
-              <strong>96%</strong>
-              <em>High confidence</em>
-            </div>
+        <ul className="landing-profile-tags">
+          <li>B2B SaaS</li>
+          <li>0→1</li>
+          <li>Tel Aviv</li>
+        </ul>
 
-            <p className="landing-hero-report-name">Candidate #184</p>
+        <div className="landing-profile-signals">
+          <p className="landing-profile-signals-label">What fits</p>
+          <ul>
+            <li className="is-good">Owns ambiguous roadmap work</li>
+            <li className="is-good">Wants high autonomy</li>
+          </ul>
+          <p className="landing-profile-signals-label is-warn-label">Look closer</p>
+          <ul>
+            <li className="is-warn">Prefers 2 office days</li>
+          </ul>
+        </div>
+      </article>
 
-            <div className="landing-hero-report-fits">
-              <div>
-                <span>Role Fit</span>
-                <b>98%</b>
-              </div>
-              <div>
-                <span>Human Fit</span>
-                <b>94%</b>
-              </div>
-              <div>
-                <span>Motivation</span>
-                <b>96%</b>
-              </div>
-            </div>
+      <div className="landing-match-center">
+        <svg
+          className="landing-curve-arrows"
+          viewBox="0 0 220 200"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            className="landing-curve-path landing-curve-path-top"
+            d="M18 72 C 70 28, 150 28, 202 72"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            markerEnd="url(#landing-arrow-head)"
+          />
+          <path
+            className="landing-curve-path landing-curve-path-bottom"
+            d="M202 128 C 150 172, 70 172, 18 128"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            markerEnd="url(#landing-arrow-head)"
+          />
+          <defs>
+            <linearGradient id="landing-curve-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#EA1E63" />
+              <stop offset="55%" stopColor="#7B2FF7" />
+              <stop offset="100%" stopColor="#3E6BE0" />
+            </linearGradient>
+            <marker
+              id="landing-arrow-head"
+              markerWidth="8"
+              markerHeight="8"
+              refX="6"
+              refY="4"
+              orient="auto"
+            >
+              <path d="M0 0 L8 4 L0 8 Z" fill="#7B2FF7" />
+            </marker>
+          </defs>
+        </svg>
 
-            <ul className="landing-why-list">
-              <li className="is-good">5/5 core requirements</li>
-              <li className="is-good">Similar company stage</li>
-              <li className="is-good">Strong ownership preference</li>
-              <li className="is-good">Salary aligned</li>
-              <li className="is-warn">Remote preference: 2 to 3 days · Role: 3 days</li>
-            </ul>
-
-            <div className="landing-hero-report-foot">
-              <span>Why this match →</span>
-              <div className="landing-hero-report-actions">
-                <span className="is-love">Interested</span>
-                <span>Not relevant</span>
-              </div>
-            </div>
+        <div className="landing-mingle-moment">
+          <div className="landing-mingle-confetti">
+            {confetti.map((piece) => (
+              <span
+                key={piece.id}
+                className="landing-mingle-confetti-piece"
+                style={{
+                  width: piece.size,
+                  height: piece.size * 2.2,
+                  backgroundColor: piece.color,
+                  animationDelay: `${piece.delay}s`,
+                  animationDuration: `${CONFETTI_CYCLE_S}s`,
+                  ["--burst-x" as string]: `${piece.burstX}px`,
+                  ["--burst-y" as string]: `${piece.burstY}px`,
+                  ["--fall-y" as string]: `${piece.fallY}px`,
+                  ["--rot-burst" as string]: `${piece.rotBurst}deg`,
+                  ["--rot-end" as string]: `${piece.rotEnd}deg`,
+                }}
+              />
+            ))}
           </div>
-        </article>
 
-        <div className="landing-hero-mingle-pill">
-          <MingleLogo variant="mark" size={28} priority className="landing-mingle-mark" />
-          <span>It&rsquo;s a mingle</span>
+          <div className="landing-mingle-core">
+            <div className="landing-mingle-mark-wrap">
+              <span className="landing-mingle-mark-glow" />
+              <MingleLogo
+                variant="mark"
+                size={72}
+                priority
+                className="landing-mingle-mark"
+              />
+            </div>
+            <h2 className="landing-mingle-title">It&rsquo;s a mingle</h2>
+          </div>
         </div>
       </div>
+
+      <article className="landing-profile landing-profile-company">
+        <div className="landing-profile-top">
+          <span className="landing-avatar landing-avatar-company" />
+          <div>
+            <p className="landing-profile-kicker">Company</p>
+            <p className="landing-profile-title">Northwind</p>
+          </div>
+          <span className="landing-profile-badge is-company">Open role</span>
+        </div>
+
+        <p className="landing-profile-role">Series A product team</p>
+
+        <ul className="landing-profile-tags">
+          <li>Weekly shipping</li>
+          <li>Hybrid</li>
+          <li>Ownership</li>
+        </ul>
+
+        <div className="landing-profile-signals">
+          <p className="landing-profile-signals-label">What fits</p>
+          <ul>
+            <li className="is-good">Needs founder adjacent PM</li>
+            <li className="is-good">Offers high ownership</li>
+          </ul>
+          <p className="landing-profile-signals-label is-warn-label">Look closer</p>
+          <ul>
+            <li className="is-warn">Role asks 3 office days</li>
+          </ul>
+        </div>
+      </article>
     </div>
   );
 }
