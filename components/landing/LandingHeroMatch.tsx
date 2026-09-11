@@ -50,6 +50,10 @@ const CONFETTI_COLORS = [
   "#4263D6",
   "#7389F0",
   "#6B5CE0",
+  "#EA1E63",
+  "#C84BDB",
+  "#7B2FF7",
+  "#E2378D",
 ];
 
 type ConfettiShape = "bar" | "curl" | "spark";
