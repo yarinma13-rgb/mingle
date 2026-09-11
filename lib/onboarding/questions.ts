@@ -7,7 +7,8 @@ export const ONBOARDING_INTRO = {
   company: {
     eyebrow: "Company profile",
     headline: "Let's find the right people",
-    subtext: "Tell us what kind of talent and relationships you're looking to build.",
+    subtext:
+      "Tell us what kind of talent and relationships you're looking to build.",
   },
 } as const;
 
@@ -18,8 +19,6 @@ export type OnboardingQuestion = {
   options: string[];
 };
 
-// Copy and option sets ported from the validated prototype per BRIDGE.md —
-// same shape, refined wording, already proven to read well across profiles.
 export const TALENT_QUESTIONS: OnboardingQuestion[] = [
   {
     key: "q1",
@@ -148,3 +147,11 @@ export const COMPANY_QUESTIONS: OnboardingQuestion[] = [
     ],
   },
 ];
+
+export function questionsForType(type: "talent" | "company") {
+  return type === "company" ? COMPANY_QUESTIONS : TALENT_QUESTIONS;
+}
+
+export function introForType(type: "talent" | "company") {
+  return ONBOARDING_INTRO[type];
+}

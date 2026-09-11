@@ -45,8 +45,16 @@ export async function signUp(page: Page, path: "talent" | "company", email: stri
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.locator("form").getByRole("button", { name: "Sign Up" }).click();
-  await page.waitForURL(/\/onboarding\//, { timeout: 60_000 });
+  await page.waitForURL(new RegExp(`/onboarding/${path}`), { timeout: 60_000 });
   await waitUntilInteractive(page);
+  // Guard the exact bug: company accounts must never render talent intro copy.
+  const intro =
+    path === "company"
+      ? "Let's find the right people"
+      : "Let's get to know you";
+  await expect(page.getByRole("heading", { name: intro })).toBeVisible({
+    timeout: 30_000,
+  });
 }
 
 export async function pickAndContinue(page: Page, option: string) {
@@ -60,10 +68,18 @@ export async function completeOnboarding(
   path: "talent" | "company",
 ) {
   if (path === "talent") {
+    await expect(
+      page.getByRole("heading", { name: "What are you looking for right now?" }),
+    ).toBeVisible();
     await pickAndContinue(page, "Full time opportunity");
     await pickAndContinue(page, "Growth");
     await pickAndContinue(page, "Startup");
   } else {
+    await expect(
+      page.getByRole("heading", {
+        name: "What are you looking to connect about?",
+      }),
+    ).toBeVisible();
     await pickAndContinue(page, "Hiring");
     await pickAndContinue(page, "Skills");
     await pickAndContinue(page, "Technology");

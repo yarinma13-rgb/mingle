@@ -48,7 +48,12 @@ export async function GET(request: Request) {
       }
       const path = resolvePath(pathParam, data.user.user_metadata?.user_type);
       await ensureUserProfile(supabase, data.user.id, data.user.email, path);
-      const dest = await destinationAfterAuth(supabase, data.user.id, path);
+      const dest = await destinationAfterAuth(
+        supabase,
+        data.user.id,
+        path,
+        data.user.email,
+      );
       return NextResponse.redirect(`${origin}${dest}`);
     }
   }

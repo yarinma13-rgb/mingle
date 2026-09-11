@@ -17,9 +17,8 @@ import {
   type OnboardingAnswers,
 } from "@/lib/onboarding/persistence";
 import {
-  TALENT_QUESTIONS,
-  COMPANY_QUESTIONS,
-  ONBOARDING_INTRO,
+  questionsForType,
+  introForType,
   type OnboardingQuestion,
 } from "@/lib/onboarding/questions";
 import { CustomChipInput } from "@/components/CustomChipInput";
@@ -50,6 +49,7 @@ type FetchResult =
       step: number;
       answers: OnboardingAnswers;
       invite: PendingInvite | null;
+      resolvedType: UserType;
     }
   | { kind: "error" };
 
@@ -66,40 +66,60 @@ async function fetchWizardData(
 
   if (!user) return { kind: "redirect", to: `/auth?path=${path}` };
 
-  // Reconcile public.users from auth metadata before choosing questions.
-  // This is what recovers company accounts that were wrongly inserted as talent.
+  // Reconcile first — DB type (after correction) is the source of truth for
+  // which question bank we render. URL path alone is never trusted.
+  let resolvedType: UserType = path;
   if (user.email) {
     try {
-      await ensureUserProfile(supabase, user.id, user.email, path);
+      resolvedType = await ensureUserProfile(
+        supabase,
+        user.id,
+        user.email,
+        path,
+      );
     } catch {
-      // Still attempt to read whatever row exists.
+      const { data: userRow } = await supabase
+        .from("users")
+        .select("user_type")
+        .eq("id", user.id)
+        .maybeSingle();
+      resolvedType = userRow?.user_type ?? path;
     }
+  } else {
+    const { data: userRow } = await supabase
+      .from("users")
+      .select("user_type")
+      .eq("id", user.id)
+      .maybeSingle();
+    resolvedType = userRow?.user_type ?? path;
   }
 
-  const { data: userRow } = await supabase
-    .from("users")
-    .select("user_type")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (userRow && userRow.user_type !== path) {
-    return { kind: "redirect", to: `/onboarding/${userRow.user_type}` };
+  if (resolvedType !== path) {
+    return { kind: "redirect", to: `/onboarding/${resolvedType}` };
   }
 
   try {
-    const state = await loadOnboardingState(supabase, user.id, path);
+    const state = await loadOnboardingState(supabase, user.id, resolvedType);
     if (state.status === "completed") {
-      const next = await destinationAfterAuth(supabase, user.id, path);
+      const next = await destinationAfterAuth(
+        supabase,
+        user.id,
+        resolvedType,
+        user.email,
+      );
       return { kind: "redirect", to: next };
     }
     const invite =
-      path === "company" ? await loadPendingCompanyInvite(supabase) : null;
+      resolvedType === "company"
+        ? await loadPendingCompanyInvite(supabase)
+        : null;
     return {
       kind: "ready",
       userId: user.id,
       step: state.step,
       answers: state.answers,
       invite,
+      resolvedType,
     };
   } catch {
     return { kind: "error" };
@@ -112,6 +132,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [userId, setUserId] = useState<string | null>(null);
+  const [resolvedType, setResolvedType] = useState<UserType>(path);
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<OnboardingAnswers>(EMPTY_ANSWERS);
   const [invite, setInvite] = useState<PendingInvite | null>(null);
@@ -119,8 +140,9 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const questions = path === "talent" ? TALENT_QUESTIONS : COMPANY_QUESTIONS;
-  const intro = ONBOARDING_INTRO[path];
+  // Always render from the reconciled DB type, never from the URL alone.
+  const questions = questionsForType(resolvedType);
+  const intro = introForType(resolvedType);
 
   const applyFetchResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -132,6 +154,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
       return;
     }
     setUserId(result.userId);
+    setResolvedType(result.resolvedType);
     setStep(result.step);
     setAnswers(result.answers);
     setInvite(result.invite);
@@ -180,7 +203,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
       await saveStepAnswer(
         supabase,
         userId,
-        path,
+        resolvedType,
         currentQuestion.key,
         answers[currentQuestion.key],
       );
@@ -211,7 +234,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   }
 
   if (step > 3 || !currentQuestion) {
-    return <OnboardingComplete path={path} />;
+    return <OnboardingComplete path={resolvedType} />;
   }
 
   return (
