@@ -46,7 +46,8 @@ export function LandingPage() {
           <div className="landing-shell landing-hero-grid">
             <div className="landing-hero-copy">
               <h1 id="landing-hero-title" className="landing-hero-title">
-                Talent and companies choosing each other with confidence
+                Talent and companies choosing each other with{" "}
+                <span className="landing-hero-highlight">confidence</span>
               </h1>
               <p className="landing-hero-lead">
                 The relationship workspace where Role Fit, Company Fit, and
@@ -64,7 +65,7 @@ export function LandingPage() {
               <div className="landing-hero-actions">
                 <Link
                   href={START_HREF}
-                  className="landing-btn landing-btn-primary landing-btn-lg landing-btn-soft-pulse"
+                  className="landing-btn landing-btn-primary landing-btn-lg landing-btn-rainbow-pulse"
                 >
                   Get Started
                   <span aria-hidden="true">→</span>

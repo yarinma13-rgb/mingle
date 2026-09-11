@@ -165,26 +165,78 @@
   background: color-mix(in srgb, var(--ld-indigo) 88%, black);
 }
 
-/* Soft glow every 5s — not a flashy rainbow pulse */
-.landing-btn-soft-pulse {
-  animation: landing-soft-glow 5s ease-in-out infinite;
+.landing-btn-rainbow-pulse {
+  position: relative;
+  overflow: hidden;
+  animation: landing-rainbow-flash 5s ease-in-out infinite;
 }
 
-@keyframes landing-soft-glow {
+.landing-btn-rainbow-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%) rotate(8deg);
+  animation: landing-rainbow-shine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes landing-rainbow-flash {
   0%,
-  82%,
+  76%,
   100% {
-    box-shadow: 0 10px 24px color-mix(in srgb, var(--ld-indigo) 26%, transparent);
+    background: var(--ld-indigo);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--ld-indigo) 28%, transparent);
+    filter: brightness(1);
   }
-  90% {
+  80% {
+    background: linear-gradient(110deg, #ea1e63, #7b2ff7, #3e6be0);
     box-shadow:
-      0 10px 28px color-mix(in srgb, var(--ld-indigo) 34%, transparent),
-      0 0 0 6px color-mix(in srgb, var(--ld-purple) 14%, transparent);
+      0 0 0 5px color-mix(in srgb, #ea1e63 28%, transparent),
+      0 12px 36px color-mix(in srgb, #7b2ff7 45%, transparent);
+    filter: brightness(1.12);
+  }
+  86% {
+    background: linear-gradient(110deg, #3e6be0, #ea1e63, #7b2ff7, #e2378d);
+    box-shadow:
+      0 0 0 8px color-mix(in srgb, #3e6be0 22%, transparent),
+      0 14px 42px color-mix(in srgb, #ea1e63 40%, transparent);
+    filter: brightness(1.18);
+  }
+  92% {
+    background: linear-gradient(110deg, #7b2ff7, #3e6be0, #ea1e63);
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, #7b2ff7 20%, transparent),
+      0 12px 32px color-mix(in srgb, #7b2ff7 35%, transparent);
+    filter: brightness(1.08);
+  }
+}
+
+@keyframes landing-rainbow-shine {
+  0%,
+  76%,
+  100% {
+    transform: translateX(-120%) rotate(8deg);
+    opacity: 0;
+  }
+  80%,
+  90% {
+    opacity: 1;
+  }
+  88% {
+    transform: translateX(120%) rotate(8deg);
+    opacity: 0.9;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-btn-soft-pulse {
+  .landing-btn-rainbow-pulse,
+  .landing-btn-rainbow-pulse::after {
     animation: none;
   }
 }
@@ -213,7 +265,22 @@
   font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.03em;
-  color: var(--ld-text);
+  color: #1c1b2e;
+}
+
+.landing-hero-highlight {
+  display: inline;
+  padding: 0.05em 0.22em;
+  border-radius: 0.28em;
+  color: #1c1b2e;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--ld-pink-soft) 90%, white),
+    color-mix(in srgb, var(--ld-purple-soft) 88%, white),
+    color-mix(in srgb, var(--ld-blue-soft) 90%, white)
+  );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .landing-hero-lead {
@@ -270,9 +337,13 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.65rem;
-  min-height: 420px;
-  padding: 1rem 0.25rem;
+  gap: 0.35rem;
+  min-height: 460px;
+  padding: 1.25rem 0.4rem;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--ld-purple-soft) 70%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--ld-lavender) 75%, white), white);
 }
 
 .landing-match-glow {
@@ -423,48 +494,20 @@
 .landing-match-center {
   position: relative;
   z-index: 3;
-  width: 150px;
-  height: 180px;
+  width: min(220px, 34vw);
+  min-height: 240px;
   display: grid;
   place-items: center;
 }
 
-.landing-orbit {
-  position: absolute;
-  inset: -12px;
-  pointer-events: none;
-  animation: landing-orbit-spin 7s linear infinite;
-}
-
-.landing-orbit-piece {
-  --n: 10;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  margin: -4.5px;
-  border-radius: 2px;
-  transform: rotate(calc(var(--i) * 360deg / var(--n))) translateY(-68px);
-  box-shadow: 0 0 10px color-mix(in srgb, currentColor 25%, transparent);
-}
-
-@keyframes landing-orbit-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .landing-arrows {
   position: absolute;
-  inset: 28% -18px;
+  inset: 34% -28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   pointer-events: none;
+  z-index: 1;
 }
 
 .landing-arrow {
@@ -472,15 +515,15 @@
   border-radius: 999px;
   background: var(--ld-gradient);
   position: relative;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .landing-arrow::after {
   content: "";
   position: absolute;
   top: 50%;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-top: 2px solid var(--ld-purple);
   border-right: 2px solid var(--ld-purple);
   transform: translateY(-50%) rotate(45deg);
@@ -495,7 +538,70 @@
   transform: translateY(-50%) rotate(-135deg);
 }
 
-.landing-mascot-burst {
+.landing-mingle-moment {
+  position: relative;
+  z-index: 2;
+  width: 200px;
+  height: 220px;
+  display: grid;
+  place-items: center;
+}
+
+.landing-mingle-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.landing-mingle-confetti-piece {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  margin-left: -4px;
+  border-radius: 2px;
+  animation-name: landing-mingle-confetti-burst;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+@keyframes landing-mingle-confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  8% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+    transform: translate3d(var(--burst-x), var(--burst-y), 0)
+      rotate(var(--rot-burst));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.72, 0.18);
+  }
+  58% {
+    opacity: 0;
+    transform: translate3d(
+        var(--burst-x),
+        calc(var(--burst-y) + var(--fall-y)),
+        0
+      )
+      rotate(var(--rot-end));
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(
+        var(--burst-x),
+        calc(var(--burst-y) + var(--fall-y)),
+        0
+      )
+      rotate(var(--rot-end));
+  }
+}
+
+.landing-mingle-core {
   position: relative;
   z-index: 2;
   text-align: center;
@@ -517,16 +623,16 @@
 }
 
 .landing-mascot-img {
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
   object-fit: contain;
-  filter: drop-shadow(0 10px 20px rgba(123, 47, 247, 0.25));
+  filter: drop-shadow(0 12px 24px rgba(123, 47, 247, 0.28));
 }
 
 .landing-mascot-score {
-  margin: 0.15rem 0 0;
+  margin: 0.1rem 0 0;
   font-family: var(--ld-display);
-  font-size: 1.55rem;
+  font-size: 1.7rem;
   font-weight: 700;
   background: var(--ld-gradient);
   -webkit-background-clip: text;
@@ -536,22 +642,20 @@
 }
 
 .landing-mascot-label {
-  margin: 0.2rem 0 0;
-  font-size: 0.72rem;
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ld-indigo);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-match-glow,
-  .landing-orbit,
-  .landing-orbit-piece,
-  .landing-mascot-burst {
+  .landing-mingle-confetti-piece,
+  .landing-mingle-core,
+  .landing-match-glow {
     animation: none;
   }
 }
-
-/* ── Trust / sections ────────────────────────────────── */
 
 .landing-trust {
   padding-block: 0.25rem 2.5rem;
