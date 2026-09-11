@@ -161,8 +161,7 @@ export function LandingHeroMatch() {
       <div className="landing-match-glow" />
 
       <article className="landing-profile landing-profile-talent">
-        <div className="landing-profile-accent" aria-hidden="true" />
-        <div className="landing-profile-head">
+        <header className="landing-profile-head">
           <span className="landing-avatar landing-avatar-talent" aria-hidden="true">
             MR
           </span>
@@ -171,11 +170,12 @@ export function LandingHeroMatch() {
             <p className="landing-profile-title">Maya R.</p>
             <p className="landing-profile-role">Senior Product Manager</p>
           </div>
-          <div className="landing-profile-score" title="Overall match">
-            <strong>96</strong>
-            <span>Match</span>
-          </div>
-        </div>
+        </header>
+
+        <p className="landing-profile-scoreline">
+          <strong>96%</strong> overall match
+          <span>· High confidence</span>
+        </p>
 
         <ul className="landing-profile-tags">
           <li>B2B SaaS</li>
@@ -183,38 +183,27 @@ export function LandingHeroMatch() {
           <li>Tel Aviv</li>
         </ul>
 
-        <div className="landing-profile-fits" aria-hidden="true">
+        <dl className="landing-profile-metrics">
           <div>
-            <span>Role</span>
-            <i>
-              <b className="fill-role" style={{ width: "98%" }} />
-            </i>
+            <dt>Role</dt>
+            <dd>98%</dd>
           </div>
           <div>
-            <span>Human</span>
-            <i>
-              <b className="fill-company" style={{ width: "94%" }} />
-            </i>
+            <dt>Human</dt>
+            <dd>94%</dd>
           </div>
           <div>
-            <span>Motivation</span>
-            <i>
-              <b className="fill-motivation" style={{ width: "96%" }} />
-            </i>
+            <dt>Motivation</dt>
+            <dd>96%</dd>
           </div>
-        </div>
+        </dl>
 
-        <div className="landing-profile-signals">
-          <p className="landing-signal landing-signal-good">
-            Owns ambiguous roadmap work
-          </p>
-          <p className="landing-signal landing-signal-good">
-            Wants high autonomy
-          </p>
-          <p className="landing-signal landing-signal-warn">
-            Prefers 2 office days
-          </p>
-        </div>
+        <p className="landing-profile-note is-good">
+          Strong ownership fit for an early product seat.
+        </p>
+        <p className="landing-profile-note is-warn">
+          Prefers 2 office days · role asks 3.
+        </p>
       </article>
 
       <div className="landing-match-center">
@@ -288,7 +277,7 @@ export function LandingHeroMatch() {
               <span className="landing-mingle-mark-glow" />
               <MingleLogo
                 variant="mark"
-                size={72}
+                size={58}
                 priority
                 className="landing-mingle-mark"
               />
@@ -299,8 +288,7 @@ export function LandingHeroMatch() {
       </div>
 
       <article className="landing-profile landing-profile-company">
-        <div className="landing-profile-accent" aria-hidden="true" />
-        <div className="landing-profile-head">
+        <header className="landing-profile-head">
           <span className="landing-avatar landing-avatar-company" aria-hidden="true">
             NW
           </span>
@@ -309,11 +297,12 @@ export function LandingHeroMatch() {
             <p className="landing-profile-title">Northwind</p>
             <p className="landing-profile-role">Series A product team</p>
           </div>
-          <div className="landing-profile-score is-company" title="Open role">
-            <strong>Open</strong>
-            <span>Role</span>
-          </div>
-        </div>
+        </header>
+
+        <p className="landing-profile-scoreline is-company">
+          <strong>Open role</strong>
+          <span>· Hybrid · Tel Aviv</span>
+        </p>
 
         <ul className="landing-profile-tags">
           <li>Weekly shipping</li>
@@ -321,38 +310,27 @@ export function LandingHeroMatch() {
           <li>Ownership</li>
         </ul>
 
-        <div className="landing-profile-fits" aria-hidden="true">
+        <dl className="landing-profile-metrics">
           <div>
-            <span>Role</span>
-            <i>
-              <b className="fill-role" style={{ width: "97%" }} />
-            </i>
+            <dt>Role</dt>
+            <dd>97%</dd>
           </div>
           <div>
-            <span>Human</span>
-            <i>
-              <b className="fill-company" style={{ width: "92%" }} />
-            </i>
+            <dt>Human</dt>
+            <dd>92%</dd>
           </div>
           <div>
-            <span>Motivation</span>
-            <i>
-              <b className="fill-motivation" style={{ width: "94%" }} />
-            </i>
+            <dt>Motivation</dt>
+            <dd>94%</dd>
           </div>
-        </div>
+        </dl>
 
-        <div className="landing-profile-signals">
-          <p className="landing-signal landing-signal-good">
-            Needs founder adjacent PM
-          </p>
-          <p className="landing-signal landing-signal-good">
-            Offers high ownership
-          </p>
-          <p className="landing-signal landing-signal-warn">
-            Role asks 3 office days
-          </p>
-        </div>
+        <p className="landing-profile-note is-good">
+          Looking for a PM who can own ambiguous work.
+        </p>
+        <p className="landing-profile-note is-warn">
+          Office expectation: 3 days a week.
+        </p>
       </article>
     </div>
   );
