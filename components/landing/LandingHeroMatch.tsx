@@ -161,16 +161,21 @@ export function LandingHeroMatch() {
       <div className="landing-match-glow" />
 
       <article className="landing-profile landing-profile-talent">
-        <div className="landing-profile-top">
-          <span className="landing-avatar landing-avatar-talent" />
-          <div>
+        <div className="landing-profile-accent" aria-hidden="true" />
+        <div className="landing-profile-head">
+          <span className="landing-avatar landing-avatar-talent" aria-hidden="true">
+            MR
+          </span>
+          <div className="landing-profile-identity">
             <p className="landing-profile-kicker">Candidate</p>
             <p className="landing-profile-title">Maya R.</p>
+            <p className="landing-profile-role">Senior Product Manager</p>
           </div>
-          <span className="landing-profile-badge">96%</span>
+          <div className="landing-profile-score" title="Overall match">
+            <strong>96</strong>
+            <span>Match</span>
+          </div>
         </div>
-
-        <p className="landing-profile-role">Senior Product Manager</p>
 
         <ul className="landing-profile-tags">
           <li>B2B SaaS</li>
@@ -178,16 +183,37 @@ export function LandingHeroMatch() {
           <li>Tel Aviv</li>
         </ul>
 
+        <div className="landing-profile-fits" aria-hidden="true">
+          <div>
+            <span>Role</span>
+            <i>
+              <b className="fill-role" style={{ width: "98%" }} />
+            </i>
+          </div>
+          <div>
+            <span>Human</span>
+            <i>
+              <b className="fill-company" style={{ width: "94%" }} />
+            </i>
+          </div>
+          <div>
+            <span>Motivation</span>
+            <i>
+              <b className="fill-motivation" style={{ width: "96%" }} />
+            </i>
+          </div>
+        </div>
+
         <div className="landing-profile-signals">
-          <p className="landing-profile-signals-label">What fits</p>
-          <ul>
-            <li className="is-good">Owns ambiguous roadmap work</li>
-            <li className="is-good">Wants high autonomy</li>
-          </ul>
-          <p className="landing-profile-signals-label is-warn-label">Look closer</p>
-          <ul>
-            <li className="is-warn">Prefers 2 office days</li>
-          </ul>
+          <p className="landing-signal landing-signal-good">
+            Owns ambiguous roadmap work
+          </p>
+          <p className="landing-signal landing-signal-good">
+            Wants high autonomy
+          </p>
+          <p className="landing-signal landing-signal-warn">
+            Prefers 2 office days
+          </p>
         </div>
       </article>
 
@@ -273,16 +299,21 @@ export function LandingHeroMatch() {
       </div>
 
       <article className="landing-profile landing-profile-company">
-        <div className="landing-profile-top">
-          <span className="landing-avatar landing-avatar-company" />
-          <div>
+        <div className="landing-profile-accent" aria-hidden="true" />
+        <div className="landing-profile-head">
+          <span className="landing-avatar landing-avatar-company" aria-hidden="true">
+            NW
+          </span>
+          <div className="landing-profile-identity">
             <p className="landing-profile-kicker">Company</p>
             <p className="landing-profile-title">Northwind</p>
+            <p className="landing-profile-role">Series A product team</p>
           </div>
-          <span className="landing-profile-badge is-company">Open role</span>
+          <div className="landing-profile-score is-company" title="Open role">
+            <strong>Open</strong>
+            <span>Role</span>
+          </div>
         </div>
-
-        <p className="landing-profile-role">Series A product team</p>
 
         <ul className="landing-profile-tags">
           <li>Weekly shipping</li>
@@ -290,16 +321,37 @@ export function LandingHeroMatch() {
           <li>Ownership</li>
         </ul>
 
+        <div className="landing-profile-fits" aria-hidden="true">
+          <div>
+            <span>Role</span>
+            <i>
+              <b className="fill-role" style={{ width: "97%" }} />
+            </i>
+          </div>
+          <div>
+            <span>Human</span>
+            <i>
+              <b className="fill-company" style={{ width: "92%" }} />
+            </i>
+          </div>
+          <div>
+            <span>Motivation</span>
+            <i>
+              <b className="fill-motivation" style={{ width: "94%" }} />
+            </i>
+          </div>
+        </div>
+
         <div className="landing-profile-signals">
-          <p className="landing-profile-signals-label">What fits</p>
-          <ul>
-            <li className="is-good">Needs founder adjacent PM</li>
-            <li className="is-good">Offers high ownership</li>
-          </ul>
-          <p className="landing-profile-signals-label is-warn-label">Look closer</p>
-          <ul>
-            <li className="is-warn">Role asks 3 office days</li>
-          </ul>
+          <p className="landing-signal landing-signal-good">
+            Needs founder adjacent PM
+          </p>
+          <p className="landing-signal landing-signal-good">
+            Offers high ownership
+          </p>
+          <p className="landing-signal landing-signal-warn">
+            Role asks 3 office days
+          </p>
         </div>
       </article>
     </div>
