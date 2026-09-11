@@ -617,7 +617,7 @@
 
 .landing-mingle-confetti {
   position: absolute;
-  inset: -10% -20%;
+  inset: -18% -28%;
   overflow: visible;
   pointer-events: none;
   z-index: 1;
@@ -628,11 +628,21 @@
   left: 50%;
   top: 42%;
   margin-left: -4px;
-  border-radius: 2px;
   animation-name: landing-mingle-confetti-burst;
   animation-iteration-count: infinite;
   animation-fill-mode: both;
   will-change: transform, opacity;
+  overflow: visible;
+}
+
+.landing-mingle-confetti-piece.is-bar {
+  border-radius: 2px;
+}
+
+.landing-mingle-confetti-piece.is-curl,
+.landing-mingle-confetti-piece.is-spark {
+  background: transparent;
+  display: block;
 }
 
 /* 2.5s cycle: burst early, then quiet until the next pop */

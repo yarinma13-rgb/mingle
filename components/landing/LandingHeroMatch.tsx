@@ -52,8 +52,11 @@ const CONFETTI_COLORS = [
   "#6B5CE0",
 ];
 
+type ConfettiShape = "bar" | "curl" | "spark";
+
 type ConfettiSpec = {
   id: number;
+  shape: ConfettiShape;
   color: string;
   size: number;
   delay: number;
@@ -64,22 +67,37 @@ type ConfettiSpec = {
   rotEnd: number;
 };
 
+function pickConfettiShape(index: number): ConfettiShape {
+  const lane = index % 10;
+  if (lane === 0 || lane === 5) return "spark";
+  if (lane % 2 === 0) return "curl";
+  return "bar";
+}
+
 function generateConfettiSpecs(): ConfettiSpec[] {
-  return Array.from({ length: 42 }, (_, i) => {
-    const angleDeg = 12 + Math.random() * 156;
+  return Array.from({ length: 72 }, (_, i) => {
+    const shape = pickConfettiShape(i);
+    const angleDeg = 8 + Math.random() * 164;
     const rad = (angleDeg * Math.PI) / 180;
-    const distance = 75 + Math.random() * 125;
+    const distance = 70 + Math.random() * 150;
     const spin = Math.random() < 0.5 ? 1 : -1;
     const rotBurst = spin * (36 + Math.random() * 70);
+    const size =
+      shape === "curl"
+        ? 10 + Math.random() * 8
+        : shape === "spark"
+          ? 7 + Math.random() * 5
+          : 5 + Math.random() * 5;
     return {
       id: i,
+      shape,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      size: 5 + Math.random() * 5,
+      size,
       // Tiny stagger so one explosion reads as a burst, not a spray over time
-      delay: (i % 10) * 0.02,
+      delay: (i % 12) * 0.018,
       burstX: Math.cos(rad) * distance,
       burstY: -Math.sin(rad) * distance,
-      fallY: 90 + Math.random() * 100,
+      fallY: 90 + Math.random() * 110,
       rotBurst,
       rotEnd: rotBurst + spin * (80 + Math.random() * 90),
     };
@@ -283,24 +301,72 @@ export function LandingHeroMatch() {
 
         <div className="landing-mingle-moment">
           <div className="landing-mingle-confetti">
-            {confetti.map((piece) => (
-              <span
-                key={piece.id}
-                className="landing-mingle-confetti-piece"
-                style={{
-                  width: piece.size,
-                  height: piece.size * 2.2,
-                  backgroundColor: piece.color,
-                  animationDelay: `${piece.delay}s`,
-                  animationDuration: `${CONFETTI_CYCLE_S}s`,
-                  ["--burst-x" as string]: `${piece.burstX}px`,
-                  ["--burst-y" as string]: `${piece.burstY}px`,
-                  ["--fall-y" as string]: `${piece.fallY}px`,
-                  ["--rot-burst" as string]: `${piece.rotBurst}deg`,
-                  ["--rot-end" as string]: `${piece.rotEnd}deg`,
-                }}
-              />
-            ))}
+            {confetti.map((piece) => {
+              const sharedStyle = {
+                animationDelay: `${piece.delay}s`,
+                animationDuration: `${CONFETTI_CYCLE_S}s`,
+                ["--burst-x" as string]: `${piece.burstX}px`,
+                ["--burst-y" as string]: `${piece.burstY}px`,
+                ["--fall-y" as string]: `${piece.fallY}px`,
+                ["--rot-burst" as string]: `${piece.rotBurst}deg`,
+                ["--rot-end" as string]: `${piece.rotEnd}deg`,
+                color: piece.color,
+              } as const;
+
+              if (piece.shape === "curl") {
+                return (
+                  <svg
+                    key={piece.id}
+                    className="landing-mingle-confetti-piece is-curl"
+                    width={piece.size}
+                    height={piece.size * 2.1}
+                    viewBox="0 0 12 26"
+                    aria-hidden="true"
+                    style={sharedStyle}
+                  >
+                    <path
+                      d="M6 1.5 C 1.5 4.5, 10.5 8, 6 12 C 1.5 16, 10.5 19.5, 6 24.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.35"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                );
+              }
+
+              if (piece.shape === "spark") {
+                return (
+                  <svg
+                    key={piece.id}
+                    className="landing-mingle-confetti-piece is-spark"
+                    width={piece.size}
+                    height={piece.size}
+                    viewBox="0 0 16 16"
+                    aria-hidden="true"
+                    style={sharedStyle}
+                  >
+                    <path
+                      d="M8 1.2 L9.1 6.2 L14.8 8 L9.1 9.8 L8 14.8 L6.9 9.8 L1.2 8 L6.9 6.2 Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                );
+              }
+
+              return (
+                <span
+                  key={piece.id}
+                  className="landing-mingle-confetti-piece is-bar"
+                  style={{
+                    ...sharedStyle,
+                    width: piece.size,
+                    height: piece.size * 2.2,
+                    backgroundColor: piece.color,
+                  }}
+                />
+              );
+            })}
           </div>
 
           <div className="landing-mingle-core">
