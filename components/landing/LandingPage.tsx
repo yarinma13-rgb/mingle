@@ -9,7 +9,7 @@ import "./landing.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-landing-poppins",
   display: "swap",
 });

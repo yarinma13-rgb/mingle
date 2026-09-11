@@ -38,12 +38,12 @@ const AUDIENCES = [
 ] as const;
 
 const CONFETTI_COLORS = [
-  "#F65F7C",
-  "#D83A52",
-  "#9D5CF2",
-  "#0073EA",
-  "#EA1E63",
-  "#7B2FF7",
+  "#5B8DEF",
+  "#4D42DB",
+  "#7B8DB8",
+  "#3E6BE0",
+  "#6C7AE0",
+  "#8FA3D4",
 ];
 
 type ConfettiSpec = {
@@ -104,7 +104,9 @@ export function LandingHeroCopy() {
     <div className="landing-hero-copy">
       <p className="landing-hero-eyebrow">Intelligence behind the scenes</p>
       <h1 id="landing-hero-title" className="landing-hero-title">
-        Post a job. Get the right people. Understand why.
+        <span className="landing-hero-line">Post a job.</span>
+        <span className="landing-hero-line">Get the right people.</span>
+        <span className="landing-hero-line">Understand why.</span>
       </h1>
       <p className="landing-hero-lead">{audience.lead}</p>
       <p className="landing-hero-value">
@@ -149,6 +151,38 @@ export function LandingHeroCopy() {
   );
 }
 
+function MatchDonut({
+  overall,
+  role,
+  human,
+  motivation,
+}: {
+  overall: number;
+  role: number;
+  human: number;
+  motivation: number;
+}) {
+  const total = role + human + motivation;
+  const roleDeg = (role / total) * 360;
+  const humanDeg = (human / total) * 360;
+  const style = {
+    background: `conic-gradient(
+      #ea1e63 0deg ${roleDeg}deg,
+      #7b2ff7 ${roleDeg}deg ${roleDeg + humanDeg}deg,
+      #3e6be0 ${roleDeg + humanDeg}deg 360deg
+    )`,
+  } as const;
+
+  return (
+    <div className="landing-donut" style={style}>
+      <div className="landing-donut-hole">
+        <strong>{overall}%</strong>
+        <span>Match</span>
+      </div>
+    </div>
+  );
+}
+
 export function LandingHeroMatch() {
   const reduceMotion = usePrefersReducedMotion();
   const confetti = useMemo(
@@ -172,36 +206,29 @@ export function LandingHeroMatch() {
           </div>
         </header>
 
-        <p className="landing-profile-scoreline">
-          <strong>96%</strong> overall match
-          <span>· High confidence</span>
-        </p>
+        <div className="landing-profile-viz">
+          <MatchDonut overall={96} role={98} human={94} motivation={96} />
+          <ul className="landing-donut-legend">
+            <li>
+              <i className="fill-role" /> Role <b>98%</b>
+            </li>
+            <li>
+              <i className="fill-company" /> Human <b>94%</b>
+            </li>
+            <li>
+              <i className="fill-motivation" /> Motivation <b>96%</b>
+            </li>
+          </ul>
+        </div>
 
         <ul className="landing-profile-tags">
           <li>B2B SaaS</li>
           <li>Tel Aviv</li>
+          <li>0→1</li>
         </ul>
 
-        <dl className="landing-profile-metrics">
-          <div>
-            <dt>Role</dt>
-            <dd>98%</dd>
-          </div>
-          <div>
-            <dt>Human</dt>
-            <dd>94%</dd>
-          </div>
-          <div>
-            <dt>Motivation</dt>
-            <dd>96%</dd>
-          </div>
-        </dl>
-
         <p className="landing-profile-note is-good">
-          Strong ownership fit for an early product seat.
-        </p>
-        <p className="landing-profile-note is-warn">
-          Prefers 2 office days · role asks 3.
+          Strong ownership fit for an early product seat
         </p>
       </article>
 
@@ -276,7 +303,7 @@ export function LandingHeroMatch() {
               <span className="landing-mingle-mark-glow" />
               <MingleLogo
                 variant="mark"
-                size={58}
+                size={64}
                 priority
                 className="landing-mingle-mark"
               />
@@ -298,36 +325,29 @@ export function LandingHeroMatch() {
           </div>
         </header>
 
-        <p className="landing-profile-scoreline is-company">
-          <strong>Open role</strong>
-          <span>· Hybrid · Tel Aviv</span>
-        </p>
+        <div className="landing-profile-viz">
+          <MatchDonut overall={94} role={97} human={92} motivation={94} />
+          <ul className="landing-donut-legend">
+            <li>
+              <i className="fill-role" /> Role <b>97%</b>
+            </li>
+            <li>
+              <i className="fill-company" /> Human <b>92%</b>
+            </li>
+            <li>
+              <i className="fill-motivation" /> Motivation <b>94%</b>
+            </li>
+          </ul>
+        </div>
 
         <ul className="landing-profile-tags">
           <li>Hybrid</li>
           <li>Ownership</li>
+          <li>Open role</li>
         </ul>
 
-        <dl className="landing-profile-metrics">
-          <div>
-            <dt>Role</dt>
-            <dd>97%</dd>
-          </div>
-          <div>
-            <dt>Human</dt>
-            <dd>92%</dd>
-          </div>
-          <div>
-            <dt>Motivation</dt>
-            <dd>94%</dd>
-          </div>
-        </dl>
-
         <p className="landing-profile-note is-good">
-          Looking for a PM who can own ambiguous work.
-        </p>
-        <p className="landing-profile-note is-warn">
-          Office expectation: 3 days a week.
+          Looking for a PM who can own ambiguous work
         </p>
       </article>
     </div>
