@@ -4,7 +4,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { MingleLogo } from "@/components/MingleLogo";
 
-const START_HREF = "/start";
+const START_HREF = "/auth?mode=signup";
 
 /** Full confetti cycle: burst, then quiet until the next pop at 2.5s. */
 const CONFETTI_CYCLE_S = 2.5;

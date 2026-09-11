@@ -5,11 +5,11 @@ import Link from "next/link";
 import { MingleLogo } from "@/components/MingleLogo";
 
 const COMPANY_SIZES = [
-  "1 to 19",
-  "20 to 49",
-  "50 to 99",
-  "100 to 299",
-  "300 to 999",
+  "1–19",
+  "20–49",
+  "50–99",
+  "100–299",
+  "300–999",
   "1000+",
 ] as const;
 
@@ -55,7 +55,6 @@ export function ContactSalesPage() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
-    // Client side capture for now. Wire to CRM / email later.
     await new Promise((resolve) => setTimeout(resolve, 450));
     setSubmitting(false);
     setSubmitted(true);
@@ -70,10 +69,10 @@ export function ContactSalesPage() {
             <span className="landing-nav-wordmark">mingle</span>
           </Link>
           <div className="landing-nav-actions">
-            <Link href="/start" className="landing-nav-signin">
+            <Link href="/auth" className="landing-nav-signin">
               Sign in
             </Link>
-            <Link href="/start" className="landing-btn landing-btn-ghost">
+            <Link href="/auth?mode=signup" className="landing-btn landing-btn-ghost">
               Get Started
             </Link>
           </div>
@@ -83,50 +82,53 @@ export function ContactSalesPage() {
       <main className="contact-main">
         <div className="landing-shell contact-grid">
           <section className="contact-copy" aria-labelledby="contact-title">
-            <p className="landing-hero-eyebrow">Book a demo</p>
+            <p className="contact-eyebrow">Book a demo</p>
             <h1 id="contact-title" className="contact-title">
-              Talk with our team to see how mingle can fit your hiring
+              See mingle on a real open role
             </h1>
             <p className="contact-lead">
-              Paste a role, get the few people worth talking to, and understand
-              why. We will walk you through a live match report on a real open
-              role.
+              Paste a role. Get the few people worth talking to. Understand
+              why — Role Fit, Human Fit, and Motivation Fit in one clear
+              report.
             </p>
 
             <ul className="contact-benefits">
-              <li>
-                See Top Matches with Role Fit, Human Fit, and Motivation Fit
-              </li>
-              <li>Review Why this match, including the one honest risk</li>
-              <li>
-                Learn how Company DNA and Candidate DNA work without long forms
-              </li>
+              <li>Live Top Matches walkthrough on your hiring brief</li>
+              <li>Why this match — including the one honest risk</li>
+              <li>Company DNA and Candidate DNA without long forms</li>
             </ul>
 
-            <figure className="contact-quote">
-              <blockquote>
-                I do not need another ATS. I need fewer wasted interviews and a
-                short list I can trust.
-              </blockquote>
-              <figcaption>Talent lead · Growth stage company</figcaption>
-            </figure>
+            <div className="contact-proof">
+              <div className="contact-proof-avatars" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <p>
+                Built for hiring teams who want speed without fifteen fields.
+              </p>
+            </div>
           </section>
 
-          <section className="contact-form-panel" aria-label="Contact form">
+          <section className="contact-form-panel" aria-label="Demo request form">
             {submitted ? (
               <div className="contact-success" role="status">
-                <h2>Thanks. We got your request.</h2>
+                <p className="contact-eyebrow">Request received</p>
+                <h2>Thanks — we will be in touch</h2>
                 <p>
                   Someone from mingle will reach out shortly to schedule a short
                   walkthrough on a role you are hiring for.
                 </p>
-                <Link href="/welcome" className="landing-btn landing-btn-primary">
+                <Link href="/" className="landing-btn landing-btn-primary">
                   Back to mingle
                 </Link>
               </div>
             ) : (
               <form className="contact-form" onSubmit={onSubmit} noValidate>
-                <h2>Contact our team</h2>
+                <div className="contact-form-head">
+                  <h2>Request a walkthrough</h2>
+                  <p>Takes about a minute. No long questionnaire.</p>
+                </div>
 
                 <div className="contact-form-row">
                   <label>
@@ -163,15 +165,35 @@ export function ContactSalesPage() {
                   />
                 </label>
 
-                <label>
-                  <span>Job title</span>
-                  <input
-                    name="jobTitle"
-                    autoComplete="organization-title"
-                    value={form.jobTitle}
-                    onChange={(e) => update("jobTitle", e.target.value)}
-                  />
-                </label>
+                <div className="contact-form-row">
+                  <label>
+                    <span>Job title</span>
+                    <input
+                      name="jobTitle"
+                      autoComplete="organization-title"
+                      value={form.jobTitle}
+                      onChange={(e) => update("jobTitle", e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <span>Company size *</span>
+                    <select
+                      name="companySize"
+                      required
+                      value={form.companySize}
+                      onChange={(e) => update("companySize", e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Select
+                      </option>
+                      {COMPANY_SIZES.map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
 
                 <label>
                   <span>Company name *</span>
@@ -182,25 +204,6 @@ export function ContactSalesPage() {
                     value={form.companyName}
                     onChange={(e) => update("companyName", e.target.value)}
                   />
-                </label>
-
-                <label>
-                  <span>Company size *</span>
-                  <select
-                    name="companySize"
-                    required
-                    value={form.companySize}
-                    onChange={(e) => update("companySize", e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Select company size
-                    </option>
-                    {COMPANY_SIZES.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
                 </label>
 
                 <label>
@@ -223,11 +226,11 @@ export function ContactSalesPage() {
                 </label>
 
                 <label>
-                  <span>Tell us more about your hiring needs</span>
+                  <span>Anything we should know?</span>
                   <textarea
                     name="message"
-                    rows={4}
-                    placeholder="Open roles, hard to fill positions, or what you want to see in the demo"
+                    rows={3}
+                    placeholder="Open roles, hard-to-fill positions, or what you want to see"
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
                   />
@@ -238,13 +241,13 @@ export function ContactSalesPage() {
                   className="landing-btn landing-btn-primary landing-btn-lg contact-submit"
                   disabled={submitting}
                 >
-                  {submitting ? "Sending…" : "Submit"}
+                  {submitting ? "Sending…" : "Book a demo"}
                 </button>
 
                 <p className="contact-legal">
-                  By submitting this form, you agree to be contacted by mingle
-                  about a demo and related product updates. See our{" "}
-                  <Link href="/legal/privacy">Privacy</Link> policy.
+                  By submitting, you agree to be contacted by mingle about a
+                  demo. See our <Link href="/legal/privacy">Privacy</Link>{" "}
+                  policy.
                 </p>
               </form>
             )}

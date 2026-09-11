@@ -14,7 +14,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const AUTH_HREF = "/start";
+const AUTH_SIGNIN_HREF = "/auth";
 const DEMO_HREF = "/contact";
 
 export function LandingPage() {
@@ -34,7 +34,7 @@ export function LandingPage() {
           </nav>
 
           <div className="landing-nav-actions">
-            <Link href={AUTH_HREF} className="landing-nav-signin">
+            <Link href={AUTH_SIGNIN_HREF} className="landing-nav-signin">
               Sign in
             </Link>
             <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost">
