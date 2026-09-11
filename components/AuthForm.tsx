@@ -26,12 +26,24 @@ const PATH_COPY: Record<UserType, { eyebrow: string; headline: string }> = {
   },
 };
 
+const SIGNIN_COPY = {
+  eyebrow: "Welcome back",
+  headline: "Sign in to mingle",
+};
+
 type AuthMode = "signup" | "signin";
 
-export function AuthForm({ path }: { path: UserType }) {
+export function AuthForm({
+  path: initialPath,
+  initialMode = "signin",
+}: {
+  path: UserType | null;
+  initialMode?: AuthMode;
+}) {
   const router = useRouter();
   const supabase = createClient();
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [path, setPath] = useState<UserType | null>(initialPath);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -45,9 +57,14 @@ export function AuthForm({ path }: { path: UserType }) {
     formState: { errors },
   } = useForm<AuthFormValues>({ resolver: zodResolver(authSchema) });
 
-  const goAfterAuth = async (userId: string) => {
+  const goAfterAuth = async (userId: string, resolvedPath: UserType) => {
     try {
-      await ensureUserProfile(supabase, userId, getValues("email"), path);
+      await ensureUserProfile(
+        supabase,
+        userId,
+        getValues("email"),
+        resolvedPath,
+      );
     } catch (profileError) {
       setServerError(
         profileError instanceof Error
@@ -60,7 +77,7 @@ export function AuthForm({ path }: { path: UserType }) {
     const next = await destinationAfterAuth(
       supabase,
       userId,
-      path,
+      resolvedPath,
       getValues("email"),
     );
     router.push(next);
@@ -81,9 +98,30 @@ export function AuthForm({ path }: { path: UserType }) {
         setIsSubmitting(false);
         return;
       }
-      track(AnalyticsEvent.signIn, { path }, data.user.id);
-      identifyUser(data.user.id, { path });
-      await goAfterAuth(data.user.id);
+
+      // Prefer the DB / metadata type. URL path is only a fallback.
+      const { data: row } = await supabase
+        .from("users")
+        .select("user_type")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      const metaType = data.user.user_metadata?.user_type;
+      const resolvedPath: UserType =
+        row?.user_type === "company" || row?.user_type === "talent"
+          ? row.user_type
+          : metaType === "company" || metaType === "talent"
+            ? metaType
+            : path ?? "talent";
+
+      track(AnalyticsEvent.signIn, { path: resolvedPath }, data.user.id);
+      identifyUser(data.user.id, { path: resolvedPath });
+      await goAfterAuth(data.user.id, resolvedPath);
+      return;
+    }
+
+    if (!path) {
+      setServerError("Choose talent or company to create your account.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -127,10 +165,13 @@ export function AuthForm({ path }: { path: UserType }) {
     }
     track(AnalyticsEvent.signup, { path }, userId);
     identifyUser(userId, { path });
-    await goAfterAuth(userId);
+    await goAfterAuth(userId, path);
   };
 
-  const copy = PATH_COPY[path];
+  const copy =
+    mode === "signin" && !path
+      ? SIGNIN_COPY
+      : PATH_COPY[path ?? "talent"];
 
   if (awaitingConfirmation) {
     return (
@@ -196,6 +237,33 @@ export function AuthForm({ path }: { path: UserType }) {
             Sign In
           </button>
         </div>
+
+        {mode === "signup" ? (
+          <div className="mb-5 grid grid-cols-2 gap-2 rounded-full border border-mingle-border bg-mingle-white p-1">
+            <button
+              type="button"
+              onClick={() => setPath("talent")}
+              className={`rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                path === "talent"
+                  ? "bg-mingle-accent-blue text-white"
+                  : "text-mingle-text-secondary hover:text-mingle-text"
+              }`}
+            >
+              Talent
+            </button>
+            <button
+              type="button"
+              onClick={() => setPath("company")}
+              className={`rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                path === "company"
+                  ? "bg-mingle-accent-purple text-white"
+                  : "text-mingle-text-secondary hover:text-mingle-text"
+              }`}
+            >
+              Company
+            </button>
+          </div>
+        ) : null}
 
         <form
           method="post"
@@ -286,7 +354,7 @@ export function AuthForm({ path }: { path: UserType }) {
 
           <motion.button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (mode === "signup" && !path)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`mt-2 rounded-full px-6 py-3 font-display text-base font-semibold text-white disabled:opacity-60 ${

@@ -239,30 +239,69 @@ export async function loadDiscoveryPage(
     if (style) query = query.contains("work_environment", [style]);
   }
 
-  const [ownInput, listed] = await Promise.all([
-    loadTalentMatchInput(supabase, viewer.id),
-    onlyUserIds
+  const wantsDistance = Boolean(filters.distanceKm != null && !onlyUserIds);
+  const rankAll = Boolean(scope.rankAll);
+  const listedQuery =
+    wantsDistance || onlyUserIds || rankAll
       ? query.order("updated_at", { ascending: false }).limit(400)
-      : query.order("updated_at", { ascending: false }).range(from, to),
+      : query.order("updated_at", { ascending: false }).range(from, to);
+
+  const [ownInput, listed, viewerTalent] = await Promise.all([
+    loadTalentMatchInput(supabase, viewer.id),
+    listedQuery,
+    supabase
+      .from("talent_profiles")
+      .select("latitude, longitude, max_commute_km")
+      .eq("user_id", viewer.id)
+      .maybeSingle(),
   ]);
   const { data, count, error } = listed;
   if (error) {
     return { cards: [], total: 0, page, pageSize: DISCOVERY_PAGE_SIZE };
   }
 
-  const candidateRows = data ?? [];
-  const { data: prefRows } = candidateRows.length
+  const origin =
+    viewerTalent.data?.latitude != null &&
+    viewerTalent.data?.longitude != null
+      ? {
+          latitude: viewerTalent.data.latitude,
+          longitude: viewerTalent.data.longitude,
+        }
+      : null;
+
+  // Prefer an explicit Discover filter; fall back to the talent profile preference.
+  const distanceLimit =
+    filters.distanceKm ??
+    (viewerTalent.data?.max_commute_km != null && !onlyUserIds
+      ? viewerTalent.data.max_commute_km
+      : null);
+  const applyDistance = distanceLimit != null && origin != null;
+
+  let candidateRows = data ?? [];
+  if (applyDistance) {
+    candidateRows = candidateRows.filter((row) => {
+      const distance = distanceKmBetween(origin, {
+        latitude: row.latitude ?? null,
+        longitude: row.longitude ?? null,
+      });
+      return distance == null || distance <= distanceLimit;
+    });
+  }
+
+  const rowsForCards = applyDistance ? candidateRows : candidateRows;
+  const { data: prefRows } = rowsForCards.length
     ? await supabase
         .from("company_preferences")
         .select("*")
         .in(
           "company_id",
-          candidateRows.map((row) => row.user_id),
+          rowsForCards.map((row) => row.user_id),
         )
     : { data: [] as never[] };
   const prefsByUser = new Map((prefRows ?? []).map((row) => [row.company_id, row]));
+  const distanceByUser = new Map<string, number | null>();
 
-  const cards: DiscoveryCard[] = candidateRows.map((row) => {
+  const cards: DiscoveryCard[] = rowsForCards.map((row) => {
     const profile = toCompanyProfile(row);
     const pref = prefsByUser.get(row.user_id);
     const companyInput: CompanyMatchInput = {
@@ -276,11 +315,24 @@ export async function loadDiscoveryPage(
     const report = ownInput
       ? buildMatchReport(result, ownInput, companyInput, "talent")
       : emptyMatchReport("talent", result.score);
+    const km = origin
+      ? distanceKmBetween(origin, {
+          latitude: row.latitude ?? null,
+          longitude: row.longitude ?? null,
+        })
+      : null;
+    distanceByUser.set(row.user_id, km);
     return {
       userId: row.user_id,
       name: profile.companyName,
       subtitle: profile.mission,
-      meta: [profile.industry, profile.location].filter(Boolean).join(" · "),
+      meta: [
+        profile.industry,
+        profile.location,
+        applyDistance && km != null ? `${Math.round(km)} km` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
       initial: companyInitials(profile.companyName),
       photo: profile.logo,
       gender: null,
@@ -289,7 +341,14 @@ export async function loadDiscoveryPage(
       report,
     };
   });
-  cards.sort((a, b) => b.score - a.score);
+  cards.sort((a, b) => {
+    if (applyDistance && origin) {
+      const da = distanceByUser.get(a.userId) ?? Number.POSITIVE_INFINITY;
+      const db = distanceByUser.get(b.userId) ?? Number.POSITIVE_INFINITY;
+      if (da !== db) return da - db;
+    }
+    return b.score - a.score;
+  });
   const photoUrls = await resolveTalentPhotoUrls(
     supabase,
     cards.map((card) => card.photo),
@@ -298,9 +357,14 @@ export async function loadDiscoveryPage(
     const resolved = card.photo ? photoUrls.get(card.photo) : null;
     if (resolved) card.photo = resolved;
   }
+  const total = applyDistance ? candidateRows.length : (count ?? cards.length);
   return {
-    cards,
-    total: count ?? cards.length,
+    cards: rankAll
+      ? cards
+      : applyDistance
+        ? cards.slice(from, to + 1)
+        : cards,
+    total: rankAll ? cards.length : total,
     page,
     pageSize: DISCOVERY_PAGE_SIZE,
   };

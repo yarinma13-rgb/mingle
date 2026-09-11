@@ -234,21 +234,21 @@ export function DiscoveryFiltersForm({
                       }
                     />
                   </fieldset>
-
-                <div className="mt-4">
-                  <DistanceSlider
-                    value={distanceKm}
-                    onChange={setDistanceKm}
-                    label="Distance in km"
-                    hint={
-                      distanceKm
-                        ? `Up to ${distanceKm} km. Profiles without coordinates still appear.`
-                        : "Any. Profiles without coordinates are not dropped."
-                    }
-                  />
-                </div>
               </>
             ) : null}
+
+            <div className="mt-4">
+              <DistanceSlider
+                value={distanceKm}
+                onChange={setDistanceKm}
+                label="Distance in km"
+                hint={
+                  distanceKm
+                    ? `Up to ${distanceKm} km. Profiles without coordinates still appear.`
+                    : "Any. Profiles without coordinates are not dropped."
+                }
+              />
+            </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
