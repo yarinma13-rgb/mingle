@@ -73,37 +73,39 @@ type ConfettiSpec = {
 
 function pickConfettiShape(index: number): ConfettiShape {
   const lane = index % 10;
-  if (lane === 0 || lane === 5) return "spark";
-  if (lane % 2 === 0) return "curl";
+  if (lane === 0 || lane === 6) return "spark";
+  if (lane === 1 || lane === 2 || lane === 4 || lane === 5 || lane === 8) {
+    return "curl";
+  }
   return "bar";
 }
 
 function generateConfettiSpecs(): ConfettiSpec[] {
-  return Array.from({ length: 72 }, (_, i) => {
+  return Array.from({ length: 96 }, (_, i) => {
     const shape = pickConfettiShape(i);
-    const angleDeg = 8 + Math.random() * 164;
+    const angleDeg = 5 + Math.random() * 170;
     const rad = (angleDeg * Math.PI) / 180;
-    const distance = 70 + Math.random() * 150;
+    const distance = 65 + Math.random() * 175;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    const rotBurst = spin * (36 + Math.random() * 70);
+    const rotBurst = spin * (36 + Math.random() * 80);
     const size =
       shape === "curl"
-        ? 10 + Math.random() * 8
+        ? 12 + Math.random() * 10
         : shape === "spark"
-          ? 7 + Math.random() * 5
-          : 5 + Math.random() * 5;
+          ? 8 + Math.random() * 6
+          : 5 + Math.random() * 6;
     return {
       id: i,
       shape,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
       size,
       // Tiny stagger so one explosion reads as a burst, not a spray over time
-      delay: (i % 12) * 0.018,
+      delay: (i % 14) * 0.015,
       burstX: Math.cos(rad) * distance,
       burstY: -Math.sin(rad) * distance,
-      fallY: 90 + Math.random() * 110,
+      fallY: 95 + Math.random() * 120,
       rotBurst,
-      rotEnd: rotBurst + spin * (80 + Math.random() * 90),
+      rotEnd: rotBurst + spin * (90 + Math.random() * 110),
     };
   });
 }
@@ -323,16 +325,16 @@ export function LandingHeroMatch() {
                     key={piece.id}
                     className="landing-mingle-confetti-piece is-curl"
                     width={piece.size}
-                    height={piece.size * 2.1}
-                    viewBox="0 0 12 26"
+                    height={piece.size * 2.15}
+                    viewBox="0 0 14 30"
                     aria-hidden="true"
                     style={sharedStyle}
                   >
                     <path
-                      d="M6 1.5 C 1.5 4.5, 10.5 8, 6 12 C 1.5 16, 10.5 19.5, 6 24.5"
+                      d="M7 1.2 C 1.4 5, 12.6 9.2, 7 13.5 C 1.4 17.8, 12.6 22, 7 28.5"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2.35"
+                      strokeWidth="3.1"
                       strokeLinecap="round"
                     />
                   </svg>

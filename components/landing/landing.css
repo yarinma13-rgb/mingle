@@ -617,7 +617,7 @@
 
 .landing-mingle-confetti {
   position: absolute;
-  inset: -18% -28%;
+  inset: -28% -42%;
   overflow: visible;
   pointer-events: none;
   z-index: 1;
