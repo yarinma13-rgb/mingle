@@ -179,7 +179,6 @@ export function LandingHeroMatch() {
 
         <ul className="landing-profile-tags">
           <li>B2B SaaS</li>
-          <li>0→1</li>
           <li>Tel Aviv</li>
         </ul>
 
@@ -305,7 +304,6 @@ export function LandingHeroMatch() {
         </p>
 
         <ul className="landing-profile-tags">
-          <li>Weekly shipping</li>
           <li>Hybrid</li>
           <li>Ownership</li>
         </ul>
