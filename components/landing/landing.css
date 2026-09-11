@@ -260,9 +260,9 @@
 
 .landing-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.38fr);
   align-items: center;
-  gap: clamp(1.25rem, 3vw, 2.4rem);
+  gap: clamp(1.1rem, 2.8vw, 2.1rem);
 }
 
 .landing-hero-copy {
@@ -355,11 +355,11 @@
 .landing-match-stage {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(130px, 0.55fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(120px, 0.48fr) minmax(0, 1.08fr);
   align-items: stretch;
-  gap: 0.7rem;
-  min-height: 520px;
-  padding: 1.35rem 1rem 1.45rem;
+  gap: 0.55rem;
+  min-height: 560px;
+  padding: 1.45rem 1.05rem 1.55rem;
   border-radius: 28px;
   background: #f3f4f8;
   border: 1px solid #e1e4ec;
@@ -455,8 +455,8 @@
 
 .landing-donut {
   position: relative;
-  width: 6.4rem;
-  height: 6.4rem;
+  width: 7.1rem;
+  height: 7.1rem;
   border-radius: 999px;
   flex-shrink: 0;
   box-shadow: 0 8px 20px rgba(28, 27, 46, 0.08);
