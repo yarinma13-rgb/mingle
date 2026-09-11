@@ -44,6 +44,12 @@ const CONFETTI_COLORS = [
   "#3E6BE0",
   "#6C7AE0",
   "#8FA3D4",
+  "#9B6CF2",
+  "#5A6FE8",
+  "#A8B8E8",
+  "#4263D6",
+  "#7389F0",
+  "#6B5CE0",
 ];
 
 type ConfettiSpec = {
@@ -59,7 +65,7 @@ type ConfettiSpec = {
 };
 
 function generateConfettiSpecs(): ConfettiSpec[] {
-  return Array.from({ length: 30 }, (_, i) => {
+  return Array.from({ length: 42 }, (_, i) => {
     const angleDeg = 12 + Math.random() * 156;
     const rad = (angleDeg * Math.PI) / 180;
     const distance = 75 + Math.random() * 125;
@@ -197,11 +203,10 @@ export function LandingHeroMatch() {
       <article className="landing-profile landing-profile-talent">
         <header className="landing-profile-head">
           <span className="landing-avatar landing-avatar-talent" aria-hidden="true">
-            MR
+            C
           </span>
           <div className="landing-profile-identity">
-            <p className="landing-profile-kicker">Candidate</p>
-            <p className="landing-profile-title">Maya R.</p>
+            <p className="landing-profile-title">Candidate</p>
             <p className="landing-profile-role">Senior Product Manager</p>
           </div>
         </header>
@@ -316,11 +321,10 @@ export function LandingHeroMatch() {
       <article className="landing-profile landing-profile-company">
         <header className="landing-profile-head">
           <span className="landing-avatar landing-avatar-company" aria-hidden="true">
-            NW
+            Co
           </span>
           <div className="landing-profile-identity">
-            <p className="landing-profile-kicker">Company</p>
-            <p className="landing-profile-title">Northwind</p>
+            <p className="landing-profile-title">Company</p>
             <p className="landing-profile-role">Series A product team</p>
           </div>
         </header>
