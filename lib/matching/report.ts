@@ -224,10 +224,7 @@ function mismatchBullets(
     .map((factor) => toBullet(factor, talent, company, false, audience));
 }
 
-function whatMattersMost(
-  factors: MatchFactor[],
-  audience: MatchAudience,
-): string {
+function whatMattersMost(factors: MatchFactor[]): string {
   const aligned = factors.filter((factor) => factor.verdict === "aligned");
   const ranked = [...(aligned.length > 0 ? aligned : factors)].sort(
     (a, b) => b.fraction * b.weight - a.fraction * a.weight,
@@ -282,7 +279,7 @@ export function buildMatchReport(
     confidence: matchConfidence(talent, company),
     why: whyBullets(result.factors, talent, company, audience),
     mismatch: mismatchBullets(result.factors, talent, company, audience),
-    whatMattersMost: whatMattersMost(result.factors, audience),
+    whatMattersMost: whatMattersMost(result.factors),
     audience,
   };
 }

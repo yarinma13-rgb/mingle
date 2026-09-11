@@ -19,28 +19,29 @@ export function TalentPhotoImg({
   fallback: React.ReactNode;
   sizes?: string;
 }) {
-  const [src, setSrc] = useState<string | null>(() =>
-    photo && isPublicPhotoUrl(photo) ? photo : null,
+  const publicSrc = photo && isPublicPhotoUrl(photo) ? photo : null;
+  const [signed, setSigned] = useState<{ photo: string; url: string } | null>(
+    null,
   );
 
   useEffect(() => {
-    if (!photo) {
-      setSrc(null);
-      return;
-    }
-    if (isPublicPhotoUrl(photo)) {
-      setSrc(photo);
+    if (!photo || isPublicPhotoUrl(photo)) {
       return;
     }
     let cancelled = false;
     const supabase = createClient();
     void resolveTalentPhotoUrl(supabase, photo).then((url) => {
-      if (!cancelled) setSrc(url);
+      if (!cancelled && url) {
+        setSigned({ photo, url });
+      }
     });
     return () => {
       cancelled = true;
     };
   }, [photo]);
+
+  const src =
+    publicSrc ?? (signed && signed.photo === photo ? signed.url : null);
 
   if (!src) return fallback;
   return <StorageImage src={src} className={className} sizes={sizes} />;

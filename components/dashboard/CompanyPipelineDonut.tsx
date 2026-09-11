@@ -39,14 +39,27 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
   const radius = 62;
   const total = Math.max(funnel.total, 0);
 
-  let cursor = 0;
-  const slices = FUNNEL_STAGES.map((stage, index) => {
+  const slices = FUNNEL_STAGES.reduce<
+    {
+      stage: (typeof FUNNEL_STAGES)[number];
+      count: number;
+      start: number;
+      end: number;
+      color: string;
+    }[]
+  >((acc, stage, index) => {
     const count = funnel.counts[stage.id];
     const sweep = total === 0 ? 0 : (count / total) * 360;
-    const start = cursor;
-    cursor += sweep;
-    return { stage, count, start, end: cursor, color: SEGMENT_COLORS[index] };
-  });
+    const start = acc.length === 0 ? 0 : acc[acc.length - 1].end;
+    acc.push({
+      stage,
+      count,
+      start,
+      end: start + sweep,
+      color: SEGMENT_COLORS[index],
+    });
+    return acc;
+  }, []);
 
   return (
     <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-7 shadow-mingle">

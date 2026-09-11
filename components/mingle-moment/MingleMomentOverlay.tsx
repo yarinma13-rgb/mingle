@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { MingleLogo } from "@/components/MingleLogo";
 // Mascot temporarily removed from this screen — see components/MascotMagnet.tsx,
@@ -49,28 +49,22 @@ function generateConfettiSpecs(): ConfettiSpec[] {
   });
 }
 
+function subscribeReducedMotion(onStoreChange: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
+
 function usePrefersReducedMotion(): boolean {
-  const [reduce, setReduce] = useState(true);
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduce(media.matches);
-    const onChange = () => setReduce(media.matches);
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, []);
-  return reduce;
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => true,
+  );
 }
 
 function useConfettiSpecs(enabled: boolean): ConfettiSpec[] {
-  const [specs, setSpecs] = useState<ConfettiSpec[]>([]);
-  useEffect(() => {
-    if (!enabled) {
-      setSpecs([]);
-      return;
-    }
-    Promise.resolve().then(() => setSpecs(generateConfettiSpecs()));
-  }, [enabled]);
-  return specs;
+  return useMemo(() => (enabled ? generateConfettiSpecs() : []), [enabled]);
 }
 
 export function MingleMomentOverlay({
