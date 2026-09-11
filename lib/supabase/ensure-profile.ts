@@ -76,7 +76,11 @@ export async function ensureUserProfile(
     // Keep auth metadata aligned so email-confirm / later sessions do not
     // re-introduce the talent default when the URL path is missing.
     if (fromMeta == null || fromMeta !== nextType) {
-      await supabase.auth.updateUser({ data: { user_type: nextType } });
+      try {
+        await supabase.auth.updateUser({ data: { user_type: nextType } });
+      } catch {
+        // Best-effort: public.users is already corrected.
+      }
     }
 
     return nextType;
