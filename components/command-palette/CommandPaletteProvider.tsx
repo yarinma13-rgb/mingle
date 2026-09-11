@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,6 +31,8 @@ const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(
   null,
 );
 
+const subscribeNoop = () => () => {};
+
 export function useCommandPalette() {
   const ctx = useContext(CommandPaletteContext);
   if (!ctx) {
@@ -48,21 +51,16 @@ export function CommandPaletteProvider({
   const reduceMotion = useReducedMotion();
   const enabled = isCommandPalettePath(pathname);
   const [userType, setUserType] = useState<UserType | null>(null);
-  const [open, setOpen] = useState(false);
+  const [sessionOpen, setSessionOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const open = enabled && sessionOpen;
 
   useEffect(() => {
     if (!enabled) {
-      setOpen(false);
-      setUserType(null);
       return;
     }
     let cancelled = false;
@@ -95,24 +93,21 @@ export function CommandPaletteProvider({
   );
 
   useEffect(() => {
-    setActiveIndex(0);
-  }, [query, open]);
-
-  useEffect(() => {
     const node = listRef.current?.querySelector("[data-active=true]");
     node?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, items]);
 
   const close = useCallback(() => {
-    setOpen(false);
+    setSessionOpen(false);
     setQuery("");
+    setActiveIndex(0);
   }, []);
 
   const openPalette = useCallback(() => {
     if (!enabled || !userType) return;
     setQuery("");
     setActiveIndex(0);
-    setOpen(true);
+    setSessionOpen(true);
   }, [enabled, userType]);
 
   const runItem = useCallback(
@@ -128,7 +123,7 @@ export function CommandPaletteProvider({
       if (event.key === "k" && (event.metaKey || event.ctrlKey) && !event.altKey) {
         if (!enabled || !userType) return;
         event.preventDefault();
-        setOpen((wasOpen) => {
+        setSessionOpen((wasOpen) => {
           if (wasOpen) {
             setQuery("");
             return false;
@@ -237,7 +232,10 @@ export function CommandPaletteProvider({
                       <input
                         ref={inputRef}
                         value={query}
-                        onChange={(event) => setQuery(event.target.value)}
+                        onChange={(event) => {
+                          setQuery(event.target.value);
+                          setActiveIndex(0);
+                        }}
                         placeholder="Search or jump to a screen"
                         aria-autocomplete="list"
                         aria-controls="command-palette-list"

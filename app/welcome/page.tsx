@@ -3,6 +3,7 @@ import { landingMetadata } from "@/lib/landing-metadata";
 
 export const metadata = landingMetadata();
 
-export default function Home() {
+/** Dedicated share URL for LinkedIn, Instagram, and campaigns. */
+export default function WelcomeLandingPage() {
   return <LandingPage />;
 }
