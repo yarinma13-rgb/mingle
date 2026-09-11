@@ -1,15 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
 
+const ONBOARDING_COMPLETE_STEP = 4;
+
+function readMetaUserType(value: unknown): UserType | null {
+  return value === "company" || value === "talent" ? value : null;
+}
+
 /**
  * Makes sure a public.users row exists for the authenticated user.
  *
- * The migration's handle_new_user() trigger is meant to create this row on
- * signup, but triggers on auth.users can be blocked or silently skipped
- * depending on project configuration — this is the app's own safety net so
- * onboarding never depends on that trigger having actually fired.
- * ignoreDuplicates means an existing row (and its onboarding progress) is
- * never overwritten.
+ * The migration trigger is the first writer, but it can miss or default to
+ * talent when metadata is absent. This helper:
+ * 1. inserts the row when missing
+ * 2. corrects user_type from auth signup metadata when onboarding is still open
+ *
+ * URL path alone never flips an existing account — only auth metadata does.
  */
 export async function ensureUserProfile(
   supabase: SupabaseClient<Database>,
@@ -17,11 +23,38 @@ export async function ensureUserProfile(
   email: string,
   userType: UserType,
 ) {
-  const { error } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const fromMeta = readMetaUserType(user?.user_metadata?.user_type);
+  const intended = fromMeta ?? userType;
+
+  const { data: existing, error: readError } = await supabase
     .from("users")
-    .upsert(
-      { id: userId, email, user_type: userType },
-      { onConflict: "id", ignoreDuplicates: true },
-    );
-  if (error) throw error;
+    .select("user_type, onboarding_status, onboarding_step")
+    .eq("id", userId)
+    .maybeSingle();
+  if (readError) throw readError;
+
+  if (!existing) {
+    const { error } = await supabase.from("users").insert({
+      id: userId,
+      email,
+      user_type: intended,
+    });
+    if (error) throw error;
+    return;
+  }
+
+  const completed =
+    existing.onboarding_status === "completed" ||
+    (existing.onboarding_step ?? 0) >= ONBOARDING_COMPLETE_STEP;
+
+  if (!completed && fromMeta && existing.user_type !== fromMeta) {
+    const { error } = await supabase
+      .from("users")
+      .update({ user_type: fromMeta })
+      .eq("id", userId);
+    if (error) throw error;
+  }
 }

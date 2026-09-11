@@ -35,6 +35,7 @@ import {
   type PendingInvite,
 } from "@/lib/team/persistence";
 import { destinationAfterAuth } from "@/lib/auth/destination";
+import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import type { Database, UserType } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 4;
@@ -65,11 +66,21 @@ async function fetchWizardData(
 
   if (!user) return { kind: "redirect", to: `/auth?path=${path}` };
 
+  // Reconcile public.users from auth metadata before choosing questions.
+  // This is what recovers company accounts that were wrongly inserted as talent.
+  if (user.email) {
+    try {
+      await ensureUserProfile(supabase, user.id, user.email, path);
+    } catch {
+      // Still attempt to read whatever row exists.
+    }
+  }
+
   const { data: userRow } = await supabase
     .from("users")
     .select("user_type")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (userRow && userRow.user_type !== path) {
     return { kind: "redirect", to: `/onboarding/${userRow.user_type}` };

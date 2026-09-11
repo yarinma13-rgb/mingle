@@ -18,7 +18,10 @@ function resolvePath(
   pathParam: string | null,
   userType: unknown,
 ): UserType {
-  if (pathParam === "company" || userType === "company") return "company";
+  // Prefer signup metadata so company accounts stay company even when the
+  // email confirm URL has no path query (the documented Supabase template).
+  if (userType === "company" || userType === "talent") return userType;
+  if (pathParam === "company") return "company";
   return "talent";
 }
 
