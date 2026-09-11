@@ -14,7 +14,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const AUTH_HREF = "/auth";
+const AUTH_HREF = "/start";
 const DEMO_HREF = "/contact";
 
 export function LandingPage() {

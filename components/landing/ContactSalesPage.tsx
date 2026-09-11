@@ -70,7 +70,7 @@ export function ContactSalesPage() {
             <span className="landing-nav-wordmark">mingle</span>
           </Link>
           <div className="landing-nav-actions">
-            <Link href="/auth" className="landing-nav-signin">
+            <Link href="/start" className="landing-nav-signin">
               Sign in
             </Link>
             <Link href="/start" className="landing-btn landing-btn-ghost">

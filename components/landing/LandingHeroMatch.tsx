@@ -200,16 +200,10 @@ export function LandingHeroMatch() {
         >
           <path
             className="landing-curve-path landing-curve-path-top"
-            d="M18 72 C 70 28, 150 28, 202 72"
+            d="M18 60 C 70 16, 150 16, 202 60"
             strokeWidth="2.5"
             strokeLinecap="round"
-            markerEnd="url(#landing-arrow-head)"
-          />
-          <path
-            className="landing-curve-path landing-curve-path-bottom"
-            d="M202 128 C 150 172, 70 172, 18 128"
-            strokeWidth="2.5"
-            strokeLinecap="round"
+            markerStart="url(#landing-arrow-head-start)"
             markerEnd="url(#landing-arrow-head)"
           />
           <defs>
@@ -226,7 +220,17 @@ export function LandingHeroMatch() {
               refY="4"
               orient="auto"
             >
-              <path d="M0 0 L8 4 L0 8 Z" fill="#7B2FF7" />
+              <path d="M0 0 L8 4 L0 8 Z" fill="#3E6BE0" />
+            </marker>
+            <marker
+              id="landing-arrow-head-start"
+              markerWidth="8"
+              markerHeight="8"
+              refX="6"
+              refY="4"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0 L8 4 L0 8 Z" fill="#EA1E63" />
             </marker>
           </defs>
         </svg>
