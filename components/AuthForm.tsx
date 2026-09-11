@@ -57,7 +57,12 @@ export function AuthForm({ path }: { path: UserType }) {
       setIsSubmitting(false);
       return;
     }
-    const next = await destinationAfterAuth(supabase, userId, path);
+    const next = await destinationAfterAuth(
+      supabase,
+      userId,
+      path,
+      getValues("email"),
+    );
     router.push(next);
     router.refresh();
   };

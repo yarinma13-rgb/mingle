@@ -1,27 +1,90 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
 
+const ONBOARDING_COMPLETE_STEP = 4;
+
+function readMetaUserType(value: unknown): UserType | null {
+  return value === "company" || value === "talent" ? value : null;
+}
+
 /**
- * Makes sure a public.users row exists for the authenticated user.
+ * Ensures a public.users row exists and keeps user_type correct during
+ * early onboarding.
  *
- * The migration's handle_new_user() trigger is meant to create this row on
- * signup, but triggers on auth.users can be blocked or silently skipped
- * depending on project configuration — this is the app's own safety net so
- * onboarding never depends on that trigger having actually fired.
- * ignoreDuplicates means an existing row (and its onboarding progress) is
- * never overwritten.
+ * Why path correction exists:
+ * handle_new_user() defaults missing metadata to "talent". OAuth and some
+ * admin/email flows then rely on the app to correct via the auth path
+ * (see migration comment in 0001_phase2_auth_onboarding.sql).
+ *
+ * Rules:
+ * 1. No row → insert with meta ?? path
+ * 2. Onboarding still open:
+ *    - auth metadata always wins when present
+ *    - if metadata is missing and the row is still the talent default while
+ *      the auth path is company, upgrade to company (one-way fix)
+ * 3. Completed onboarding → never change user_type
  */
 export async function ensureUserProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
   email: string,
-  userType: UserType,
-) {
-  const { error } = await supabase
+  path: UserType,
+): Promise<UserType> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const fromMeta = readMetaUserType(user?.user_metadata?.user_type);
+  const intended = fromMeta ?? path;
+
+  const { data: existing, error: readError } = await supabase
     .from("users")
-    .upsert(
-      { id: userId, email, user_type: userType },
-      { onConflict: "id", ignoreDuplicates: true },
-    );
-  if (error) throw error;
+    .select("user_type, onboarding_status, onboarding_step")
+    .eq("id", userId)
+    .maybeSingle();
+  if (readError) throw readError;
+
+  if (!existing) {
+    const { error } = await supabase.from("users").insert({
+      id: userId,
+      email,
+      user_type: intended,
+    });
+    if (error) throw error;
+    return intended;
+  }
+
+  const completed =
+    existing.onboarding_status === "completed" ||
+    (existing.onboarding_step ?? 0) >= ONBOARDING_COMPLETE_STEP;
+
+  if (completed) return existing.user_type;
+
+  const shouldCorrect =
+    (fromMeta != null && existing.user_type !== fromMeta) ||
+    (fromMeta == null &&
+      existing.user_type === "talent" &&
+      path === "company");
+
+  if (shouldCorrect) {
+    const nextType = fromMeta ?? path;
+    const { error } = await supabase
+      .from("users")
+      .update({ user_type: nextType })
+      .eq("id", userId);
+    if (error) throw error;
+
+    // Keep auth metadata aligned so email-confirm / later sessions do not
+    // re-introduce the talent default when the URL path is missing.
+    if (fromMeta == null || fromMeta !== nextType) {
+      try {
+        await supabase.auth.updateUser({ data: { user_type: nextType } });
+      } catch {
+        // Best-effort: public.users is already corrected.
+      }
+    }
+
+    return nextType;
+  }
+
+  return existing.user_type;
 }
