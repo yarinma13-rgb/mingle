@@ -28,7 +28,7 @@ const AUDIENCES = [
   {
     id: "talent",
     label: "Talent",
-    lead: "Your Candidate DNA is inferred from what you already share. When a company is interested and you are too, you both see why it might work.",
+    lead: "Your Candidate DNA is inferred from what you already share. When interest is mutual, you and the company both see why the match might work.",
   },
   {
     id: "agencies",
@@ -132,17 +132,17 @@ export function LandingHeroCopy() {
 
   return (
     <div className="landing-hero-copy">
-      <p className="landing-hero-eyebrow">Intelligence behind the scenes</p>
+      <p className="landing-hero-eyebrow">Built for hiring teams. Open to talent too.</p>
       <h1 id="landing-hero-title" className="landing-hero-title">
-        <span className="landing-hero-line">Post a job.</span>
-        <span className="landing-hero-line">Get the right people.</span>
-        <span className="landing-hero-line">Understand why.</span>
+        <span className="landing-hero-line">Post a role.</span>
+        <span className="landing-hero-line">Meet the right people.</span>
+        <span className="landing-hero-line">See why it fits.</span>
       </h1>
       <p className="landing-hero-lead">{audience.lead}</p>
       <p className="landing-hero-value">
-        Near zero friction for recruiters. Company DNA, Candidate DNA, and Role
-        DNA are inferred in the background. Three scores. Clear reasons. Honest
-        confidence.
+        Hiring teams move with near zero friction. Talent gets matched with clear
+        reasons, not black box scores. Company DNA, Candidate DNA, and Role DNA
+        stay in the background. Three scores. Honest confidence.
       </p>
 
       <div className="landing-audience" role="tablist" aria-label="Who mingle is for">
@@ -237,28 +237,18 @@ export function LandingHeroMatch() {
 
         <div className="landing-profile-viz">
           <MatchDonut overall={96} role={98} human={94} motivation={96} />
-          <ul className="landing-donut-legend">
-            <li>
-              <i className="fill-role" /> Role <b>98%</b>
-            </li>
-            <li>
-              <i className="fill-company" /> Human <b>94%</b>
-            </li>
-            <li>
-              <i className="fill-motivation" /> Motivation <b>96%</b>
-            </li>
+          <ul className="landing-score-chips">
+            <li className="is-role"><span>Role</span><b>98%</b></li>
+            <li className="is-human"><span>Human</span><b>94%</b></li>
+            <li className="is-motivation"><span>Motivation</span><b>96%</b></li>
           </ul>
         </div>
 
         <ul className="landing-profile-tags">
           <li>B2B SaaS</li>
           <li>Tel Aviv</li>
-          <li>0→1</li>
+          <li>Ownership</li>
         </ul>
-
-        <p className="landing-profile-note is-good">
-          Strong ownership fit for an early product seat
-        </p>
       </article>
 
       <div className="landing-match-center">
@@ -403,28 +393,18 @@ export function LandingHeroMatch() {
 
         <div className="landing-profile-viz">
           <MatchDonut overall={94} role={97} human={92} motivation={94} />
-          <ul className="landing-donut-legend">
-            <li>
-              <i className="fill-role" /> Role <b>97%</b>
-            </li>
-            <li>
-              <i className="fill-company" /> Human <b>92%</b>
-            </li>
-            <li>
-              <i className="fill-motivation" /> Motivation <b>94%</b>
-            </li>
+          <ul className="landing-score-chips">
+            <li className="is-role"><span>Role</span><b>97%</b></li>
+            <li className="is-human"><span>Human</span><b>92%</b></li>
+            <li className="is-motivation"><span>Motivation</span><b>94%</b></li>
           </ul>
         </div>
 
         <ul className="landing-profile-tags">
           <li>Hybrid</li>
-          <li>Ownership</li>
+          <li>Flexible</li>
           <li>Open role</li>
         </ul>
-
-        <p className="landing-profile-note is-good">
-          Looking for a PM who can own ambiguous work
-        </p>
       </article>
     </div>
   );

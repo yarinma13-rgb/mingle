@@ -59,10 +59,10 @@ export function LandingPage() {
             <div className="landing-section-head landing-section-head-center">
               <h2>More intelligence behind the scenes. Almost no friction up front.</h2>
               <p>
-                Competitors already ship fast AI matching and scoreboards. mingle
-                wins by not asking recruiters to fill fifteen fields before they
-                see anyone. Infer what you can. Ask only what is critical. Explain
-                every recommendation.
+                Built first for hiring teams who want speed without fifteen fields.
+                Open to talent who want clearer reasons than a black box score.
+                Infer what you can. Ask only what is critical. Explain every
+                recommendation.
               </p>
             </div>
 
@@ -102,8 +102,8 @@ export function LandingPage() {
             <div className="landing-section-head landing-section-head-center">
               <h2>Create a role. See the right people. Know why.</h2>
               <p>
-                Built for recruiters who want fewer CVs, less screening, and more
-                people who are actually worth a conversation.
+                Built for hiring teams who want fewer CVs and better conversations.
+                When interest is mutual, talent sees the same clear Why this match.
               </p>
             </div>
 
@@ -158,8 +158,9 @@ export function LandingPage() {
             <div className="landing-split-copy">
               <h2>Why this match?</h2>
               <p>
-                Not another black box percentage. mingle tells you why someone
-                belongs in your short list, and what could make the match fail.
+                Not another black box percentage. Hiring teams see why someone
+                belongs on the short list. Talent sees why a role might fit them
+                too, including the risk that could break it.
               </p>
               <ul className="landing-checklist">
                 <li>Core skills, stage, ownership, salary, and career direction</li>
@@ -251,9 +252,9 @@ export function LandingPage() {
             <div className="landing-section-head landing-section-head-center">
               <h2>Company DNA. Candidate DNA. Role DNA.</h2>
               <p>
-                Culture and values still matter. Recruiters just should not have
-                to type them into a form first. mingle discovers them, then
-                compares.
+                Culture and values still matter on both sides. Hiring teams should
+                not fill a form first, and talent should not answer fifteen culture
+                questions to get started. mingle discovers the DNA, then compares.
               </p>
             </div>
 
@@ -322,9 +323,10 @@ export function LandingPage() {
             <div className="landing-banner-inner">
               <h2>The right people, faster.</h2>
               <p>
-                mingle helps recruiters find the few people worth talking to in
-                seconds. Not a perfect match promise. A clearer short list, with
-                reasons you can trust.
+                mingle helps hiring teams find the few people worth talking to in
+                seconds, and helps talent understand when a role is worth their
+                time. Not a perfect match promise. A clearer short list, with
+                reasons both sides can trust.
               </p>
             </div>
           </div>
