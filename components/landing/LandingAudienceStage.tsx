@@ -31,11 +31,14 @@ type Person = {
   humanFit: number;
   motivationFit: number;
   tier: "high" | "medium";
+  /** photo = realistic headshot, illustrated = friendly drawn portrait */
+  style: "photo" | "illustrated";
 };
 
+/** Mix of Israelis + Americans, ages ~25–39 — photos + illustrated. */
 const PEOPLE: Person[] = [
   {
-    name: "Maya Okonkwo",
+    name: "Noa Levi",
     role: "Senior Product Manager",
     location: "Tel Aviv",
     match: 97,
@@ -45,35 +48,38 @@ const PEOPLE: Person[] = [
     humanFit: 94,
     motivationFit: 88,
     tier: "high",
+    style: "photo",
   },
   {
-    name: "Arjun Mehta",
+    name: "Jordan Hayes",
     role: "Full-stack Engineer",
-    location: "Bengaluru",
+    location: "Austin",
     match: 95,
-    avatar: "/landing/avatars/avatar-arjun.png",
+    avatar: "/landing/avatars/avatar-illustrated-jordan.png",
     skills: ["TypeScript", "React", "Node", "Systems"],
     roleFit: 94,
     humanFit: 91,
     motivationFit: 86,
     tier: "high",
+    style: "illustrated",
   },
   {
-    name: "Lin Wei",
+    name: "Yael Mizrahi",
     role: "Product Designer",
-    location: "Singapore",
+    location: "Tel Aviv",
     match: 94,
-    avatar: "/landing/avatars/avatar-lin.png",
+    avatar: "/landing/avatars/avatar-illustrated-yael.png",
     skills: ["Figma", "User Research", "Prototyping", "Leadership"],
     roleFit: 93,
     humanFit: 90,
     motivationFit: 84,
     tier: "high",
+    style: "illustrated",
   },
   {
-    name: "Noah Berger",
+    name: "Noah Adler",
     role: "Backend Engineer",
-    location: "Berlin",
+    location: "New York",
     match: 88,
     avatar: "/landing/avatars/avatar-noah.png",
     skills: ["Platform", "Go", "Reliability"],
@@ -81,18 +87,20 @@ const PEOPLE: Person[] = [
     humanFit: 84,
     motivationFit: 62,
     tier: "medium",
+    style: "photo",
   },
   {
-    name: "Sofia Alvarez",
-    role: "People Partner",
-    location: "Madrid",
-    match: 84,
-    avatar: "/landing/avatars/avatar-sofia.png",
-    skills: ["Hiring ops", "Culture", "Coaching"],
-    roleFit: 86,
-    humanFit: 88,
-    motivationFit: 58,
+    name: "Ava Brooks",
+    role: "Growth Marketer",
+    location: "Chicago",
+    match: 86,
+    avatar: "/landing/avatars/avatar-illustrated-ava.png",
+    skills: ["Lifecycle", "Copy", "Experimentation"],
+    roleFit: 88,
+    humanFit: 86,
+    motivationFit: 70,
     tier: "medium",
+    style: "illustrated",
   },
 ];
 
@@ -149,8 +157,90 @@ function Avatar({
       alt={person.name}
       width={size}
       height={size}
-      className={`landing-stage-avatar ${className}`.trim()}
+      className={`landing-stage-avatar ${person.style === "illustrated" ? "is-illustrated" : ""} ${className}`.trim()}
     />
+  );
+}
+
+function AnimatedMeterRing({
+  pct,
+  color,
+  value,
+  delayMs,
+  reduceMotion,
+}: {
+  pct: number;
+  color: string;
+  value: string;
+  delayMs: number;
+  reduceMotion: boolean;
+}) {
+  const size = 90;
+  const stroke = 8;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const [fill, setFill] = useState(reduceMotion ? pct : 0);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setFill(pct);
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId = 0;
+
+    const run = (phase: "fill" | "hold" | "empty") => {
+      if (cancelled) return;
+      if (phase === "fill") {
+        setFill(pct);
+        timeoutId = window.setTimeout(() => run("hold"), 2200);
+      } else if (phase === "hold") {
+        timeoutId = window.setTimeout(() => run("empty"), 1600);
+      } else {
+        setFill(0);
+        timeoutId = window.setTimeout(() => run("fill"), 1100);
+      }
+    };
+
+    timeoutId = window.setTimeout(() => run("fill"), delayMs);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, pct, reduceMotion]);
+
+  const offset = circumference * (1 - fill / 100);
+
+  return (
+    <div className="landing-stage-meter-ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#ececf3"
+          strokeWidth={stroke}
+        />
+        <circle
+          className="landing-stage-meter-progress"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <div className="landing-stage-meter-hole">
+        <strong>{value}</strong>
+      </div>
+    </div>
   );
 }
 
@@ -366,6 +456,7 @@ function RecruitersStage({ he }: { he: boolean }) {
 
 function FoundersStage({ he }: { he: boolean }) {
   const person = PEOPLE[2];
+  const reduceMotion = usePrefersReducedMotion();
   const meters = [
     {
       label: he ? "זמן שנחסך" : "Time saved",
@@ -385,7 +476,7 @@ function FoundersStage({ he }: { he: boolean }) {
       label: he ? "מאמץ שנחסך" : "Effort cut",
       value: "64%",
       sub: he ? "פחות סינון ידני" : "less manual screening",
-      color: "#ea1e63",
+      color: "#5b8def",
       pct: 64,
     },
   ];
@@ -402,18 +493,15 @@ function FoundersStage({ he }: { he: boolean }) {
       </header>
 
       <div className="landing-stage-meters">
-        {meters.map((meter) => (
+        {meters.map((meter, index) => (
           <article key={meter.label} className="landing-stage-meter">
-            <div
-              className="landing-stage-meter-ring"
-              style={{
-                background: `conic-gradient(${meter.color} ${meter.pct * 3.6}deg, #ececf3 0deg)`,
-              }}
-            >
-              <div className="landing-stage-meter-hole">
-                <strong>{meter.value}</strong>
-              </div>
-            </div>
+            <AnimatedMeterRing
+              pct={meter.pct}
+              color={meter.color}
+              value={meter.value}
+              delayMs={180 + index * 280}
+              reduceMotion={reduceMotion}
+            />
             <p>{meter.label}</p>
             <span>{meter.sub}</span>
           </article>
