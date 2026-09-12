@@ -286,10 +286,23 @@ function LandingPageInner() {
                 <tbody>
                   {t.compare.rows.map((row) => (
                     <tr key={row.feature}>
-                      <th scope="row">{row.feature}</th>
-                      <td className="is-mingle">{row.mingle}</td>
-                      <td>{row.ats}</td>
-                      <td>{row.linkedin}</td>
+                      <th scope="row">
+                        <span className="landing-compare-feature">
+                          <span className="landing-compare-check" aria-hidden="true">
+                            ✓
+                          </span>
+                          {row.feature}
+                        </span>
+                      </th>
+                      <td className="is-mingle">
+                        <span className="landing-compare-mingle-cell">
+                          <span className="landing-compare-check" aria-hidden="true">
+                            ✓
+                          </span>
+                          {row.mingle}
+                        </span>
+                      </td>
+                      <td className="is-competitors">{row.competitors}</td>
                     </tr>
                   ))}
                 </tbody>

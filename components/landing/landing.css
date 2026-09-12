@@ -2053,10 +2053,49 @@
   width: 22%;
 }
 
+.landing-compare thead th.is-mingle {
+  color: var(--ld-indigo);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
 .landing-compare .is-mingle {
   color: var(--ld-indigo);
-  font-weight: 500;
-  background: color-mix(in srgb, var(--ld-purple) 5%, white);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--ld-purple) 7%, white);
+}
+
+.landing-compare .is-competitors {
+  color: var(--ld-muted);
+  font-weight: 450;
+}
+
+.landing-compare-feature,
+.landing-compare-mingle-cell {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.landing-compare-check {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.12rem;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(145deg, #5b2ff0, #8b3dff);
+  box-shadow: 0 4px 10px rgba(91, 47, 240, 0.28);
+}
+
+.landing-compare tbody th .landing-compare-check {
+  background: #1f1a2e;
+  box-shadow: none;
 }
 
 .landing-compare tbody tr:last-child th,

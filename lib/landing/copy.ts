@@ -75,12 +75,11 @@ export type LandingCopy = {
   compare: {
     title: string;
     lead: string;
-    columns: [string, string, string, string];
+    columns: [string, string, string];
     rows: {
       feature: string;
       mingle: string;
-      ats: string;
-      linkedin: string;
+      competitors: string;
     }[];
   };
   faq: {
@@ -275,43 +274,37 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
     compare: {
       title: "Where mingle wins",
       lead: "Built for explained shortlists — not another pile of CVs.",
-      columns: ["", "mingle", "Typical ATS", "LinkedIn Recruiter"],
+      columns: ["", "mingle", "Competitors"],
       rows: [
         {
           feature: "Why this match",
           mingle: "Clear reasons + one honest risk",
-          ats: "Keyword / stage status",
-          linkedin: "Search filters, little why",
+          competitors: "Keywords, filters, little explanation",
         },
         {
           feature: "DNA matching",
           mingle: "Company + Candidate + Role",
-          ats: "Mostly CV ↔ job text",
-          linkedin: "Profile keywords",
+          competitors: "CV text ↔ job text / profile keywords",
         },
         {
           feature: "Questions asked",
           mingle: "Only when stuck",
-          ats: "Long intake forms",
-          linkedin: "You do the filtering",
+          competitors: "Long forms — or you filter yourself",
         },
         {
           feature: "Match Confidence",
           mingle: "Shown when data is thin",
-          ats: "Rarely transparent",
-          linkedin: "Not a fit score",
+          competitors: "Rarely transparent · not a real fit score",
         },
         {
           feature: "Mutual interest",
           mingle: "Before deep conversation",
-          ats: "After apply / screen",
-          linkedin: "InMail first",
+          competitors: "After apply, screen, or cold outreach",
         },
         {
           feature: "For talent",
           mingle: "Free",
-          ats: "Usually employer-only",
-          linkedin: "Freemium / Premium",
+          competitors: "Usually employer-only or paywalled",
         },
       ],
     },
@@ -324,8 +317,8 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
           a: "Yes. Talent uses mingle free. Hiring teams talk to us for access and demos.",
         },
         {
-          q: "How is this different from an ATS or LinkedIn Recruiter?",
-          a: "Those help you store or search people. mingle ranks a short list and explains Why this match — Role, Human, and Motivation Fit — with Match Confidence.",
+          q: "How is this different from competitors?",
+          a: "Most tools help you store or search people. mingle ranks a short list and explains Why this match — Role, Human, and Motivation Fit — with Match Confidence.",
         },
         {
           q: "What is Match Confidence?",
@@ -534,43 +527,37 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
     compare: {
       title: "איפה mingle חזק יותר",
       lead: "נבנה לרשימות קצרות מוסברות — לא לעוד ערמת קורות חיים.",
-      columns: ["", "mingle", "ATS טיפוסי", "LinkedIn Recruiter"],
+      columns: ["", "mingle", "Competitors"],
       rows: [
         {
           feature: "למה ההתאמה",
           mingle: "סיבות ברורות + סיכון כנה",
-          ats: "מילות מפתח / סטטוס",
-          linkedin: "פילטרים, כמעט בלי למה",
+          competitors: "מילות מפתח, פילטרים, כמעט בלי הסבר",
         },
         {
           feature: "התאמת DNA",
           mingle: "חברה + מועמד + תפקיד",
-          ats: "בעיקר קו״ח ↔ טקסט משרה",
-          linkedin: "מילות מפתח בפרופיל",
+          competitors: "קו״ח ↔ טקסט משרה / מילות מפתח בפרופיל",
         },
         {
           feature: "שאלות שנשאלות",
           mingle: "רק כשנתקעים",
-          ats: "טפסי קליטה ארוכים",
-          linkedin: "אתם עושים את הסינון",
+          competitors: "טפסים ארוכים — או שאתם מסננים לבד",
         },
         {
           feature: "ביטחון בהתאמה",
           mingle: "מוצג כשהמידע דק",
-          ats: "לעיתים רחוקות שקוף",
-          linkedin: "לא ציון התאמה",
+          competitors: "לעיתים רחוקות שקוף · לא ציון התאמה אמיתי",
         },
         {
           feature: "עניין הדדי",
           mingle: "לפני שיחה עמוקה",
-          ats: "אחרי הגשה / סינון",
-          linkedin: "קודם InMail",
+          competitors: "אחרי הגשה, סינון או פנייה קרה",
         },
         {
           feature: "למועמדים",
           mingle: "חינם",
-          ats: "בדרך כלל רק למעסיק",
-          linkedin: "Freemium / Premium",
+          competitors: "בדרך כלל רק למעסיק או בתשלום",
         },
       ],
     },
@@ -583,8 +570,8 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
           a: "כן. מועמדים משתמשים בחינם. צוותי גיוס מדברים איתנו על גישה ודמו.",
         },
         {
-          q: "במה זה שונה מ־ATS או LinkedIn Recruiter?",
-          a: "הם עוזרים לאחסן או לחפש אנשים. mingle מדרג רשימה קצרה ומסביר למה ההתאמה — תפקיד, אדם ומוטיבציה — עם ביטחון בהתאמה.",
+          q: "במה זה שונה ממתחרים?",
+          a: "רוב הכלים עוזרים לאחסן או לחפש אנשים. mingle מדרג רשימה קצרה ומסביר למה ההתאמה — תפקיד, אדם ומוטיבציה — עם ביטחון בהתאמה.",
         },
         {
           q: "מה זה ביטחון בהתאמה?",
