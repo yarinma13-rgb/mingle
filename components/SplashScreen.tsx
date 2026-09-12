@@ -40,11 +40,11 @@ export function SplashScreen({
           priority
         />
         <p
-          className={`mt-6 text-center text-mingle-text-secondary ${
+          className={`mt-6 text-center font-medium tracking-[-0.02em] text-mingle-text-secondary ${
             isMobile ? "text-base" : "text-sm"
           }`}
         >
-          Careers start with connection
+          The right people. Worth talking to.
         </p>
       </motion.div>
 
