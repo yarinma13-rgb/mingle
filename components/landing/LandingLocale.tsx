@@ -4,8 +4,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
-  useSyncExternalStore,
+  useState,
   type ReactNode,
 } from "react";
 import {
@@ -15,7 +16,6 @@ import {
 } from "@/lib/landing/copy";
 
 const STORAGE_KEY = "mingle.landing.locale";
-const CHANGE_EVENT = "mingle-landing-locale";
 
 type LandingLocaleContextValue = {
   locale: LandingLocale;
@@ -37,29 +37,20 @@ function readStoredLocale(): LandingLocale {
   return "en";
 }
 
-function subscribeLocale(onStoreChange: () => void) {
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(CHANGE_EVENT, onStoreChange);
-  return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(CHANGE_EVENT, onStoreChange);
-  };
-}
-
 export function LandingLocaleProvider({ children }: { children: ReactNode }) {
-  const locale = useSyncExternalStore(
-    subscribeLocale,
-    readStoredLocale,
-    () => "en" as LandingLocale,
-  );
+  const [locale, setLocaleState] = useState<LandingLocale>("en");
+
+  useEffect(() => {
+    setLocaleState(readStoredLocale());
+  }, []);
 
   const setLocale = useCallback((next: LandingLocale) => {
+    setLocaleState(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
       /* ignore */
     }
-    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const value = useMemo(
@@ -95,6 +86,7 @@ export function LandingLanguageSwitch() {
         type="button"
         className={locale === "en" ? "is-active" : undefined}
         aria-pressed={locale === "en"}
+        aria-label="English"
         onClick={() => setLocale("en")}
       >
         {t.lang.en}
@@ -103,6 +95,7 @@ export function LandingLanguageSwitch() {
         type="button"
         className={locale === "he" ? "is-active" : undefined}
         aria-pressed={locale === "he"}
+        aria-label="עברית"
         onClick={() => setLocale("he")}
       >
         {t.lang.he}
