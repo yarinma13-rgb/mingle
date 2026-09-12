@@ -170,7 +170,7 @@ export function LandingCompanyBoard() {
             <span className="landing-accent-word">{copy.titleAccent}</span>
           </h2>
           <p>{copy.lead}</p>
-          <a href="/start" className="landing-btn landing-btn-primary">
+          <a href="/auth?mode=signup&path=company" className="landing-btn landing-btn-primary">
             {copy.cta}
             <span aria-hidden>→</span>
           </a>
