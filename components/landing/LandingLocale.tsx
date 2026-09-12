@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import {
   createContext,
   useCallback,
@@ -123,7 +126,10 @@ export function LandingLanguageSwitch() {
         className={locale === "en" ? "is-active" : undefined}
         aria-pressed={locale === "en"}
         aria-label="English"
-        onClick={() => setLocale("en")}
+        onClick={() => {
+          track(AnalyticsEvent.landingLocaleChanged, { locale: "en" });
+          setLocale("en");
+        }}
       >
         {t.lang.en}
       </button>
@@ -132,7 +138,10 @@ export function LandingLanguageSwitch() {
         className={locale === "he" ? "is-active" : undefined}
         aria-pressed={locale === "he"}
         aria-label="עברית"
-        onClick={() => setLocale("he")}
+        onClick={() => {
+          track(AnalyticsEvent.landingLocaleChanged, { locale: "he" });
+          setLocale("he");
+        }}
       >
         {t.lang.he}
       </button>

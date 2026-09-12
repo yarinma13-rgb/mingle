@@ -15,6 +15,7 @@ function cleanProps(
   return next;
 }
 
+/** Fire-and-forget product event. Never throws into UI. */
 export function track(
   event: AnalyticsEventName,
   properties?: EventProps,
@@ -52,16 +53,30 @@ async function capture(
   }
 }
 
+/**
+ * Browser bootstrap. Enables pageviews, autocapture, heatmaps,
+ * and masked session recording when the PostHog project allows it.
+ */
+let browserInitialized = false;
+
 export async function initPosthogBrowser(): Promise<void> {
   const key = posthogKey();
-  if (!key || typeof window === "undefined") return;
+  if (!key || typeof window === "undefined" || browserInitialized) return;
   try {
     const posthog = (await import("posthog-js")).default;
+    browserInitialized = true;
     posthog.init(key, {
       api_host: posthogHost(),
       person_profiles: "identified_only",
       capture_pageview: true,
       capture_pageleave: true,
+      autocapture: true,
+      capture_heatmaps: true,
+      session_recording: {
+        maskAllInputs: true,
+        maskTextSelector: "[data-ph-mask]",
+      },
+      persistence: "localStorage+cookie",
     });
   } catch {
     // Missing key or blocked network is a no-op.
@@ -73,6 +88,15 @@ export function identifyUser(userId: string, traits?: EventProps): void {
   void import("posthog-js")
     .then((mod) => {
       mod.default.identify(userId, cleanProps(traits));
+    })
+    .catch(() => {});
+}
+
+export function resetAnalytics(): void {
+  if (!posthogKey() || typeof window === "undefined") return;
+  void import("posthog-js")
+    .then((mod) => {
+      mod.default.reset();
     })
     .catch(() => {});
 }

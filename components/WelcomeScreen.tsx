@@ -7,6 +7,8 @@ import { Outfit, Manrope } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 
 const welcomeDisplay = Outfit({
   subsets: ["latin"],
@@ -54,6 +56,7 @@ export function WelcomeScreen() {
 
   const choosePath = (path: Path) => {
     if (leaving) return;
+    track(AnalyticsEvent.welcomePathSelected, { path });
     setSelected(path);
     setLeaving(true);
   };

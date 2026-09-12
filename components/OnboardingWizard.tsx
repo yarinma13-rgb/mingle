@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -209,6 +212,14 @@ export function OnboardingWizard({ path }: { path: UserType }) {
       );
       const nextStep = step + 1;
       await setOnboardingStep(supabase, userId, nextStep);
+      track(AnalyticsEvent.onboardingStepCompleted, {
+        path: resolvedType,
+        step,
+        question_key: currentQuestion.key,
+      });
+      if (nextStep > 3) {
+        track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
+      }
       setStep(nextStep);
     } catch {
       setSaveError("Couldn't save that. Check your connection and try again.");

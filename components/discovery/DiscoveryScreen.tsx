@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -82,6 +85,8 @@ function DiscoveryCardView({
     try {
       await saveProfile(supabase, viewerId, card.userId);
       await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
+      track(AnalyticsEvent.matchInterested, { target_user_id: card.userId, source: "discover" });
+      track(AnalyticsEvent.profileSaved, { target_user_id: card.userId, saved: true });
       setFeedback("interested");
       toast("Marked interested.");
       void notifyPushMatch(card.userId);
@@ -103,6 +108,7 @@ function DiscoveryCardView({
         reason,
       );
       setFeedback("not_fit");
+      track(AnalyticsEvent.matchNotFit, { target_user_id: card.userId, reason, source: "discover" });
       onPass(card.userId);
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
@@ -271,6 +277,7 @@ export function DiscoveryScreen({
 
   const persistPass = async (userId: string) => {
     try {
+      track(AnalyticsEvent.matchSkipped, { target_user_id: userId, source: "discover" });
       await passProfile(supabase, viewerId, userId);
     } catch {
       toast("Couldn't save that skip.", "error");
