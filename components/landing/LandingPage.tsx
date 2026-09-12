@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
 import {
+  LandingAudienceProvider,
   LandingHeroCopy,
   LandingHeroMatch,
 } from "@/components/landing/LandingHeroMatch";
@@ -67,10 +68,12 @@ function LandingPageInner() {
       <main>
         <section className="landing-hero" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
-            <LandingHeroCopy />
-            <div className="landing-hero-visual">
-              <LandingHeroMatch />
-            </div>
+            <LandingAudienceProvider>
+              <LandingHeroCopy />
+              <div className="landing-hero-visual">
+                <LandingHeroMatch />
+              </div>
+            </LandingAudienceProvider>
           </div>
         </section>
 

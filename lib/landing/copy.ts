@@ -4,7 +4,7 @@ export type AudienceId =
   | "companies"
   | "recruiters"
   | "founders"
-  | "talent"
+  | "talents"
   | "agencies";
 
 export type LandingCopy = {
@@ -145,22 +145,22 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
         {
           id: "recruiters",
           label: "Recruiters",
-          lead: "Skip the questionnaire. mingle asks only when something critical is missing, then ranks people worth your time.",
+          lead: "In seconds, mingle surfaces your highest matches. Shortlist the best-fit people — no long questionnaire, only the questions that matter.",
         },
         {
           id: "founders",
           label: "Founders",
-          lead: "Open a hard-to-fill role. Get Top Matches with Role, Human, and Motivation Fit — plus risks before the first call.",
+          lead: "Hire like you have a full recruiting team. Top Matches with Role, Human & Motivation Fit — plus risks before the first call, so you protect time, money, and focus.",
         },
         {
-          id: "talent",
-          label: "Talent",
-          lead: "Your Candidate DNA is inferred from what you already share. When interest is mutual, both sides see why.",
+          id: "talents",
+          label: "Talents",
+          lead: "Free forever. Build your Candidate DNA, set salary your way, and only talk when interest is mutual — with clear reasons both sides can trust.",
         },
         {
           id: "agencies",
           label: "Agencies",
-          lead: "Send clients fewer CVs and more explained matches — Role, Human, Motivation Fit, and Match Confidence together.",
+          lead: "Win more client trust with explained matches. Stay visible to the companies you hire for — and attract stronger talent for quality outsourcing benches.",
         },
       ],
     },
@@ -404,22 +404,22 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
         {
           id: "recruiters",
           label: "מגייסים",
-          lead: "בלי שאלון ארוך. mingle שואל רק כשמשהו קריטי חסר, ואז מדרג אנשים ששווים את הזמן שלכם.",
+          lead: "תוך שניות mingle מעלה את ההתאמות הכי גבוהות. בוחרים מה־shortlist את מי שבאמת שווה — בלי שאלון ארוך, רק מה שקריטי.",
         },
         {
           id: "founders",
           label: "מייסדים",
-          lead: "פותחים משרה קשה. מקבלים Top Matches עם התאמת תפקיד, אדם ומוטיבציה — כולל סיכונים לפני השיחה הראשונה.",
+          lead: "מגייסים כאילו יש לכם צוות גיוס מלא. Top Matches עם התאמת תפקיד, אדם ומוטיבציה — וסיכונים לפני השיחה, כדי לשמור על זמן, כסף ופוקוס.",
         },
         {
-          id: "talent",
+          id: "talents",
           label: "מועמדים",
-          lead: "ה־DNA של המועמד נבנה ממה שכבר משתפים. כשיש עניין הדדי, שני הצדדים רואים למה.",
+          lead: "חינם לתמיד. בונים Candidate DNA, מגדירים שכר כמו שנוח לכם, ומדברים רק כשיש עניין הדדי — עם סיבות ששני הצדדים סומכים עליהן.",
         },
         {
           id: "agencies",
           label: "סוכנויות",
-          lead: "שולחים ללקוחות פחות קורות חיים ויותר התאמות מוסברות — תפקיד, אדם, מוטיבציה וביטחון בהתאמה.",
+          lead: "יותר אמון מלקוחות עם התאמות מוסברות. יותר נראות מול החברות שאתם מגייסים אליהן — וטאלנט חזק יותר לספסל outsourcing איכותי.",
         },
       ],
     },
