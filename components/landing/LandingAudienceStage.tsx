@@ -31,68 +31,76 @@ type Person = {
   humanFit: number;
   motivationFit: number;
   tier: "high" | "medium";
+  /** Always realistic photo portraits for a unified look. */
+  style: "photo";
 };
 
+/** Mix of Israelis + Americans, ages ~25–39 — all realistic photos. */
 const PEOPLE: Person[] = [
   {
-    name: "Maya Okonkwo",
+    name: "Noa Levi",
     role: "Senior Product Manager",
     location: "Tel Aviv",
     match: 97,
-    avatar: "/landing/avatars/avatar-maya.png",
+    avatar: "/landing/avatars/avatar-noa.png",
     skills: ["Roadmaps", "B2B SaaS", "Discovery", "Leadership"],
     roleFit: 96,
     humanFit: 94,
     motivationFit: 88,
     tier: "high",
+    style: "photo",
   },
   {
-    name: "Arjun Mehta",
+    name: "Jordan Hayes",
     role: "Full-stack Engineer",
-    location: "Bengaluru",
+    location: "Austin",
     match: 95,
-    avatar: "/landing/avatars/avatar-arjun.png",
+    avatar: "/landing/avatars/avatar-noah.png",
     skills: ["TypeScript", "React", "Node", "Systems"],
     roleFit: 94,
     humanFit: 91,
     motivationFit: 86,
     tier: "high",
+    style: "photo",
   },
   {
-    name: "Lin Wei",
+    name: "Yael Naveh",
     role: "Product Designer",
-    location: "Singapore",
+    location: "Tel Aviv",
     match: 94,
-    avatar: "/landing/avatars/avatar-lin.png",
+    avatar: "/landing/avatars/avatar-sofia.png",
     skills: ["Figma", "User Research", "Prototyping", "Leadership"],
     roleFit: 93,
     humanFit: 90,
     motivationFit: 84,
     tier: "high",
+    style: "photo",
   },
   {
-    name: "Noah Berger",
+    name: "Arjun Mehta",
     role: "Backend Engineer",
-    location: "Berlin",
+    location: "New York",
     match: 88,
-    avatar: "/landing/avatars/avatar-noah.png",
+    avatar: "/landing/avatars/avatar-arjun.png",
     skills: ["Platform", "Go", "Reliability"],
     roleFit: 90,
     humanFit: 84,
     motivationFit: 62,
     tier: "medium",
+    style: "photo",
   },
   {
-    name: "Sofia Alvarez",
-    role: "People Partner",
-    location: "Madrid",
-    match: 84,
-    avatar: "/landing/avatars/avatar-sofia.png",
-    skills: ["Hiring ops", "Culture", "Coaching"],
-    roleFit: 86,
-    humanFit: 88,
-    motivationFit: 58,
+    name: "Idan Cohen",
+    role: "Full-stack Engineer",
+    location: "Tel Aviv",
+    match: 86,
+    avatar: "/landing/avatars/avatar-idan.png",
+    skills: ["TypeScript", "React", "Node"],
+    roleFit: 88,
+    humanFit: 86,
+    motivationFit: 70,
     tier: "medium",
+    style: "photo",
   },
 ];
 
@@ -151,6 +159,85 @@ function Avatar({
       height={size}
       className={`landing-stage-avatar ${className}`.trim()}
     />
+  );
+}
+
+function AnimatedMeterRing({
+  pct,
+  color,
+  value,
+  delayMs,
+  reduceMotion,
+}: {
+  pct: number;
+  color: string;
+  value: string;
+  delayMs: number;
+  reduceMotion: boolean;
+}) {
+  const size = 90;
+  const stroke = 8;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const [fill, setFill] = useState(0);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    let cancelled = false;
+    let timeoutId = 0;
+
+    const run = (phase: "fill" | "hold" | "empty") => {
+      if (cancelled) return;
+      if (phase === "fill") {
+        setFill(pct);
+        timeoutId = window.setTimeout(() => run("hold"), 2200);
+      } else if (phase === "hold") {
+        timeoutId = window.setTimeout(() => run("empty"), 1600);
+      } else {
+        setFill(0);
+        timeoutId = window.setTimeout(() => run("fill"), 1100);
+      }
+    };
+
+    timeoutId = window.setTimeout(() => run("fill"), delayMs);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, pct, reduceMotion]);
+
+  const offset = circumference * (1 - (reduceMotion ? pct : fill) / 100);
+
+  return (
+    <div className="landing-stage-meter-ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#ececf3"
+          strokeWidth={stroke}
+        />
+        <circle
+          className="landing-stage-meter-progress"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <div className="landing-stage-meter-hole">
+        <strong>{value}</strong>
+      </div>
+    </div>
   );
 }
 
@@ -366,6 +453,7 @@ function RecruitersStage({ he }: { he: boolean }) {
 
 function FoundersStage({ he }: { he: boolean }) {
   const person = PEOPLE[2];
+  const reduceMotion = usePrefersReducedMotion();
   const meters = [
     {
       label: he ? "זמן שנחסך" : "Time saved",
@@ -385,7 +473,7 @@ function FoundersStage({ he }: { he: boolean }) {
       label: he ? "מאמץ שנחסך" : "Effort cut",
       value: "64%",
       sub: he ? "פחות סינון ידני" : "less manual screening",
-      color: "#ea1e63",
+      color: "#5b8def",
       pct: 64,
     },
   ];
@@ -402,18 +490,15 @@ function FoundersStage({ he }: { he: boolean }) {
       </header>
 
       <div className="landing-stage-meters">
-        {meters.map((meter) => (
+        {meters.map((meter, index) => (
           <article key={meter.label} className="landing-stage-meter">
-            <div
-              className="landing-stage-meter-ring"
-              style={{
-                background: `conic-gradient(${meter.color} ${meter.pct * 3.6}deg, #ececf3 0deg)`,
-              }}
-            >
-              <div className="landing-stage-meter-hole">
-                <strong>{meter.value}</strong>
-              </div>
-            </div>
+            <AnimatedMeterRing
+              pct={meter.pct}
+              color={meter.color}
+              value={meter.value}
+              delayMs={180 + index * 280}
+              reduceMotion={reduceMotion}
+            />
             <p>{meter.label}</p>
             <span>{meter.sub}</span>
           </article>
@@ -454,10 +539,10 @@ function TalentsStage({ he }: { he: boolean }) {
   const reduceMotion = usePrefersReducedMotion();
   const salaryMarket = useSalaryMarket();
   const salary = salaryRangeForMarket(salaryMarket);
-  const person = PEOPLE[2];
+  const person = PEOPLE[4]; // Idan — Israeli male talent (~30), primary audience
   const skills = he
-    ? ["Figma", "מחקר משתמשים", "פרוטוטייפ", "מנהיגות"]
-    : ["Figma", "User Research", "Prototyping", "Leadership"];
+    ? ["TypeScript", "React", "Node", "מערכות"]
+    : ["TypeScript", "React", "Node", "Systems"];
 
   const confetti = useMemo(() => {
     if (reduceMotion) return [];
@@ -514,7 +599,7 @@ function TalentsStage({ he }: { he: boolean }) {
             <span className="landing-stage-free-pill">{he ? "חינם" : "Free"}</span>
           </div>
           <p className="landing-stage-talent-role">
-            {he ? "מעצבת מוצר בכירה" : "Senior Product Designer"}
+            {he ? "מהנדס פול־סטאק" : "Full-stack Engineer"}
           </p>
           <p className="landing-stage-talent-loc">
             {he ? salary.locationHe : salary.locationEn}

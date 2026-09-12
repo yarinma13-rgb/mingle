@@ -1899,9 +1899,11 @@
 .landing-company-card {
   background: #fff;
   border-radius: 12px;
-  padding: 0.55rem 0.55rem 0.5rem;
+  padding: 0.55rem 0.55rem 0.65rem;
   border: 1px solid color-mix(in srgb, var(--ld-brand-purple) 8%, transparent);
   box-shadow: 0 2px 8px rgba(45, 27, 78, 0.04);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .landing-company-card-top {
@@ -2005,12 +2007,27 @@
 }
 
 .landing-company-float-risk {
-  bottom: 1.1rem;
-  inset-inline-start: 1.1rem;
+  display: none;
+}
+
+.landing-company-card-risk {
+  margin: 0.45rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
   background: color-mix(in srgb, #ea1e63 8%, white);
-  border-color: color-mix(in srgb, #ea1e63 22%, transparent);
+  border: 1px solid color-mix(in srgb, #ea1e63 22%, transparent);
   color: #c2185b;
-  font-weight: 500;
+  font-size: 0.58rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Compare panel ───────────────────────────────────── */
@@ -2403,13 +2420,7 @@
 .landing-company-float span { color: var(--ld-muted); font-size: 0.6rem; }
 .landing-company-float-why { top: 3.4rem; inset-inline-end: 1rem; }
 .landing-company-float-risk {
-  bottom: 1.1rem;
-  inset-inline-start: 1.1rem;
-  background: color-mix(in srgb, #ea1e63 8%, white);
-  border-color: color-mix(in srgb, #ea1e63 22%, transparent);
-  color: #c2185b;
-  font-weight: 500;
-  flex-direction: row;
+  display: none;
 }
 .landing-faq-list { margin: 1.5rem auto 0; max-width: 720px; display: flex; flex-direction: column; gap: 0.65rem; }
 .landing-footer-free { margin: 0; font-size: 0.78rem; color: var(--ld-muted); }
@@ -2485,6 +2496,10 @@
   object-fit: cover;
   flex-shrink: 0;
   box-shadow: 0 0 0 2px #fff, 0 6px 14px rgba(40, 30, 90, 0.12);
+}
+
+.landing-stage-avatar.is-illustrated {
+  box-shadow: 0 0 0 2px #fff, 0 10px 22px rgba(99, 102, 241, 0.2);
 }
 
 .landing-stage-avatar.is-lg {
@@ -2861,15 +2876,26 @@
 }
 
 .landing-stage-meter-ring {
+  position: relative;
   width: 5.6rem;
   height: 5.6rem;
-  border-radius: 50%;
   margin: 0 auto 0.5rem;
   display: grid;
   place-items: center;
 }
 
+.landing-stage-meter-ring svg {
+  position: absolute;
+  inset: 0;
+}
+
+.landing-stage-meter-progress {
+  transition: stroke-dashoffset 1.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .landing-stage-meter-hole {
+  position: relative;
+  z-index: 1;
   width: 4.05rem;
   height: 4.05rem;
   border-radius: 50%;

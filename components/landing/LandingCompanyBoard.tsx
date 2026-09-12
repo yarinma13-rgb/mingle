@@ -8,6 +8,8 @@ type BoardCard = {
   match: number;
   confidence: "high" | "medium" | "low";
   note?: string;
+  /** Inline risk chip — avoids overlapping float badges */
+  risk?: boolean;
 };
 
 type BoardColumn = {
@@ -43,6 +45,7 @@ const COLUMNS: BoardColumn[] = [
         match: 86,
         confidence: "medium",
         note: "Thin profile",
+        risk: true,
       },
     ],
   },
@@ -215,6 +218,9 @@ export function LandingCompanyBoard() {
                         </span>
                         {card.note ? <span>{card.note}</span> : null}
                       </div>
+                      {card.risk ? (
+                        <p className="landing-company-card-risk">{copy.floatRisk}</p>
+                      ) : null}
                     </article>
                   ))}
                 </div>
@@ -225,9 +231,6 @@ export function LandingCompanyBoard() {
           <div className="landing-company-float landing-company-float-why">
             <strong>{copy.floatWhy}</strong>
             <span>Role · Human · Motivation</span>
-          </div>
-          <div className="landing-company-float landing-company-float-risk">
-            {copy.floatRisk}
           </div>
         </div>
       </div>
