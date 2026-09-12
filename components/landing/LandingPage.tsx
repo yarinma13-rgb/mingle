@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
 import {
+  LandingAudienceProvider,
   LandingHeroCopy,
   LandingHeroMatch,
 } from "@/components/landing/LandingHeroMatch";
@@ -67,10 +68,12 @@ function LandingPageInner() {
       <main>
         <section className="landing-hero" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
-            <LandingHeroCopy />
-            <div className="landing-hero-visual">
-              <LandingHeroMatch />
-            </div>
+            <LandingAudienceProvider>
+              <LandingHeroCopy />
+              <div className="landing-hero-visual">
+                <LandingHeroMatch />
+              </div>
+            </LandingAudienceProvider>
           </div>
         </section>
 
@@ -266,31 +269,45 @@ function LandingPageInner() {
               <h2>{t.compare.title}</h2>
               <p>{t.compare.lead}</p>
             </div>
-            <div className="landing-compare-wrap">
-              <table className="landing-compare">
-                <thead>
-                  <tr>
-                    {t.compare.columns.map((col, index) => (
-                      <th
-                        key={`${col}-${index}`}
-                        className={index === 1 ? "is-mingle" : undefined}
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {t.compare.rows.map((row) => (
-                    <tr key={row.feature}>
-                      <th scope="row">{row.feature}</th>
-                      <td className="is-mingle">{row.mingle}</td>
-                      <td>{row.ats}</td>
-                      <td>{row.linkedin}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="landing-compare-panel">
+              <div className="landing-compare-head" aria-hidden="true">
+                <span className="landing-compare-head-feature" />
+                <span className="landing-compare-head-mingle">{t.compare.columns[1]}</span>
+                <span className="landing-compare-head-competitors">
+                  {t.compare.columns[2]}
+                </span>
+              </div>
+              <ul className="landing-compare-list">
+                {t.compare.rows.map((row) => (
+                  <li key={row.feature} className="landing-compare-row">
+                    <p className="landing-compare-feature">{row.feature}</p>
+                    <div
+                      className="landing-compare-mingle"
+                      data-label={t.compare.columns[1]}
+                    >
+                      <span className="landing-compare-mark is-yes" aria-hidden="true">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none">
+                          <path
+                            d="M3.5 8.2 6.4 11l6.1-6.5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span>{row.mingle}</span>
+                    </div>
+                    <div
+                      className="landing-compare-competitors"
+                      data-label={t.compare.columns[2]}
+                    >
+                      <span className="landing-compare-mark is-no" aria-hidden="true" />
+                      <span>{row.competitors}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>

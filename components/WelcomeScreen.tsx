@@ -3,29 +3,47 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Outfit, Manrope } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
-import { TalentGlyph, CompanyGlyph } from "@/components/PathGlyph";
+import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
+
+const welcomeDisplay = Outfit({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const welcomeBody = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 type Path = "talent" | "company";
 
 const PATH_CARDS: {
   id: Path;
+  eyebrow: string;
   title: string;
   description: string;
-  Glyph: typeof TalentGlyph;
+  Art: typeof TalentPathArt;
 }[] = [
   {
     id: "talent",
-    title: "I'm looking for my next opportunity",
-    description: "Connect with companies that match your goals.",
-    Glyph: TalentGlyph,
+    eyebrow: "For you",
+    title: "Find roles that actually fit",
+    description:
+      "Set your preferences once. See clear Why this match — and only talk when interest is mutual.",
+    Art: TalentPathArt,
   },
   {
     id: "company",
-    title: "I'm looking for talent",
-    description: "Discover people who fit your team.",
-    Glyph: CompanyGlyph,
+    eyebrow: "For hiring teams",
+    title: "Meet people worth talking to",
+    description:
+      "Paste a role. Get a short explained list — Role, Human, and Motivation Fit — not another CV pile.",
+    Art: CompanyPathArt,
   },
 ];
 
@@ -41,13 +59,13 @@ export function WelcomeScreen() {
   };
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16">
+    <div
+      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-32 -top-32 h-[520px] w-[520px] opacity-[0.12] sm:h-[680px] sm:w-[680px]"
-      >
-        <MingleLogo variant="mark" size={192} alt="" />
-      </div>
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.12),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.12),transparent_32%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.1),transparent_40%)]"
+      />
 
       <AnimatePresence
         mode="wait"
@@ -62,38 +80,52 @@ export function WelcomeScreen() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="relative z-10 flex w-full max-w-xl flex-col items-center text-center"
+            className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center"
           >
-            <MingleLogo variant="lockup" size={70} priority className="mb-12" />
+            <MingleLogo variant="lockup" size={64} priority className="mb-10" />
 
-            <h1 className="font-display text-[1.75rem] font-bold leading-tight text-mingle-text sm:text-5xl">
-              Careers start with{" "}
-              <span className="mingle-gradient-text">connection</span>
+            <h1
+              className={`${welcomeDisplay.className} text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]`}
+            >
+              The right people.{" "}
+              <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
-            <p className="mt-5 text-lg text-mingle-text-secondary">
-              What brings you to mingle?
+            <p className="mt-4 max-w-md text-base font-medium text-mingle-text-secondary sm:text-lg">
+              Mutual career matching — clear reasons for both sides, before the
+              first conversation.
             </p>
 
-            <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
+            <p
+              className={`${welcomeDisplay.className} mt-8 text-sm font-semibold tracking-[-0.02em] text-mingle-text`}
+            >
+              Choose how you start
+            </p>
+
+            <div className="mt-4 grid w-full gap-4 sm:grid-cols-2">
               {PATH_CARDS.map((card) => {
-                const Glyph = card.Glyph;
+                const Art = card.Art;
                 return (
                   <motion.button
                     key={card.id}
                     type="button"
                     onClick={() => choosePath(card.id)}
-                    whileHover={{ y: -3 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex min-w-0 flex-col items-start rounded-2xl border border-mingle-border bg-mingle-white p-6 text-left shadow-mingle transition-colors hover:border-mingle-blue/60"
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.985 }}
+                    className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[22px] border border-mingle-border/80 bg-white/90 p-5 text-left shadow-[0_12px_32px_rgba(45,27,78,0.06)] backdrop-blur-sm transition-colors hover:border-mingle-purple/35"
                   >
-                    <span className="relative flex h-12 w-12 items-center justify-center">
-                      <Glyph className="relative" />
+                    <div className="flex h-[84px] items-center justify-center rounded-2xl bg-[linear-gradient(160deg,#f7f4ff_0%,#eef5ff_100%)]">
+                      <Art />
+                    </div>
+                    <span className="mt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-mingle-purple">
+                      {card.eyebrow}
                     </span>
-                    <span className="mt-4 font-display text-base font-semibold text-mingle-text">
+                    <span
+                      className={`${welcomeDisplay.className} mt-1.5 text-[1.05rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text`}
+                    >
                       {card.title}
                     </span>
-                    <span className="mt-1.5 text-sm text-mingle-text-secondary">
+                    <span className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
                       {card.description}
                     </span>
                   </motion.button>
