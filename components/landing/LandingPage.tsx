@@ -27,7 +27,8 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const AUTH_HREF = "/start";
+const SIGN_IN_HREF = "/auth";
+const GET_STARTED_HREF = "/auth?mode=signup";
 const DEMO_HREF = "/contact";
 
 function LandingPageInner() {
@@ -58,7 +59,7 @@ function LandingPageInner() {
 
           <div className="landing-nav-actions">
             <LandingLanguageSwitch />
-            <Link href={AUTH_HREF} onClick={() => track(AnalyticsEvent.landingCtaClicked, { cta: "sign_in", source: "nav" })} className="landing-nav-signin">
+            <Link href={SIGN_IN_HREF} onClick={() => track(AnalyticsEvent.landingCtaClicked, { cta: "sign_in", source: "nav" })} className="landing-nav-signin">
               {t.nav.signIn}
             </Link>
             <Link href={DEMO_HREF} onClick={() => track(AnalyticsEvent.landingCtaClicked, { cta: "book_demo", source: "nav" })} className="landing-btn landing-btn-ghost">
@@ -339,7 +340,7 @@ function LandingPageInner() {
               <p>{t.banner.lead}</p>
               <div className="landing-banner-actions">
                 <Link
-                  href={AUTH_HREF}
+                  href={GET_STARTED_HREF}
                   className="landing-btn landing-btn-primary landing-btn-lg"
                 >
                   {t.banner.getStarted}
@@ -378,7 +379,7 @@ function LandingPageInner() {
             <div className="landing-footer-links">
               <Link href={DEMO_HREF}>{t.footer.bookDemo}</Link>
               <Link href={DEMO_HREF}>{t.footer.contact}</Link>
-              <Link href={AUTH_HREF}>{t.footer.signIn}</Link>
+              <Link href={SIGN_IN_HREF}>{t.footer.signIn}</Link>
             </div>
           </div>
           <div>

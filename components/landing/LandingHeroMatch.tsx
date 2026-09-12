@@ -15,7 +15,6 @@ import { useLandingLocale } from "@/components/landing/LandingLocale";
 import { LandingAudienceStage } from "@/components/landing/LandingAudienceStage";
 import type { AudienceId } from "@/lib/landing/copy";
 
-const START_HREF = "/start";
 const DEMO_HREF = "/contact";
 
 type AudienceContextValue = {
@@ -87,11 +86,16 @@ export function LandingHeroCopy() {
 
       <div className="landing-hero-actions">
         <Link
-          href={START_HREF}
+          href={
+            audienceId === "talents"
+              ? "/auth?mode=signup&path=talent"
+              : "/auth?mode=signup&path=company"
+          }
           onClick={() =>
             track(AnalyticsEvent.landingCtaClicked, {
               cta: "get_started",
               source: "hero",
+              audience: audienceId,
             })
           }
           className="landing-btn landing-btn-primary landing-btn-lg landing-btn-rainbow-pulse"
