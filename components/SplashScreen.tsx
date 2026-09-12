@@ -1,10 +1,17 @@
 "use client";
 
-import { Figtree } from "next/font/google";
+import { Figtree, Poppins } from "next/font/google";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 
-const splashFont = Figtree({
+/** Monday.com: Poppins for display lines, Figtree for UI/button copy. */
+const splashDisplay = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
+  display: "swap",
+});
+
+const splashBody = Figtree({
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
   display: "swap",
@@ -32,7 +39,7 @@ export function SplashScreen({
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: isMobile ? 0.35 : 0.2, ease: "easeOut" }}
-      className={`${splashFont.className} fixed inset-0 z-50 flex flex-col items-center justify-center bg-mingle-bg px-8`}
+      className={`${splashBody.className} fixed inset-0 z-50 flex flex-col items-center justify-center bg-mingle-bg px-8`}
     >
       <motion.div
         initial={{ opacity: 0, scale: isMobile ? 0.8 : 0.96 }}
@@ -47,7 +54,7 @@ export function SplashScreen({
           priority
         />
         <p
-          className={`mt-6 text-center font-semibold tracking-[-0.03em] text-mingle-text-secondary ${
+          className={`${splashDisplay.className} mt-6 text-center font-semibold tracking-[-0.01em] text-mingle-text-secondary ${
             isMobile ? "text-base" : "text-sm"
           }`}
         >
@@ -63,7 +70,7 @@ export function SplashScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.35, ease: "easeOut" }}
           whileTap={{ scale: 0.97 }}
-          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-8 py-4 text-base font-bold tracking-[-0.02em] text-white"
+          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-8 py-4 text-base font-semibold tracking-normal text-white"
         >
           Get Started
         </motion.button>

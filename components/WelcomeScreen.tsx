@@ -2,16 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { Figtree } from "next/font/google";
+import { Figtree, Poppins } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
+import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
 
-/** Monday.com-style geometric sans for the welcome path picker. */
-const welcomeFont = Figtree({
+/**
+ * Monday.com brand typography:
+ * - Poppins for marketing titles / display
+ * - Figtree for platform body, labels, and small copy
+ */
+const welcomeDisplay = Poppins({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const welcomeBody = Figtree({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -22,26 +32,26 @@ const PATH_CARDS: {
   eyebrow: string;
   title: string;
   description: string;
-  image: string;
-  imageAlt: string;
+  Art: typeof TalentPathArt;
+  tint: string;
 }[] = [
   {
     id: "talent",
-    eyebrow: "For you",
+    eyebrow: "For candidates",
     title: "Find roles that actually fit",
     description:
       "Set your preferences once. See clear Why this match — and only talk when interest is mutual.",
-    image: "/welcome/talent-agent.png",
-    imageAlt: "Match agent helping you find roles that fit",
+    Art: TalentPathArt,
+    tint: "from-[#fff1f6] to-[#f3eeff]",
   },
   {
     id: "company",
-    eyebrow: "For hiring teams",
+    eyebrow: "For companies",
     title: "Meet people worth talking to",
     description:
       "Paste a role. Get a short explained list — Role, Human, and Motivation Fit — not another CV pile.",
-    image: "/welcome/company-matches.png",
-    imageAlt: "Explained shortlist of top matches for a hiring team",
+    Art: CompanyPathArt,
+    tint: "from-[#f1f4ff] to-[#eef0ff]",
   },
 ];
 
@@ -58,11 +68,11 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className={`${welcomeFont.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.14),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.12),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.1),transparent_42%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.12),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.1),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.08),transparent_42%)]"
       />
 
       <AnimatePresence
@@ -82,56 +92,58 @@ export function WelcomeScreen() {
           >
             <MingleLogo variant="lockup" size={64} priority className="mb-10" />
 
-            <h1 className="text-[1.9rem] font-extrabold leading-[1.1] tracking-[-0.045em] text-mingle-text sm:text-[2.85rem]">
+            <h1
+              className={`${welcomeDisplay.className} text-[2rem] font-bold leading-[1.12] tracking-[-0.014em] text-mingle-text sm:text-[2.75rem] sm:leading-[1.1]`}
+            >
               The right people.{" "}
               <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
-            <p className="mt-4 max-w-md text-base font-medium leading-relaxed tracking-[-0.015em] text-mingle-text-secondary sm:text-lg">
+            <p className="mt-4 max-w-md text-[1.05rem] font-normal leading-[1.55] tracking-normal text-mingle-text-secondary sm:text-lg">
               Mutual career matching — clear reasons for both sides, before the
               first conversation.
             </p>
 
-            <p className="mt-9 text-sm font-semibold tracking-[-0.02em] text-mingle-text">
+            <p className="mt-9 text-[0.9375rem] font-semibold tracking-normal text-mingle-text">
               Choose how you start
             </p>
 
             <div className="mt-4 grid w-full gap-4 sm:grid-cols-2">
-              {PATH_CARDS.map((card) => (
-                <motion.button
-                  key={card.id}
-                  type="button"
-                  onClick={() => choosePath(card.id)}
-                  whileHover={{ y: -5 }}
-                  whileTap={{ scale: 0.985 }}
-                  className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[24px] border border-mingle-border/70 bg-white/95 text-left shadow-[0_16px_40px_rgba(45,27,78,0.08)] transition-colors hover:border-mingle-purple/40"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#f3eefc]">
-                    <Image
-                      src={card.image}
-                      alt={card.imageAlt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 320px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      priority
-                    />
-                  </div>
-                  <div className="flex flex-col px-5 pb-5 pt-4">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-mingle-purple">
-                      {card.eyebrow}
-                    </span>
-                    <span className="mt-1.5 text-[1.08rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text">
-                      {card.title}
-                    </span>
-                    <span className="mt-1.5 text-sm font-medium leading-relaxed tracking-[-0.01em] text-mingle-text-secondary">
-                      {card.description}
-                    </span>
-                  </div>
-                </motion.button>
-              ))}
+              {PATH_CARDS.map((card) => {
+                const Art = card.Art;
+                return (
+                  <motion.button
+                    key={card.id}
+                    type="button"
+                    onClick={() => choosePath(card.id)}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.985 }}
+                    className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[24px] border border-mingle-border/70 bg-white text-left shadow-[0_14px_36px_rgba(45,27,78,0.07)] transition-colors hover:border-mingle-purple/35"
+                  >
+                    <div
+                      className={`flex h-[132px] items-center justify-center bg-gradient-to-br ${card.tint}`}
+                    >
+                      <Art />
+                    </div>
+                    <div className="flex flex-col px-5 pb-5 pt-4">
+                      <span className="text-[13px] font-semibold tracking-[0.04em] text-mingle-purple">
+                        {card.eyebrow}
+                      </span>
+                      <span
+                        className={`${welcomeDisplay.className} mt-1.5 text-[1.25rem] font-semibold leading-snug tracking-[-0.005em] text-mingle-text`}
+                      >
+                        {card.title}
+                      </span>
+                      <span className="mt-1.5 text-sm font-normal leading-[1.55] tracking-normal text-mingle-text-secondary">
+                        {card.description}
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
 
-            <p className="mt-8 text-xs font-medium text-mingle-text-secondary">
+            <p className="mt-8 text-xs font-normal tracking-[0.01em] text-mingle-text-secondary">
               <Link href="/legal/terms" className="underline underline-offset-2">
                 Terms of Service
               </Link>
