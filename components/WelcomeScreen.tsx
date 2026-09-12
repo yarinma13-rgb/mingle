@@ -42,7 +42,7 @@ const PATH_CARDS: {
     description:
       "Clear matches with real reasons. Talk only when interest is mutual.",
     Art: TalentPathArt,
-    tint: "from-[#fff1f6] to-[#f3eeff]",
+    tint: "from-[#f4f0ff] to-[#eef2ff]",
   },
   {
     id: "company",
@@ -51,7 +51,7 @@ const PATH_CARDS: {
     description:
       "Paste a role. Get a short explained list, not another CV pile.",
     Art: CompanyPathArt,
-    tint: "from-[#f1f4ff] to-[#eef0ff]",
+    tint: "from-[#eef5ff] to-[#f0f2ff]",
   },
 ];
 
@@ -72,7 +72,7 @@ export function WelcomeScreen() {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.12),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.1),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.08),transparent_42%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(157,92,242,0.09),transparent_42%),radial-gradient(circle_at_88%_14%,rgba(120,180,255,0.14),transparent_40%),radial-gradient(circle_at_50%_100%,rgba(90,140,255,0.07),transparent_46%),radial-gradient(circle_at_72%_48%,rgba(210,230,255,0.35),transparent_55%)]"
       />
 
       <AnimatePresence
@@ -94,9 +94,9 @@ export function WelcomeScreen() {
 
             {/* display-md → display-lg: Poppins 36/700 → 48/700 */}
             <h1
-              className={`${welcomeDisplay.className} text-[36px] font-bold leading-[1.18] tracking-[-0.01em] text-mingle-text sm:text-[48px] sm:leading-[1.1] sm:tracking-[-0.014em]`}
+              className={`${welcomeDisplay.className} flex flex-col items-center text-[36px] font-bold leading-[1.18] tracking-[-0.01em] text-mingle-text sm:text-[48px] sm:leading-[1.1] sm:tracking-[-0.014em]`}
             >
-              The right people.{" "}
+              <span>The right people.</span>
               <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
