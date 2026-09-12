@@ -16,7 +16,10 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import type { UserType } from "@/lib/supabase/types";
 
-const PATH_COPY: Record<UserType, { eyebrow: string; headline: string; sub: string }> = {
+const PATH_COPY: Record<
+  UserType,
+  { eyebrow: string; headline: string; sub: string }
+> = {
   talent: {
     eyebrow: "Continuing as talent",
     headline: "Welcome to mingle",
@@ -26,6 +29,26 @@ const PATH_COPY: Record<UserType, { eyebrow: string; headline: string; sub: stri
     eyebrow: "Continuing as a company",
     headline: "Welcome to mingle",
     sub: "See the few people worth talking to, with clear reasons.",
+  },
+};
+
+const PATH_CONFIRM: Record<
+  UserType,
+  { title: string; body: string; confirm: string; switchTo: UserType; switchLabel: string }
+> = {
+  talent: {
+    title: "Is this the right path?",
+    body: "You’re joining as Talent — looking for roles and teams that fit you. If you’re hiring for a company, switch now.",
+    confirm: "Yes, continue as Talent",
+    switchTo: "company",
+    switchLabel: "Switch to Company",
+  },
+  company: {
+    title: "Is this the right path?",
+    body: "You’re joining as a Company — hiring and meeting people for open roles. If you’re looking for a job, switch now.",
+    confirm: "Yes, continue as Company",
+    switchTo: "talent",
+    switchLabel: "Switch to Talent",
   },
 };
 
@@ -57,6 +80,7 @@ export function AuthForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [confirmingPath, setConfirmingPath] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
 
@@ -94,12 +118,59 @@ export function AuthForm({
     router.refresh();
   };
 
-  const onSubmit = async (values: AuthFormValues) => {
-    track(AnalyticsEvent.authSubmitClicked, { mode, path: path ?? "unknown" });
+  const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
     setServerError(null);
     setIsSubmitting(true);
 
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: { data: { user_type: selectedPath } },
+    });
+
+    if (signUpError) {
+      setServerError(signUpError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!signUpData.session) {
+      const existingAccount = (signUpData.user?.identities?.length ?? 0) === 0;
+      if (existingAccount) {
+        setServerError("That email already has an account. Sign in instead.");
+        setConfirmingPath(false);
+        setMode("signin");
+        setIsSubmitting(false);
+        return;
+      }
+      setAwaitingConfirmation(true);
+      setConfirmingPath(false);
+      setIsSubmitting(false);
+      track(
+        AnalyticsEvent.signup,
+        { path: selectedPath, awaiting_confirmation: true },
+        signUpData.user?.id,
+      );
+      return;
+    }
+
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      setServerError("Couldn't create your account. Try again.");
+      setIsSubmitting(false);
+      return;
+    }
+    track(AnalyticsEvent.signup, { path: selectedPath }, userId);
+    identifyUser(userId, { path: selectedPath });
+    await goAfterAuth(userId, selectedPath);
+  };
+
+  const onSubmit = async (values: AuthFormValues) => {
+    track(AnalyticsEvent.authSubmitClicked, { mode, path: path ?? "unknown" });
+    setServerError(null);
+
     if (mode === "signin") {
+      setIsSubmitting(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
@@ -131,51 +202,12 @@ export function AuthForm({
 
     if (!path) {
       setServerError("Choose talent or company to create your account.");
-      setIsSubmitting(false);
       return;
     }
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
-      {
-        email: values.email,
-        password: values.password,
-        options: { data: { user_type: path } },
-      },
-    );
-
-    if (signUpError) {
-      setServerError(signUpError.message);
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!signUpData.session) {
-      const existingAccount = (signUpData.user?.identities?.length ?? 0) === 0;
-      if (existingAccount) {
-        setServerError("That email already has an account. Sign in instead.");
-        setMode("signin");
-        setIsSubmitting(false);
-        return;
-      }
-      setAwaitingConfirmation(true);
-      setIsSubmitting(false);
-      track(
-        AnalyticsEvent.signup,
-        { path, awaiting_confirmation: true },
-        signUpData.user?.id,
-      );
-      return;
-    }
-
-    const userId = signUpData.user?.id;
-    if (!userId) {
-      setServerError("Couldn't create your account. Try again.");
-      setIsSubmitting(false);
-      return;
-    }
-    track(AnalyticsEvent.signup, { path }, userId);
-    identifyUser(userId, { path });
-    await goAfterAuth(userId, path);
+    // Gate signup behind an explicit path confirmation.
+    setConfirmingPath(true);
+    track(AnalyticsEvent.authPathConfirmShown, { path });
   };
 
   const copy =
@@ -184,6 +216,8 @@ export function AuthForm({
       : path
         ? PATH_COPY[path]
         : SIGNUP_GENERIC;
+
+  const confirmCopy = path ? PATH_CONFIRM[path] : null;
 
   const formInner = awaitingConfirmation ? (
     <div className="flex w-full max-w-[400px] flex-col items-start text-left">
@@ -196,6 +230,72 @@ export function AuthForm({
         back and continue.
       </p>
     </div>
+  ) : confirmingPath && path && confirmCopy ? (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="flex w-full max-w-[400px] flex-col"
+    >
+      <MingleLogo variant="mark" size={44} className="mb-8" />
+      <p className="text-sm font-normal text-mingle-text-secondary">
+        {path === "talent" ? "Talent path" : "Company path"}
+      </p>
+      <h1 className="mt-2 font-display text-[2rem] font-normal leading-[1.15] tracking-[-0.04em] text-mingle-text sm:text-[2.25rem]">
+        {confirmCopy.title}
+      </h1>
+      <p className="mt-3 text-sm leading-relaxed text-mingle-text-secondary">
+        {confirmCopy.body}
+      </p>
+      <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-950">
+        After you create the account, switching Talent ↔ Company is harder. Double-check now.
+      </p>
+
+      {serverError ? (
+        <p className="mt-4 text-sm text-mingle-pink">{serverError}</p>
+      ) : null}
+
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => {
+          track(AnalyticsEvent.authPathConfirmed, { path });
+          void createAccount(getValues(), path);
+        }}
+        className="mt-6 rounded-full bg-mingle-accent-blue px-6 py-3.5 text-sm font-normal text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+      >
+        {isSubmitting ? "Creating account…" : confirmCopy.confirm}
+      </button>
+
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => {
+          const next = confirmCopy.switchTo;
+          track(AnalyticsEvent.authPathSwitched, {
+            from: path,
+            to: next,
+          });
+          setPath(next);
+          setServerError(null);
+        }}
+        className="mt-3 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-canvas disabled:opacity-60"
+      >
+        {confirmCopy.switchLabel}
+      </button>
+
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => {
+          setConfirmingPath(false);
+          setServerError(null);
+        }}
+        className="mt-4 text-sm font-normal text-mingle-blue underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
+      >
+        Back to details
+      </button>
+    </motion.div>
   ) : (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -293,6 +393,7 @@ export function AuthForm({
                     return;
                   }
                   setResetBusy(true);
+                  track(AnalyticsEvent.passwordResetRequested, {});
                   const origin = window.location.origin;
                   const { error } = await supabase.auth.resetPasswordForEmail(
                     email,
@@ -360,7 +461,7 @@ export function AuthForm({
           {formInner}
         </div>
 
-        {!awaitingConfirmation ? (
+        {!awaitingConfirmation && !confirmingPath ? (
           <div className="border-t border-mingle-border px-6 py-5 text-center text-sm text-mingle-text-secondary sm:px-10">
             {mode === "signup" ? (
               <>
@@ -368,9 +469,10 @@ export function AuthForm({
                 <button
                   type="button"
                   onClick={() => {
-                  track(AnalyticsEvent.authModeToggled, { mode: "signin" });
-                  setMode("signin");
-                }}
+                    track(AnalyticsEvent.authModeToggled, { mode: "signin" });
+                    setMode("signin");
+                    setConfirmingPath(false);
+                  }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
                   Log in
@@ -382,9 +484,9 @@ export function AuthForm({
                 <button
                   type="button"
                   onClick={() => {
-                  track(AnalyticsEvent.authModeToggled, { mode: "signup" });
-                  setMode("signup");
-                }}
+                    track(AnalyticsEvent.authModeToggled, { mode: "signup" });
+                    setMode("signup");
+                  }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
                   Sign up

@@ -25,6 +25,9 @@ export const AnalyticsEvent = {
   // Auth UI
   authModeToggled: "auth_mode_toggled",
   authSubmitClicked: "auth_submit_clicked",
+  authPathConfirmShown: "auth_path_confirm_shown",
+  authPathConfirmed: "auth_path_confirmed",
+  authPathSwitched: "auth_path_switched",
   passwordResetRequested: "password_reset_requested",
 
   // Discover / match actions
