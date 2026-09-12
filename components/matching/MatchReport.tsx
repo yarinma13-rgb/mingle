@@ -146,10 +146,10 @@ export function MatchReportBody({
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
           Overall Match
         </p>
-        <p className="font-display text-lg font-semibold text-mingle-text">
+        <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
           {report.overall}{" "}
           <span className="text-sm font-medium text-mingle-text-secondary">
             {report.strength}

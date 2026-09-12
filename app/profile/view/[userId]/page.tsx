@@ -186,12 +186,13 @@ export default async function ProfileViewPage({
 
   return (
     <main className="flex min-h-screen flex-1 flex-col">
-      <ProfileDetailShell
-        eyebrow="Company profile"
-        photo={company.logo}
-        initial={companyInitials(company.companyName)}
-        gender={null}
-        name={company.companyName}
+        <ProfileDetailShell
+          eyebrow="Company profile"
+          photo={company.logo}
+          initial={companyInitials(company.companyName)}
+          gender={null}
+          avatarShape="soft"
+          name={company.companyName}
         subtitle={company.mission}
         meta={[company.industry, company.location].filter(Boolean).join(" · ")}
         sections={sections}

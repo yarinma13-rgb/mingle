@@ -3,51 +3,13 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
-import { StorageImage } from "@/components/media/StorageImage";
-import { MingleChip } from "@/components/MingleChip";
+import { Avatar } from "@/components/Avatar";
+import {
+  ProfileChipRow,
+  ProfileSection,
+} from "@/components/profile/ProfileSection";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { companyInitials } from "@/lib/profile/avatar";
-
-function ChipRow({ items }: { items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <MingleChip key={item}>{item}</MingleChip>
-      ))}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  onEdit,
-  children,
-}: {
-  title: string;
-  onEdit?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-sm font-semibold text-mingle-text">
-          {title}
-        </h2>
-        {onEdit ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="text-xs font-semibold text-mingle-blue"
-          >
-            Edit
-          </button>
-        ) : null}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export function CompanyProfilePreview({
   profile,
@@ -68,31 +30,26 @@ export function CompanyProfilePreview({
       >
         <div className="flex flex-col items-center text-center">
           <MingleLogo variant="mark" size={40} className="mb-4" />
-          <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
+          <span className="mingle-gradient-text font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
             Your mingle profile
           </span>
         </div>
 
-        <div className="flex flex-col items-center gap-3 text-center">
-          {profile.logo ? (
-            <StorageImage
-              src={profile.logo}
-              className="h-24 w-24 rounded-2xl"
-              sizes="96px"
-            />
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-mingle-accent-purple font-display text-xl font-bold text-white">
-              {initials}
-            </div>
-          )}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Avatar
+            photo={profile.logo}
+            initials={initials}
+            size="hero"
+            shape="soft"
+          />
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-text">
+            <h1 className="font-display text-[1.65rem] font-bold leading-tight tracking-tight text-mingle-text sm:text-3xl">
               {profile.companyName || "Your company"}
             </h1>
-            <p className="mt-1 text-sm text-mingle-text-secondary">
+            <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
               {profile.mission || "Your mission"}
             </p>
-            <p className="mt-1 text-xs text-mingle-text-secondary">
+            <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
               {[profile.industry, profile.location]
                 .filter(Boolean)
                 .join(" · ")}
@@ -101,7 +58,7 @@ export function CompanyProfilePreview({
               <button
                 type="button"
                 onClick={() => onEditStep(1)}
-                className="mt-2 text-xs font-semibold text-mingle-blue"
+                className="mt-2 text-xs font-semibold text-mingle-blue transition-colors hover:text-mingle-cta"
               >
                 Edit
               </button>
@@ -109,56 +66,56 @@ export function CompanyProfilePreview({
           </div>
         </div>
 
-        <Section title="About" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
-          <p className="text-sm text-mingle-text-secondary">
+        <ProfileSection title="About" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
             {[profile.companyStage, profile.companySize]
               .filter(Boolean)
               .join(" · ")}
           </p>
-        </Section>
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="How we work"
           onEdit={onEditStep ? () => onEditStep(2) : undefined}
         >
-          <ChipRow items={profile.workEnvironment} />
-        </Section>
+          <ProfileChipRow items={profile.workEnvironment} />
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="What we value"
           onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
-          <ChipRow items={profile.values} />
-        </Section>
+          <ProfileChipRow items={profile.values} />
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="What we're looking for"
           onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
-          <ChipRow items={profile.lookingFor} />
-        </Section>
+          <ProfileChipRow items={profile.lookingFor} />
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="Who thrives here"
           onEdit={onEditStep ? () => onEditStep(5) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.whoThrivesHere}
           </p>
-        </Section>
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="What we're building"
           onEdit={onEditStep ? () => onEditStep(5) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.description}
           </p>
-        </Section>
+        </ProfileSection>
 
         <Link
           href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white"
+          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           Looks good
         </Link>

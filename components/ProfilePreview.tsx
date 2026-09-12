@@ -5,10 +5,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { MingleLogo } from "@/components/MingleLogo";
-import { MingleChip } from "@/components/MingleChip";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
+import {
+  ProfileChipRow,
+  ProfileSection,
+} from "@/components/profile/ProfileSection";
 import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
 import { RequestRecommendation } from "@/components/recommendations/RequestRecommendation";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
@@ -18,47 +21,6 @@ import {
   type SubmittedRecommendation,
 } from "@/lib/recommendations/persistence";
 import type { Database } from "@/lib/supabase/types";
-
-function ChipRow({ items }: { items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <MingleChip key={item}>{item}</MingleChip>
-      ))}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  onEdit,
-  children,
-}: {
-  title: string;
-  onEdit?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-sm font-semibold text-mingle-text">
-          {title}
-        </h2>
-        {onEdit ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="text-xs font-semibold text-mingle-blue"
-          >
-            Edit
-          </button>
-        ) : null}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export function ProfilePreview({
   profile,
@@ -98,12 +60,12 @@ export function ProfilePreview({
       >
         <div className="flex flex-col items-center text-center">
           <MingleLogo variant="mark" size={40} className="mb-4" />
-          <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
+          <span className="mingle-gradient-text font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
             Your mingle profile
           </span>
         </div>
 
-        <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           {userId ? (
             <TalentPhotoField
               variant="hero"
@@ -116,20 +78,20 @@ export function ProfilePreview({
             />
           ) : null}
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-text">
+            <h1 className="font-display text-[1.65rem] font-bold leading-tight tracking-tight text-mingle-text sm:text-3xl">
               {fullName || "Your name"}
             </h1>
-            <p className="mt-1 text-sm text-mingle-text-secondary">
+            <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
               {profile.headline || "Your title"}
             </p>
-            <p className="mt-1 text-xs text-mingle-text-secondary">
+            <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
               {[profile.location, profile.industry].filter(Boolean).join(" · ")}
             </p>
             {onEditStep ? (
               <button
                 type="button"
                 onClick={() => onEditStep(1)}
-                className="mt-2 text-xs font-semibold text-mingle-blue"
+                className="mt-2 text-xs font-semibold text-mingle-blue transition-colors hover:text-mingle-cta"
               >
                 Edit
               </button>
@@ -137,23 +99,23 @@ export function ProfilePreview({
           </div>
         </div>
 
-        <Section title="About you" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
+        <ProfileSection title="About you" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
           <GenderField
             value={profile.gender}
             onChange={onGenderChanged}
           />
-        </Section>
+        </ProfileSection>
 
-        <Section title="Experience" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
-          <p className="text-sm text-mingle-text-secondary">
+        <ProfileSection title="Experience" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
             {profile.currentRole}
             {profile.yearsExperience !== null &&
               ` · ${profile.yearsExperience} years experience`}
           </p>
-        </Section>
+        </ProfileSection>
 
         {userId && (
-          <Section title="CV">
+          <ProfileSection title="CV">
             <TalentCvField
               supabase={supabase}
               userId={userId}
@@ -163,53 +125,53 @@ export function ProfilePreview({
               showLabel={false}
               onChanged={onCvChanged}
             />
-          </Section>
+          </ProfileSection>
         )}
 
-        <Section
+        <ProfileSection
           title="What drives me"
           onEdit={onEditStep ? () => onEditStep(2) : undefined}
         >
-          <ChipRow items={profile.drives} />
-        </Section>
+          <ProfileChipRow items={profile.drives} />
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="How I work"
           onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
-          <ChipRow items={profile.workStyle} />
-        </Section>
+          <ProfileChipRow items={profile.workStyle} />
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="What I'm looking for"
           onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
-          <ChipRow items={profile.lookingFor} />
+          <ProfileChipRow items={profile.lookingFor} />
           {profile.maxCommuteKm ? (
             <p className="text-xs text-mingle-text-secondary">
               Willing to commute up to {profile.maxCommuteKm} km
             </p>
           ) : null}
-        </Section>
+        </ProfileSection>
 
-        <Section title="Skills" onEdit={onEditStep ? () => onEditStep(5) : undefined}>
-          <ChipRow items={profile.skills} />
-        </Section>
+        <ProfileSection title="Skills" onEdit={onEditStep ? () => onEditStep(5) : undefined}>
+          <ProfileChipRow items={profile.skills} />
+        </ProfileSection>
 
-        <Section title="Recommendations">
+        <ProfileSection title="Recommendations">
           <RecommendationsList items={recommendations} />
           {userId ? (
             <div className={recommendations.length > 0 ? "mt-2" : undefined}>
               <RequestRecommendation />
             </div>
           ) : null}
-        </Section>
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="Salary expectation"
           onEdit={onEditStep ? () => onEditStep(6) : undefined}
         >
-          <p className="text-sm text-mingle-text-secondary">
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
             {profile.salaryExpectation
               ? `${profile.salaryExpectation.toLocaleString("en-US")} ILS / month`
               : "Not set"}
@@ -217,20 +179,20 @@ export function ProfilePreview({
           <p className="text-xs text-mingle-text-secondary">
             (private — not shown to companies)
           </p>
-        </Section>
+        </ProfileSection>
 
-        <Section
+        <ProfileSection
           title="Beyond the CV"
           onEdit={onEditStep ? () => onEditStep(7) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.beyondCv}
           </p>
-        </Section>
+        </ProfileSection>
 
         <Link
           href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white"
+          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           Looks good
         </Link>
