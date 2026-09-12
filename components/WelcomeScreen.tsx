@@ -9,19 +9,19 @@ import { MingleLogo } from "@/components/MingleLogo";
 import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
 
 /**
- * Monday.com brand typography:
- * - Poppins for marketing titles / display
- * - Figtree for platform body, labels, and small copy
+ * monday.com typography scale (marketing site):
+ * Display → Poppins · Body / labels / legal → Figtree
+ * Sizes/weights match monday display-md, title-md, body-lg/sm, caption, legal.
  */
 const welcomeDisplay = Poppins({
   subsets: ["latin", "latin-ext"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
 const welcomeBody = Figtree({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -38,18 +38,18 @@ const PATH_CARDS: {
   {
     id: "talent",
     eyebrow: "For candidates",
-    title: "Find roles that actually fit",
+    title: "Roles that actually fit",
     description:
-      "Set your preferences once. See clear Why this match — and only talk when interest is mutual.",
+      "Clear matches with real reasons. Talk only when interest is mutual.",
     Art: TalentPathArt,
     tint: "from-[#fff1f6] to-[#f3eeff]",
   },
   {
     id: "company",
     eyebrow: "For companies",
-    title: "Meet people worth talking to",
+    title: "People worth talking to",
     description:
-      "Paste a role. Get a short explained list — Role, Human, and Motivation Fit — not another CV pile.",
+      "Paste a role. Get a short explained list, not another CV pile.",
     Art: CompanyPathArt,
     tint: "from-[#f1f4ff] to-[#eef0ff]",
   },
@@ -92,19 +92,22 @@ export function WelcomeScreen() {
           >
             <MingleLogo variant="lockup" size={64} priority className="mb-10" />
 
+            {/* display-md → display-lg: Poppins 36/700 → 48/700 */}
             <h1
-              className={`${welcomeDisplay.className} text-[2rem] font-bold leading-[1.12] tracking-[-0.014em] text-mingle-text sm:text-[2.75rem] sm:leading-[1.1]`}
+              className={`${welcomeDisplay.className} text-[36px] font-bold leading-[1.18] tracking-[-0.01em] text-mingle-text sm:text-[48px] sm:leading-[1.1] sm:tracking-[-0.014em]`}
             >
               The right people.{" "}
               <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
-            <p className="mt-4 max-w-md text-[1.05rem] font-normal leading-[1.55] tracking-normal text-mingle-text-secondary sm:text-lg">
-              Mutual career matching — clear reasons for both sides, before the
-              first conversation.
+            {/* body-lg: Figtree 18/400 */}
+            <p className="mt-4 max-w-md text-[18px] font-normal leading-[1.55] text-mingle-text-secondary">
+              Mutual career matching with clear reasons for both sides, before
+              the first conversation.
             </p>
 
-            <p className="mt-9 text-[0.9375rem] font-semibold tracking-normal text-mingle-text">
+            {/* label-md: Figtree 16/600 */}
+            <p className="mt-9 text-[16px] font-semibold leading-[1.4] text-mingle-text">
               Choose how you start
             </p>
 
@@ -126,15 +129,18 @@ export function WelcomeScreen() {
                       <Art />
                     </div>
                     <div className="flex flex-col px-5 pb-5 pt-4">
-                      <span className="text-[13px] font-semibold tracking-[0.04em] text-mingle-purple">
+                      {/* caption: Figtree 13/600 / 0.04em */}
+                      <span className="text-[13px] font-semibold leading-[1.4] tracking-[0.04em] text-mingle-purple">
                         {card.eyebrow}
                       </span>
+                      {/* title-md: Poppins 22/600 */}
                       <span
-                        className={`${welcomeDisplay.className} mt-1.5 text-[1.25rem] font-semibold leading-snug tracking-[-0.005em] text-mingle-text`}
+                        className={`${welcomeDisplay.className} mt-1.5 text-[22px] font-semibold leading-[1.3] tracking-normal text-mingle-text`}
                       >
                         {card.title}
                       </span>
-                      <span className="mt-1.5 text-sm font-normal leading-[1.55] tracking-normal text-mingle-text-secondary">
+                      {/* body-sm: Figtree 14/400 */}
+                      <span className="mt-1.5 text-[14px] font-normal leading-[1.5] text-mingle-text-secondary">
                         {card.description}
                       </span>
                     </div>
@@ -143,7 +149,8 @@ export function WelcomeScreen() {
               })}
             </div>
 
-            <p className="mt-8 text-xs font-normal tracking-[0.01em] text-mingle-text-secondary">
+            {/* legal: Figtree 12/400 / 0.01em */}
+            <p className="mt-8 text-[12px] font-normal leading-[1.4] tracking-[0.01em] text-mingle-text-secondary">
               <Link href="/legal/terms" className="underline underline-offset-2">
                 Terms of Service
               </Link>

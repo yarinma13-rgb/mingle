@@ -54,8 +54,8 @@ export function SplashScreen({
           priority
         />
         <p
-          className={`${splashDisplay.className} mt-6 text-center font-semibold tracking-[-0.01em] text-mingle-text-secondary ${
-            isMobile ? "text-base" : "text-sm"
+          className={`${splashDisplay.className} mt-6 text-center text-[22px] font-semibold leading-[1.3] tracking-normal text-mingle-text-secondary ${
+            isMobile ? "" : "text-[18px]"
           }`}
         >
           The right people. Worth talking to.
@@ -70,7 +70,7 @@ export function SplashScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.35, ease: "easeOut" }}
           whileTap={{ scale: 0.97 }}
-          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-8 py-4 text-base font-semibold tracking-normal text-white"
+          className="absolute bottom-14 left-5 right-5 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-8 py-4 text-[16px] font-semibold leading-[1.2] tracking-normal text-white"
         >
           Get Started
         </motion.button>
