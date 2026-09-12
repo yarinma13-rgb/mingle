@@ -34,19 +34,22 @@ const PATH_COPY: Record<
 
 const PATH_CONFIRM: Record<
   UserType,
-  { title: string; body: string; confirm: string; switchTo: UserType; switchLabel: string }
+  {
+    segmentLabel: string;
+    confirm: string;
+    switchTo: UserType;
+    switchLabel: string;
+  }
 > = {
   talent: {
-    title: "Is this the right path?",
-    body: "You’re joining as Talent — looking for roles and teams that fit you. If you’re hiring for a company, switch now.",
-    confirm: "Yes, continue as Talent",
+    segmentLabel: "Talent",
+    confirm: "Confirm Talent",
     switchTo: "company",
     switchLabel: "Switch to Company",
   },
   company: {
-    title: "Is this the right path?",
-    body: "You’re joining as a Company — hiring and meeting people for open roles. If you’re looking for a job, switch now.",
-    confirm: "Yes, continue as Company",
+    segmentLabel: "Company",
+    confirm: "Confirm Company",
     switchTo: "talent",
     switchLabel: "Switch to Talent",
   },
@@ -230,72 +233,6 @@ export function AuthForm({
         back and continue.
       </p>
     </div>
-  ) : confirmingPath && path && confirmCopy ? (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex w-full max-w-[400px] flex-col"
-    >
-      <MingleLogo variant="mark" size={44} className="mb-8" />
-      <p className="text-sm font-normal text-mingle-text-secondary">
-        {path === "talent" ? "Talent path" : "Company path"}
-      </p>
-      <h1 className="mt-2 font-display text-[2rem] font-normal leading-[1.15] tracking-[-0.04em] text-mingle-text sm:text-[2.25rem]">
-        {confirmCopy.title}
-      </h1>
-      <p className="mt-3 text-sm leading-relaxed text-mingle-text-secondary">
-        {confirmCopy.body}
-      </p>
-      <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-950">
-        After you create the account, switching Talent ↔ Company is harder. Double-check now.
-      </p>
-
-      {serverError ? (
-        <p className="mt-4 text-sm text-mingle-pink">{serverError}</p>
-      ) : null}
-
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={() => {
-          track(AnalyticsEvent.authPathConfirmed, { path });
-          void createAccount(getValues(), path);
-        }}
-        className="mt-6 rounded-full bg-mingle-accent-blue px-6 py-3.5 text-sm font-normal text-white transition-opacity hover:opacity-95 disabled:opacity-60"
-      >
-        {isSubmitting ? "Creating account…" : confirmCopy.confirm}
-      </button>
-
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={() => {
-          const next = confirmCopy.switchTo;
-          track(AnalyticsEvent.authPathSwitched, {
-            from: path,
-            to: next,
-          });
-          setPath(next);
-          setServerError(null);
-        }}
-        className="mt-3 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-canvas disabled:opacity-60"
-      >
-        {confirmCopy.switchLabel}
-      </button>
-
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={() => {
-          setConfirmingPath(false);
-          setServerError(null);
-        }}
-        className="mt-4 text-sm font-normal text-mingle-blue underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
-      >
-        Back to details
-      </button>
-    </motion.div>
   ) : (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -421,9 +358,9 @@ export function AuthForm({
           ) : null}
         </div>
 
-        {serverError && (
+        {serverError && !confirmingPath ? (
           <p className="text-sm text-mingle-pink">{serverError}</p>
-        )}
+        ) : null}
 
         <button
           type="submit"
@@ -454,10 +391,25 @@ export function AuthForm({
     </motion.div>
   );
 
+  const segmentBorder =
+    path === "company" ? "border-[#a78bfa]" : "border-[#60a5fa]";
+  const segmentButton =
+    path === "company"
+      ? "bg-mingle-accent-purple hover:opacity-95"
+      : "bg-mingle-accent-blue hover:opacity-95";
+  const segmentSoft =
+    path === "company"
+      ? "bg-[#faf8ff] text-[#6d28d9]"
+      : "bg-[#f5f9ff] text-[#2563eb]";
+
   return (
-    <div className="flex min-h-screen flex-1 bg-mingle-white">
+    <div className="relative flex min-h-screen flex-1 bg-mingle-white">
       <section className="relative flex min-h-screen w-full flex-col lg:w-1/2">
-        <div className="flex flex-1 items-center justify-center px-6 py-12 sm:px-10">
+        <div
+          className={`flex flex-1 items-center justify-center px-6 py-12 sm:px-10 ${
+            confirmingPath ? "pointer-events-none select-none blur-[1.5px]" : ""
+          }`}
+        >
           {formInner}
         </div>
 
@@ -498,6 +450,109 @@ export function AuthForm({
       </section>
 
       <AuthVisualPanel path={path} />
+
+      {confirmingPath && path && confirmCopy ? (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#1e1b4b]/35 px-4 backdrop-blur-[2px]">
+          <motion.div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="path-confirm-title"
+            aria-describedby="path-confirm-body"
+            initial={{ opacity: 0, scale: 0.94, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className={`w-full max-w-[360px] rounded-[28px] border-2 ${segmentBorder} bg-[#fcfcff] p-6 shadow-[0_28px_80px_rgba(30,27,75,0.28)]`}
+          >
+            <div className="flex flex-col items-center text-center">
+              <span
+                className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${segmentSoft}`}
+                aria-hidden
+              >
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3.6 21.2 19.4H2.8L12 3.6Z"
+                    fill="currentColor"
+                    fillOpacity="0.14"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 9.2v5"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="12" cy="16.6" r="1.05" fill="currentColor" />
+                </svg>
+              </span>
+
+              <h2
+                id="path-confirm-title"
+                className="font-display text-[1.35rem] font-semibold tracking-[-0.03em] text-black"
+              >
+                Please make sure you selected the correct segment for
+                registration.
+              </h2>
+              <p
+                id="path-confirm-body"
+                className="mt-3 text-sm leading-relaxed text-black/75"
+              >
+                You&apos;re about to join as{" "}
+                <span className="font-semibold text-black">
+                  {confirmCopy.segmentLabel}
+                </span>
+                . Switching later is harder — confirm now.
+              </p>
+
+              {serverError ? (
+                <p className="mt-3 text-sm text-mingle-pink">{serverError}</p>
+              ) : null}
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  track(AnalyticsEvent.authPathConfirmed, { path });
+                  void createAccount(getValues(), path);
+                }}
+                className={`mt-6 w-full rounded-full px-6 py-3.5 text-sm font-normal text-white transition-opacity disabled:opacity-60 ${segmentButton}`}
+              >
+                {isSubmitting ? "Creating account…" : confirmCopy.confirm}
+              </button>
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  const next = confirmCopy.switchTo;
+                  track(AnalyticsEvent.authPathSwitched, {
+                    from: path,
+                    to: next,
+                  });
+                  setPath(next);
+                  setServerError(null);
+                }}
+                className="mt-3 w-full rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-normal text-black transition-colors hover:bg-black/[0.03] disabled:opacity-60"
+              >
+                {confirmCopy.switchLabel}
+              </button>
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setConfirmingPath(false);
+                  setServerError(null);
+                }}
+                className="mt-4 text-sm font-normal text-black/55 underline underline-offset-2 hover:text-black disabled:opacity-60"
+              >
+                Go back
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      ) : null}
     </div>
   );
 }
