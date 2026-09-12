@@ -19,16 +19,20 @@ import {
 import { useToast } from "@/components/toast/ToastProvider";
 import { notifyPushMatch } from "@/lib/push/actions";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 
 const TOP_N = 5;
 
 function ResultCard({
   card,
+  roleId,
   viewerId,
   initialFeedback,
   onPass,
 }: {
   card: DiscoveryCard;
+  roleId: string;
   viewerId: string;
   initialFeedback: MatchFeedbackAction | null;
   onPass: (userId: string) => void;
@@ -95,6 +99,12 @@ function ResultCard({
       <div className="flex flex-col gap-2">
         <Link
           href={`/profile/view/${card.userId}`}
+          onClick={() =>
+            track(AnalyticsEvent.matchViewed, {
+              role_id: roleId,
+              target_user_id: card.userId,
+            })
+          }
           className="self-start rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
         >
           View profile
@@ -177,6 +187,7 @@ export function RoleMatchesScreen({
             <ResultCard
               key={card.userId}
               card={card}
+              roleId={roleId}
               viewerId={viewerId}
               initialFeedback={feedbackByUser[card.userId] ?? null}
               onPass={persistPass}
