@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+/** All realistic portraits — one visual language, no illustrated mix. */
 const MATCHES = [
   {
     name: "Noa Levi",
@@ -19,7 +20,7 @@ const MATCHES = [
     where: "Austin",
     score: 93,
     why: "Motivation lined up — he wants ownership, not ticket farms.",
-    avatar: "/landing/avatars/avatar-illustrated-jordan.png",
+    avatar: "/landing/avatars/avatar-noah.png",
     badge: "Strong human fit",
   },
   {
@@ -28,36 +29,36 @@ const MATCHES = [
     where: "Tel Aviv",
     score: 91,
     why: "Clear craft overlap, and she prefers teams that talk early.",
-    avatar: "/landing/avatars/avatar-illustrated-yael.png",
+    avatar: "/landing/avatars/avatar-sofia.png",
     badge: "Worth a conversation",
   },
 ] as const;
 
 const FLOATERS = [
   {
-    src: "/landing/avatars/avatar-noah.png",
-    name: "Noah",
+    src: "/landing/avatars/avatar-lin.png",
+    name: "Lin",
     top: "9%",
     left: "7%",
     delay: 0.1,
   },
   {
-    src: "/landing/avatars/avatar-sofia.png",
-    name: "Sofia",
+    src: "/landing/avatars/avatar-arjun.png",
+    name: "Arjun",
     top: "14%",
     right: "6%",
     delay: 0.25,
   },
   {
-    src: "/landing/avatars/avatar-illustrated-ava.png",
-    name: "Ava",
+    src: "/landing/avatars/avatar-maya.png",
+    name: "Maya",
     bottom: "11%",
     left: "8%",
     delay: 0.35,
   },
   {
-    src: "/landing/avatars/avatar-arjun.png",
-    name: "Arjun",
+    src: "/landing/avatars/avatar-noah.png",
+    name: "Noah",
     bottom: "8%",
     right: "7%",
     delay: 0.2,
@@ -147,7 +148,7 @@ export function AuthVisualPanel() {
             </div>
             <div className="relative -ml-5 h-[72px] w-[72px] overflow-hidden rounded-full border-[3px] border-white shadow-[0_14px_30px_rgba(99,102,241,0.25)]">
               <Image
-                src="/landing/avatars/avatar-illustrated-jordan.png"
+                src="/landing/avatars/avatar-noah.png"
                 alt=""
                 fill
                 sizes="72px"

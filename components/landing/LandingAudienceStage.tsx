@@ -31,11 +31,11 @@ type Person = {
   humanFit: number;
   motivationFit: number;
   tier: "high" | "medium";
-  /** photo = realistic headshot, illustrated = friendly drawn portrait */
-  style: "photo" | "illustrated";
+  /** Always realistic photo portraits for a unified look. */
+  style: "photo";
 };
 
-/** Mix of Israelis + Americans, ages ~25–39 — photos + illustrated. */
+/** Mix of Israelis + Americans, ages ~25–39 — all realistic photos. */
 const PEOPLE: Person[] = [
   {
     name: "Noa Levi",
@@ -55,33 +55,33 @@ const PEOPLE: Person[] = [
     role: "Full-stack Engineer",
     location: "Austin",
     match: 95,
-    avatar: "/landing/avatars/avatar-illustrated-jordan.png",
+    avatar: "/landing/avatars/avatar-noah.png",
     skills: ["TypeScript", "React", "Node", "Systems"],
     roleFit: 94,
     humanFit: 91,
     motivationFit: 86,
     tier: "high",
-    style: "illustrated",
+    style: "photo",
   },
   {
     name: "Yael Mizrahi",
     role: "Product Designer",
     location: "Tel Aviv",
     match: 94,
-    avatar: "/landing/avatars/avatar-illustrated-yael.png",
+    avatar: "/landing/avatars/avatar-sofia.png",
     skills: ["Figma", "User Research", "Prototyping", "Leadership"],
     roleFit: 93,
     humanFit: 90,
     motivationFit: 84,
     tier: "high",
-    style: "illustrated",
+    style: "photo",
   },
   {
-    name: "Noah Adler",
+    name: "Arjun Mehta",
     role: "Backend Engineer",
     location: "New York",
     match: 88,
-    avatar: "/landing/avatars/avatar-noah.png",
+    avatar: "/landing/avatars/avatar-arjun.png",
     skills: ["Platform", "Go", "Reliability"],
     roleFit: 90,
     humanFit: 84,
@@ -90,17 +90,17 @@ const PEOPLE: Person[] = [
     style: "photo",
   },
   {
-    name: "Ava Brooks",
+    name: "Lin Chen",
     role: "Growth Marketer",
     location: "Chicago",
     match: 86,
-    avatar: "/landing/avatars/avatar-illustrated-ava.png",
+    avatar: "/landing/avatars/avatar-lin.png",
     skills: ["Lifecycle", "Copy", "Experimentation"],
     roleFit: 88,
     humanFit: 86,
     motivationFit: 70,
     tier: "medium",
-    style: "illustrated",
+    style: "photo",
   },
 ];
 
@@ -157,7 +157,7 @@ function Avatar({
       alt={person.name}
       width={size}
       height={size}
-      className={`landing-stage-avatar ${person.style === "illustrated" ? "is-illustrated" : ""} ${className}`.trim()}
+      className={`landing-stage-avatar ${className}`.trim()}
     />
   );
 }
