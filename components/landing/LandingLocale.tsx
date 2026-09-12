@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
@@ -15,7 +16,6 @@ import {
 } from "@/lib/landing/copy";
 
 const STORAGE_KEY = "mingle.landing.locale";
-const CHANGE_EVENT = "mingle-landing-locale";
 
 type LandingLocaleContextValue = {
   locale: LandingLocale;
@@ -27,6 +27,9 @@ const LandingLocaleContext = createContext<LandingLocaleContextValue | null>(
   null,
 );
 
+const listeners = new Set<() => void>();
+let memoryLocale: LandingLocale = "en";
+
 function readStoredLocale(): LandingLocale {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -37,29 +40,53 @@ function readStoredLocale(): LandingLocale {
   return "en";
 }
 
-function subscribeLocale(onStoreChange: () => void) {
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(CHANGE_EVENT, onStoreChange);
+function emit() {
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(onStoreChange: () => void) {
+  listeners.add(onStoreChange);
   return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(CHANGE_EVENT, onStoreChange);
+    listeners.delete(onStoreChange);
   };
+}
+
+function getSnapshot() {
+  return memoryLocale;
+}
+
+function getServerSnapshot(): LandingLocale {
+  return "en";
+}
+
+function writeLocale(next: LandingLocale) {
+  memoryLocale = next;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, next);
+  } catch {
+    /* ignore */
+  }
+  emit();
 }
 
 export function LandingLocaleProvider({ children }: { children: ReactNode }) {
   const locale = useSyncExternalStore(
-    subscribeLocale,
-    readStoredLocale,
-    () => "en" as LandingLocale,
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
   );
 
-  const setLocale = useCallback((next: LandingLocale) => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* ignore */
+  // Hydrate from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    const stored = readStoredLocale();
+    if (stored !== memoryLocale) {
+      memoryLocale = stored;
+      emit();
     }
-    window.dispatchEvent(new Event(CHANGE_EVENT));
+  }, []);
+
+  const setLocale = useCallback((next: LandingLocale) => {
+    writeLocale(next);
   }, []);
 
   const value = useMemo(
@@ -95,6 +122,7 @@ export function LandingLanguageSwitch() {
         type="button"
         className={locale === "en" ? "is-active" : undefined}
         aria-pressed={locale === "en"}
+        aria-label="English"
         onClick={() => setLocale("en")}
       >
         {t.lang.en}
@@ -103,6 +131,7 @@ export function LandingLanguageSwitch() {
         type="button"
         className={locale === "he" ? "is-active" : undefined}
         aria-pressed={locale === "he"}
+        aria-label="עברית"
         onClick={() => setLocale("he")}
       >
         {t.lang.he}
