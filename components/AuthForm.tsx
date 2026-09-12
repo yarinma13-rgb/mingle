@@ -497,7 +497,7 @@ export function AuthForm({
         ) : null}
       </section>
 
-      <AuthVisualPanel />
+      <AuthVisualPanel path={path} />
     </div>
   );
 }
