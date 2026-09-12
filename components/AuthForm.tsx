@@ -95,6 +95,7 @@ export function AuthForm({
   };
 
   const onSubmit = async (values: AuthFormValues) => {
+    track(AnalyticsEvent.authSubmitClicked, { mode, path: path ?? "unknown" });
     setServerError(null);
     setIsSubmitting(true);
 
@@ -252,7 +253,7 @@ export function AuthForm({
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="name@company.com"
+            placeholder="Email"
             {...register("email")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
@@ -366,7 +367,10 @@ export function AuthForm({
                 Already have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => setMode("signin")}
+                  onClick={() => {
+                  track(AnalyticsEvent.authModeToggled, { mode: "signin" });
+                  setMode("signin");
+                }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
                   Log in
@@ -377,7 +381,10 @@ export function AuthForm({
                 Don&apos;t have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => setMode("signup")}
+                  onClick={() => {
+                  track(AnalyticsEvent.authModeToggled, { mode: "signup" });
+                  setMode("signup");
+                }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
                   Sign up

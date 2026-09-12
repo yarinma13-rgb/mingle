@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -27,6 +30,12 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
             href={tab.href}
             role="tab"
             aria-selected={active}
+            onClick={() =>
+              track(AnalyticsEvent.relationshipTabClicked, {
+                connection_id: connectionId,
+                tab: tab.label.toLowerCase(),
+              })
+            }
             className={`inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-xs font-semibold leading-none transition-colors ${
               active
                 ? "bg-mingle-cta text-white shadow-sm"

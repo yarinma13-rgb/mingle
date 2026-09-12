@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import {
   createContext,
   useContext,
@@ -71,7 +74,10 @@ export function LandingHeroCopy() {
               role="tab"
               aria-selected={active}
               className={active ? "is-active" : undefined}
-              onClick={() => setAudienceId(item.id)}
+              onClick={() => {
+              track(AnalyticsEvent.audienceTabSelected, { audience_id: item.id });
+              setAudienceId(item.id);
+            }}
             >
               {item.label}
             </button>
@@ -82,12 +88,25 @@ export function LandingHeroCopy() {
       <div className="landing-hero-actions">
         <Link
           href={START_HREF}
+          onClick={() =>
+            track(AnalyticsEvent.landingCtaClicked, {
+              cta: "get_started",
+              source: "hero",
+            })
+          }
           className="landing-btn landing-btn-primary landing-btn-lg landing-btn-rainbow-pulse"
         >
           {t.hero.getStarted}
           <span aria-hidden="true">→</span>
         </Link>
-        <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost landing-btn-lg">
+        <Link href={DEMO_HREF}
+          onClick={() =>
+            track(AnalyticsEvent.landingCtaClicked, {
+              cta: "book_demo",
+              source: "hero",
+            })
+          }
+          className="landing-btn landing-btn-ghost landing-btn-lg">
           {t.hero.bookDemo}
         </Link>
       </div>

@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
@@ -46,19 +49,19 @@ function LandingPageInner() {
           </Link>
 
           <nav className="landing-nav-links" aria-label="Primary">
-            <a href="#why">{t.nav.why}</a>
-            <a href="#how">{t.nav.how}</a>
-            <a href="#why-match">{t.nav.whyMatch}</a>
-            <a href="#compare">{t.nav.compare}</a>
-            <a href="#faq">{t.nav.faq}</a>
+            <a href="#why" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "why" })}>{t.nav.why}</a>
+            <a href="#how" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "how" })}>{t.nav.how}</a>
+            <a href="#why-match" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "why_match" })}>{t.nav.whyMatch}</a>
+            <a href="#compare" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "compare" })}>{t.nav.compare}</a>
+            <a href="#faq" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "faq" })}>{t.nav.faq}</a>
           </nav>
 
           <div className="landing-nav-actions">
             <LandingLanguageSwitch />
-            <Link href={AUTH_HREF} className="landing-nav-signin">
+            <Link href={AUTH_HREF} onClick={() => track(AnalyticsEvent.landingCtaClicked, { cta: "sign_in", source: "nav" })} className="landing-nav-signin">
               {t.nav.signIn}
             </Link>
-            <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost">
+            <Link href={DEMO_HREF} onClick={() => track(AnalyticsEvent.landingCtaClicked, { cta: "book_demo", source: "nav" })} className="landing-btn landing-btn-ghost">
               {t.nav.bookDemo}
             </Link>
           </div>
@@ -364,10 +367,10 @@ function LandingPageInner() {
           <div>
             <p className="landing-footer-label">{t.footer.product}</p>
             <div className="landing-footer-links">
-              <a href="#why">{t.footer.why}</a>
-              <a href="#how">{t.footer.how}</a>
-              <a href="#compare">{t.footer.compare}</a>
-              <a href="#faq">{t.footer.faq}</a>
+              <a href="#why" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "why" })}>{t.footer.why}</a>
+              <a href="#how" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "how" })}>{t.footer.how}</a>
+              <a href="#compare" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "compare" })}>{t.footer.compare}</a>
+              <a href="#faq" onClick={() => track(AnalyticsEvent.landingNavClicked, { section: "faq" })}>{t.footer.faq}</a>
             </div>
           </div>
           <div>
