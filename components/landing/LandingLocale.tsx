@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -27,6 +27,9 @@ const LandingLocaleContext = createContext<LandingLocaleContextValue | null>(
   null,
 );
 
+const listeners = new Set<() => void>();
+let memoryLocale: LandingLocale = "en";
+
 function readStoredLocale(): LandingLocale {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -37,20 +40,53 @@ function readStoredLocale(): LandingLocale {
   return "en";
 }
 
-export function LandingLocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<LandingLocale>("en");
+function emit() {
+  listeners.forEach((listener) => listener());
+}
 
+function subscribe(onStoreChange: () => void) {
+  listeners.add(onStoreChange);
+  return () => {
+    listeners.delete(onStoreChange);
+  };
+}
+
+function getSnapshot() {
+  return memoryLocale;
+}
+
+function getServerSnapshot(): LandingLocale {
+  return "en";
+}
+
+function writeLocale(next: LandingLocale) {
+  memoryLocale = next;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, next);
+  } catch {
+    /* ignore */
+  }
+  emit();
+}
+
+export function LandingLocaleProvider({ children }: { children: ReactNode }) {
+  const locale = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
+
+  // Hydrate from localStorage after mount (avoids SSR mismatch).
   useEffect(() => {
-    setLocaleState(readStoredLocale());
+    const stored = readStoredLocale();
+    if (stored !== memoryLocale) {
+      memoryLocale = stored;
+      emit();
+    }
   }, []);
 
   const setLocale = useCallback((next: LandingLocale) => {
-    setLocaleState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
+    writeLocale(next);
   }, []);
 
   const value = useMemo(

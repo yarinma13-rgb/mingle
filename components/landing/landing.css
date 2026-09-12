@@ -1746,13 +1746,14 @@
   border: none;
   cursor: pointer;
   border-radius: 999px;
-  padding: 0.35rem 0.7rem;
+  padding: 0.45rem 0.85rem;
   font-family: inherit;
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--ld-muted);
   background: transparent;
-  min-width: 2.4rem;
+  min-width: 2.75rem;
+  min-height: 2rem;
   pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
 }
