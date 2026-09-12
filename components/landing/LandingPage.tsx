@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
@@ -5,10 +7,17 @@ import {
   LandingHeroCopy,
   LandingHeroMatch,
 } from "@/components/landing/LandingHeroMatch";
+import { LandingCompanyBoard } from "@/components/landing/LandingCompanyBoard";
+import {
+  LandingLanguageSwitch,
+  LandingLocaleProvider,
+  useLandingLocale,
+} from "@/components/landing/LandingLocale";
 import "./landing.css";
 
 const poppins = Poppins({
-  subsets: ["latin"],
+  // Poppins has no Hebrew glyphs in next/font; Latin + system Hebrew fallback.
+  subsets: ["latin", "latin-ext"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-landing-poppins",
   display: "swap",
@@ -17,9 +26,17 @@ const poppins = Poppins({
 const AUTH_HREF = "/start";
 const DEMO_HREF = "/contact";
 
-export function LandingPage() {
+function LandingPageInner() {
+  const { t, locale } = useLandingLocale();
+  const year = new Date().getFullYear();
+
   return (
-    <div className={`landing ${poppins.variable}`}>
+    <div
+      className={`landing ${poppins.variable}`}
+      dir={t.dir}
+      lang={locale}
+      data-locale={locale}
+    >
       <header className="landing-nav">
         <div className="landing-shell landing-nav-inner">
           <Link href="/" className="landing-nav-brand" aria-label="mingle home">
@@ -28,17 +45,20 @@ export function LandingPage() {
           </Link>
 
           <nav className="landing-nav-links" aria-label="Primary">
-            <a href="#why">Why mingle</a>
-            <a href="#how">How it works</a>
-            <a href="#why-match">Why this match</a>
+            <a href="#why">{t.nav.why}</a>
+            <a href="#how">{t.nav.how}</a>
+            <a href="#why-match">{t.nav.whyMatch}</a>
+            <a href="#compare">{t.nav.compare}</a>
+            <a href="#faq">{t.nav.faq}</a>
           </nav>
 
           <div className="landing-nav-actions">
+            <LandingLanguageSwitch />
             <Link href={AUTH_HREF} className="landing-nav-signin">
-              Sign in
+              {t.nav.signIn}
             </Link>
             <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost">
-              Book a demo
+              {t.nav.bookDemo}
             </Link>
           </div>
         </div>
@@ -54,45 +74,31 @@ export function LandingPage() {
           </div>
         </section>
 
+        <LandingCompanyBoard />
+
         <section id="why" className="landing-section landing-section-soft">
           <div className="landing-shell">
             <div className="landing-section-head landing-section-head-center">
-              <h2>More intelligence behind the scenes. Almost no friction up front.</h2>
-              <p>
-                Built first for hiring teams who want speed without fifteen fields.
-                Open to talent who want clearer reasons than a black box score.
-                Infer what you can. Ask only what is critical. Explain every
-                recommendation.
-              </p>
+              <h2>{t.why.title}</h2>
+              <p>{t.why.lead}</p>
             </div>
-
             <div className="landing-fit-grid">
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-role" aria-hidden />
-                <h3>Sixty second start</h3>
-                <p>
-                  Paste a job description or a role link. Find my matches. No
-                  culture questionnaire. No fifteen field onboarding.
-                </p>
-              </article>
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-company" aria-hidden />
-                <h3>DNA, not forms</h3>
-                <p>
-                  Company DNA, Candidate DNA, and Role DNA are built from jobs,
-                  profiles, signals, and outcomes. The recruiter does not fill a
-                  culture survey.
-                </p>
-              </article>
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-motivation" aria-hidden />
-                <h3>Ask only when stuck</h3>
-                <p>
-                  If something critical is unclear, mingle asks one short
-                  question. Must have, nice to have, or does not matter. Then it
-                  ranks.
-                </p>
-              </article>
+              {t.why.cards.map((card, index) => (
+                <article key={card.title} className="landing-fit">
+                  <span
+                    className={`landing-fit-dot ${
+                      index === 0
+                        ? "fill-role"
+                        : index === 1
+                          ? "fill-company"
+                          : "fill-motivation"
+                    }`}
+                    aria-hidden
+                  />
+                  <h3>{card.title}</h3>
+                  <p>{card.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -100,55 +106,19 @@ export function LandingPage() {
         <section id="how" className="landing-section">
           <div className="landing-shell">
             <div className="landing-section-head landing-section-head-center">
-              <h2>Create a role. See the right people. Know why.</h2>
-              <p>
-                Built for hiring teams who want fewer CVs and better conversations.
-                When interest is mutual, talent sees the same clear Why this match.
-              </p>
+              <h2>{t.how.title}</h2>
+              <p>{t.how.lead}</p>
             </div>
-
             <ol className="landing-steps">
-              <li>
-                <span className="landing-step-num">1</span>
-                <div>
-                  <h3>Paste the job</h3>
-                  <p>
-                    Drop in a job description or link. mingle extracts role,
-                    seniority, skills, must haves, and the quiet signals in the
-                    wording.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span className="landing-step-num">2</span>
-                <div>
-                  <h3>Get Strong Matches</h3>
-                  <p>
-                    Within seconds you see ranked people with Overall Match,
-                    Role Fit, Human Fit, Motivation Fit, and Match Confidence.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span className="landing-step-num">3</span>
-                <div>
-                  <h3>Read Why this match</h3>
-                  <p>
-                    Open a candidate and see the strengths, the one real risk,
-                    and why this person deserves your time.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span className="landing-step-num">4</span>
-                <div>
-                  <h3>Mark interest</h3>
-                  <p>
-                    Interested or not relevant. Mutual interest unlocks the
-                    conversation. Outcomes feed the Learning Engine later.
-                  </p>
-                </div>
-              </li>
+              {t.how.steps.map((step, index) => (
+                <li key={step.title}>
+                  <span className="landing-step-num">{index + 1}</span>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                  </div>
+                </li>
+              ))}
             </ol>
           </div>
         </section>
@@ -156,34 +126,31 @@ export function LandingPage() {
         <section id="why-match" className="landing-section landing-section-tint">
           <div className="landing-shell landing-split">
             <div className="landing-split-copy">
-              <h2>Why this match?</h2>
-              <p>
-                Not another black box percentage. Hiring teams see why someone
-                belongs on the short list. Talent sees why a role might fit them
-                too, including the risk that could break it.
-              </p>
+              <h2>{t.whyMatch.title}</h2>
+              <p>{t.whyMatch.lead}</p>
               <ul className="landing-checklist">
-                <li>Core skills, stage, ownership, salary, and career direction</li>
-                <li>One honest concern when preferences may clash</li>
-                <li>Match Confidence so a thin profile never looks certain</li>
+                {t.whyMatch.bullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </div>
-
-            <article className="landing-report landing-why-card" aria-label="Why this match example">
+            <article
+              className="landing-report landing-why-card"
+              aria-label={t.whyMatch.cardTitle}
+            >
               <div className="landing-report-top">
-                <h3>Why mingle recommends this candidate</h3>
-                <span>96% · High confidence</span>
+                <h3>{t.whyMatch.cardTitle}</h3>
+                <span>{t.whyMatch.cardBadge}</span>
               </div>
               <ul className="landing-why-list landing-why-list-lg">
-                <li className="is-good">5/5 core skills</li>
-                <li className="is-good">Experience in a similar company stage</li>
-                <li className="is-good">Looking for high ownership</li>
-                <li className="is-good">Your role offers exactly that</li>
-                <li className="is-good">Salary expectations align</li>
-                <li className="is-good">Career direction matches the role</li>
-                <li className="is-warn">
-                  Prefers remote first work. This role asks for 3 office days.
-                </li>
+                {t.whyMatch.reasons.map((reason) => (
+                  <li
+                    key={reason.text}
+                    className={reason.tone === "warn" ? "is-warn" : "is-good"}
+                  >
+                    {reason.text}
+                  </li>
+                ))}
               </ul>
             </article>
           </div>
@@ -191,19 +158,19 @@ export function LandingPage() {
 
         <section className="landing-section landing-section-soft">
           <div className="landing-shell landing-split">
-            <article className="landing-report" aria-label="Sample Match Report">
+            <article className="landing-report" aria-label={t.scores.cardTitle}>
               <div className="landing-report-top">
-                <h3>Three scores. One overall.</h3>
-                <span>94% Match</span>
+                <h3>{t.scores.cardTitle}</h3>
+                <span>{t.scores.cardBadge}</span>
               </div>
               <div className="landing-report-score">
                 <strong>94</strong>
-                <span>Overall · High confidence</span>
+                <span>{t.scores.overall}</span>
               </div>
               <div className="landing-product-bars">
                 <div className="landing-product-bar">
                   <div className="landing-product-bar-meta">
-                    <span>Role Fit</span>
+                    <span>{t.scores.role}</span>
                     <span>97%</span>
                   </div>
                   <i>
@@ -212,7 +179,7 @@ export function LandingPage() {
                 </div>
                 <div className="landing-product-bar">
                   <div className="landing-product-bar-meta">
-                    <span>Human Fit</span>
+                    <span>{t.scores.human}</span>
                     <span>92%</span>
                   </div>
                   <i>
@@ -221,7 +188,7 @@ export function LandingPage() {
                 </div>
                 <div className="landing-product-bar">
                   <div className="landing-product-bar-meta">
-                    <span>Motivation Fit</span>
+                    <span>{t.scores.motivation}</span>
                     <span>94%</span>
                   </div>
                   <i>
@@ -230,18 +197,13 @@ export function LandingPage() {
                 </div>
               </div>
             </article>
-
             <div className="landing-split-copy">
-              <h2>Can they do it. Will they thrive. Do they want it.</h2>
-              <p>
-                Role Fit asks if they can do the work. Human Fit asks if they fit
-                the company and environment. Motivation Fit asks if they truly
-                want this path. No seventeen score dashboard.
-              </p>
+              <h2>{t.scores.title}</h2>
+              <p>{t.scores.lead}</p>
               <ul className="landing-checklist">
-                <li>DNA to DNA matching, not only CV to job description</li>
-                <li>Confidence that stays humble when data is thin</li>
-                <li>A shared language before anyone books an interview</li>
+                {t.scores.bullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -250,70 +212,102 @@ export function LandingPage() {
         <section id="dna" className="landing-section">
           <div className="landing-shell">
             <div className="landing-section-head landing-section-head-center">
-              <h2>Company DNA. Candidate DNA. Role DNA.</h2>
-              <p>
-                Culture and values still matter on both sides. Hiring teams should
-                not fill a form first, and talent should not answer fifteen culture
-                questions to get started. mingle discovers the DNA, then compares.
-              </p>
+              <h2>{t.dna.title}</h2>
+              <p>{t.dna.lead}</p>
             </div>
-
             <div className="landing-fit-grid landing-dna-grid">
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-company" aria-hidden />
-                <h3>Company DNA</h3>
-                <p>
-                  Work style, management, environment, and what succeeds here.
-                  Learned from jobs, careers pages, signals, and later outcomes.
-                </p>
-              </article>
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-role" aria-hidden />
-                <h3>Candidate DNA</h3>
-                <p>
-                  Skills, trajectory, preferences, and goals inferred from CV,
-                  profile, applications, interactions, and feedback.
-                </p>
-              </article>
-              <article className="landing-fit">
-                <span className="landing-fit-dot fill-motivation" aria-hidden />
-                <h3>Role DNA</h3>
-                <p>
-                  Explicit requirements plus the quiet ones, like high autonomy
-                  when a job says work closely with founders.
-                </p>
-              </article>
+              {t.dna.cards.map((card, index) => (
+                <article key={card.title} className="landing-fit">
+                  <span
+                    className={`landing-fit-dot ${
+                      index === 0
+                        ? "fill-company"
+                        : index === 1
+                          ? "fill-role"
+                          : "fill-motivation"
+                    }`}
+                    aria-hidden
+                  />
+                  <h3>{card.title}</h3>
+                  <p>{card.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="moment" className="landing-section landing-section-moment">
+        <section id="moment" className="landing-section">
           <div className="landing-shell landing-moment">
             <div className="landing-moment-copy">
-              <p className="landing-moment-eyebrow">After mutual interest</p>
-              <h2>Then the conversation becomes intelligence too.</h2>
-              <p>
-                Matching comes first. When both sides are interested, a short
-                mingle conversation can surface alignment, misalignment, and the
-                next useful question. That is stage two, not the first ask.
-              </p>
+              <p className="landing-moment-eyebrow">{t.moment.eyebrow}</p>
+              <h2>{t.moment.title}</h2>
+              <p>{t.moment.lead}</p>
               <ul className="landing-checklist">
-                <li>Mutual interest before the first deep chat</li>
-                <li>A Match Report both sides can read</li>
-                <li>Outcomes that teach the Learning Engine over time</li>
+                {t.moment.bullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </div>
-
             <div className="landing-moment-card" aria-hidden="true">
               <div className="landing-moment-pair">
                 <span className="landing-avatar landing-avatar-talent" />
                 <span className="landing-moment-link" />
                 <span className="landing-avatar landing-avatar-company" />
               </div>
-              <p className="landing-moment-score">Mutual interest unlocked</p>
-              <p className="landing-moment-sub">
-                Role 97 · Human 92 · Motivation 94
-              </p>
+              <p className="landing-moment-score">{t.moment.unlocked}</p>
+              <p className="landing-moment-sub">{t.moment.scoresLine}</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="compare" className="landing-section landing-section-soft">
+          <div className="landing-shell">
+            <div className="landing-section-head landing-section-head-center">
+              <h2>{t.compare.title}</h2>
+              <p>{t.compare.lead}</p>
+            </div>
+            <div className="landing-compare-wrap">
+              <table className="landing-compare">
+                <thead>
+                  <tr>
+                    {t.compare.columns.map((col, index) => (
+                      <th
+                        key={`${col}-${index}`}
+                        className={index === 1 ? "is-mingle" : undefined}
+                      >
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {t.compare.rows.map((row) => (
+                    <tr key={row.feature}>
+                      <th scope="row">{row.feature}</th>
+                      <td className="is-mingle">{row.mingle}</td>
+                      <td>{row.ats}</td>
+                      <td>{row.linkedin}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="landing-section">
+          <div className="landing-shell">
+            <div className="landing-section-head landing-section-head-center">
+              <h2>{t.faq.title}</h2>
+              <p>{t.faq.lead}</p>
+            </div>
+            <div className="landing-faq-list">
+              {t.faq.items.map((item) => (
+                <details key={item.q} className="landing-faq-item">
+                  <summary>{item.q}</summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
@@ -321,33 +315,75 @@ export function LandingPage() {
         <section className="landing-banner">
           <div className="landing-shell">
             <div className="landing-banner-inner">
-              <h2>The right people, faster.</h2>
-              <p>
-                mingle helps hiring teams find the few people worth talking to in
-                seconds, and helps talent understand when a role is worth their
-                time. Not a perfect match promise. A clearer short list, with
-                reasons both sides can trust.
-              </p>
+              <h2>{t.banner.title}</h2>
+              <p>{t.banner.lead}</p>
+              <div className="landing-banner-actions">
+                <Link
+                  href={AUTH_HREF}
+                  className="landing-btn landing-btn-primary landing-btn-lg"
+                >
+                  {t.banner.getStarted}
+                </Link>
+                <Link
+                  href={DEMO_HREF}
+                  className="landing-btn landing-btn-ghost landing-btn-lg"
+                >
+                  {t.banner.bookDemo}
+                </Link>
+              </div>
+              <p className="landing-banner-note">{t.banner.freeLine}</p>
             </div>
           </div>
         </section>
       </main>
 
       <footer className="landing-footer">
-        <div className="landing-shell landing-footer-inner">
+        <div className="landing-shell landing-footer-grid">
           <div className="landing-footer-brand">
             <MingleLogo variant="mark" size={28} />
             <span className="landing-nav-wordmark">mingle</span>
+            <p className="landing-footer-free">{t.footer.freeTalent}</p>
           </div>
-          <div className="landing-footer-links">
-            <Link href="/legal/terms">Terms</Link>
-            <Link href="/legal/privacy">Privacy</Link>
+          <div>
+            <p className="landing-footer-label">{t.footer.product}</p>
+            <div className="landing-footer-links">
+              <a href="#why">{t.footer.why}</a>
+              <a href="#how">{t.footer.how}</a>
+              <a href="#compare">{t.footer.compare}</a>
+              <a href="#faq">{t.footer.faq}</a>
+            </div>
           </div>
+          <div>
+            <p className="landing-footer-label">{t.footer.company}</p>
+            <div className="landing-footer-links">
+              <Link href={DEMO_HREF}>{t.footer.bookDemo}</Link>
+              <Link href={DEMO_HREF}>{t.footer.contact}</Link>
+              <Link href={AUTH_HREF}>{t.footer.signIn}</Link>
+            </div>
+          </div>
+          <div>
+            <p className="landing-footer-label">{t.footer.legal}</p>
+            <div className="landing-footer-links">
+              <Link href="/legal/terms">{t.footer.terms}</Link>
+              <Link href="/legal/privacy">{t.footer.privacy}</Link>
+            </div>
+          </div>
+        </div>
+        <div className="landing-shell landing-footer-bottom">
           <p className="landing-footer-copy">
-            © {new Date().getFullYear()} mingle
+            © {year} {t.footer.rights}
           </p>
+          <LandingLanguageSwitch />
         </div>
       </footer>
     </div>
+  );
+}
+
+export function LandingPage() {
+  return (
+    <LandingLocaleProvider>
+      <LandingPageInner />
+    </LandingLocaleProvider>
   );
 }

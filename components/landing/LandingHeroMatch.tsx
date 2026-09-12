@@ -3,39 +3,14 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { MingleLogo } from "@/components/MingleLogo";
+import { useLandingLocale } from "@/components/landing/LandingLocale";
+import type { AudienceId } from "@/lib/landing/copy";
 
 const START_HREF = "/start";
+const DEMO_HREF = "/contact";
 
 /** Full confetti cycle: burst, then quiet until the next pop at 2.5s. */
 const CONFETTI_CYCLE_S = 2.5;
-
-const AUDIENCES = [
-  {
-    id: "companies",
-    label: "Companies",
-    lead: "Paste a job description. In seconds, see the few people worth talking to, with a clear Why this match on every recommendation.",
-  },
-  {
-    id: "recruiters",
-    label: "Recruiters",
-    lead: "Skip the questionnaire. mingle infers what it can, asks only when something critical is missing, and ranks people you should actually spend time on.",
-  },
-  {
-    id: "founders",
-    label: "Founders",
-    lead: "Open a hard to fill role and get Top Matches with Role Fit, Human Fit, and Motivation Fit, plus the risks before the first call.",
-  },
-  {
-    id: "talent",
-    label: "Talent",
-    lead: "Your Candidate DNA is inferred from what you already share. When interest is mutual, you and the company both see why the match might work.",
-  },
-  {
-    id: "agencies",
-    label: "Agencies",
-    lead: "Send clients fewer CVs and more explained matches. Show Role Fit, Human Fit, Motivation Fit, and Match Confidence in one place.",
-  },
-] as const;
 
 const CONFETTI_COLORS = [
   "#5B8DEF",
@@ -125,28 +100,27 @@ function usePrefersReducedMotion() {
 }
 
 export function LandingHeroCopy() {
-  const [audienceId, setAudienceId] = useState<(typeof AUDIENCES)[number]["id"]>(
-    "companies",
-  );
-  const audience = AUDIENCES.find((item) => item.id === audienceId) ?? AUDIENCES[0];
+  const { t } = useLandingLocale();
+  const [audienceId, setAudienceId] = useState<AudienceId>("companies");
+  const audience =
+    t.hero.audiences.find((item) => item.id === audienceId) ??
+    t.hero.audiences[0];
 
   return (
     <div className="landing-hero-copy">
-      <p className="landing-hero-eyebrow">Built for hiring teams. Open to talent too.</p>
+      <p className="landing-hero-eyebrow">{t.hero.eyebrow}</p>
       <h1 id="landing-hero-title" className="landing-hero-title">
-        <span className="landing-hero-line">Post a role.</span>
-        <span className="landing-hero-line">Meet the right people.</span>
-        <span className="landing-hero-line">See why it fits.</span>
+        {t.hero.titleLines.map((line) => (
+          <span key={line} className="landing-hero-line">
+            {line}
+          </span>
+        ))}
       </h1>
       <p className="landing-hero-lead">{audience.lead}</p>
-      <p className="landing-hero-value">
-        Hiring teams move with near zero friction. Talent gets matched with clear
-        reasons, not black box scores. Company DNA, Candidate DNA, and Role DNA
-        stay in the background. Three scores. Honest confidence.
-      </p>
+      <p className="landing-hero-value">{t.hero.value}</p>
 
       <div className="landing-audience" role="tablist" aria-label="Who mingle is for">
-        {AUDIENCES.map((item) => {
+        {t.hero.audiences.map((item) => {
           const active = item.id === audienceId;
           return (
             <button
@@ -157,7 +131,6 @@ export function LandingHeroCopy() {
               className={active ? "is-active" : undefined}
               onClick={() => setAudienceId(item.id)}
             >
-              {active ? "✓ " : ""}
               {item.label}
             </button>
           );
@@ -169,14 +142,19 @@ export function LandingHeroCopy() {
           href={START_HREF}
           className="landing-btn landing-btn-primary landing-btn-lg landing-btn-rainbow-pulse"
         >
-          Get Started
+          {t.hero.getStarted}
           <span aria-hidden="true">→</span>
+        </Link>
+        <Link href={DEMO_HREF} className="landing-btn landing-btn-ghost landing-btn-lg">
+          {t.hero.bookDemo}
         </Link>
       </div>
 
-      <p className="landing-hero-note">
-        The right people, faster ✦ Free to open your first Match Report
+      <p className="landing-hero-hint">
+        <span>{t.hero.getStartedHint}</span>
+        <span>{t.hero.bookDemoHint}</span>
       </p>
+      <p className="landing-hero-note">{t.hero.freeTalent}</p>
     </div>
   );
 }
