@@ -10,6 +10,11 @@ import {
 import { MingleLogo } from "@/components/MingleLogo";
 import { useLandingLocale } from "@/components/landing/LandingLocale";
 import type { AudienceId } from "@/lib/landing/copy";
+import {
+  readClientSalaryMarket,
+  salaryRangeForMarket,
+  type SalaryMarket,
+} from "@/lib/landing/salary-market";
 
 type Props = {
   audienceId: AudienceId;
@@ -113,6 +118,19 @@ function usePrefersReducedMotion() {
     subscribeReducedMotion,
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => false,
+  );
+}
+
+function subscribeSalaryMarket(onStoreChange: () => void) {
+  window.addEventListener("languagechange", onStoreChange);
+  return () => window.removeEventListener("languagechange", onStoreChange);
+}
+
+function useSalaryMarket(): SalaryMarket {
+  return useSyncExternalStore(
+    subscribeSalaryMarket,
+    readClientSalaryMarket,
+    () => "us",
   );
 }
 
@@ -434,6 +452,8 @@ function FoundersStage({ he }: { he: boolean }) {
 
 function TalentsStage({ he }: { he: boolean }) {
   const reduceMotion = usePrefersReducedMotion();
+  const salaryMarket = useSalaryMarket();
+  const salary = salaryRangeForMarket(salaryMarket);
   const person = PEOPLE[2];
   const skills = he
     ? ["Figma", "מחקר משתמשים", "פרוטוטייפ", "מנהיגות"]
@@ -497,7 +517,7 @@ function TalentsStage({ he }: { he: boolean }) {
             {he ? "מעצבת מוצר בכירה" : "Senior Product Designer"}
           </p>
           <p className="landing-stage-talent-loc">
-            {he ? "תל אביב" : "Tel Aviv"}
+            {he ? salary.locationHe : salary.locationEn}
           </p>
 
           <div className="landing-stage-skill-pills">
@@ -508,15 +528,21 @@ function TalentsStage({ he }: { he: boolean }) {
             ))}
           </div>
 
-          <div className="landing-stage-salary-block">
-            <p>{he ? "טווח שכר צפוי" : "Expected salary range"}</p>
+          <div className="landing-stage-salary-block" data-salary-market={salary.market}>
+            <p>
+              {he ? salary.labelHe : salary.labelEn}
+              <span className="landing-stage-salary-period">
+                {" "}
+                ({he ? salary.periodHintHe : salary.periodHintEn})
+              </span>
+            </p>
             <div className="landing-stage-salary-track" aria-hidden>
               <span className="landing-stage-salary-fill" />
               <span className="landing-stage-salary-knob" />
             </div>
             <div className="landing-stage-salary-meta">
-              <span>$120,000</span>
-              <span>$150,000</span>
+              <span>{salary.low}</span>
+              <span>{salary.high}</span>
             </div>
           </div>
         </div>

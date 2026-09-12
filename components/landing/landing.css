@@ -3063,6 +3063,13 @@
   50% { left: 74%; }
 }
 
+
+.landing-stage-salary-period {
+  font-weight: 600;
+  color: #7a7488;
+  font-size: 0.72rem;
+}
+
 .landing-stage-salary-meta {
   display: flex;
   justify-content: space-between;
