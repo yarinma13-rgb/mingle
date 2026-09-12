@@ -2,21 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { Outfit, Manrope } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
-import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
 
-const welcomeDisplay = Outfit({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  display: "swap",
-});
-
-const welcomeBody = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+/** Monday.com-style geometric sans for the welcome path picker. */
+const welcomeFont = Figtree({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -27,7 +22,8 @@ const PATH_CARDS: {
   eyebrow: string;
   title: string;
   description: string;
-  Art: typeof TalentPathArt;
+  image: string;
+  imageAlt: string;
 }[] = [
   {
     id: "talent",
@@ -35,7 +31,8 @@ const PATH_CARDS: {
     title: "Find roles that actually fit",
     description:
       "Set your preferences once. See clear Why this match — and only talk when interest is mutual.",
-    Art: TalentPathArt,
+    image: "/welcome/talent-agent.png",
+    imageAlt: "Match agent helping you find roles that fit",
   },
   {
     id: "company",
@@ -43,7 +40,8 @@ const PATH_CARDS: {
     title: "Meet people worth talking to",
     description:
       "Paste a role. Get a short explained list — Role, Human, and Motivation Fit — not another CV pile.",
-    Art: CompanyPathArt,
+    image: "/welcome/company-matches.png",
+    imageAlt: "Explained shortlist of top matches for a hiring team",
   },
 ];
 
@@ -60,11 +58,11 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+      className={`${welcomeFont.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.12),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.12),transparent_32%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.1),transparent_40%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.14),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.12),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.1),transparent_42%)]"
       />
 
       <AnimatePresence
@@ -84,56 +82,56 @@ export function WelcomeScreen() {
           >
             <MingleLogo variant="lockup" size={64} priority className="mb-10" />
 
-            <h1
-              className={`${welcomeDisplay.className} text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]`}
-            >
+            <h1 className="text-[1.9rem] font-extrabold leading-[1.1] tracking-[-0.045em] text-mingle-text sm:text-[2.85rem]">
               The right people.{" "}
               <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
-            <p className="mt-4 max-w-md text-base font-medium text-mingle-text-secondary sm:text-lg">
+            <p className="mt-4 max-w-md text-base font-medium leading-relaxed tracking-[-0.015em] text-mingle-text-secondary sm:text-lg">
               Mutual career matching — clear reasons for both sides, before the
               first conversation.
             </p>
 
-            <p
-              className={`${welcomeDisplay.className} mt-8 text-sm font-semibold tracking-[-0.02em] text-mingle-text`}
-            >
+            <p className="mt-9 text-sm font-semibold tracking-[-0.02em] text-mingle-text">
               Choose how you start
             </p>
 
             <div className="mt-4 grid w-full gap-4 sm:grid-cols-2">
-              {PATH_CARDS.map((card) => {
-                const Art = card.Art;
-                return (
-                  <motion.button
-                    key={card.id}
-                    type="button"
-                    onClick={() => choosePath(card.id)}
-                    whileHover={{ y: -4 }}
-                    whileTap={{ scale: 0.985 }}
-                    className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[22px] border border-mingle-border/80 bg-white/90 p-5 text-left shadow-[0_12px_32px_rgba(45,27,78,0.06)] backdrop-blur-sm transition-colors hover:border-mingle-purple/35"
-                  >
-                    <div className="flex h-[84px] items-center justify-center rounded-2xl bg-[linear-gradient(160deg,#f7f4ff_0%,#eef5ff_100%)]">
-                      <Art />
-                    </div>
-                    <span className="mt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-mingle-purple">
+              {PATH_CARDS.map((card) => (
+                <motion.button
+                  key={card.id}
+                  type="button"
+                  onClick={() => choosePath(card.id)}
+                  whileHover={{ y: -5 }}
+                  whileTap={{ scale: 0.985 }}
+                  className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[24px] border border-mingle-border/70 bg-white/95 text-left shadow-[0_16px_40px_rgba(45,27,78,0.08)] transition-colors hover:border-mingle-purple/40"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#f3eefc]">
+                    <Image
+                      src={card.image}
+                      alt={card.imageAlt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 320px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      priority
+                    />
+                  </div>
+                  <div className="flex flex-col px-5 pb-5 pt-4">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-mingle-purple">
                       {card.eyebrow}
                     </span>
-                    <span
-                      className={`${welcomeDisplay.className} mt-1.5 text-[1.05rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text`}
-                    >
+                    <span className="mt-1.5 text-[1.08rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text">
                       {card.title}
                     </span>
-                    <span className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
+                    <span className="mt-1.5 text-sm font-medium leading-relaxed tracking-[-0.01em] text-mingle-text-secondary">
                       {card.description}
                     </span>
-                  </motion.button>
-                );
-              })}
+                  </div>
+                </motion.button>
+              ))}
             </div>
 
-            <p className="mt-8 text-xs text-mingle-text-secondary">
+            <p className="mt-8 text-xs font-medium text-mingle-text-secondary">
               <Link href="/legal/terms" className="underline underline-offset-2">
                 Terms of Service
               </Link>
