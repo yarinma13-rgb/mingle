@@ -252,7 +252,7 @@ export function AuthForm({
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="name@company.com"
+            placeholder="Email"
             {...register("email")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
