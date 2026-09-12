@@ -68,17 +68,17 @@ export function TalentPathArt({ className = "" }: { className?: string }) {
     >
       <defs>
         <linearGradient id={`${id}-g`} x1="12" y1="8" x2="76" y2="80">
-          <stop offset="0%" stopColor="#FF5B8A" />
-          <stop offset="55%" stopColor="#9B5CFF" />
-          <stop offset="100%" stopColor="#5B7CFF" />
+          <stop offset="0%" stopColor="#A78BFF" />
+          <stop offset="55%" stopColor="#7B6CFF" />
+          <stop offset="100%" stopColor="#5B8CFF" />
         </linearGradient>
         <filter id={`${id}-s`} x="-25%" y="-25%" width="150%" height="150%">
           <feDropShadow
             dx="0"
             dy="8"
             stdDeviation="7"
-            floodColor="#9B5CFF"
-            floodOpacity="0.3"
+            floodColor="#7B6CFF"
+            floodOpacity="0.28"
           />
         </filter>
       </defs>

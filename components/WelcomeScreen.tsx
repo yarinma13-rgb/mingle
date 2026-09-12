@@ -68,11 +68,11 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden bg-[#f5f8ff] px-5 py-10 sm:px-10 sm:py-16`}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(157,92,242,0.09),transparent_42%),radial-gradient(circle_at_88%_14%,rgba(120,180,255,0.14),transparent_40%),radial-gradient(circle_at_50%_100%,rgba(90,140,255,0.07),transparent_46%),radial-gradient(circle_at_72%_48%,rgba(210,230,255,0.35),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_8%,rgba(140,110,255,0.11),transparent_44%),radial-gradient(circle_at_90%_12%,rgba(150,200,255,0.22),transparent_42%),radial-gradient(circle_at_48%_100%,rgba(110,150,255,0.1),transparent_48%),radial-gradient(circle_at_70%_55%,rgba(220,235,255,0.55),transparent_52%)]"
       />
 
       <AnimatePresence
