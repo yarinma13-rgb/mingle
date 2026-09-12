@@ -7,7 +7,11 @@ export function salaryAlignmentLabel(kind: SalaryAlignment): string {
 }
 
 /**
- * Qualitative-only. Never return the raw numbers.
+ * HARD PRIVACY RULE: company salary_min / salary_max must never appear in
+ * talent-facing UI or API payloads. Only this qualitative tag may be shown
+ * (and only on company-side candidate lists). Do not serialize the raw range
+ * into match reports, discovery cards, or profile views.
+ *
  * Aligned when the candidate's number is in range, or below salary_min.
  * Above budget only when salary_max is set and the candidate is higher.
  */
