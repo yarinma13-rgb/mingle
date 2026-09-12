@@ -1,7 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { MingleLogo } from "@/components/MingleLogo";
 import { useLandingLocale } from "@/components/landing/LandingLocale";
 import type { AudienceId } from "@/lib/landing/copy";
@@ -13,57 +18,88 @@ type Props = {
 type Person = {
   name: string;
   role: string;
+  location: string;
   match: number;
   avatar: string;
-  tags?: string[];
+  skills: string[];
+  roleFit: number;
+  humanFit: number;
+  motivationFit: number;
+  tier: "high" | "medium";
 };
 
 const PEOPLE: Person[] = [
   {
     name: "Maya Okonkwo",
     role: "Senior Product Manager",
+    location: "Tel Aviv",
     match: 97,
     avatar: "/landing/avatars/avatar-maya.png",
-    tags: ["B2B SaaS", "Tel Aviv"],
+    skills: ["Roadmaps", "B2B SaaS", "Discovery", "Leadership"],
+    roleFit: 96,
+    humanFit: 94,
+    motivationFit: 88,
+    tier: "high",
   },
   {
     name: "Arjun Mehta",
     role: "Full-stack Engineer",
+    location: "Bengaluru",
     match: 95,
     avatar: "/landing/avatars/avatar-arjun.png",
-    tags: ["TypeScript", "Remote"],
+    skills: ["TypeScript", "React", "Node", "Systems"],
+    roleFit: 94,
+    humanFit: 91,
+    motivationFit: 86,
+    tier: "high",
   },
   {
     name: "Lin Wei",
     role: "Product Designer",
+    location: "Singapore",
     match: 94,
     avatar: "/landing/avatars/avatar-lin.png",
-    tags: ["Design systems"],
+    skills: ["Figma", "User Research", "Prototyping", "Leadership"],
+    roleFit: 93,
+    humanFit: 90,
+    motivationFit: 84,
+    tier: "high",
   },
   {
     name: "Noah Berger",
     role: "Backend Engineer",
-    match: 92,
+    location: "Berlin",
+    match: 88,
     avatar: "/landing/avatars/avatar-noah.png",
-    tags: ["Platform"],
+    skills: ["Platform", "Go", "Reliability"],
+    roleFit: 90,
+    humanFit: 84,
+    motivationFit: 62,
+    tier: "medium",
   },
   {
     name: "Sofia Alvarez",
     role: "People Partner",
-    match: 91,
+    location: "Madrid",
+    match: 84,
     avatar: "/landing/avatars/avatar-sofia.png",
-    tags: ["Hiring ops"],
+    skills: ["Hiring ops", "Culture", "Coaching"],
+    roleFit: 86,
+    humanFit: 88,
+    motivationFit: 58,
+    tier: "medium",
   },
 ];
 
 const CONFETTI_COLORS = [
+  "#FF5CA8",
+  "#FFD166",
   "#5B8DEF",
-  "#EA1E63",
-  "#7B2FF7",
-  "#3E6BE0",
-  "#F5C542",
   "#22C55E",
   "#C84BDB",
+  "#7B2FF7",
+  "#3E6BE0",
+  "#EA1E63",
 ];
 
 function subscribeReducedMotion(onStoreChange: () => void) {
@@ -76,25 +112,88 @@ function usePrefersReducedMotion() {
   return useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    () => true,
+    () => false,
   );
 }
 
 function Avatar({
   person,
-  size = 36,
+  size = 48,
+  className = "",
 }: {
   person: Person;
   size?: number;
+  className?: string;
 }) {
   return (
     <Image
       src={person.avatar}
-      alt=""
+      alt={person.name}
       width={size}
       height={size}
-      className="landing-stage-avatar"
+      className={`landing-stage-avatar ${className}`.trim()}
     />
+  );
+}
+
+function MatchRing({ value, size = 52 }: { value: number; size?: number }) {
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - value / 100);
+
+  return (
+    <div className="landing-stage-ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#e8e6ef"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#22c55e"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <strong>{value}%</strong>
+    </div>
+  );
+}
+
+function FitBars({ person, he }: { person: Person; he: boolean }) {
+  const bars = [
+    { key: "role", label: he ? "תפקיד" : "Role", value: person.roleFit, tone: "role" },
+    { key: "human", label: he ? "אדם" : "Human", value: person.humanFit, tone: "human" },
+    {
+      key: "motivation",
+      label: he ? "מוטיבציה" : "Motivation",
+      value: person.motivationFit,
+      tone: "motivation",
+    },
+  ];
+
+  return (
+    <div className="landing-stage-fitbars" aria-hidden>
+      {bars.map((bar) => (
+        <div key={bar.key} className="landing-stage-fitbar">
+          <span>{bar.label}</span>
+          <i className={`is-${bar.tone}`}>
+            <b style={{ width: `${bar.value}%` }} />
+          </i>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -103,66 +202,71 @@ function CompaniesStage({ he }: { he: boolean }) {
     {
       title: he ? "התאמות חזקות" : "Strong Matches",
       accent: "#7b2ff7",
-      cards: PEOPLE.slice(0, 3),
+      person: PEOPLE[0],
+      badge: "green" as const,
     },
     {
       title: he ? "מעוניינים" : "Interested",
-      accent: "#3e6be0",
-      cards: PEOPLE.slice(3, 5),
+      accent: "#5b8def",
+      person: PEOPLE[1],
+      badge: "blue" as const,
     },
     {
       title: he ? "הדדי" : "Mutual",
       accent: "#ea1e63",
-      cards: [PEOPLE[0]],
+      person: PEOPLE[2],
+      badge: "pink" as const,
     },
   ];
 
   return (
     <div className="landing-stage landing-stage-companies">
-      <div className="landing-stage-chrome">
-        <span />
-        <span />
-        <span />
-        <p>{he ? "לוח גיוס · Product Designer" : "Hiring board · Product Designer"}</p>
-      </div>
-      <div className="landing-stage-columns">
+      <div className="landing-stage-board">
         {columns.map((column) => (
-          <div key={column.title} className="landing-stage-col">
+          <div key={column.title} className="landing-stage-board-col">
             <div
-              className="landing-stage-col-head"
+              className="landing-stage-board-head"
               style={{ background: column.accent }}
             >
               {column.title}
-              <b>{column.cards.length}</b>
             </div>
-            <div className="landing-stage-col-body">
-              {column.cards.map((card) => (
-                <article key={card.name} className="landing-stage-card">
-                  <div className="landing-stage-card-top">
-                    <Avatar person={card} size={32} />
-                    <div>
-                      <p className="landing-stage-card-name">{card.name}</p>
-                      <p className="landing-stage-card-role">{card.role}</p>
-                    </div>
-                    <span className="landing-stage-match">{card.match}%</span>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <article className="landing-stage-person-card">
+              <div className="landing-stage-person-photo">
+                <Image
+                  src={column.person.avatar}
+                  alt={column.person.name}
+                  fill
+                  sizes="160px"
+                  className="landing-stage-person-img"
+                />
+              </div>
+              <p className="landing-stage-person-name">{column.person.name}</p>
+              <span className={`landing-stage-match-pill is-${column.badge}`}>
+                {column.person.match}% {he ? "התאמה" : "Match"}
+              </span>
+            </article>
           </div>
         ))}
       </div>
-      <aside className="landing-stage-float landing-stage-float-why">
+
+      <aside className="landing-stage-why-card">
         <strong>{he ? "למה ההתאמה" : "Why this match"}</strong>
         <ul>
           <li className="is-good">
-            {he ? "5/5 כישורים ליבה" : "5/5 core skills"}
+            <span>✓</span>
+            {he ? "התאמת כישורים" : "Skills match"}
           </li>
           <li className="is-good">
-            {he ? "שלב חברה דומה" : "Similar company stage"}
+            <span>✓</span>
+            {he ? "ניסיון תואם" : "Experience aligns"}
           </li>
-          <li className="is-warn">
-            {he ? "מעדיף remote · התפקיד 3 ימים במשרד" : "Prefers remote · role asks 3 office days"}
+          <li className="is-good">
+            <span>✓</span>
+            {he ? "התאמת תרבות" : "Culture fit"}
+          </li>
+          <li className="is-risk">
+            <span>!</span>
+            {he ? "סיכון: נדרש מעבר דירה" : "Risk: Relocation required"}
           </li>
         </ul>
       </aside>
@@ -178,11 +282,11 @@ function RecruitersStage({ he }: { he: boolean }) {
   useEffect(() => {
     if (reduceMotion) return;
     const timers = PEOPLE.map((_, index) =>
-      window.setTimeout(() => setRevealed(index + 1), 450 + index * 520),
+      window.setTimeout(() => setRevealed(index + 1), 280 + index * 420),
     );
     const selectTimer = window.setTimeout(
-      () => setSelected(PEOPLE[0].name),
-      450 + PEOPLE.length * 520 + 350,
+      () => setSelected(PEOPLE[2].name),
+      280 + PEOPLE.length * 420 + 280,
     );
     return () => {
       timers.forEach((id) => window.clearTimeout(id));
@@ -192,67 +296,58 @@ function RecruitersStage({ he }: { he: boolean }) {
 
   const visibleCount = reduceMotion ? PEOPLE.length : Math.max(1, revealed);
   const visible = PEOPLE.slice(0, visibleCount);
+  const activeName = reduceMotion ? PEOPLE[2].name : selected;
 
   return (
     <div className="landing-stage landing-stage-recruiters">
       <header className="landing-stage-panel-head">
-        <div>
-          <p className="landing-stage-kicker">
-            {he ? "תוך שניות" : "In seconds"}
-          </p>
-          <h3>{he ? "ההתאמות הכי גבוהות" : "Highest matches first"}</h3>
-        </div>
+        <h3>{he ? "ההתאמות הכי גבוהות" : "Top Matches"}</h3>
         <span className="landing-stage-live">
-          {he ? "מדרג עכשיו" : "Ranking now"}
+          {he ? "תוך שניות" : "In seconds"}
         </span>
       </header>
-      <ol className="landing-stage-shortlist">
+
+      <ol className="landing-stage-toplist">
         {visible.map((person, index) => {
-          const active = selected === person.name;
+          const active = activeName === person.name;
           return (
             <li
               key={person.name}
-              className={`landing-stage-shortlist-row ${active ? "is-selected" : ""} ${index === visible.length - 1 ? "is-entering" : ""}`}
+              className={`landing-stage-toplist-row ${active ? "is-selected" : ""} ${index === visible.length - 1 ? "is-entering" : ""}`}
             >
-              <span className="landing-stage-rank">{index + 1}</span>
-              <Avatar person={person} />
-              <div className="landing-stage-shortlist-meta">
-                <p>{person.name}</p>
-                <span>{person.role}</span>
-              </div>
-              <div className="landing-stage-bars" aria-hidden>
-                <i style={{ width: `${person.match - 2}%` }} className="is-role" />
-                <i style={{ width: `${person.match - 5}%` }} className="is-human" />
-                <i style={{ width: `${person.match - 3}%` }} className="is-motivation" />
-              </div>
-              <strong>{person.match}%</strong>
               <button
                 type="button"
-                className={active ? "is-on" : undefined}
+                className="landing-stage-toplist-hit"
                 onClick={() => setSelected(person.name)}
               >
-                {active
-                  ? he
-                    ? "נבחר"
-                    : "Shortlisted"
-                  : he
-                    ? "לבחור"
-                    : "Shortlist"}
+                <span className="landing-stage-rank">{index + 1}</span>
+                <MatchRing value={person.match} />
+                <Avatar person={person} size={46} className="is-lg" />
+                <div className="landing-stage-toplist-meta">
+                  <p>{person.name}</p>
+                  <span>{person.role}</span>
+                  <FitBars person={person} he={he} />
+                </div>
+                <em className={`landing-stage-tier is-${person.tier}`}>
+                  {person.tier === "high"
+                    ? he
+                      ? "גבוה"
+                      : "High"
+                    : he
+                      ? "בינוני"
+                      : "Medium"}
+                </em>
               </button>
             </li>
           );
         })}
       </ol>
-      <p className="landing-stage-footnote">
-        {he
-          ? "רק השאלות שחסרות · בלי שאלון ארוך"
-          : "Only missing questions · no long questionnaire"}
-      </p>
     </div>
   );
 }
 
 function FoundersStage({ he }: { he: boolean }) {
+  const person = PEOPLE[2];
   const meters = [
     {
       label: he ? "זמן שנחסך" : "Time saved",
@@ -287,6 +382,7 @@ function FoundersStage({ he }: { he: boolean }) {
           <h3>{he ? "צוות גיוס בכיס" : "A recruiting team in your pocket"}</h3>
         </div>
       </header>
+
       <div className="landing-stage-meters">
         {meters.map((meter) => (
           <article key={meter.label} className="landing-stage-meter">
@@ -305,15 +401,25 @@ function FoundersStage({ he }: { he: boolean }) {
           </article>
         ))}
       </div>
+
       <div className="landing-stage-founder-split">
-        <div className="landing-stage-top-match">
-          <Avatar person={PEOPLE[2]} size={44} />
+        <article className="landing-stage-founder-match">
+          <div className="landing-stage-founder-photo">
+            <Image
+              src={person.avatar}
+              alt={person.name}
+              fill
+              sizes="88px"
+              className="landing-stage-person-img"
+            />
+          </div>
           <div>
-            <p>{PEOPLE[2].name}</p>
-            <span>{PEOPLE[2].role}</span>
+            <p>{person.name}</p>
+            <span>{person.role}</span>
+            <FitBars person={person} he={he} />
           </div>
           <b>96%</b>
-        </div>
+        </article>
         <aside className="landing-stage-risks">
           <strong>{he ? "סיכונים לפני שיחה" : "Risks before the call"}</strong>
           <ul>
@@ -322,34 +428,34 @@ function FoundersStage({ he }: { he: boolean }) {
           </ul>
         </aside>
       </div>
-      <p className="landing-stage-footnote">
-        {he
-          ? "Role · Human · Motivation — לפני ששורפים קלנדר"
-          : "Role · Human · Motivation — before you burn calendar"}
-      </p>
     </div>
   );
 }
 
 function TalentsStage({ he }: { he: boolean }) {
   const reduceMotion = usePrefersReducedMotion();
+  const person = PEOPLE[2];
+  const skills = he
+    ? ["Figma", "מחקר משתמשים", "פרוטוטייפ", "מנהיגות"]
+    : ["Figma", "User Research", "Prototyping", "Leadership"];
+
   const confetti = useMemo(() => {
     if (reduceMotion) return [];
-    return Array.from({ length: 42 }, (_, i) => {
-      const angle = (i / 42) * Math.PI * 2;
-      const dist = 40 + (i % 7) * 14;
+    return Array.from({ length: 64 }, (_, i) => {
+      const angle = (i / 64) * Math.PI * 2;
+      const dist = 78 + (i % 9) * 16;
       return {
         id: i,
         color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-        x: Math.cos(angle) * dist,
-        y: Math.sin(angle) * dist * 0.75,
-        delay: (i % 10) * 0.04,
-        size: 5 + (i % 5),
+        x: Math.cos(angle) * dist - 36,
+        y: Math.sin(angle) * dist * 0.9,
+        delay: (i % 12) * 0.05,
+        size: 7 + (i % 6),
+        rot: (i * 37) % 360,
+        shape: i % 3 === 0 ? "curl" : i % 3 === 1 ? "bar" : "dot",
       };
     });
   }, [reduceMotion]);
-
-  const person = PEOPLE[0];
 
   return (
     <div className="landing-stage landing-stage-talents">
@@ -357,68 +463,63 @@ function TalentsStage({ he }: { he: boolean }) {
         {confetti.map((piece) => (
           <span
             key={piece.id}
-            className="landing-stage-talent-confetti"
+            className={`landing-stage-talent-confetti is-${piece.shape}`}
             style={{
               background: piece.color,
               width: piece.size,
-              height: piece.size * 1.8,
+              height: piece.shape === "dot" ? piece.size : piece.size * 2.2,
               animationDelay: `${piece.delay}s`,
               ["--tx" as string]: `${piece.x}px`,
               ["--ty" as string]: `${piece.y}px`,
+              ["--rot" as string]: `${piece.rot}deg`,
             }}
           />
         ))}
       </div>
 
-      <article className="landing-stage-profile">
-        <header>
-          <Avatar person={person} size={56} />
-          <div>
-            <p className="landing-stage-kicker">
-              {he ? "פרופיל מועמד" : "Talent profile"}
-            </p>
+      <article className="landing-stage-talent-card">
+        <div className="landing-stage-talent-hero">
+          <Image
+            src={person.avatar}
+            alt={person.name}
+            fill
+            sizes="340px"
+            className="landing-stage-person-img"
+            priority
+          />
+        </div>
+        <div className="landing-stage-talent-body">
+          <div className="landing-stage-talent-title">
             <h3>{person.name}</h3>
-            <span>{person.role}</span>
+            <span className="landing-stage-free-pill">{he ? "חינם" : "Free"}</span>
           </div>
-          <span className="landing-stage-free-pill">
-            {he ? "חינם" : "Free"}
-          </span>
-        </header>
-        <ul className="landing-stage-dna">
-          <li>
-            <b>{he ? "DNA מועמד" : "Candidate DNA"}</b>
-            <span>{he ? "נבנה מהפרופיל שלך" : "Built from what you share"}</span>
-          </li>
-          <li>
-            <b>{he ? "עניין הדדי בלבד" : "Mutual interest only"}</b>
-            <span>{he ? "מדברים כששני הצדדים רוצים" : "Talk when both sides want to"}</span>
-          </li>
-          <li>
-            <b>{he ? "למה ההתאמה" : "Why this match"}</b>
-            <span>{he ? "שקוף לשני הצדדים" : "Clear for both sides"}</span>
-          </li>
-        </ul>
-      </article>
+          <p className="landing-stage-talent-role">
+            {he ? "מעצבת מוצר בכירה" : "Senior Product Designer"}
+          </p>
+          <p className="landing-stage-talent-loc">
+            {he ? "תל אביב" : "Tel Aviv"}
+          </p>
 
-      <article className="landing-stage-salary">
-        <p className="landing-stage-kicker">
-          {he ? "בניית פרופיל · שלב שכר" : "Profile setup · salary"}
-        </p>
-        <h4>{he ? "מגדירים שכר כמו שנוח לכם" : "Set salary your way"}</h4>
-        <div className="landing-stage-salary-track" aria-hidden>
-          <span className="landing-stage-salary-fill" />
-          <span className="landing-stage-salary-knob" />
+          <div className="landing-stage-skill-pills">
+            {skills.map((skill, index) => (
+              <span key={skill} className={`is-tone-${(index % 4) + 1}`}>
+                {skill}
+              </span>
+            ))}
+          </div>
+
+          <div className="landing-stage-salary-block">
+            <p>{he ? "טווח שכר צפוי" : "Expected salary range"}</p>
+            <div className="landing-stage-salary-track" aria-hidden>
+              <span className="landing-stage-salary-fill" />
+              <span className="landing-stage-salary-knob" />
+            </div>
+            <div className="landing-stage-salary-meta">
+              <span>$120,000</span>
+              <span>$150,000</span>
+            </div>
+          </div>
         </div>
-        <div className="landing-stage-salary-meta">
-          <span>$140k</span>
-          <strong>$165k</strong>
-          <span>$190k</span>
-        </div>
-        <p className="landing-stage-footnote">
-          {he
-            ? "פרטי · לא חושפים מספר גולמי לחברות לפני עניין הדדי"
-            : "Private · companies don’t see raw numbers before mutual interest"}
-        </p>
       </article>
     </div>
   );
@@ -447,7 +548,7 @@ function AgenciesStage({ he }: { he: boolean }) {
       role: "Outsource squad",
       status: he ? "ספסל חזק" : "Bench growing",
       matches: 9,
-      person: PEOPLE[3],
+      person: PEOPLE[0],
       tone: "bench" as const,
     },
   ];
@@ -459,16 +560,29 @@ function AgenciesStage({ he }: { he: boolean }) {
           <p className="landing-stage-kicker">
             {he ? "סוכנויות גיוס ו־outsourcing" : "Recruiting & outsourcing agencies"}
           </p>
-          <h3>{he ? "יותר אמון. יותר נראות. יותר טאלנט." : "More trust. More visibility. Stronger talent."}</h3>
+          <h3>
+            {he
+              ? "יותר אמון. יותר נראות. יותר טאלנט."
+              : "More trust. More visibility. Stronger talent."}
+          </h3>
         </div>
       </header>
+
       <div className="landing-stage-agency-grid">
         {rows.map((row) => (
           <article
             key={row.client}
             className={`landing-stage-agency-row is-${row.tone}`}
           >
-            <Avatar person={row.person} />
+            <div className="landing-stage-agency-photo">
+              <Image
+                src={row.person.avatar}
+                alt={row.person.name}
+                fill
+                sizes="56px"
+                className="landing-stage-person-img"
+              />
+            </div>
             <div>
               <p>{row.client}</p>
               <span>{row.role}</span>
@@ -478,6 +592,7 @@ function AgenciesStage({ he }: { he: boolean }) {
           </article>
         ))}
       </div>
+
       <aside className="landing-stage-agency-pitch">
         <MingleLogo variant="mark" size={28} />
         <p>
