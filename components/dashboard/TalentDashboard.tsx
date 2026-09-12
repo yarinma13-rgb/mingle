@@ -92,6 +92,9 @@ export function TalentDashboard({
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Recommended companies
         </h2>
+        <p className="mt-1.5 text-sm text-mingle-text-secondary">
+          Companies that line up with your Candidate DNA.
+        </p>
 
         {companies.length === 0 ? (
           <EmptyState
@@ -106,18 +109,18 @@ export function TalentDashboard({
               <Link
                 key={company.userId}
                 href={`/profile/view/${company.userId}`}
-                className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-mingle"
+                className="group flex flex-col gap-2.5 rounded-2xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:-translate-y-0.5 hover:border-mingle-blue/35 hover:bg-mingle-white hover:shadow-mingle"
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-display text-sm font-semibold text-mingle-text">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-display text-sm font-semibold tracking-tight text-mingle-text transition-colors group-hover:text-mingle-cta">
                     {company.companyName}
                   </p>
-                  <MingleChip>{company.matchScore}% match</MingleChip>
+                  <MingleChip tone="pink">{company.matchScore}% match</MingleChip>
                 </div>
-                <p className="text-xs text-mingle-text-secondary">
+                <p className="text-xs leading-relaxed text-mingle-text-secondary">
                   {company.mission}
                 </p>
-                <p className="text-xs text-mingle-text-secondary">
+                <p className="text-[11px] font-medium text-mingle-text-secondary/90">
                   {[company.industry, company.location]
                     .filter(Boolean)
                     .join(" · ")}

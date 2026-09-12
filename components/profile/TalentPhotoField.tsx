@@ -82,7 +82,7 @@ export function TalentPhotoField({
       photo={photo}
       initials={initials}
       gender={gender}
-      size={variant === "hero" ? "xl" : "lg"}
+      size={variant === "hero" ? "hero" : "lg"}
     />
   );
   const picker = (

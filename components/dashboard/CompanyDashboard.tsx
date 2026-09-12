@@ -211,9 +211,15 @@ export function CompanyDashboard({
                       <td className="py-3 pr-4">
                         <Link
                           href={`/profile/view/${candidate.userId}`}
-                          className="font-medium text-mingle-text transition-colors hover:text-mingle-cta"
+                          className="flex items-center gap-3 font-medium text-mingle-text transition-colors hover:text-mingle-cta"
                         >
-                          {candidate.name}
+                          <Avatar
+                            photo={candidate.photo}
+                            initials={candidate.initials}
+                            gender={candidate.gender}
+                            size="sm"
+                          />
+                          <span>{candidate.name}</span>
                         </Link>
                       </td>
                       <td className="py-3 pr-4 text-mingle-text-secondary">
@@ -239,13 +245,21 @@ export function CompanyDashboard({
                 <Link
                   key={candidate.userId}
                   href={`/profile/view/${candidate.userId}`}
-                  className="flex flex-col gap-1.5 rounded-xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:border-mingle-blue/40 hover:bg-mingle-white hover:shadow-mingle"
+                  className="flex flex-col gap-2 rounded-2xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:-translate-y-0.5 hover:border-mingle-blue/35 hover:bg-mingle-white hover:shadow-mingle"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-mingle-text">
-                      {candidate.name}
-                    </p>
-                    <MingleChip className="shrink-0">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar
+                        photo={candidate.photo}
+                        initials={candidate.initials}
+                        gender={candidate.gender}
+                        size="sm"
+                      />
+                      <p className="truncate font-medium text-mingle-text">
+                        {candidate.name}
+                      </p>
+                    </div>
+                    <MingleChip tone="pink" className="shrink-0">
                       {candidate.matchScore}% match
                     </MingleChip>
                   </div>

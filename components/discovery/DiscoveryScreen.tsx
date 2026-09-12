@@ -145,7 +145,7 @@ function DiscoveryCardView({
       dragElastic={0.18}
       onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
-      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-surface shadow-mingle ${
+      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.1)] ${
         isMobile ? "touch-none cursor-grab" : "touch-pan-y"
       }`}
     >
@@ -196,7 +196,7 @@ function DiscoveryCardView({
                 <p className="truncate text-xs text-white/75">{card.meta}</p>
               ) : null}
             </div>
-            <MingleChip className="shrink-0 border-white/20 bg-white/15 text-[11px] text-white">
+            <MingleChip tone="pink" className="shrink-0 shadow-sm">
               {card.score} {card.report.strength}
             </MingleChip>
           </div>

@@ -257,14 +257,30 @@ button:disabled {
   align-items: center;
   border-radius: 9999px;
   background: var(--mingle-lavender);
-  padding: 0.2rem 0.65rem;
+  padding: 0.25rem 0.7rem;
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--mingle-blue);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .mingle-chip-pink {
+  background: color-mix(in srgb, var(--mingle-pink) 14%, var(--mingle-lavender));
   color: var(--mingle-pink-deep);
+}
+
+.profile-section {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profile-section:hover {
+  box-shadow: 0 10px 28px rgba(45, 27, 78, 0.06);
 }
 
 [data-theme="dark"] .mingle-chip {
@@ -273,6 +289,7 @@ button:disabled {
 }
 
 [data-theme="dark"] .mingle-chip-pink {
+  background: color-mix(in srgb, var(--mingle-pink) 22%, var(--mingle-surface));
   color: #ff8eab;
 }
 

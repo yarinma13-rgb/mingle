@@ -19,8 +19,11 @@ import {
   MatchReportBody,
 } from "@/components/matching/MatchReport";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import {
+  ProfileChipRow,
+  ProfileSection,
+} from "@/components/profile/ProfileSection";
 import { Avatar } from "@/components/Avatar";
-import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
 import { RequestRecommendation } from "@/components/recommendations/RequestRecommendation";
@@ -55,34 +58,6 @@ function BackArrowIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-function ChipRow({ items }: { items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <MingleChip key={item}>{item}</MingleChip>
-      ))}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-mingle-surface p-5">
-      <h2 className="font-display text-sm font-semibold text-mingle-text">
-        {title}
-      </h2>
-      {children}
-    </div>
-  );
-}
-
 export type ProfileDetailSection = {
   title: string;
   chips?: string[];
@@ -94,6 +69,8 @@ type ProfileDetailShellProps = {
   photo: string | null;
   initial: string;
   gender?: Gender | null;
+  /** Soft mark for companies; circle for talent. */
+  avatarShape?: "circle" | "soft";
   name: string;
   subtitle: string;
   meta: string;
@@ -124,6 +101,7 @@ export function ProfileDetailShell({
   photo,
   initial,
   gender = null,
+  avatarShape = "circle",
   name,
   subtitle,
   meta,
@@ -289,22 +267,28 @@ export function ProfileDetailShell({
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <span className="mingle-gradient-text font-display text-xs font-semibold uppercase tracking-[0.16em]">
+          <span className="mingle-gradient-text font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
             {eyebrow}
           </span>
         </div>
 
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Avatar photo={photo} initials={initial} gender={gender} size="xl" />
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Avatar
+            photo={photo}
+            initials={initial}
+            gender={gender}
+            size="hero"
+            shape={avatarShape}
+          />
           <div>
-            <h1 className="font-display text-2xl font-bold text-mingle-text">
+            <h1 className="font-display text-[1.65rem] font-bold leading-tight tracking-tight text-mingle-text sm:text-3xl">
               {name}
             </h1>
-            <p className="mt-1 text-sm text-mingle-text-secondary">
+            <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
               {subtitle}
             </p>
             {meta && (
-              <p className="mt-1 text-xs text-mingle-text-secondary">
+              <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
                 {meta}
               </p>
             )}
@@ -312,7 +296,7 @@ export function ProfileDetailShell({
         </div>
 
         {cvPath && cvFileName && (
-          <Section title="CV">
+          <ProfileSection title="CV">
             <TalentCvField
               supabase={supabase}
               userId={targetUserId}
@@ -322,11 +306,11 @@ export function ProfileDetailShell({
               showLabel={false}
               onChanged={() => {}}
             />
-          </Section>
+          </ProfileSection>
         )}
 
         {matchReport ? (
-          <Section title="Match Report">
+          <ProfileSection title="Match Report">
             <MatchReportBody report={matchReport} />
             <div className="mt-3 flex flex-col gap-3">
               <MatchFeedbackActions
@@ -338,14 +322,14 @@ export function ProfileDetailShell({
               />
               <AskMingleButton report={matchReport} />
             </div>
-          </Section>
+          </ProfileSection>
         ) : whyMatch ? (
-          <Section title="Why this could be a match">
+          <ProfileSection title="Why this could be a match">
             <ul className="flex flex-col gap-2">
               {whyMatch.map((reason) => (
                 <li
                   key={reason}
-                  className="flex gap-2 text-sm text-mingle-text-secondary"
+                  className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
                 >
                   <span
                     aria-hidden
@@ -355,37 +339,37 @@ export function ProfileDetailShell({
                 </li>
               ))}
             </ul>
-          </Section>
+          </ProfileSection>
         ) : null}
 
         {sections.map((section) => (
-          <Section key={section.title} title={section.title}>
-            {section.chips && <ChipRow items={section.chips} />}
+          <ProfileSection key={section.title} title={section.title}>
+            {section.chips && <ProfileChipRow items={section.chips} />}
             {section.text && (
-              <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
                 {section.text}
               </p>
             )}
-          </Section>
+          </ProfileSection>
         ))}
 
         {(recommendations.length > 0 || (canRequestRecommendation && isSelf)) && (
-          <Section title="Recommendations">
+          <ProfileSection title="Recommendations">
             <RecommendationsList items={recommendations} />
             {canRequestRecommendation && isSelf ? (
               <div className={recommendations.length > 0 ? "mt-2" : undefined}>
                 <RequestRecommendation />
               </div>
             ) : null}
-          </Section>
+          </ProfileSection>
         )}
 
-        <Section title="What to explore">
+        <ProfileSection title="What to explore">
           <ul className="flex flex-col gap-2">
             {whatToExplore.map((prompt) => (
               <li
                 key={prompt}
-                className="flex gap-2 text-sm text-mingle-text-secondary"
+                className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
               >
                 <span
                   aria-hidden
@@ -395,7 +379,7 @@ export function ProfileDetailShell({
               </li>
             ))}
           </ul>
-        </Section>
+        </ProfileSection>
 
         {!isSelf && (
           <div className="mt-2 flex flex-col gap-3">
