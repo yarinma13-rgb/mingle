@@ -42,7 +42,7 @@ const PEOPLE: Person[] = [
     role: "Senior Product Manager",
     location: "Tel Aviv",
     match: 97,
-    avatar: "/landing/avatars/avatar-maya.png",
+    avatar: "/landing/avatars/avatar-noa.png",
     skills: ["Roadmaps", "B2B SaaS", "Discovery", "Leadership"],
     roleFit: 96,
     humanFit: 94,
@@ -64,7 +64,7 @@ const PEOPLE: Person[] = [
     style: "photo",
   },
   {
-    name: "Yael Mizrahi",
+    name: "Yael Naveh",
     role: "Product Designer",
     location: "Tel Aviv",
     match: 94,
@@ -90,12 +90,12 @@ const PEOPLE: Person[] = [
     style: "photo",
   },
   {
-    name: "Lin Chen",
-    role: "Growth Marketer",
-    location: "Chicago",
+    name: "Idan Cohen",
+    role: "Full-stack Engineer",
+    location: "Tel Aviv",
     match: 86,
-    avatar: "/landing/avatars/avatar-lin.png",
-    skills: ["Lifecycle", "Copy", "Experimentation"],
+    avatar: "/landing/avatars/avatar-idan.png",
+    skills: ["TypeScript", "React", "Node"],
     roleFit: 88,
     humanFit: 86,
     motivationFit: 70,
@@ -179,13 +179,10 @@ function AnimatedMeterRing({
   const stroke = 8;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const [fill, setFill] = useState(reduceMotion ? pct : 0);
+  const [fill, setFill] = useState(0);
 
   useEffect(() => {
-    if (reduceMotion) {
-      setFill(pct);
-      return;
-    }
+    if (reduceMotion) return;
 
     let cancelled = false;
     let timeoutId = 0;
@@ -210,7 +207,7 @@ function AnimatedMeterRing({
     };
   }, [delayMs, pct, reduceMotion]);
 
-  const offset = circumference * (1 - fill / 100);
+  const offset = circumference * (1 - (reduceMotion ? pct : fill) / 100);
 
   return (
     <div className="landing-stage-meter-ring" style={{ width: size, height: size }}>
@@ -542,10 +539,10 @@ function TalentsStage({ he }: { he: boolean }) {
   const reduceMotion = usePrefersReducedMotion();
   const salaryMarket = useSalaryMarket();
   const salary = salaryRangeForMarket(salaryMarket);
-  const person = PEOPLE[2];
+  const person = PEOPLE[4]; // Idan — Israeli male talent (~30), primary audience
   const skills = he
-    ? ["Figma", "מחקר משתמשים", "פרוטוטייפ", "מנהיגות"]
-    : ["Figma", "User Research", "Prototyping", "Leadership"];
+    ? ["TypeScript", "React", "Node", "מערכות"]
+    : ["TypeScript", "React", "Node", "Systems"];
 
   const confetti = useMemo(() => {
     if (reduceMotion) return [];
@@ -602,7 +599,7 @@ function TalentsStage({ he }: { he: boolean }) {
             <span className="landing-stage-free-pill">{he ? "חינם" : "Free"}</span>
           </div>
           <p className="landing-stage-talent-role">
-            {he ? "מעצבת מוצר בכירה" : "Senior Product Designer"}
+            {he ? "מהנדס פול־סטאק" : "Full-stack Engineer"}
           </p>
           <p className="landing-stage-talent-loc">
             {he ? salary.locationHe : salary.locationEn}

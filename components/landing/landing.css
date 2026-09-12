@@ -1899,9 +1899,11 @@
 .landing-company-card {
   background: #fff;
   border-radius: 12px;
-  padding: 0.55rem 0.55rem 0.5rem;
+  padding: 0.55rem 0.55rem 0.65rem;
   border: 1px solid color-mix(in srgb, var(--ld-brand-purple) 8%, transparent);
   box-shadow: 0 2px 8px rgba(45, 27, 78, 0.04);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .landing-company-card-top {
@@ -2009,19 +2011,23 @@
 }
 
 .landing-company-card-risk {
-  margin: 0.5rem 0 0;
+  margin: 0.45rem 0 0;
   display: inline-flex;
   align-items: center;
   width: fit-content;
   max-width: 100%;
-  padding: 0.28rem 0.55rem;
+  box-sizing: border-box;
+  padding: 0.22rem 0.5rem;
   border-radius: 999px;
   background: color-mix(in srgb, #ea1e63 8%, white);
   border: 1px solid color-mix(in srgb, #ea1e63 22%, transparent);
   color: #c2185b;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 600;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Compare panel ───────────────────────────────────── */

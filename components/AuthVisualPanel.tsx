@@ -11,7 +11,7 @@ const MATCHES = [
     where: "Tel Aviv",
     score: 96,
     why: "Same shipping pace. She already led a B2B roadmap like yours.",
-    avatar: "/landing/avatars/avatar-maya.png",
+    avatar: "/landing/avatars/avatar-noa.png",
     badge: "Mutual interest",
   },
   {
@@ -24,7 +24,7 @@ const MATCHES = [
     badge: "Strong human fit",
   },
   {
-    name: "Yael Mizrahi",
+    name: "Yael Naveh",
     role: "Product Designer",
     where: "Tel Aviv",
     score: 91,
@@ -36,8 +36,8 @@ const MATCHES = [
 
 const FLOATERS = [
   {
-    src: "/landing/avatars/avatar-lin.png",
-    name: "Lin",
+    src: "/landing/avatars/avatar-idan.png",
+    name: "Idan",
     top: "9%",
     left: "7%",
     delay: 0.1,
@@ -50,8 +50,8 @@ const FLOATERS = [
     delay: 0.25,
   },
   {
-    src: "/landing/avatars/avatar-maya.png",
-    name: "Maya",
+    src: "/landing/avatars/avatar-noa.png",
+    name: "Noa",
     bottom: "11%",
     left: "8%",
     delay: 0.35,
@@ -138,7 +138,7 @@ export function AuthVisualPanel() {
           <div className="relative mb-5 flex items-center justify-center">
             <div className="relative h-[72px] w-[72px] overflow-hidden rounded-full border-[3px] border-white shadow-[0_14px_30px_rgba(99,102,241,0.25)]">
               <Image
-                src="/landing/avatars/avatar-maya.png"
+                src="/landing/avatars/avatar-noa.png"
                 alt=""
                 fill
                 sizes="72px"
