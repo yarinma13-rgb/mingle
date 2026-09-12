@@ -4,6 +4,8 @@ import type {
   RoleEmploymentType,
   RoleStatus,
 } from "@/lib/supabase/types";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 
 const ROLE_LIST_COLUMNS =
   "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at";
@@ -161,6 +163,11 @@ export async function createCompanyRole(
     .select(ROLE_LIST_COLUMNS)
     .single();
   if (error) throw error;
+  track(
+    AnalyticsEvent.roleCreated,
+    { role_id: data.id },
+    companyId,
+  );
   return toRecord(data);
 }
 

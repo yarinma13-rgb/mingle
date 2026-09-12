@@ -30,6 +30,10 @@ export const AnalyticsEvent = {
   authPathSwitched: "auth_path_switched",
   passwordResetRequested: "password_reset_requested",
 
+  // Company Aha! foundation (funnel later in PostHog UI)
+  roleCreated: "role_created",
+  matchViewed: "match_viewed",
+
   // Discover / match actions
   matchInterested: "match_interested",
   matchNotFit: "match_not_fit",
