@@ -28,6 +28,12 @@ export function CompanyProfilePreview({
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="flex w-full max-w-lg flex-col gap-6"
       >
+        <Link
+          href="/dashboard"
+          className="self-start text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
+        >
+          ← Back to dashboard
+        </Link>
         <div className="flex flex-col items-center text-center">
           <MingleLogo variant="mark" size={40} className="mb-4" />
           <span className="mingle-gradient-text font-display text-[11px] font-semibold uppercase tracking-[0.18em]">

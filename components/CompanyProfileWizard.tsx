@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -263,7 +264,13 @@ export function CompanyProfileWizard() {
       await saveCompanyProfilePatch(supabase, userId, {
         logo: publicUrl.publicUrl,
       });
-      setProfile((prev) => ({ ...prev, logo: publicUrl.publicUrl }));
+      const nextProfile = { ...profile, logo: publicUrl.publicUrl };
+      await saveProfileCompletion(
+        supabase,
+        userId,
+        companyProfileCompletion(nextProfile),
+      );
+      setProfile(nextProfile);
     } catch {
       setLogoError(
         "Logo upload isn't set up yet — you can skip this for now and add it later.",
@@ -299,6 +306,12 @@ export function CompanyProfileWizard() {
     <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
       <div className="w-full max-w-lg">
         <div className="mb-10 flex flex-col items-center text-center">
+          <Link
+            href="/dashboard"
+            className="mb-6 self-start text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
+          >
+            ← Back to dashboard
+          </Link>
           <MingleLogo variant="mark" size={44} className="mb-6" />
           <CompletionMeter percent={completionPct} />
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">

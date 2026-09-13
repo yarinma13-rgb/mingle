@@ -6,7 +6,7 @@ import { ConversationScreen } from "@/components/messaging/ConversationScreen";
 import { RelationshipContextPanel } from "@/components/messaging/RelationshipContextPanel";
 import { getOrCreateConversation, loadMessages } from "@/lib/messaging/persistence";
 import { loadRelationshipPageContext } from "@/lib/relationship/pageContext";
-import { loadTimeline, ensureInConversationEvent, currentStage } from "@/lib/relationship/persistence";
+import { loadTimeline, ensureInConversationEvent, latestStage } from "@/lib/relationship/persistence";
 import { loadUpcomingInterviewForConnection } from "@/lib/interviews/persistence";
 import { loadPendingProposalForConnection } from "@/lib/interviews/proposals";
 import { loadCalendarConnection } from "@/lib/calendar/persistence";
@@ -75,7 +75,7 @@ export default async function ConversationPage({
     // relationship_events not migrated yet — panel just shows whatever
     // ctx already loaded (gracefully degraded to "connected" there).
   }
-  const stage = currentStage(timeline);
+  const stage = latestStage(timeline);
 
   const whyConnected = ctx.alignedFactors[0]?.detail ?? "You connected on mingle.";
   const upcomingInterview = await loadUpcomingInterviewForConnection(

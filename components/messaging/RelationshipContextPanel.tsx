@@ -27,9 +27,9 @@ const STAGE_HINT: Record<RelationshipStage, string> = {
 const STAGE_HREF: Record<RelationshipStage, (id: string) => string> = {
   connected: (id) => `/conversations/${id}/explore`,
   exploring: (id) => `/conversations/${id}/explore`,
-  in_conversation: (id) => `/conversations/${id}/opportunity`,
+  in_conversation: (id) => `/conversations/${id}`,
   interview_booked: (id) => `/conversations/${id}`,
-  opportunity: (id) => `/conversations/${id}/decision`,
+  opportunity: (id) => `/conversations/${id}/opportunity`,
   decision: (id) => `/conversations/${id}/decision`,
   relationship: (id) => `/conversations/${id}`,
 };
@@ -37,9 +37,9 @@ const STAGE_HREF: Record<RelationshipStage, (id: string) => string> = {
 const STAGE_CTA: Record<RelationshipStage, string> = {
   connected: "Start exploring",
   exploring: "Continue exploring",
-  in_conversation: "Open opportunity",
+  in_conversation: "Back to chat",
   interview_booked: "Back to chat",
-  opportunity: "Record a decision",
+  opportunity: "Open opportunity",
   decision: "Review decision",
   relationship: "Back to chat",
 };
@@ -143,18 +143,22 @@ export function RelationshipContextPanel({
             Timeline
           </h3>
           <ul className="mt-2 flex flex-col gap-2.5">
-            {timeline.map((event, index) => (
+            {timeline
+              .filter((event, index, list) =>
+                index === 0 ? true : list[index - 1]?.stage !== event.stage,
+              )
+              .map((event, index, list) => (
               <li key={event.id} className="flex items-start gap-2.5">
                 <span className="mt-0.5 flex flex-col items-center">
                   <span
                     aria-hidden
                     className={`h-2 w-2 shrink-0 rounded-full ${
-                      index === timeline.length - 1
+                      index === list.length - 1
                         ? "bg-mingle-accent-blue"
                         : "bg-mingle-border"
                     }`}
                   />
-                  {index < timeline.length - 1 && (
+                  {index < list.length - 1 && (
                     <span aria-hidden className="mt-0.5 h-4 w-px bg-mingle-border" />
                   )}
                 </span>

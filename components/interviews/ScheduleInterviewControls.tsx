@@ -17,15 +17,7 @@ import type { InterviewRecord } from "@/lib/interviews/persistence";
 import type { InterviewProposal } from "@/lib/interviews/proposals";
 import { useToast } from "@/components/toast/ToastProvider";
 
-function formatInterviewWhen(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
+import { formatInterviewWhen } from "@/lib/datetime/interview";
 
 function toLocalInput(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");

@@ -92,7 +92,7 @@ export function currentStage(
   );
 }
 
-/** Most recently written stage. Board columns follow this so an explicit, confirmed step back is visible; relationship screens still use currentStage (furthest). */
+/** Most recently written stage — single source of truth for board columns, pipeline chips, and conversation stage UI so an explicit step back stays visible everywhere. */
 export function latestStage(
   timeline: RelationshipEventRow[],
 ): RelationshipStage {

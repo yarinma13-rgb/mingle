@@ -1,0 +1,10 @@
+/** Browser-local interview time. Prefer calling from client components. */
+export function formatInterviewWhen(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}

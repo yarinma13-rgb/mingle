@@ -152,7 +152,6 @@ export function RoleMatchesScreen({
   roleTitle,
   requiredSkills = [],
   cards,
-  total,
   viewerId,
   feedbackByUser,
   rediscoveryByUser = {},
@@ -162,7 +161,6 @@ export function RoleMatchesScreen({
   roleTitle: string;
   requiredSkills?: string[];
   cards: DiscoveryCard[];
-  total: number;
   viewerId: string;
   feedbackByUser: Record<string, MatchFeedbackAction>;
   rediscoveryByUser?: Record<string, RediscoveryBadge>;
@@ -199,8 +197,11 @@ export function RoleMatchesScreen({
           {roleTitle}
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
-          {total} strong matches. Top {Math.min(TOP_N, visible.length)} shown
-          first, from everyone on mingle. Location stays a soft signal.
+          {visible.length === 0
+            ? "No strong matches in this view yet."
+            : visible.length <= TOP_N
+              ? `${visible.length} strong match${visible.length === 1 ? "" : "es"}.`
+              : `${visible.length} strong matches. Top ${TOP_N} shown first.`}
         </p>
         <p className="mt-1 text-xs font-semibold text-mingle-text-secondary">
           Sort: Best Match
