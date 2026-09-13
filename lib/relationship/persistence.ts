@@ -68,9 +68,10 @@ export const STAGE_RANK: Record<RelationshipStage, number> = {
   connected: 0,
   exploring: 1,
   in_conversation: 2,
-  opportunity: 3,
-  decision: 4,
-  relationship: 5,
+  interview_booked: 3,
+  opportunity: 4,
+  decision: 5,
+  relationship: 6,
 };
 
 /**

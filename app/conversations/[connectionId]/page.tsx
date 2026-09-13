@@ -8,6 +8,8 @@ import { getOrCreateConversation, loadMessages } from "@/lib/messaging/persisten
 import { loadRelationshipPageContext } from "@/lib/relationship/pageContext";
 import { loadTimeline, ensureInConversationEvent, currentStage } from "@/lib/relationship/persistence";
 import { loadUpcomingInterviewForConnection } from "@/lib/interviews/persistence";
+import { loadPendingProposalForConnection } from "@/lib/interviews/proposals";
+import { loadCalendarConnection } from "@/lib/calendar/persistence";
 
 export default async function ConversationPage({
   params,
@@ -80,6 +82,14 @@ export default async function ConversationPage({
     supabase,
     ctx.connection.id,
   );
+  const pendingProposal = await loadPendingProposalForConnection(
+    supabase,
+    ctx.connection.id,
+  );
+  const calendarConnection =
+    ctx.userType === "company"
+      ? await loadCalendarConnection(supabase, user.id)
+      : null;
   const canScheduleInterview =
     ctx.userType === "company" && ctx.connection.status === "accepted";
 
@@ -119,6 +129,8 @@ export default async function ConversationPage({
               canScheduleInterview={canScheduleInterview}
               companyId={user.id}
               upcomingInterview={upcomingInterview}
+              pendingProposal={pendingProposal}
+              calendarConnected={Boolean(calendarConnection)}
             />
           </div>
           <div className="min-h-0 lg:w-80 lg:shrink-0 lg:overflow-y-auto">
