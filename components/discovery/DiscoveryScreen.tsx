@@ -146,7 +146,7 @@ function DiscoveryCardView({
 
   return (
     <motion.div
-      style={{ x, rotate, aspectRatio: "3 / 4" }}
+      style={{ x, rotate }}
       drag={isMobile && swipeEnabled ? "x" : false}
       dragDirectionLock
       dragMomentum={false}
@@ -154,7 +154,9 @@ function DiscoveryCardView({
       onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
       className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.1)] ${
-        isMobile ? "touch-none cursor-grab" : "touch-pan-y"
+        isMobile
+          ? "min-h-[min(640px,78vh)] touch-none cursor-grab"
+          : "max-h-[min(720px,85vh)] touch-pan-y"
       }`}
     >
       {isMobile && swipeEnabled && (
@@ -169,14 +171,14 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute left-4 top-4 rotate-6 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1 text-xs font-bold text-mingle-text-secondary"
+            className="pointer-events-none absolute left-4 top-4 z-20 rotate-6 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1 text-xs font-bold text-mingle-text-secondary"
           >
             Skip
           </motion.span>
         </>
       )}
 
-      <div className="relative min-h-0 flex-[1.15]">
+      <div className="relative h-44 shrink-0 sm:h-52">
         <div className="absolute inset-0">
           <TalentPhotoImg
             photo={card.photo}
@@ -211,23 +213,32 @@ function DiscoveryCardView({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
         <MatchReportBody report={card.report} compact />
       </div>
 
       {isMobile && swipeEnabled && (
-        <p className="px-4 text-center text-[11px] text-mingle-text-secondary">
+        <p className="shrink-0 px-4 pb-1 text-center text-[11px] text-mingle-text-secondary">
           Swipe right for interested, left to skip, or use the buttons below.
         </p>
       )}
 
-      <div className="flex flex-col gap-2 p-4 pt-0">
-        <Link
-          href={`/profile/view/${card.userId}`}
-          className="self-start rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-        >
-          View profile
-        </Link>
+      <div className="shrink-0 border-t border-mingle-border bg-mingle-white p-4">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <Link
+            href={`/profile/view/${card.userId}`}
+            className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          >
+            View profile
+          </Link>
+          <button
+            type="button"
+            onClick={() => onPass(card.userId)}
+            className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
+          >
+            Skip
+          </button>
+        </div>
         <MatchFeedbackActions
           audience={card.report.audience}
           action={feedback}

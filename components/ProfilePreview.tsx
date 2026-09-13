@@ -8,6 +8,7 @@ import { MingleLogo } from "@/components/MingleLogo";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
+import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import {
   ProfileChipRow,
   ProfileSection,
@@ -51,12 +52,13 @@ export function ProfilePreview({
   }, [supabase, userId]);
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
+    <div className="relative flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
+      <ProfileBuildChrome />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex w-full max-w-lg flex-col gap-6"
+        className="flex w-full max-w-lg flex-col gap-6 pt-8"
       >
         <div className="flex flex-col items-center text-center">
           <MingleLogo variant="mark" size={40} className="mb-4" />

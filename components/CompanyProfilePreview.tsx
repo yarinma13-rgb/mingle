@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { Avatar } from "@/components/Avatar";
+import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import {
   ProfileChipRow,
   ProfileSection,
@@ -21,12 +22,13 @@ export function CompanyProfilePreview({
   const initials = companyInitials(profile.companyName);
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
+    <div className="relative flex min-h-screen flex-1 justify-center px-5 py-12 sm:px-10 sm:py-16">
+      <ProfileBuildChrome />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex w-full max-w-lg flex-col gap-6"
+        className="flex w-full max-w-lg flex-col gap-6 pt-8"
       >
         <Link
           href="/dashboard"
