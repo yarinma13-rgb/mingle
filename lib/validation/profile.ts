@@ -8,7 +8,12 @@ export const basicProfileSchema = z.object({
   yearsExperience: z.number().int().min(0).max(40).nullable(),
   currentRole: z.string().trim().min(1, "Enter your current role").max(120),
   industry: z.string().trim().min(1, "Enter your industry").max(120),
-  gender: z.enum(["male", "female", "prefer_not_to_say"]).optional(),
+  gender: z.enum(['male', 'female', 'prefer_not_to_say']).optional(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type BasicProfileValues = z.infer<typeof basicProfileSchema>;

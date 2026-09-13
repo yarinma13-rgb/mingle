@@ -120,6 +120,7 @@ export interface Database {
           cv_path: string | null;
           cv_file_name: string | null;
           gender: string | null;
+          birth_date: string | null;
           salary_expectation: number | null;
           skills: string[];
           latitude: number | null;
@@ -145,6 +146,7 @@ export interface Database {
           cv_path?: string | null;
           cv_file_name?: string | null;
           gender?: string | null;
+          birth_date?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
           latitude?: number | null;
@@ -167,6 +169,7 @@ export interface Database {
           cv_path?: string | null;
           cv_file_name?: string | null;
           gender?: string | null;
+          birth_date?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
           latitude?: number | null;

@@ -1,43 +1,43 @@
 export type ProfileMultiQuestion = {
-  key: "drives" | "workStyle" | "lookingFor";
+  key: "drives" | "workStyle";
   eyebrow: string;
   headline: string;
   subtext: string;
   options: string[];
 };
 
-// Options and copy per PRODUCT_SPEC.md screens 7, 8, and 9.
+/**
+ * Profile multi-selects. Drives + looking-for were nearly identical and
+ * stacked fatigue before free-text — one curated values step keeps match
+ * signal without the double ask. Picks still persist to both `drives` and
+ * `looking_for` for matching compatibility.
+ */
 export const PROFILE_QUESTIONS: ProfileMultiQuestion[] = [
   {
     key: "drives",
-    eyebrow: "What drives you",
-    headline: "What drives you",
-    subtext: "What motivates you in your career?",
+    eyebrow: "What matters",
+    headline: "What matters most to you?",
+    subtext:
+      "Pick the signals that best describe your next chapter — we’ll use them for matching.",
     options: [
-      "Growth",
-      "Impact",
-      "Learning",
-      "Leadership",
-      "Creativity",
-      "Purpose",
-      "Recognition",
-      "Stability",
-      "Autonomy",
-      "Challenge",
-      "Craft",
+      "Growth & learning",
+      "Meaningful impact",
       "Compensation",
-      "Belonging",
-      "Mentorship",
+      "Strong leadership",
+      "Flexibility & balance",
       "Ownership",
-      "Balance",
-      "Status",
-      "Curiosity",
+      "Stability",
+      "Great team & culture",
+      "Mission-driven work",
+      "Craft excellence",
+      "New challenges",
+      "Autonomy",
     ],
   },
   {
     key: "workStyle",
     eyebrow: "How you work",
-    headline: "How you work",
+    headline: "How you do your best work",
     subtext: "What kind of environment brings out your best?",
     options: [
       "Collaborative",
@@ -46,44 +46,16 @@ export const PROFILE_QUESTIONS: ProfileMultiQuestion[] = [
       "Structured",
       "Flexible",
       "Remote",
-      "Office based",
       "Hybrid",
+      "Office based",
       "Creative",
       "Data driven",
       "Quiet focus",
-      "Customer facing",
       "Hands on",
       "Strategic",
       "Async",
-      "In person energy",
       "Maker time",
       "Manager time",
-    ],
-  },
-  {
-    key: "lookingFor",
-    eyebrow: "What you are looking for",
-    headline: "What you're looking for",
-    subtext: "What would make your next move meaningful?",
-    options: [
-      "Career growth",
-      "Meaningful work",
-      "Better leadership",
-      "Higher compensation",
-      "Flexibility",
-      "New challenges",
-      "Learning",
-      "Culture",
-      "Impact",
-      "Stability",
-      "Remote first",
-      "Team quality",
-      "Mission",
-      "Title step up",
-      "Ownership",
-      "Work life balance",
-      "International work",
-      "Small team",
     ],
   },
 ];

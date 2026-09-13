@@ -85,7 +85,7 @@ export function WelcomeScreen() {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center"
           >
-            <MingleLogo variant="lockup" size={64} priority className="mb-10" />
+            <MingleLogo variant="lockup" size={48} priority className="mb-10" />
 
             <h1
               className={`${welcomeDisplay.className} text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]`}

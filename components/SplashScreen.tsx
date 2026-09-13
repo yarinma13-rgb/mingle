@@ -36,7 +36,7 @@ export function SplashScreen({
         <MingleLogo
           variant="lockup"
           stacked
-          size={isMobile ? 88 : 50}
+          size={isMobile ? 44 : 50}
           priority
         />
         <p

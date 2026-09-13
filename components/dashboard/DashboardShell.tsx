@@ -167,7 +167,7 @@ export function DashboardShell({
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6">
           <div className="md:hidden">
-            <MingleLogo variant="mark" size={88} priority />
+            <MingleLogo variant="mark" size={44} priority />
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
