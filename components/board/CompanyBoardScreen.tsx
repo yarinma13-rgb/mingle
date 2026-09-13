@@ -16,6 +16,10 @@ import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
+import {
+  formatRediscoveryLabel,
+  type RediscoveryBadge,
+} from "@/lib/matching/rediscovery";
 
 export type BoardCandidate = {
   connectionId: string;
@@ -26,6 +30,7 @@ export type BoardCandidate = {
   photo: string | null;
   gender: Gender | null;
   timeline: RelationshipEventRow[];
+  rediscovery?: (RediscoveryBadge & { roleTitle?: string }) | null;
 };
 
 const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
@@ -226,6 +231,14 @@ export function CompanyBoardScreen({
                             <p className="truncate text-xs text-mingle-text-secondary">
                               {card.subtitle || "Candidate"}
                             </p>
+                            {card.rediscovery ? (
+                              <p className="mt-1 truncate text-[10px] font-semibold text-mingle-cta">
+                                {formatRediscoveryLabel(card.rediscovery)}
+                                {card.rediscovery.roleTitle
+                                  ? ` · for ${card.rediscovery.roleTitle}`
+                                  : ""}
+                              </p>
+                            ) : null}
                           </div>
                         </Link>
                         <div className="mt-3 flex items-center gap-2">

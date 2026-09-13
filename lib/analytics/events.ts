@@ -50,6 +50,9 @@ export const AnalyticsEvent = {
 
   // Support
   supportReportSubmitted: "support_report_submitted",
+
+  // Rediscovery
+  candidateRediscovered: "candidate_rediscovered",
 } as const;
 
 export type AnalyticsEventName =

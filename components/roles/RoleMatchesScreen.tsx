@@ -21,6 +21,10 @@ import { notifyPushMatch } from "@/lib/push/actions";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
+import {
+  formatRediscoveryLabel,
+  type RediscoveryBadge,
+} from "@/lib/matching/rediscovery";
 
 const TOP_N = 5;
 
@@ -29,12 +33,14 @@ function ResultCard({
   roleId,
   viewerId,
   initialFeedback,
+  rediscovery,
   onPass,
 }: {
   card: DiscoveryCard;
   roleId: string;
   viewerId: string;
   initialFeedback: MatchFeedbackAction | null;
+  rediscovery: RediscoveryBadge | null;
   onPass: (userId: string) => void;
 }) {
   const toast = useToast();
@@ -93,6 +99,11 @@ function ResultCard({
           <p className="truncate text-xs text-mingle-text-secondary">
             {card.subtitle}
           </p>
+          {rediscovery ? (
+            <p className="mt-1 text-[11px] font-semibold text-mingle-cta">
+              {formatRediscoveryLabel(rediscovery)}
+            </p>
+          ) : null}
         </div>
       </div>
       <MatchReportBody report={card.report} compact />
@@ -128,6 +139,7 @@ export function RoleMatchesScreen({
   total,
   viewerId,
   feedbackByUser,
+  rediscoveryByUser = {},
   filters,
 }: {
   roleId: string;
@@ -136,6 +148,7 @@ export function RoleMatchesScreen({
   total: number;
   viewerId: string;
   feedbackByUser: Record<string, MatchFeedbackAction>;
+  rediscoveryByUser?: Record<string, RediscoveryBadge>;
   filters: React.ReactNode;
 }) {
   const router = useRouter();
@@ -190,6 +203,7 @@ export function RoleMatchesScreen({
               roleId={roleId}
               viewerId={viewerId}
               initialFeedback={feedbackByUser[card.userId] ?? null}
+              rediscovery={rediscoveryByUser[card.userId] ?? null}
               onPass={persistPass}
             />
           ))}

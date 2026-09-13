@@ -10,6 +10,10 @@ import { loadPassedUserIds } from "@/lib/matching/passed";
 import { loadMatchFeedbackMap } from "@/lib/matching/feedback";
 import { loadCompanyRole } from "@/lib/roles/persistence";
 import { queueRoleMatches } from "@/lib/admin/reviews";
+import {
+  ensureRediscoveryForRole,
+  loadRediscoveryBadgeMap,
+} from "@/lib/matching/rediscovery";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { notFound } from "next/navigation";
 
@@ -38,13 +42,29 @@ export default async function RoleMatchesPage({
     loadPassedUserIds(supabase, user.id),
     loadMatchFeedbackMap(supabase, user.id),
   ]);
+
+  await ensureRediscoveryForRole(supabase, {
+    companyId: user.id,
+    roleId: role.id,
+    roleTitle: role.title,
+  });
+  const rediscoveryByUser = await loadRediscoveryBadgeMap(supabase, role.id);
+  const rediscoveredIds = new Set(Object.keys(rediscoveryByUser));
+  const excludeUserIds = passedUserIds.filter((id) => !rediscoveredIds.has(id));
+
   const ranked = await loadDiscoveryPage(
     supabase,
     { id: user.id, userType: "company" },
     filters,
     styleOptions,
-    { excludeUserIds: passedUserIds, rankAll: true },
+    { excludeUserIds, rankAll: true },
   );
+  const cards = [...ranked.cards].sort((a, b) => {
+    const ar = rediscoveredIds.has(a.userId) ? 1 : 0;
+    const br = rediscoveredIds.has(b.userId) ? 1 : 0;
+    if (ar !== br) return br - ar;
+    return b.score - a.score;
+  });
 
   const { data: companyRow } = await supabase
     .from("company_profiles")
@@ -56,7 +76,7 @@ export default async function RoleMatchesPage({
     companyId: user.id,
     jobTitle: role.title,
     companyName: companyRow?.company_name ?? "",
-    cards: ranked.cards,
+    cards,
   });
 
   return (
@@ -71,8 +91,9 @@ export default async function RoleMatchesPage({
       <RoleMatchesScreen
         roleId={role.id}
         roleTitle={role.title}
-        cards={ranked.cards}
+        cards={cards}
         total={ranked.total}
+        rediscoveryByUser={rediscoveryByUser}
         viewerId={user.id}
         feedbackByUser={feedbackByUser}
         filters={
