@@ -298,7 +298,7 @@ function parseDrushim(html: string, sourceUrl: string): ParsedJobBoardJd {
 
   let title = fromNext?.title ?? "";
   let description = fromNext?.description ?? "";
-  let requirements = fromNext?.requirements ?? "";
+  const requirements = fromNext?.requirements ?? "";
 
   if (!title || !description) {
     const ld = extractJsonLdJobPosting(html);
