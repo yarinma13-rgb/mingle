@@ -72,7 +72,7 @@ export function ContactSalesPage() {
             <Link href="/auth" className="landing-nav-signin">
               Sign in
             </Link>
-            <Link href="/auth?mode=signup" className="landing-btn landing-btn-ghost">
+            <Link href="/auth?mode=signup&path=talent" className="landing-btn landing-btn-ghost">
               Get Started
             </Link>
           </div>
