@@ -34,6 +34,7 @@ import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
+import { scoreChipClass } from "@/lib/matching/score-tone";
 
 export type DiscoveryCard = {
   userId: string;
@@ -206,14 +207,16 @@ function DiscoveryCardView({
                 <p className="truncate text-xs text-white/75">{card.meta}</p>
               ) : null}
             </div>
-            <MingleChip tone="pink" className="shrink-0 shadow-sm">
-              {card.score} {card.report.strength}
-            </MingleChip>
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
+            >
+              {card.score}% · {card.report.strength}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 lg:hidden">
         <MatchReportBody report={card.report} compact />
       </div>
 
@@ -345,9 +348,11 @@ export function DiscoveryScreen({
                   {card.subtitle}
                 </p>
               </div>
-              <MingleChip className="shrink-0 text-[11px]">
-                {card.score} {card.report.strength}
-              </MingleChip>
+              <span
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(card.score)}`}
+              >
+                {card.score}% · {card.report.strength}
+              </span>
               <Link
                 href={`/profile/view/${card.userId}`}
                 className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
@@ -365,18 +370,34 @@ export function DiscoveryScreen({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {cards.map((card) => (
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-medium text-mingle-text-secondary">
+            {cards.length === initialCards.length
+              ? `${cards.length} to review`
+              : `${initialCards.length - cards.length + 1} of ${initialCards.length}`}
+          </p>
+          <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
             <DiscoveryCardView
-              key={card.userId}
-              card={card}
-              initialFeedback={feedbackByUser[card.userId] ?? null}
+              key={cards[0].userId}
+              card={cards[0]}
+              initialFeedback={feedbackByUser[cards[0].userId] ?? null}
               viewerId={viewerId}
               swipeEnabled
               onPass={persistPass}
               onHide={hideCard}
             />
-          ))}
+            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle lg:flex">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
+                Match report
+              </p>
+              <p className="mt-1 font-display text-sm font-semibold text-mingle-text">
+                {cards[0].name}
+              </p>
+              <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+                <MatchReportBody report={cards[0].report} />
+              </div>
+            </aside>
+          </div>
         </div>
       )}
     </div>

@@ -30,6 +30,10 @@ import { RequestRecommendation } from "@/components/recommendations/RequestRecom
 import type { SubmittedRecommendation } from "@/lib/recommendations/persistence";
 import type { ConnectionStatus } from "@/lib/supabase/types";
 import type { Gender } from "@/lib/profile/avatar";
+import {
+  scoreChipClass,
+  scoreTextClass,
+} from "@/lib/matching/score-tone";
 
 const MingleMomentOverlay = dynamic(
   () =>
@@ -238,7 +242,7 @@ export function ProfileDetailShell({
     connecting || connectionState?.status === "accepted" || connectionState?.status === "pending" && !isPendingIncoming;
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-4 py-10 sm:px-10 sm:py-16">
+    <div className="flex min-h-screen flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12">
       {showMingleMoment && (
         <MingleMomentOverlay
           matchName={name}
@@ -255,165 +259,192 @@ export function ProfileDetailShell({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex w-full max-w-lg flex-col gap-6"
+        className="flex w-full max-w-4xl flex-col gap-5"
       >
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center gap-1.5 self-start text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
-        >
-          <BackArrowIcon />
-          Back
-        </button>
-
-        <div className="flex flex-col items-center text-center">
-          <span className="mingle-gradient-text font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
-            {eyebrow}
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Avatar
-            photo={photo}
-            initials={initial}
-            gender={gender}
-            size="hero"
-            shape={avatarShape}
-          />
-          <div>
-            <h1 className="font-display text-[1.65rem] font-bold leading-tight tracking-tight text-mingle-text sm:text-3xl">
+        <div className="sticky top-0 z-20 -mx-1 flex items-center gap-3 rounded-2xl border border-mingle-border/80 bg-mingle-surface/95 px-3 py-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-mingle-surface/85">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
+          >
+            <BackArrowIcon />
+            Back
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-sm font-semibold text-mingle-text">
               {name}
-            </h1>
-            <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
+            </p>
+            <p className="truncate text-[11px] text-mingle-text-secondary">
               {subtitle}
             </p>
-            {meta && (
-              <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
-                {meta}
-              </p>
-            )}
           </div>
+          {matchReport ? (
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(matchReport.overall)}`}
+            >
+              <span className={scoreTextClass(matchReport.overall)}>
+                {matchReport.overall}%
+              </span>
+            </span>
+          ) : null}
         </div>
 
-        {cvPath && cvFileName && (
-          <ProfileSection title="CV">
-            <TalentCvField
-              supabase={supabase}
-              userId={targetUserId}
-              cvPath={cvPath}
-              cvFileName={cvFileName}
-              editable={false}
-              showLabel={false}
-              onChanged={() => {}}
-            />
-          </ProfileSection>
-        )}
-
-        {matchReport ? (
-          <ProfileSection title="Match Report">
-            <MatchReportBody report={matchReport} />
-            <div className="mt-3 flex flex-col gap-3">
-              <MatchFeedbackActions
-                audience={matchReport.audience}
-                action={feedback}
-                busy={saving}
-                onInterested={() => void handleInterested()}
-                onNotFit={(reason) => void handleNotFit(reason)}
-              />
-              <AskMingleButton report={matchReport} />
-            </div>
-          </ProfileSection>
-        ) : whyMatch ? (
-          <ProfileSection title="Why this could be a match">
-            <ul className="flex flex-col gap-2">
-              {whyMatch.map((reason) => (
-                <li
-                  key={reason}
-                  className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
-                >
-                  <span
-                    aria-hidden
-                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-pink"
-                  />
-                  {reason}
-                </li>
-              ))}
-            </ul>
-          </ProfileSection>
-        ) : null}
-
-        {sections.map((section) => (
-          <ProfileSection key={section.title} title={section.title}>
-            {section.chips && <ProfileChipRow items={section.chips} />}
-            {section.text && (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
-                {section.text}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start">
+          <aside className="flex flex-col gap-4 lg:sticky lg:top-16">
+            <div className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+              <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
+                {eyebrow}
               </p>
-            )}
-          </ProfileSection>
-        ))}
-
-        {(recommendations.length > 0 || (canRequestRecommendation && isSelf)) && (
-          <ProfileSection title="Recommendations">
-            <RecommendationsList items={recommendations} />
-            {canRequestRecommendation && isSelf ? (
-              <div className={recommendations.length > 0 ? "mt-2" : undefined}>
-                <RequestRecommendation />
-              </div>
-            ) : null}
-          </ProfileSection>
-        )}
-
-        {whatToExplore.length > 0 ? (
-        <ProfileSection title="What to explore">
-          <ul className="flex flex-col gap-2">
-            {whatToExplore.map((prompt) => (
-              <li
-                key={prompt}
-                className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
-              >
-                <span
-                  aria-hidden
-                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-purple"
+              <div className="mt-4 flex flex-col items-center gap-3 text-center">
+                <Avatar
+                  photo={photo}
+                  initials={initial}
+                  gender={gender}
+                  size="hero"
+                  shape={avatarShape}
                 />
-                {prompt}
-              </li>
-            ))}
-          </ul>
-        </ProfileSection>
-        ) : null}
+                <div>
+                  <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-2xl">
+                    {name}
+                  </h1>
+                  <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
+                    {subtitle}
+                  </p>
+                  {meta ? (
+                    <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
+                      {meta}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
 
-        {!isSelf && (
-          <div className="mt-2 flex flex-col gap-3">
-            {connectError && (
-              <p className="text-center text-sm text-mingle-pink">
-                {connectError}
-              </p>
+              {!isSelf ? (
+                <div className="mt-5 flex flex-col gap-2">
+                  {connectError ? (
+                    <p className="text-center text-sm text-mingle-pink">
+                      {connectError}
+                    </p>
+                  ) : null}
+                  <motion.button
+                    type="button"
+                    onClick={handleConnect}
+                    disabled={connectDisabled}
+                    whileHover={connectDisabled ? undefined : { scale: 1.02 }}
+                    whileTap={connectDisabled ? undefined : { scale: 0.98 }}
+                    className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
+                      connectDisabled
+                        ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
+                        : "bg-mingle-cta text-white"
+                    }`}
+                  >
+                    {connecting ? "Sending…" : connectLabel}
+                  </motion.button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                  >
+                    {saving ? "Saving…" : saved ? "Saved" : "Save for later"}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </aside>
+
+          <div className="flex flex-col gap-4">
+            {cvPath && cvFileName ? (
+              <ProfileSection title="CV">
+                <TalentCvField
+                  supabase={supabase}
+                  userId={targetUserId}
+                  cvPath={cvPath}
+                  cvFileName={cvFileName}
+                  editable={false}
+                  showLabel={false}
+                  onChanged={() => {}}
+                />
+              </ProfileSection>
+            ) : null}
+
+            {matchReport ? (
+              <ProfileSection title="Match Report">
+                <MatchReportBody report={matchReport} />
+                <div className="mt-3 flex flex-col gap-3">
+                  <MatchFeedbackActions
+                    audience={matchReport.audience}
+                    action={feedback}
+                    busy={saving}
+                    onInterested={() => void handleInterested()}
+                    onNotFit={(reason) => void handleNotFit(reason)}
+                  />
+                  <AskMingleButton report={matchReport} />
+                </div>
+              </ProfileSection>
+            ) : whyMatch ? (
+              <ProfileSection title="Why this could be a match">
+                <ul className="flex flex-col gap-2">
+                  {whyMatch.map((reason) => (
+                    <li
+                      key={reason}
+                      className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
+                    >
+                      <span
+                        aria-hidden
+                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-pink"
+                      />
+                      {reason}
+                    </li>
+                  ))}
+                </ul>
+              </ProfileSection>
+            ) : null}
+
+            {sections.map((section) => (
+              <ProfileSection key={section.title} title={section.title}>
+                {section.chips ? <ProfileChipRow items={section.chips} /> : null}
+                {section.text ? (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
+                    {section.text}
+                  </p>
+                ) : null}
+              </ProfileSection>
+            ))}
+
+            {(recommendations.length > 0 ||
+              (canRequestRecommendation && isSelf)) && (
+              <ProfileSection title="Recommendations">
+                <RecommendationsList items={recommendations} />
+                {canRequestRecommendation && isSelf ? (
+                  <div
+                    className={recommendations.length > 0 ? "mt-2" : undefined}
+                  >
+                    <RequestRecommendation />
+                  </div>
+                ) : null}
+              </ProfileSection>
             )}
-            <motion.button
-              type="button"
-              onClick={handleConnect}
-              disabled={connectDisabled}
-              whileHover={connectDisabled ? undefined : { scale: 1.02 }}
-              whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-              className={`rounded-full px-8 py-3.5 text-center font-display text-sm font-semibold transition-colors ${
-                connectDisabled
-                  ? "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary"
-                  : "bg-mingle-cta text-white"
-              }`}
-            >
-              {connecting ? "Sending…" : connectLabel}
-            </motion.button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-full bg-mingle-surface px-8 py-3.5 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : saved ? "Saved" : "Save for later"}
-            </button>
+
+            {whatToExplore.length > 0 ? (
+              <ProfileSection title="What to explore">
+                <ul className="flex flex-col gap-2">
+                  {whatToExplore.map((prompt) => (
+                    <li
+                      key={prompt}
+                      className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
+                    >
+                      <span
+                        aria-hidden
+                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-purple"
+                      />
+                      {prompt}
+                    </li>
+                  ))}
+                </ul>
+              </ProfileSection>
+            ) : null}
           </div>
-        )}
+        </div>
       </motion.div>
     </div>
   );
