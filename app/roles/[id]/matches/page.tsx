@@ -91,6 +91,7 @@ export default async function RoleMatchesPage({
       <RoleMatchesScreen
         roleId={role.id}
         roleTitle={role.title}
+        requiredSkills={role.requiredSkills}
         cards={cards}
         total={ranked.total}
         rediscoveryByUser={rediscoveryByUser}

@@ -731,7 +731,7 @@ export function ProfileWizard() {
                 <label className="mt-8 block text-sm font-medium text-mingle-text">
                   GitHub profile{" "}
                   <span className="font-normal text-mingle-text-secondary">
-                    (optional · not shown as a score penalty if empty)
+                    (optional · leaving blank does not hurt your score)
                   </span>
                   <input
                     type="url"

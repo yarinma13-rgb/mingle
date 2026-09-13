@@ -46,6 +46,8 @@ export type DiscoveryCard = {
   score: number;
   factors: MatchFactor[];
   report: MatchReport;
+  /** Talent skills when available (role matches soft overlap). */
+  skills?: string[];
 };
 
 const SWIPE_DISTANCE_THRESHOLD = 110;
