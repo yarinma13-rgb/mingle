@@ -69,7 +69,7 @@ export async function scheduleInterviewAction(input: {
   }
 
   try {
-    await scheduleInterview(supabase, {
+    const interview = await scheduleInterview(supabase, {
       companyId: parsed.data.companyId,
       connectionId: parsed.data.connectionId,
       scheduledBy: user.id,
@@ -78,6 +78,48 @@ export async function scheduleInterviewAction(input: {
       locationType: parsed.data.locationType,
       notes: parsed.data.notes,
     });
+
+    try {
+      const { loadTimeline, ensureStageAtLeast } = await import(
+        "@/lib/relationship/persistence"
+      );
+      const timeline = await loadTimeline(supabase, parsed.data.connectionId);
+      await ensureStageAtLeast(
+        supabase,
+        parsed.data.connectionId,
+        "interview_booked",
+        timeline,
+        user.id,
+        {
+          interview_id: interview.id,
+          scheduled_at: interview.scheduledAt,
+        },
+      );
+    } catch {
+      // Relationship timeline may not be migrated yet.
+    }
+
+    const talentUserId =
+      connection.requester_id === parsed.data.companyId
+        ? connection.recipient_id
+        : connection.requester_id;
+    try {
+      const { syncInterviewToGoogleCalendar } = await import(
+        "@/lib/interviews/proposal-actions"
+      );
+      await syncInterviewToGoogleCalendar({
+        interviewId: interview.id,
+        companyId: parsed.data.companyId,
+        scheduledAt: interview.scheduledAt,
+        durationMinutes: interview.durationMinutes,
+        locationType: interview.locationType,
+        notes: interview.notes,
+        talentUserId,
+      });
+    } catch {
+      // Calendar sync is best-effort.
+    }
+
     return { ok: true };
   } catch (error) {
     if (isMissingInterviewsTable(error as { message?: string; code?: string })) {

@@ -37,6 +37,7 @@ const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] 
   { id: "connected", label: "Connected", accent: "var(--mingle-accent-pink)" },
   { id: "exploring", label: "Exploring", accent: "var(--mingle-accent-purple)" },
   { id: "in_conversation", label: "In conversation", accent: "var(--mingle-accent-blue)" },
+  { id: "interview_booked", label: "Interview booked", accent: "var(--mingle-success)" },
   { id: "opportunity", label: "Opportunity", accent: "var(--mingle-warning)" },
   { id: "decision", label: "Decision", accent: "var(--mingle-success)" },
   { id: "relationship", label: "Relationship", accent: "var(--mingle-purple)" },

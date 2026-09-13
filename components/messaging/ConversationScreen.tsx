@@ -14,10 +14,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
 import {
+  AcceptInterviewSlots,
   ScheduleInterviewControls,
   UpcomingInterviewBanner,
 } from "@/components/interviews/ScheduleInterviewControls";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
+import type { InterviewProposal } from "@/lib/interviews/proposals";
 import { notifyPushMessage } from "@/lib/push/actions";
 
 function SendIcon({ size = 18 }: { size?: number }) {
@@ -91,6 +93,8 @@ export function ConversationScreen({
   canScheduleInterview = false,
   companyId = null,
   upcomingInterview = null,
+  pendingProposal = null,
+  calendarConnected = false,
 }: {
   conversationId: string;
   viewerId: string;
@@ -106,6 +110,8 @@ export function ConversationScreen({
   canScheduleInterview?: boolean;
   companyId?: string | null;
   upcomingInterview?: InterviewRecord | null;
+  pendingProposal?: InterviewProposal | null;
+  calendarConnected?: boolean;
 }) {
   const [supabase] = useState(() => createClient());
   const [messages, setMessages] = useState(initialMessages);
@@ -192,6 +198,7 @@ export function ConversationScreen({
               connectionId={connectionId}
               companyId={companyId}
               upcoming={upcomingInterview}
+              calendarConnected={calendarConnected}
             />
           ) : upcomingInterview ? (
             <div className="hidden sm:block">
@@ -202,6 +209,11 @@ export function ConversationScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        {pendingProposal && !canScheduleInterview && !upcomingInterview ? (
+          <div className="mb-4">
+            <AcceptInterviewSlots proposal={pendingProposal} />
+          </div>
+        ) : null}
         {upcomingInterview && !canScheduleInterview ? (
           <div className="mb-4 sm:hidden">
             <UpcomingInterviewBanner interview={upcomingInterview} />

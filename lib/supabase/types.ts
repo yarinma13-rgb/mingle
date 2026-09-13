@@ -5,6 +5,7 @@ export type RelationshipStage =
   | "connected"
   | "exploring"
   | "in_conversation"
+  | "interview_booked"
   | "opportunity"
   | "decision"
   | "relationship";
@@ -126,6 +127,10 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           max_commute_km: number | null;
+          github_url: string | null;
+          github_login: string | null;
+          github_meta: Record<string, unknown> | null;
+          github_fetched_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -152,6 +157,10 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          github_url?: string | null;
+          github_login?: string | null;
+          github_meta?: Record<string, unknown> | null;
+          github_fetched_at?: string | null;
         };
         Update: {
           first_name?: string | null;
@@ -175,6 +184,10 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          github_url?: string | null;
+          github_login?: string | null;
+          github_meta?: Record<string, unknown> | null;
+          github_fetched_at?: string | null;
         };
         Relationships: [];
       };
@@ -764,6 +777,9 @@ export interface Database {
           location_type: InterviewLocationType;
           notes: string | null;
           status: InterviewStatus;
+          google_event_id: string | null;
+          meet_link: string | null;
+          proposal_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -775,6 +791,9 @@ export interface Database {
           location_type?: InterviewLocationType;
           notes?: string | null;
           status?: InterviewStatus;
+          google_event_id?: string | null;
+          meet_link?: string | null;
+          proposal_id?: string | null;
         };
         Update: {
           scheduled_at?: string;
@@ -782,12 +801,120 @@ export interface Database {
           location_type?: InterviewLocationType;
           notes?: string | null;
           status?: InterviewStatus;
+          google_event_id?: string | null;
+          meet_link?: string | null;
+          proposal_id?: string | null;
+        };
+        Relationships: [];
+      };
+      company_calendar_connections: {
+        Row: {
+          company_id: string;
+          provider: "google";
+          refresh_token: string;
+          access_token: string | null;
+          access_token_expires_at: string | null;
+          calendar_id: string;
+          account_email: string | null;
+          connected_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          company_id: string;
+          provider?: "google";
+          refresh_token: string;
+          access_token?: string | null;
+          access_token_expires_at?: string | null;
+          calendar_id?: string;
+          account_email?: string | null;
+          connected_by: string;
+          updated_at?: string;
+        };
+        Update: {
+          refresh_token?: string;
+          access_token?: string | null;
+          access_token_expires_at?: string | null;
+          calendar_id?: string;
+          account_email?: string | null;
+          connected_by?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      interview_proposals: {
+        Row: {
+          id: string;
+          company_id: string;
+          connection_id: string;
+          proposed_by: string;
+          status: "pending" | "accepted" | "cancelled" | "expired";
+          duration_minutes: number;
+          location_type: InterviewLocationType;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          company_id: string;
+          connection_id: string;
+          proposed_by: string;
+          status?: "pending" | "accepted" | "cancelled" | "expired";
+          duration_minutes?: number;
+          location_type?: InterviewLocationType;
+          notes?: string | null;
+        };
+        Update: {
+          status?: "pending" | "accepted" | "cancelled" | "expired";
+          duration_minutes?: number;
+          location_type?: InterviewLocationType;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
+      interview_proposal_slots: {
+        Row: {
+          id: string;
+          proposal_id: string;
+          starts_at: string;
+          status: "offered" | "selected" | "rejected";
+          created_at: string;
+        };
+        Insert: {
+          proposal_id: string;
+          starts_at: string;
+          status?: "offered" | "selected" | "rejected";
+        };
+        Update: {
+          status?: "offered" | "selected" | "rejected";
         };
         Relationships: [];
       };
     };
     Views: Record<string, never>;
     Functions: {
+      book_interview_from_slot: {
+        Args: { p_slot_id: string };
+        Returns: {
+          interview_id: string;
+          company_id: string;
+          connection_id: string;
+          scheduled_at: string;
+          duration_minutes: number;
+          location_type: string;
+          notes: string | null;
+          talent_user_id: string;
+        }[];
+      };
+      calendar_tokens_for_pending_proposal: {
+        Args: { p_proposal_id: string };
+        Returns: {
+          refresh_token: string;
+          access_token: string | null;
+          access_token_expires_at: string | null;
+          calendar_id: string;
+          account_email: string | null;
+        }[];
+      };
       submit_recommendation: {
         Args: {
           p_token: string;

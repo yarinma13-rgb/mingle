@@ -29,6 +29,8 @@ export type InterviewRecord = {
   locationType: InterviewLocationType;
   notes: string | null;
   status: InterviewStatus;
+  googleEventId: string | null;
+  meetLink: string | null;
 };
 
 function toRecord(
@@ -43,6 +45,8 @@ function toRecord(
     locationType: row.location_type,
     notes: row.notes,
     status: row.status,
+    googleEventId: row.google_event_id ?? null,
+    meetLink: row.meet_link ?? null,
   };
 }
 

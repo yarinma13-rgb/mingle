@@ -54,6 +54,7 @@ const SIGNAL_RANK: Record<RediscoverySignal, number> = {
 
 const CONVERSATION_OR_BEYOND: RelationshipStage[] = [
   "in_conversation",
+  "interview_booked",
   "opportunity",
   "decision",
   "relationship",
