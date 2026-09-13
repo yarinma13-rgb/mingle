@@ -21,7 +21,10 @@ import {
   isCommandPalettePath,
   type CommandItem,
 } from "@/lib/command-palette/items";
-import { searchCompanyCommandItems } from "@/lib/command-palette/search";
+import {
+  searchCompanyCommandItems,
+  searchTalentCommandItems,
+} from "@/lib/command-palette/search";
 import { SearchIcon } from "@/components/dashboard/icons";
 
 type CommandPaletteContextValue = {
@@ -66,7 +69,9 @@ export function CommandPaletteProvider({
   const open = enabled && sessionOpen;
   const needle = query.trim();
   const shouldSearchEntities =
-    open && userType === "company" && needle.length >= 2;
+    open &&
+    (userType === "company" || userType === "talent") &&
+    needle.length >= 2;
   const searching =
     shouldSearchEntities && entityResult.needle !== needle;
 
@@ -99,10 +104,14 @@ export function CommandPaletteProvider({
   }, [enabled, pathname]);
 
   useEffect(() => {
-    if (!shouldSearchEntities) return;
+    if (!shouldSearchEntities || !userType) return;
     let cancelled = false;
     const handle = window.setTimeout(() => {
-      void searchCompanyCommandItems(needle).then((rows) => {
+      const search =
+        userType === "talent"
+          ? searchTalentCommandItems
+          : searchCompanyCommandItems;
+      void search(needle).then((rows) => {
         if (cancelled) return;
         setEntityResult({ needle, items: rows });
       });
@@ -111,7 +120,7 @@ export function CommandPaletteProvider({
       cancelled = true;
       window.clearTimeout(handle);
     };
-  }, [shouldSearchEntities, needle]);
+  }, [shouldSearchEntities, needle, userType]);
 
   const items = useMemo(() => {
     const nav = userType

@@ -105,7 +105,7 @@ export function DiscoveryFiltersForm({
                   listId="discover-industry"
                   suggestions={INDUSTRY_SUGGESTIONS}
                   defaultValue={filters.industry}
-                  placeholder=""
+                  placeholder="e.g. HRtech"
                   className={fieldClass}
                 />
               </label>
@@ -117,7 +117,7 @@ export function DiscoveryFiltersForm({
                   listId="discover-location"
                   suggestions={LOCATION_SUGGESTIONS}
                   defaultValue={filters.location}
-                  placeholder=""
+                  placeholder="e.g. Tel Aviv"
                   className={fieldClass}
                 />
               </label>
@@ -130,7 +130,7 @@ export function DiscoveryFiltersForm({
                     listId="discover-role"
                     suggestions={TITLE_SUGGESTIONS}
                     defaultValue={filters.role}
-                    placeholder=""
+                    placeholder="e.g. Product designer"
                     className={fieldClass}
                   />
                 </label>

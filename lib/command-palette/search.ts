@@ -70,3 +70,51 @@ export async function searchCompanyCommandItems(
 
   return [...talentItems, ...roleItems];
 }
+
+/** Live company hits for the talent command palette. */
+export async function searchTalentCommandItems(
+  query: string,
+): Promise<CommandItem[]> {
+  const needle = sanitize(query);
+  if (needle.length < 2) return [];
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: account } = await supabase
+    .from("users")
+    .select("user_type")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (account?.user_type !== "talent") return [];
+
+  const pattern = `%${needle}%`;
+  const { data: companies } = await supabase
+    .from("company_profiles")
+    .select("user_id, company_name, industry, location")
+    .or(
+      [
+        `company_name.ilike."${pattern}"`,
+        `industry.ilike."${pattern}"`,
+        `location.ilike."${pattern}"`,
+      ].join(","),
+    )
+    .limit(10);
+
+  return (companies ?? []).map((row) => {
+    const name = row.company_name?.trim() || "Company";
+    const detail = [row.industry, row.location]
+      .map((value) => value?.trim())
+      .filter(Boolean)
+      .join(" · ");
+    return {
+      id: `company-${row.user_id}`,
+      label: detail ? `${name} · ${detail}` : name,
+      href: `/profile/view/${row.user_id}`,
+      keywords: [name, row.industry ?? "", row.location ?? "", "company"],
+    };
+  });
+}
