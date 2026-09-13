@@ -154,10 +154,10 @@ function DiscoveryCardView({
       dragElastic={0.18}
       onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
-      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.1)] ${
+      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.12)] ${
         isMobile
-          ? "min-h-[min(640px,78vh)] touch-none cursor-grab"
-          : "max-h-[min(720px,85vh)] touch-pan-y"
+          ? "touch-none cursor-grab"
+          : "touch-pan-y"
       }`}
     >
       {isMobile && swipeEnabled && (
@@ -179,30 +179,31 @@ function DiscoveryCardView({
         </>
       )}
 
-      <div className="relative h-44 shrink-0 sm:h-52">
+      {/* Portrait photo plane — dating-app visual weight (roughly 3:4). */}
+      <div className="relative aspect-[3/4] max-h-[min(58vh,480px)] w-full shrink-0 overflow-hidden">
         <div className="absolute inset-0">
           <TalentPhotoImg
             photo={card.photo}
-            className="h-full w-full"
+            className="h-full w-full object-cover"
             sizes="(max-width: 640px) 100vw, 420px"
             fallback={
               <div
                 className={`flex h-full w-full items-center justify-center ${avatarToneClass(card.gender)}`}
               >
-                <span className="font-display text-5xl font-bold text-white">
+                <span className="font-display text-6xl font-bold text-white sm:text-7xl">
                   {card.initial}
                 </span>
               </div>
             }
           />
         </div>
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-5 pb-4 pt-16 text-white">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-5 pb-5 pt-24 text-white">
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate font-display text-xl font-semibold">
+              <p className="truncate font-display text-2xl font-semibold tracking-tight">
                 {card.name}
               </p>
-              <p className="truncate text-sm text-white/85">{card.subtitle}</p>
+              <p className="truncate text-sm text-white/90">{card.subtitle}</p>
               {card.meta ? (
                 <p className="truncate text-xs text-white/75">{card.meta}</p>
               ) : null}
@@ -216,8 +217,14 @@ function DiscoveryCardView({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 lg:hidden">
-        <MatchReportBody report={card.report} compact />
+      {/* Mobile: short teaser only — full report stays in the desktop aside. */}
+      <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+          Why this match
+        </p>
+        <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
+          {card.report.why[0]?.finding ?? card.report.whatMattersMost}
+        </p>
       </div>
 
       {isMobile && swipeEnabled && (
