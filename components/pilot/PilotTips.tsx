@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mingle.pilotTips.dismissed.v1";
 
@@ -11,20 +11,36 @@ const TIPS = [
   "Turn on push in Settings once VAPID keys are live.",
 ] as const;
 
+function subscribe(onStoreChange: () => void) {
+  const handler = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY || event.key === null) onStoreChange();
+  };
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
+}
+
+function getDismissed() {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function dismissTips() {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 export function PilotTips() {
-  const [open, setOpen] = useState(false);
+  const dismissed = useSyncExternalStore(subscribe, getDismissed, () => true);
+  const [closed, setClosed] = useState(false);
   const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem(STORAGE_KEY) === "1") return;
-      setOpen(true);
-    } catch {
-      setOpen(true);
-    }
-  }, []);
-
-  if (!open) return null;
+  if (dismissed || closed) return null;
 
   const tip = TIPS[index] ?? TIPS[0];
   const last = index >= TIPS.length - 1;
@@ -42,12 +58,8 @@ export function PilotTips() {
           type="button"
           aria-label="Dismiss tips"
           onClick={() => {
-            try {
-              window.localStorage.setItem(STORAGE_KEY, "1");
-            } catch {
-              /* ignore */
-            }
-            setOpen(false);
+            dismissTips();
+            setClosed(true);
           }}
           className="shrink-0 text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
         >
@@ -67,12 +79,8 @@ export function PilotTips() {
           <button
             type="button"
             onClick={() => {
-              try {
-                window.localStorage.setItem(STORAGE_KEY, "1");
-              } catch {
-                /* ignore */
-              }
-              setOpen(false);
+              dismissTips();
+              setClosed(true);
             }}
             className="rounded-full bg-mingle-cta px-3 py-1.5 font-display text-xs font-semibold text-white"
           >
