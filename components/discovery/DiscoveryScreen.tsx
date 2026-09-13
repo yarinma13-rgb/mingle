@@ -27,6 +27,7 @@ import {
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
+import { DiscoverSwipeActions } from "@/components/discovery/DiscoverSwipeActions";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
@@ -164,14 +165,14 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: interestOpacity }}
-            className="pointer-events-none absolute right-4 top-4 z-20 -rotate-6 rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue px-3 py-1 text-xs font-bold text-white"
+            className="pointer-events-none absolute right-4 top-4 z-20 -rotate-6 rounded-full bg-mingle-accent-blue px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Interested
           </motion.span>
           <motion.span
             aria-hidden
             style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute left-4 top-4 z-20 rotate-6 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1 text-xs font-bold text-mingle-text-secondary"
+            className="pointer-events-none absolute left-4 top-4 z-20 rotate-6 rounded-full bg-mingle-accent-pink px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Skip
           </motion.span>
@@ -226,28 +227,30 @@ function DiscoveryCardView({
       )}
 
       <div className="shrink-0 border-t border-mingle-border bg-mingle-white p-4">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="mb-3 flex justify-center">
           <Link
             href={`/profile/view/${card.userId}`}
-            className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+            className="rounded-full border border-mingle-border bg-mingle-surface px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender"
           >
             View profile
           </Link>
-          <button
-            type="button"
-            onClick={() => onPass(card.userId)}
-            className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
-          >
-            Skip
-          </button>
         </div>
-        <MatchFeedbackActions
-          audience={card.report.audience}
-          action={feedback}
+        <DiscoverSwipeActions
           busy={saving}
+          interestedDone={feedback === "interested"}
+          onSkip={() => onPass(card.userId)}
           onInterested={() => void expressInterest()}
-          onNotFit={(reason) => void markNotFit(reason)}
         />
+        <div className="mt-3 flex justify-center">
+          <MatchFeedbackActions
+            audience={card.report.audience}
+            action={feedback}
+            busy={saving}
+            showInterested={false}
+            onInterested={() => void expressInterest()}
+            onNotFit={(reason) => void markNotFit(reason)}
+          />
+        </div>
       </div>
     </motion.div>
   );

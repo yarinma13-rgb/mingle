@@ -215,12 +215,15 @@ export function MatchFeedbackActions({
   busy,
   onInterested,
   onNotFit,
+  showInterested = true,
 }: {
   audience: MatchAudience;
   action: MatchFeedbackAction | null;
   busy?: boolean;
   onInterested: () => void;
   onNotFit: (reason: NotFitReason) => void;
+  /** When false, only the not-fit control is shown (Discover uses dating-style CTAs). */
+  showInterested?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
   const notFitLabel = audience === "talent" ? "Not interested" : "Not a fit";
@@ -262,18 +265,20 @@ export function MatchFeedbackActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        disabled={busy || interestedDone}
-        onClick={onInterested}
-        className={`rounded-full px-4 py-2 font-display text-xs font-semibold disabled:opacity-60 ${
-          interestedDone
-            ? "bg-mingle-blue/15 text-mingle-blue"
-            : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
-        }`}
-      >
-        {interestedDone ? "Interested" : "Interested"}
-      </button>
+      {showInterested ? (
+        <button
+          type="button"
+          disabled={busy || interestedDone}
+          onClick={onInterested}
+          className={`rounded-full px-4 py-2 font-display text-xs font-semibold disabled:opacity-60 ${
+            interestedDone
+              ? "bg-mingle-blue/15 text-mingle-blue"
+              : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
+          }`}
+        >
+          {interestedDone ? "Interested" : "Interested"}
+        </button>
+      ) : null}
       <button
         type="button"
         disabled={busy || notFitDone}
