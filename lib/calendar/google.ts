@@ -186,3 +186,76 @@ export async function createGoogleCalendarEvent(input: {
     meetLink: json.hangoutLink?.trim() || null,
   };
 }
+
+export async function updateGoogleCalendarEvent(input: {
+  accessToken: string;
+  calendarId?: string;
+  eventId: string;
+  summary: string;
+  description?: string;
+  startsAt: string;
+  durationMinutes: number;
+  attendeeEmails?: string[];
+}): Promise<{ eventId: string; meetLink: string | null }> {
+  const start = new Date(input.startsAt);
+  const end = new Date(start.getTime() + input.durationMinutes * 60_000);
+  const calendarId = encodeURIComponent(input.calendarId?.trim() || "primary");
+  const eventId = encodeURIComponent(input.eventId);
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${input.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        summary: input.summary,
+        description: input.description ?? undefined,
+        start: { dateTime: start.toISOString() },
+        end: { dateTime: end.toISOString() },
+        attendees: (input.attendeeEmails ?? [])
+          .filter(Boolean)
+          .map((email) => ({ email })),
+      }),
+    },
+  );
+
+  const json = (await res.json()) as {
+    id?: string;
+    hangoutLink?: string;
+    error?: { message?: string };
+  };
+  if (!res.ok || !json.id) {
+    throw new Error(json.error?.message || "Could not update calendar event");
+  }
+
+  return {
+    eventId: json.id,
+    meetLink: json.hangoutLink?.trim() || null,
+  };
+}
+
+export async function deleteGoogleCalendarEvent(input: {
+  accessToken: string;
+  calendarId?: string;
+  eventId: string;
+}): Promise<void> {
+  const calendarId = encodeURIComponent(input.calendarId?.trim() || "primary");
+  const eventId = encodeURIComponent(input.eventId);
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${input.accessToken}` },
+    },
+  );
+  // 404/410 = already gone — treat as success.
+  if (!res.ok && res.status !== 404 && res.status !== 410) {
+    const json = (await res.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    throw new Error(json?.error?.message || "Could not delete calendar event");
+  }
+}

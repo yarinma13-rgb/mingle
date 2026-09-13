@@ -111,3 +111,70 @@ export async function scheduleInterview(
   if (error) throw error;
   return toRecord(data);
 }
+
+export async function loadInterviewById(
+  supabase: SupabaseClient<Database>,
+  interviewId: string,
+): Promise<InterviewRecord | null> {
+  const { data, error } = await supabase
+    .from("interviews")
+    .select("*")
+    .eq("id", interviewId)
+    .maybeSingle();
+  if (error) {
+    if (isMissingInterviewsTable(error)) return null;
+    throw error;
+  }
+  return data ? toRecord(data) : null;
+}
+
+export async function cancelInterview(
+  supabase: SupabaseClient<Database>,
+  interviewId: string,
+): Promise<InterviewRecord> {
+  const { data, error } = await supabase
+    .from("interviews")
+    .update({ status: "cancelled" })
+    .eq("id", interviewId)
+    .eq("status", "scheduled")
+    .select("*")
+    .single();
+  if (error) throw error;
+  return toRecord(data);
+}
+
+export async function updateInterviewSchedule(
+  supabase: SupabaseClient<Database>,
+  interviewId: string,
+  input: {
+    scheduledAt: string;
+    durationMinutes: number;
+    locationType: InterviewLocationType;
+    notes: string | null;
+    googleEventId?: string | null;
+    meetLink?: string | null;
+  },
+): Promise<InterviewRecord> {
+  const patch: Database["public"]["Tables"]["interviews"]["Update"] = {
+    scheduled_at: input.scheduledAt,
+    duration_minutes: input.durationMinutes,
+    location_type: input.locationType,
+    notes: input.notes,
+    status: "scheduled",
+  };
+  if (input.googleEventId !== undefined) {
+    patch.google_event_id = input.googleEventId;
+  }
+  if (input.meetLink !== undefined) {
+    patch.meet_link = input.meetLink;
+  }
+  const { data, error } = await supabase
+    .from("interviews")
+    .update(patch)
+    .eq("id", interviewId)
+    .eq("status", "scheduled")
+    .select("*")
+    .single();
+  if (error) throw error;
+  return toRecord(data);
+}

@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/EmptyState";
+import { InterviewListActions } from "@/components/interviews/InterviewListActions";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 
 function formatWhen(iso: string): string {
@@ -62,8 +63,11 @@ export function InterviewsScreen({
                 : "Cancelled"}
           </p>
           {interview.notes ? (
-            <p className="mt-2 text-sm text-mingle-text-secondary">{interview.notes}</p>
+            <p className="mt-2 text-sm text-mingle-text-secondary">
+              {interview.notes}
+            </p>
           ) : null}
+          <InterviewListActions interview={interview} />
         </li>
       ))}
     </ul>
