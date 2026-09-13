@@ -37,8 +37,8 @@ export default function Index() {
       <Screen style={{ padding: 24, justifyContent: "center" }}>
         <Title>mingle</Title>
         <Subtitle>
-          Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in
-          apps/mobile/.env to connect this native app to Supabase.
+          Open apps/mobile/.env and put your real Supabase Project URL and
+          anon key (not the YOUR_PROJECT placeholders).
         </Subtitle>
         <View style={{ height: 16 }} />
         <Body muted>

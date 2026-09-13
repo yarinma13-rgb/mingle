@@ -14,7 +14,24 @@ export const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
   "";
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+function looksLikePlaceholder(value: string) {
+  const v = value.trim();
+  if (!v) return true;
+  return (
+    v.includes("YOUR_PROJECT") ||
+    v.includes("YOUR_ANON_KEY") ||
+    v.includes("placeholder") ||
+    v === "https://placeholder.supabase.co"
+  );
+}
+
+/** True only when real Supabase URL + anon key are present (not .env.example placeholders). */
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl &&
+    supabaseAnonKey &&
+    !looksLikePlaceholder(supabaseUrl) &&
+    !looksLikePlaceholder(supabaseAnonKey),
+);
 
 export const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",

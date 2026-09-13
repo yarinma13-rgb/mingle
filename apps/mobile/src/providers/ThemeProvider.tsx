@@ -61,7 +61,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [theme, setTheme, toggleTheme],
   );
 
-  if (!ready) return null;
+  // Always provide a theme — never blank the tree (white screen on web).
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );

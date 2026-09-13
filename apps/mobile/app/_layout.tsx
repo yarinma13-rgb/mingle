@@ -8,6 +8,7 @@ import {
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
@@ -28,14 +29,29 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (error) throw error;
+    if (error) {
+      console.warn("Font load failed, continuing with system fonts", error);
+    }
   }, [error]);
 
   useEffect(() => {
-    if (loaded) void SplashScreen.hideAsync();
-  }, [loaded]);
+    if (loaded || error) void SplashScreen.hideAsync();
+  }, [loaded, error]);
 
-  if (!loaded) return null;
+  if (!loaded && !error) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#F7F8FC",
+        }}
+      >
+        <ActivityIndicator color="#0073EA" size="large" />
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

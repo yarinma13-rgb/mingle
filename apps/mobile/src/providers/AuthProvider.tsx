@@ -67,19 +67,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (alive) setReady(true);
         return;
       }
-      const { data } = await supabase.auth.getSession();
-      if (!alive) return;
-      setSession(data.session);
-      if (data.session?.user) {
-        try {
-          const p = await loadProfile(data.session.user.id);
-          if (alive) setProfile(p);
-        } catch {
-          if (alive) setProfile(null);
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!alive) return;
+        setSession(data.session);
+        if (data.session?.user) {
+          try {
+            const p = await loadProfile(data.session.user.id);
+            if (alive) setProfile(p);
+          } catch {
+            if (alive) setProfile(null);
+          }
         }
+      } catch (e) {
+        console.warn("Auth session restore failed", e);
+      } finally {
+        if (alive) setReady(true);
       }
-      if (alive) setReady(true);
     })();
+
+    if (!isSupabaseConfigured) return () => {
+      alive = false;
+    };
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, next) => {
       setSession(next);
