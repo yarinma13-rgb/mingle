@@ -16,6 +16,7 @@ import {
   looksLikeUrl,
   roleExtractNeedsBuilder,
 } from "@/lib/roles/extract-jd";
+import { importJdFromUrlAction } from "@/lib/roles/import-jd-action";
 
 type PasteMode = "text" | "url" | "manual";
 
@@ -24,6 +25,9 @@ const STEPS = [
   "Extracting requirements",
   "Finding candidates",
 ] as const;
+
+const URL_HINT =
+  "Supports AllJobs, Drushim, and JobMaster links. LinkedIn is not supported.";
 
 function JobProcessing({ doneCount }: { doneCount: number }) {
   return (
@@ -108,13 +112,21 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
     }
   }
 
-  function findMatches() {
+  async function findMatches() {
     if (!ready || processing) return;
-    const draft =
-      mode === "url"
-        ? extractRoleFromJd("", value.trim())
-        : extractRoleFromJd(value);
-    void runProcessing(draft);
+    if (mode === "url") {
+      setProcessing(true);
+      setDoneCount(0);
+      const result = await importJdFromUrlAction(value.trim());
+      if (!result.ok) {
+        setProcessing(false);
+        toast(result.error, "error");
+        return;
+      }
+      void runProcessing(result.draft);
+      return;
+    }
+    void runProcessing(extractRoleFromJd(value));
   }
 
   if (builderDraft) {
@@ -153,8 +165,8 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
           What are you hiring for?
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
-          Paste a description. We fill the existing role builder where the text
-          is clear, and ask you to tap the rest.
+          Paste a description or an Israeli job-board URL. We fill the existing
+          role builder where the text is clear, and ask you to tap the rest.
         </p>
       </div>
 
@@ -190,19 +202,25 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
       <textarea
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        rows={12}
+        rows={mode === "url" ? 4 : 12}
         placeholder={
           mode === "url"
-            ? "https://..."
-            : "Paste the job description, or a link to it."
+            ? "https://www.alljobs.co.il/... or drushim / jobmaster"
+            : "Paste the job description, or switch to Paste URL for AllJobs / Drushim / JobMaster."
         }
         className="w-full resize-y rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
       />
 
+      {mode === "url" ? (
+        <p className="text-xs text-mingle-text-secondary">{URL_HINT}</p>
+      ) : null}
+
       <button
         type="button"
         disabled={!ready}
-        onClick={findMatches}
+        onClick={() => {
+          void findMatches();
+        }}
         className={`self-start rounded-full px-6 py-3 font-display text-sm font-semibold ${
           ready
             ? "bg-mingle-cta text-white"
