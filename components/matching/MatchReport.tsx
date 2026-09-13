@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { MatchFactorKey } from "@/lib/matching/engine";
 import type {
   MatchAudience,
-  MatchAxisId,
   MatchBullet,
   MatchReport,
 } from "@/lib/matching/report";
@@ -23,12 +22,12 @@ import {
   PeopleIcon,
   TargetIcon,
 } from "@/components/dashboard/icons";
-
-const AXIS_BAR: Record<MatchAxisId, string> = {
-  role: "bg-mingle-accent-pink",
-  company: "bg-mingle-accent-purple",
-  motivation: "bg-mingle-accent-blue",
-};
+import {
+  scoreBandLabel,
+  scoreBarClass,
+  scoreChipClass,
+  scoreTextClass,
+} from "@/lib/matching/score-tone";
 
 const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
   High: "text-mingle-success",
@@ -58,11 +57,13 @@ function FitBars({ axes }: { axes: MatchReport["axes"] }) {
         <div key={axis.id} className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between text-[11px] text-mingle-text">
             <span>{axis.label}</span>
-            <span className="font-semibold">{axis.score}</span>
+            <span className={`font-semibold ${scoreTextClass(axis.score)}`}>
+              {axis.score}
+            </span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-mingle-bg">
             <div
-              className={`h-full rounded-full ${AXIS_BAR[axis.id]}`}
+              className={`h-full rounded-full transition-[width] duration-300 ${scoreBarClass(axis.score)}`}
               style={{ width: `${Math.max(0, Math.min(100, axis.score))}%` }}
             />
           </div>
@@ -145,16 +146,23 @@ export function MatchReportBody({
 
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
-          Overall Match
-        </p>
-        <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-          {report.overall}{" "}
-          <span className="text-sm font-medium text-mingle-text-secondary">
-            {report.strength}
-          </span>
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+            Overall Match
+          </p>
+          <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
+            <span className={scoreTextClass(report.overall)}>{report.overall}</span>{" "}
+            <span className="text-sm font-medium text-mingle-text-secondary">
+              {report.strength}
+            </span>
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
+        >
+          {scoreBandLabel(report.overall)}
+        </span>
       </div>
       <FitBars axes={report.axes} />
       {report.technicalSignal ? (

@@ -34,6 +34,7 @@ import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
+import { scoreChipClass } from "@/lib/matching/score-tone";
 
 export type DiscoveryCard = {
   userId: string;
@@ -146,7 +147,7 @@ function DiscoveryCardView({
 
   return (
     <motion.div
-      style={{ x, rotate, aspectRatio: "3 / 4" }}
+      style={{ x, rotate }}
       drag={isMobile && swipeEnabled ? "x" : false}
       dragDirectionLock
       dragMomentum={false}
@@ -154,7 +155,9 @@ function DiscoveryCardView({
       onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
       className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.1)] ${
-        isMobile ? "touch-none cursor-grab" : "touch-pan-y"
+        isMobile
+          ? "min-h-[min(640px,78vh)] touch-none cursor-grab"
+          : "max-h-[min(720px,85vh)] touch-pan-y"
       }`}
     >
       {isMobile && swipeEnabled && (
@@ -169,14 +172,14 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute left-4 top-4 rotate-6 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1 text-xs font-bold text-mingle-text-secondary"
+            className="pointer-events-none absolute left-4 top-4 z-20 rotate-6 rounded-full border border-mingle-border bg-mingle-bg px-3 py-1 text-xs font-bold text-mingle-text-secondary"
           >
             Skip
           </motion.span>
         </>
       )}
 
-      <div className="relative min-h-0 flex-[1.15]">
+      <div className="relative h-44 shrink-0 sm:h-52">
         <div className="absolute inset-0">
           <TalentPhotoImg
             photo={card.photo}
@@ -204,30 +207,41 @@ function DiscoveryCardView({
                 <p className="truncate text-xs text-white/75">{card.meta}</p>
               ) : null}
             </div>
-            <MingleChip tone="pink" className="shrink-0 shadow-sm">
-              {card.score} {card.report.strength}
-            </MingleChip>
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
+            >
+              {card.score}% · {card.report.strength}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 lg:hidden">
         <MatchReportBody report={card.report} compact />
       </div>
 
       {isMobile && swipeEnabled && (
-        <p className="px-4 text-center text-[11px] text-mingle-text-secondary">
+        <p className="shrink-0 px-4 pb-1 text-center text-[11px] text-mingle-text-secondary">
           Swipe right for interested, left to skip, or use the buttons below.
         </p>
       )}
 
-      <div className="flex flex-col gap-2 p-4 pt-0">
-        <Link
-          href={`/profile/view/${card.userId}`}
-          className="self-start rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-        >
-          View profile
-        </Link>
+      <div className="shrink-0 border-t border-mingle-border bg-mingle-white p-4">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <Link
+            href={`/profile/view/${card.userId}`}
+            className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          >
+            View profile
+          </Link>
+          <button
+            type="button"
+            onClick={() => onPass(card.userId)}
+            className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
+          >
+            Skip
+          </button>
+        </div>
         <MatchFeedbackActions
           audience={card.report.audience}
           action={feedback}
@@ -334,9 +348,11 @@ export function DiscoveryScreen({
                   {card.subtitle}
                 </p>
               </div>
-              <MingleChip className="shrink-0 text-[11px]">
-                {card.score} {card.report.strength}
-              </MingleChip>
+              <span
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(card.score)}`}
+              >
+                {card.score}% · {card.report.strength}
+              </span>
               <Link
                 href={`/profile/view/${card.userId}`}
                 className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
@@ -354,18 +370,34 @@ export function DiscoveryScreen({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {cards.map((card) => (
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-medium text-mingle-text-secondary">
+            {cards.length === initialCards.length
+              ? `${cards.length} to review`
+              : `${initialCards.length - cards.length + 1} of ${initialCards.length}`}
+          </p>
+          <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
             <DiscoveryCardView
-              key={card.userId}
-              card={card}
-              initialFeedback={feedbackByUser[card.userId] ?? null}
+              key={cards[0].userId}
+              card={cards[0]}
+              initialFeedback={feedbackByUser[cards[0].userId] ?? null}
               viewerId={viewerId}
               swipeEnabled
               onPass={persistPass}
               onHide={hideCard}
             />
-          ))}
+            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle lg:flex">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
+                Match report
+              </p>
+              <p className="mt-1 font-display text-sm font-semibold text-mingle-text">
+                {cards[0].name}
+              </p>
+              <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+                <MatchReportBody report={cards[0].report} />
+              </div>
+            </aside>
+          </div>
         </div>
       )}
     </div>

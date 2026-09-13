@@ -17,6 +17,7 @@ import {
 } from "@/lib/suggest/lists";
 // Mascot temporarily removed from loading states — see
 // components/MascotMagnet.tsx, component and assets are kept.
+import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import { CompanyProfilePreview } from "@/components/CompanyProfilePreview";
 import {
   loadCompanyProfile,
@@ -303,8 +304,9 @@ export function CompanyProfileWizard() {
   const multiNextStep = step === 2 ? 3 : step === 3 ? 4 : 5;
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
-      <div className="w-full max-w-lg">
+    <div className="relative flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
+      <ProfileBuildChrome />
+      <div className="w-full max-w-lg pt-8">
         <div className="mb-10 flex flex-col items-center text-center">
           <Link
             href="/dashboard"
@@ -672,7 +674,8 @@ function CompletionMeter({ percent }: { percent: number }) {
 
 function CompanyWizardSkeleton() {
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6">
+    <div className="relative flex min-h-screen flex-1 items-center justify-center px-6">
+      <ProfileBuildChrome />
       <MingleLogo variant="mark" size={58} className="animate-pulse" />
     </div>
   );
@@ -680,7 +683,8 @@ function CompanyWizardSkeleton() {
 
 function CompanyWizardError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="relative flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <ProfileBuildChrome />
       <MingleLogo variant="mark" size={44} />
       <p className="max-w-xs text-sm text-mingle-text-secondary">
         Something went wrong loading your profile.
@@ -688,7 +692,7 @@ function CompanyWizardError({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70"
+        className="mingle-btn-secondary"
       >
         Try again
       </button>

@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MingleLogo } from "@/components/MingleLogo";
 // Mascot temporarily removed from loading states — see
 // components/MascotMagnet.tsx, component and assets are kept.
+import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import { ProfilePreview } from "@/components/ProfilePreview";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
@@ -390,8 +391,9 @@ export function ProfileWizard() {
   const multiNextStep = step === 2 ? 3 : 4;
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
-      <div className="w-full max-w-lg">
+    <div className="relative flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
+      <ProfileBuildChrome />
+      <div className="w-full max-w-lg pt-8">
         <div className="mb-10 flex flex-col items-center text-center">
           <MingleLogo variant="mark" size={44} className="mb-6" />
           <CompletionMeter percent={completionPct} />
@@ -981,7 +983,8 @@ function CompletionMeter({ percent }: { percent: number }) {
 
 function ProfileWizardSkeleton() {
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6">
+    <div className="relative flex min-h-screen flex-1 items-center justify-center px-6">
+      <ProfileBuildChrome />
       <MingleLogo variant="mark" size={58} className="animate-pulse" />
     </div>
   );
@@ -989,7 +992,8 @@ function ProfileWizardSkeleton() {
 
 function ProfileWizardError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="relative flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <ProfileBuildChrome />
       <MingleLogo variant="mark" size={44} />
       <p className="max-w-xs text-sm text-mingle-text-secondary">
         Something went wrong loading your profile.

@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { RelationshipTabs } from "@/components/relationship/RelationshipTabs";
 import { ConversationScreen } from "@/components/messaging/ConversationScreen";
 import { RelationshipContextPanel } from "@/components/messaging/RelationshipContextPanel";
+import { MessagingUnavailable } from "@/components/messaging/MessagingUnavailable";
 import { getOrCreateConversation, loadMessages } from "@/lib/messaging/persistence";
 import { loadRelationshipPageContext } from "@/lib/relationship/pageContext";
 import { loadTimeline, ensureInConversationEvent, latestStage } from "@/lib/relationship/persistence";
@@ -51,11 +52,7 @@ export default async function ConversationPage({
         userPhoto={ctx.userPhoto}
         userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
       >
-        <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-10 text-center">
-          <p className="text-sm text-mingle-text-secondary">
-            Messaging isn&rsquo;t set up yet. Try again in a moment.
-          </p>
-        </div>
+        <MessagingUnavailable connectionId={connectionId} />
       </DashboardShell>
     );
   }

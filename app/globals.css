@@ -50,8 +50,8 @@
   --mingle-nav-active: #323338;
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
-  --font-display: var(--font-plus-jakarta);
-  --font-sans: var(--font-figtree);
+  --font-display: var(--font-poppins);
+  --font-sans: var(--font-poppins);
   --font-hebrew: var(--font-rubik);
 }
 
@@ -132,8 +132,8 @@
   --color-mingle-nav-idle: var(--mingle-nav-idle);
   --color-mingle-nav-divider: var(--mingle-nav-divider);
 
-  --font-display: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-hebrew: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-mingle: var(--mingle-shadow);
@@ -177,7 +177,7 @@ html[data-theme="dark"] .mingle-app-canvas {
 
 body {
   color: var(--mingle-text);
-  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
 }
 
@@ -210,6 +210,24 @@ button:disabled {
 
 .mingle-connection-fill {
   background: var(--mingle-connection-gradient);
+}
+
+/* Elevated surfaces — same brand family, slight lift for hierarchy */
+:root {
+  --mingle-surface-elevated: color-mix(in srgb, var(--mingle-surface) 92%, white);
+}
+[data-theme="dark"] {
+  --mingle-surface-elevated: color-mix(in srgb, var(--mingle-surface) 88%, white);
+}
+@theme inline {
+  --color-mingle-surface-elevated: var(--mingle-surface-elevated);
+}
+
+.mingle-card-interactive {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.mingle-card-interactive:hover {
+  transform: translateY(-2px);
 }
 
 .mingle-btn-primary {

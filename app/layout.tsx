@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Figtree, Plus_Jakarta_Sans, Rubik } from "next/font/google";
+import { Poppins, Rubik } from "next/font/google";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
@@ -8,17 +8,11 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
 
-const figtree = Figtree({
-  variable: "--font-figtree",
+/* Poppins aligns app typography with monday.com; Rubik covers Hebrew. */
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -47,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       suppressHydrationWarning
       data-theme="light"
-      className={`${figtree.variable} ${plusJakarta.variable} ${rubik.variable} h-full antialiased`}
+      className={`${poppins.variable} ${rubik.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
