@@ -7,7 +7,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { MingleLogo } from "@/components/MingleLogo";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
-import { GenderField } from "@/components/profile/GenderField";
 import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import {
   ProfileChipRow,
@@ -15,7 +14,7 @@ import {
 } from "@/components/profile/ProfileSection";
 import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
 import { RequestRecommendation } from "@/components/recommendations/RequestRecommendation";
-import { personInitials, type Gender } from "@/lib/profile/avatar";
+import { GENDER_OPTIONS, personInitials, type Gender } from "@/lib/profile/avatar";
 import type { ProfileState } from "@/lib/profile/persistence";
 import {
   loadSubmittedRecommendations,
@@ -29,7 +28,7 @@ export function ProfilePreview({
   supabase,
   onCvChanged,
   onPhotoChanged,
-  onGenderChanged,
+  onGenderChanged: _onGenderChanged,
   onEditStep,
 }: {
   profile: ProfileState;
@@ -40,6 +39,7 @@ export function ProfilePreview({
   onGenderChanged: (gender: Gender) => void;
   onEditStep?: (step: number) => void;
 }) {
+  void _onGenderChanged;
   const initials = personInitials(profile.firstName, profile.lastName);
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
   const [recommendations, setRecommendations] = useState<SubmittedRecommendation[]>([]);
@@ -102,10 +102,10 @@ export function ProfilePreview({
         </div>
 
         <ProfileSection title="About you" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
-          <GenderField
-            value={profile.gender}
-            onChange={onGenderChanged}
-          />
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
+            {GENDER_OPTIONS.find((option) => option.value === profile.gender)?.label ??
+              "Not shared yet"}
+          </p>
         </ProfileSection>
 
         <ProfileSection title="Experience" onEdit={onEditStep ? () => onEditStep(1) : undefined}>
@@ -202,7 +202,10 @@ export function ProfilePreview({
           title="Beyond the CV"
           onEdit={onEditStep ? () => onEditStep(7) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
+          <p
+            dir="auto"
+            className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary"
+          >
             {profile.beyondCv}
           </p>
         </ProfileSection>

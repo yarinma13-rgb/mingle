@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sendOrAcceptConnection } from "@/lib/connections/persistence";
@@ -85,7 +86,7 @@ type ProfileDetailShellProps = {
   whatToExplore: string[];
   viewerId: string;
   targetUserId: string;
-  initialConnectionStatus: { status: ConnectionStatus; isRequester: boolean } | null;
+  initialConnectionStatus: { status: ConnectionStatus; isRequester: boolean; id?: string } | null;
   initiallySaved: boolean;
   cvPath?: string | null;
   cvFileName?: string | null;
@@ -136,7 +137,7 @@ export function ProfileDetailShell({
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showMingleMoment, setShowMingleMoment] = useState(false);
   const [mingleConnectionId, setMingleConnectionId] = useState<string | null>(
-    null,
+    initialConnectionStatus?.id ?? null,
   );
 
   const isSelf = viewerId === targetUserId;
@@ -325,27 +326,45 @@ export function ProfileDetailShell({
                       {connectError}
                     </p>
                   ) : null}
-                  <motion.button
-                    type="button"
-                    onClick={handleConnect}
-                    disabled={connectDisabled}
-                    whileHover={connectDisabled ? undefined : { scale: 1.02 }}
-                    whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-                    className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
-                      connectDisabled
-                        ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
-                        : "bg-mingle-cta text-white"
-                    }`}
-                  >
-                    {connecting ? "Sending…" : connectLabel}
-                  </motion.button>
+                  {connectionState?.status === "accepted" ? (
+                    <Link
+                      href={
+                        mingleConnectionId
+                          ? `/conversations/${mingleConnectionId}`
+                          : "/conversations"
+                      }
+                      className="rounded-full bg-mingle-success/15 px-6 py-3 text-center font-display text-sm font-semibold text-mingle-success transition-colors hover:bg-mingle-success/25"
+                    >
+                      ✓ Connected · Open chat
+                    </Link>
+                  ) : (
+                    <motion.button
+                      type="button"
+                      onClick={handleConnect}
+                      disabled={connectDisabled}
+                      whileHover={connectDisabled ? undefined : { scale: 1.02 }}
+                      whileTap={connectDisabled ? undefined : { scale: 0.98 }}
+                      className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
+                        connectDisabled
+                          ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
+                          : "bg-mingle-cta text-white"
+                      }`}
+                    >
+                      {connecting ? "Sending…" : connectLabel}
+                    </motion.button>
+                  )}
                   <button
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                    aria-pressed={saved}
+                    className={`rounded-full border px-6 py-3 text-center font-display text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      saved
+                        ? "border-mingle-purple/40 bg-mingle-purple/15 text-mingle-purple"
+                        : "border-mingle-border bg-mingle-white text-mingle-text hover:bg-mingle-lavender"
+                    }`}
                   >
-                    {saving ? "Saving…" : saved ? "Saved" : "Save for later"}
+                    {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
                   </button>
                 </div>
               ) : null}
@@ -400,16 +419,28 @@ export function ProfileDetailShell({
               </ProfileSection>
             ) : null}
 
-            {sections.map((section) => (
-              <ProfileSection key={section.title} title={section.title}>
-                {section.chips ? <ProfileChipRow items={section.chips} /> : null}
-                {section.text ? (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
-                    {section.text}
-                  </p>
-                ) : null}
-              </ProfileSection>
-            ))}
+            {sections.map((section) => {
+              const chips = section.chips?.filter(Boolean) ?? [];
+              const text = section.text?.trim() ?? "";
+              const empty = chips.length === 0 && !text;
+              return (
+                <ProfileSection key={section.title} title={section.title}>
+                  {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
+                  {text ? (
+                    <p
+                      dir="auto"
+                      className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary"
+                    >
+                      {text}
+                    </p>
+                  ) : empty ? (
+                    <p className="text-sm italic text-mingle-text-secondary">
+                      Still waiting on a fuller description here.
+                    </p>
+                  ) : null}
+                </ProfileSection>
+              );
+            })}
 
             {(recommendations.length > 0 ||
               (canRequestRecommendation && isSelf)) && (

@@ -55,7 +55,7 @@ export function RecommendForm({
       </div>
       <label className="block text-sm font-medium text-mingle-text" dir="rtl">
         ההמלצה
-        <textarea
+        <textarea dir="auto"
           value={body}
           onChange={(event) => setBody(event.target.value)}
           rows={6}

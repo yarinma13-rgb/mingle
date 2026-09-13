@@ -113,7 +113,7 @@ export async function loadConnectionStatusWith(
   supabase: SupabaseClient<Database>,
   viewerId: string,
   otherUserId: string,
-): Promise<{ status: ConnectionStatus; isRequester: boolean } | null> {
+): Promise<{ status: ConnectionStatus; isRequester: boolean; id: string } | null> {
   const { data, error } = await supabase
     .from("connections")
     .select("*")
@@ -123,7 +123,11 @@ export async function loadConnectionStatusWith(
     .maybeSingle();
   if (error) return null;
   if (!data) return null;
-  return { status: data.status, isRequester: data.requester_id === viewerId };
+  return {
+    status: data.status,
+    isRequester: data.requester_id === viewerId,
+    id: data.id,
+  };
 }
 
 export async function loadIncomingPending(

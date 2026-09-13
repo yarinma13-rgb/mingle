@@ -12,6 +12,7 @@ import {
   MessageIcon,
   PeopleIcon,
 } from "@/components/dashboard/icons";
+import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
 
 export type CompanyRow = {
   userId: string;
@@ -75,26 +76,33 @@ export function TalentDashboard({
         />
       </div>
 
-      <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
-        <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
-          Suggested next step
-        </h2>
-        <p className="mt-2 text-sm text-mingle-text-secondary">
-          {profileCompletion < 100
-            ? "Finish your profile so companies can find you."
-            : missingPhoto
-              ? "Add a profile photo so companies recognize you faster."
-              : "Explore companies below and start a conversation when one feels right."}
-        </p>
-        {profileCompletion < 100 ? (
-          <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
-            Finish my profile
-          </Link>
-        ) : missingPhoto ? (
-          <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
-            Add a photo
-          </Link>
-        ) : null}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+        <ProfileCompletionRing percent={profileCompletion} />
+        <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
+          <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
+            Suggested next step
+          </h2>
+          <p className="mt-2 text-sm text-mingle-text-secondary">
+            {profileCompletion < 100
+              ? "Finish your profile so companies can find you."
+              : missingPhoto
+                ? "Add a profile photo so companies recognize you faster."
+                : "Explore companies below and start a conversation when one feels right."}
+          </p>
+          {profileCompletion < 100 ? (
+            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+              Finish my profile
+            </Link>
+          ) : missingPhoto ? (
+            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+              Add a photo
+            </Link>
+          ) : (
+            <Link href="/discover" className="mingle-btn-primary mt-4 inline-block text-xs">
+              Open Discover
+            </Link>
+          )}
+        </div>
       </div>
 
       {dna ? <CandidateDnaPanel dna={dna} /> : null}

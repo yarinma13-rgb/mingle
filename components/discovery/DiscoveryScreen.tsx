@@ -30,7 +30,6 @@ import {
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import type { MatchFactor } from "@/lib/matching/engine";
 import { EmptyState } from "@/components/EmptyState";
-import { MingleChip } from "@/components/MingleChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
@@ -286,6 +285,7 @@ export function DiscoveryScreen({
     try {
       track(AnalyticsEvent.matchSkipped, { target_user_id: userId, source: "discover" });
       await passProfile(supabase, viewerId, userId);
+      toast("Skipped.");
     } catch {
       toast("Couldn't save that skip.", "error");
     }
