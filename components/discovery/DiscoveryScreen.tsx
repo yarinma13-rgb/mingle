@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   motion,
+  AnimatePresence,
   useMotionValue,
   useTransform,
   animate,
@@ -391,16 +392,25 @@ export function DiscoveryScreen({
               : `${initialCards.length - cards.length + 1} of ${initialCards.length}`}
           </p>
           <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
-            <DiscoveryCardView
-              key={cards[0].userId}
-              card={cards[0]}
-              initialFeedback={feedbackByUser[cards[0].userId] ?? null}
-              viewerId={viewerId}
-              swipeEnabled
-              onPass={persistPass}
-              onHide={hideCard}
-            />
-            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle lg:flex">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={cards[0].userId}
+                initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+              >
+                <DiscoveryCardView
+                  card={cards[0]}
+                  initialFeedback={feedbackByUser[cards[0].userId] ?? null}
+                  viewerId={viewerId}
+                  swipeEnabled
+                  onPass={persistPass}
+                  onHide={hideCard}
+                />
+              </motion.div>
+            </AnimatePresence>
+            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle transition-shadow duration-200 lg:flex">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
                 Match report
               </p>

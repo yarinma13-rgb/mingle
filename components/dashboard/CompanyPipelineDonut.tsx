@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { ColumnsIcon } from "@/components/dashboard/icons";
 import {
@@ -71,9 +72,14 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
       </div>
 
       {total === 0 ? (
-        <p className="mt-5 text-sm text-mingle-text-secondary">
-          Stage mix appears here once you have connections on the board.
-        </p>
+        <div className="mt-5">
+          <EmptyState
+            title="No pipeline mix yet"
+            body="Stage mix appears here once you have connections on the board."
+            actionHref="/board"
+            actionLabel="Open board"
+          />
+        </div>
       ) : (
         <div className="mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-start">
           <svg
