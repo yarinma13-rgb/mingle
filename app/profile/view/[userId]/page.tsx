@@ -56,6 +56,21 @@ async function loadViewerMatchReport(
   };
 }
 
+
+function traitChipsFromText(raw: string): string[] | null {
+  const parts = raw
+    .split(/[,;/|]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (
+    parts.length >= 2 &&
+    parts.every((part) => part.length <= 40 && !part.includes("."))
+  ) {
+    return parts;
+  }
+  return null;
+}
+
 export default async function ProfileViewPage({
   params,
 }: PageProps<"/profile/view/[userId]">) {
@@ -196,8 +211,18 @@ export default async function ProfileViewPage({
     { title: "How they work", chips: company.workEnvironment },
     { title: "What they value", chips: company.values },
     { title: "What they're looking for", chips: company.lookingFor },
-    { title: "Who thrives here", text: company.whoThrivesHere },
-    { title: "What they're building", text: company.description },
+    (() => {
+      const thriveChips = traitChipsFromText(company.whoThrivesHere);
+      return thriveChips
+        ? { title: "Who thrives here", chips: thriveChips }
+        : { title: "Who thrives here", text: company.whoThrivesHere };
+    })(),
+    {
+      title: "What they're building",
+      text: company.description?.trim()
+        ? company.description
+        : undefined,
+    },
   ];
 
   return (

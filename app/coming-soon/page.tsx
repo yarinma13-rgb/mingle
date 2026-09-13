@@ -18,8 +18,8 @@ export default async function ComingSoonPage() {
     >
       <div className="max-w-lg rounded-2xl border border-mingle-border bg-mingle-surface p-7 shadow-mingle">
         <p className="text-sm leading-relaxed text-mingle-text-secondary">
-          Plans are not for sale here yet. This page is a placeholder until
-          billing lives in its own project.
+          Pricing is coming soon. We&apos;ll share plans here when they&apos;re
+          ready — nothing to buy on this page yet.
         </p>
         <Link href="/dashboard" className="mingle-btn-primary mt-6 inline-block text-xs">
           Back to dashboard

@@ -1,22 +1,30 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
-import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
 
 export function RelationshipTabs({ connectionId }: { connectionId: string }) {
-  const segment = useSelectedLayoutSegment();
+  const pathname = usePathname();
   const base = `/conversations/${connectionId}`;
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Clear optimistic selection once the route catches up (render-time adjust).
+  if (
+    pendingHref &&
+    (pathname === pendingHref ||
+      (pendingHref !== base && pathname.startsWith(`${pendingHref}/`)))
+  ) {
+    setPendingHref(null);
+  }
+
   const tabs = [
-    { label: "Conversation", href: base, segment: null as string | null },
-    { label: "Explore", href: `${base}/explore`, segment: "explore" },
-    {
-      label: "Opportunity",
-      href: `${base}/opportunity`,
-      segment: "opportunity",
-    },
-    { label: "Decision", href: `${base}/decision`, segment: "decision" },
+    { label: "Conversation", href: base },
+    { label: "Explore", href: `${base}/explore` },
+    { label: "Opportunity", href: `${base}/opportunity` },
+    { label: "Decision", href: `${base}/decision` },
   ];
 
   return (
@@ -26,7 +34,11 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
       className="inline-flex max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain rounded-full border border-mingle-border bg-mingle-surface p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {tabs.map((tab) => {
-        const active = segment === tab.segment;
+        const routeActive =
+          tab.href === base
+            ? pathname === base
+            : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+        const active = pendingHref ? pendingHref === tab.href : routeActive;
         return (
           <Link
             key={tab.href}
@@ -35,12 +47,14 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
             scroll={false}
             role="tab"
             aria-selected={active}
-            onClick={() =>
+            aria-current={active ? "page" : undefined}
+            onClick={() => {
+              if (!routeActive) setPendingHref(tab.href);
               track(AnalyticsEvent.relationshipTabClicked, {
                 connection_id: connectionId,
                 tab: tab.label.toLowerCase(),
-              })
-            }
+              });
+            }}
             className={`inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-xs font-semibold leading-none transition-colors ${
               active
                 ? "bg-mingle-cta text-white shadow-sm"

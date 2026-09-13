@@ -6,11 +6,18 @@ import { TalentDashboard, type CompanyRow } from "@/components/dashboard/TalentD
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
 import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { buildCandidateDna } from "@/lib/matching/dna";
+import { computeMatch } from "@/lib/matching/engine";
 import { matchScore } from "@/lib/profile-detail/why-match";
+import {
+  loadTalentMatchInput,
+  loadCompanyMatchInput,
+} from "@/lib/matching/context";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
+import { loadTalentDashboardStats } from "@/lib/dashboard/talent-stats";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
+import { profileCompletion } from "@/lib/profile/persistence";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -103,7 +110,12 @@ export default async function DashboardPage() {
     );
   }
 
-  const [{ data: ownProfileRow }, { data: companyRows }] = await Promise.all([
+  const [
+    { data: ownProfileRow },
+    { data: companyRows },
+    stats,
+    ownMatchInput,
+  ] = await Promise.all([
     supabase
       .from("talent_profiles")
       .select("*")
@@ -115,22 +127,32 @@ export default async function DashboardPage() {
       .neq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(6),
+    loadTalentDashboardStats(supabase, user.id),
+    loadTalentMatchInput(supabase, user.id),
   ]);
   const ownProfile = ownProfileRow ? toTalentProfile(ownProfileRow) : null;
+  const liveCompletion = ownProfile
+    ? profileCompletion(ownProfile)
+    : userRow.profile_completion;
 
-  const companies: CompanyRow[] = (companyRows ?? [])
-    .filter((row) => row.company_name)
-    .map((row) => {
-      const company = toCompanyProfile(row);
-      return {
-        userId: row.user_id,
-        companyName: company.companyName,
-        mission: company.mission,
-        industry: company.industry,
-        location: company.location,
-        matchScore: ownProfile ? matchScore(ownProfile, company) : 75,
-      };
+  const companies: CompanyRow[] = [];
+  for (const row of companyRows ?? []) {
+    if (!row.company_name) continue;
+    const company = toCompanyProfile(row);
+    const companyInput = await loadCompanyMatchInput(supabase, row.user_id);
+    const score =
+      ownMatchInput && companyInput
+        ? computeMatch(ownMatchInput, companyInput).score
+        : 0;
+    companies.push({
+      userId: row.user_id,
+      companyName: company.companyName,
+      mission: company.mission,
+      industry: company.industry,
+      location: company.location,
+      matchScore: score,
     });
+  }
 
   return (
     <DashboardShell
@@ -145,9 +167,11 @@ export default async function DashboardPage() {
       userSubtitle="Talent"
     >
       <TalentDashboard
-        profileCompletion={userRow.profile_completion}
+        profileCompletion={liveCompletion}
         companies={companies}
         dna={ownProfile ? buildCandidateDna(ownProfile) : null}
+        stats={stats}
+        missingPhoto={!ownProfile?.profilePhoto}
       />
     </DashboardShell>
   );
