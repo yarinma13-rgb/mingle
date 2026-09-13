@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -11,16 +11,21 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
   const base = `/conversations/${connectionId}`;
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
+  // Clear optimistic selection once the route catches up (render-time adjust).
+  if (
+    pendingHref &&
+    (pathname === pendingHref ||
+      (pendingHref !== base && pathname.startsWith(`${pendingHref}/`)))
+  ) {
+    setPendingHref(null);
+  }
+
   const tabs = [
     { label: "Conversation", href: base },
     { label: "Explore", href: `${base}/explore` },
     { label: "Opportunity", href: `${base}/opportunity` },
     { label: "Decision", href: `${base}/decision` },
   ];
-
-  useEffect(() => {
-    setPendingHref(null);
-  }, [pathname]);
 
   return (
     <div
