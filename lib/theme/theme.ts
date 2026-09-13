@@ -1,3 +1,9 @@
+/**
+ * Theme policy (product decision — יערין):
+ * - Default is always **light** for talent and company alike.
+ * - Dark mode is an opt-in toggle available to every user type.
+ * - Do not force different defaults by audience (no talent-dark / company-light split).
+ */
 export const THEME_STORAGE_KEY = "mingle-theme";
 
 export type ThemeName = "light" | "dark";
