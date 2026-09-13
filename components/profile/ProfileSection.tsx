@@ -7,7 +7,11 @@ export function ProfileChipRow({
   items: string[];
   tone?: "purple" | "pink";
 }) {
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return (
+      <p className="text-sm text-mingle-text-secondary">Still waiting to be filled in.</p>
+    );
+  }
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (

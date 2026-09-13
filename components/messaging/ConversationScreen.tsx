@@ -246,7 +246,7 @@ export function ConversationScreen({
                           : "bg-mingle-bg text-mingle-text"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.body}</p>
+                      <p dir="auto" className="whitespace-pre-wrap">{message.body}</p>
                       <p
                         className={`mt-1 text-[10px] ${
                           isOwn ? "text-white/60" : "text-mingle-text-secondary"
@@ -282,6 +282,7 @@ export function ConversationScreen({
             }}
             placeholder="Write a message"
             maxLength={4000}
+            dir="auto"
             className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
           />
           <button

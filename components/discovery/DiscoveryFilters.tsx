@@ -267,7 +267,7 @@ export function DiscoveryFiltersForm({
                 Apply filters
               </button>
               <Link
-                href="/discover"
+                href={formAction}
                 className="cursor-pointer rounded-full px-5 py-2.5 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
               >
                 Clear

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/Avatar";
@@ -209,9 +210,12 @@ export function RoleMatchesScreen({
       </div>
       {filters}
       {listed.length === 0 ? (
-        <p className="text-sm text-mingle-text-secondary">
-          Nobody to rank yet. Invite talent onto mingle, or check Passed.
-        </p>
+        <EmptyState
+          title="No matches to rank yet"
+          body="Invite talent onto mingle, or review people you already passed."
+          actionHref="/discover"
+          actionLabel="Open Discover"
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {listed.map((card) => (

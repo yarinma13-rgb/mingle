@@ -155,16 +155,29 @@ export function RolesScreen({
       </div>
 
       {visible.length === 0 ? (
-        <EmptyState
-          title={roles.length === 0 ? "No roles yet" : "Nothing in this view"}
-          body={
-            roles.length === 0
-              ? "Paste a job description or create a role in a few taps."
-              : "Try another status, or create a new role."
-          }
-          actionHref={roles.length === 0 ? "/roles/paste" : undefined}
-          actionLabel={roles.length === 0 ? "Paste a job description" : undefined}
-        />
+        <div className="flex flex-col gap-3">
+          <EmptyState
+            title={roles.length === 0 ? "No roles yet" : "Nothing in this view"}
+            body={
+              roles.length === 0
+                ? "Paste a job description or create a role in a few taps."
+                : "Try another status, or create a new role."
+            }
+            actionHref={roles.length === 0 ? "/roles/paste" : "/roles/paste"}
+            actionLabel={
+              roles.length === 0 ? "Paste a job description" : "Create a role"
+            }
+          />
+          {roles.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setFilter("all")}
+              className="self-center text-xs font-semibold text-mingle-blue hover:text-mingle-cta"
+            >
+              Show all roles
+            </button>
+          ) : null}
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {visible.map((role) => (
