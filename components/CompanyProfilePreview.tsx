@@ -129,7 +129,7 @@ export function CompanyProfilePreview({
           href="/dashboard"
           className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
-          Looks good
+          Go to dashboard
         </Link>
       </motion.div>
     </div>

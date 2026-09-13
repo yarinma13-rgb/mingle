@@ -245,7 +245,7 @@ export function RoleBuilder({
                   maxLength={120}
                   listId="role-title"
                   suggestions={TITLE_SUGGESTIONS}
-                  placeholder=""
+                  placeholder="Senior full-stack engineer"
                   className="w-full rounded-2xl border border-mingle-border bg-mingle-white px-4 py-3 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
                 />
               </label>

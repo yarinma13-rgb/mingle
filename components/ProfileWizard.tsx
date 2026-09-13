@@ -443,14 +443,14 @@ export function ProfileWizard() {
                     <input
                       {...register("firstName")}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="Noa"
                     />
                   </Field>
                   <Field required label="Last name" error={errors.lastName?.message}>
                     <input
                       {...register("lastName")}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="Levi"
                     />
                   </Field>
                 </div>
@@ -461,7 +461,7 @@ export function ProfileWizard() {
                     listId="talent-headline"
                     suggestions={TITLE_SUGGESTIONS}
                     className={inputClass}
-                    placeholder=""
+                    placeholder="Product designer"
                   />
                 </Field>
 
@@ -472,7 +472,7 @@ export function ProfileWizard() {
                       listId="talent-current-role"
                       suggestions={TITLE_SUGGESTIONS}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="Senior product designer"
                     />
                   </Field>
                   <Field required label="Industry" error={errors.industry?.message}>
@@ -481,7 +481,7 @@ export function ProfileWizard() {
                       listId="talent-industry"
                       suggestions={INDUSTRY_SUGGESTIONS}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="B2B SaaS"
                     />
                     <div className="mt-3">
                       <SkillFieldChips
@@ -501,7 +501,7 @@ export function ProfileWizard() {
                       listId="talent-location"
                       suggestions={LOCATION_SUGGESTIONS}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="Tel Aviv"
                     />
                   </Field>
                   <Field

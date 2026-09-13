@@ -17,10 +17,12 @@ export async function loadTalentMatchInput(
   ]);
   if (!profileRow) return null;
 
+  const profile = toTalentProfile(profileRow);
   return {
-    profile: toTalentProfile(profileRow),
+    profile,
     careerGoal: prefRow?.career_goals ?? "",
     companyTypes: prefRow?.company_types ?? [],
+    salaryExpectation: profile.salaryExpectation,
   };
 }
 
