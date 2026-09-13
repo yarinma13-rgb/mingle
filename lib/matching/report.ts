@@ -1,6 +1,7 @@
 import { profileCompletion } from "@/lib/profile/persistence";
 import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
+import { scoreBandLabel } from "@/lib/matching/score-tone";
 import { technicalSignalFinding } from "@/lib/github/meta";
 import type {
   MatchFactor,
@@ -80,9 +81,8 @@ function axisScore(factors: MatchFactor[], keys: readonly MatchFactorKey[]): num
 }
 
 export function matchStrengthLabel(score: number): string {
-  if (score >= 80) return "Strong Match";
-  if (score >= 65) return "Good Match";
-  return "Worth a look";
+  // Single band table shared with score chips / MatchReport (see score-tone).
+  return scoreBandLabel(score);
 }
 
 export function matchConfidence(

@@ -556,6 +556,7 @@ export function CompanyProfileWizard() {
                     Who thrives here
                   </label>
                   <textarea
+                    dir="auto"
                     value={profile.whoThrivesHere}
                     onChange={(e) =>
                       setProfile((prev) => ({
@@ -575,6 +576,7 @@ export function CompanyProfileWizard() {
                     What you&rsquo;re building
                   </label>
                   <textarea
+                    dir="auto"
                     value={profile.description}
                     onChange={(e) =>
                       setProfile((prev) => ({

@@ -20,12 +20,10 @@ import { passProfile, unpassProfile } from "@/lib/matching/passed";
 import {
   recordMatchFeedback,
   type MatchFeedbackAction,
-  type NotFitReason,
 } from "@/lib/matching/feedback";
 import { notifyPushMatch } from "@/lib/push/actions";
 import type { MatchReport } from "@/lib/matching/report";
 import {
-  MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
 import { DiscoverSwipeActions } from "@/components/discovery/DiscoverSwipeActions";
@@ -102,25 +100,6 @@ function DiscoveryCardView({
     }
   };
 
-  const markNotFit = async (reason: NotFitReason) => {
-    setSaving(true);
-    try {
-      await recordMatchFeedback(
-        supabase,
-        viewerId,
-        card.userId,
-        "not_fit",
-        reason,
-      );
-      setFeedback("not_fit");
-      track(AnalyticsEvent.matchNotFit, { target_user_id: card.userId, reason, source: "discover" });
-      onPass(card.userId);
-    } catch {
-      toast("Couldn't save that. Try again in a moment.", "error");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const flyOff = (direction: 1 | -1, after: () => void) => {
     animate(x, direction * 600, { duration: 0.28, ease: "easeIn" }).then(after);
@@ -253,16 +232,6 @@ function DiscoveryCardView({
           onSkip={() => onPass(card.userId)}
           onInterested={() => void expressInterest()}
         />
-        <div className="mt-3 flex justify-center">
-          <MatchFeedbackActions
-            audience={card.report.audience}
-            action={feedback}
-            busy={saving}
-            showInterested={false}
-            onInterested={() => void expressInterest()}
-            onNotFit={(reason) => void markNotFit(reason)}
-          />
-        </div>
       </div>
     </motion.div>
   );
