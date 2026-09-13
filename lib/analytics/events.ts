@@ -28,6 +28,7 @@ export const AnalyticsEvent = {
   authPathConfirmShown: "auth_path_confirm_shown",
   authPathConfirmed: "auth_path_confirmed",
   authPathSwitched: "auth_path_switched",
+  authGoogleClicked: "auth_google_clicked",
   passwordResetRequested: "password_reset_requested",
 
   // Company Aha! foundation (funnel later in PostHog UI)

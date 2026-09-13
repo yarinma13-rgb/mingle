@@ -8,6 +8,7 @@ import { acceptConnection, declineConnection } from "@/lib/connections/persisten
 import { notifyPushConnection } from "@/lib/push/actions";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
+import { StatusChip } from "@/components/StatusChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Avatar } from "@/components/Avatar";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
@@ -206,7 +207,7 @@ export function ConnectionsScreen({
                 <div className="mt-4 flex flex-col gap-3">
                   {outgoing.map((row) => (
                     <PersonRow key={row.connectionId} row={row}>
-                      <MingleChip className="shrink-0">Pending</MingleChip>
+                      <StatusChip kind="pending" className="shrink-0" />
                     </PersonRow>
                   ))}
                 </div>
@@ -323,7 +324,7 @@ export function ConnectionsScreen({
           <div className="mt-4 flex flex-col gap-3">
             {outgoing.map((row) => (
               <PersonRow key={row.connectionId} row={row}>
-                <MingleChip className="shrink-0">Pending</MingleChip>
+                <StatusChip kind="pending" className="shrink-0" />
               </PersonRow>
             ))}
           </div>

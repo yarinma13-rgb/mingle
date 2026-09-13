@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
+import { StatusChip } from "@/components/StatusChip";
 import { RoleBuilder } from "@/components/roles/RoleBuilder";
 import { useToast } from "@/components/toast/ToastProvider";
 import {
@@ -199,17 +200,10 @@ export function RolesScreen({
                       .join(" · ")}
                   </p>
                 </div>
-                <MingleChip
-                  tone={
-                    role.status === "open"
-                      ? "green"
-                      : role.status === "paused"
-                        ? "amber"
-                        : "slate"
-                  }
-                >
-                  {statusLabel(role.status)}
-                </MingleChip>
+                <StatusChip
+                  kind={role.status === "open" ? "open" : role.status === "paused" ? "paused" : "closed"}
+                  label={statusLabel(role.status)}
+                />
               </div>
               <div className="flex flex-wrap gap-2">
                 {role.workModel ? <MingleChip>{role.workModel}</MingleChip> : null}
