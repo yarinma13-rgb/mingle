@@ -82,6 +82,19 @@ export function SettingsHub({
           },
         ],
       },
+      {
+        id: "support",
+        title: "Support",
+        items: [
+          {
+            id: "report-problem",
+            title: "Report a problem",
+            body: "Something broke or looks wrong? Send us a note from inside the app.",
+            href: "/settings/support",
+            action: "Open support",
+          },
+        ],
+      },
       ...(isCompany
         ? [
             {
