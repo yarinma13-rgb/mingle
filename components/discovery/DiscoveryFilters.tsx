@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CustomChipInput } from "@/components/CustomChipInput";
 import { SuggestInput } from "@/components/SuggestInput";
@@ -38,6 +38,15 @@ export function DiscoveryFiltersForm({
   formAction?: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   const [yearsMin, setYearsMin] = useState(filters.yearsMin ?? 0);
   const [yearsMax, setYearsMax] = useState(filters.yearsMax ?? 0);
   const [distanceKm, setDistanceKm] = useState(filters.distanceKm ?? 0);

@@ -5,6 +5,7 @@ import { RelationshipTabs } from "@/components/relationship/RelationshipTabs";
 import { ConversationScreen } from "@/components/messaging/ConversationScreen";
 import { RelationshipContextPanel } from "@/components/messaging/RelationshipContextPanel";
 import { MessagingUnavailable } from "@/components/messaging/MessagingUnavailable";
+import { classifyMessagingError } from "@/lib/messaging/errors";
 import { getOrCreateConversation, loadMessages } from "@/lib/messaging/persistence";
 import { loadRelationshipPageContext } from "@/lib/relationship/pageContext";
 import { loadTimeline, ensureInConversationEvent, latestStage } from "@/lib/relationship/persistence";
@@ -32,27 +33,46 @@ export default async function ConversationPage({
 
   const ctx = await loadRelationshipPageContext(supabase, connectionId, user, userRow.user_type);
 
+  const shellProps = {
+    userType: ctx.userType,
+    userId: user.id,
+    title: "Conversations" as const,
+    searchPlaceholder:
+      ctx.userType === "company"
+        ? "Search candidates or roles"
+        : "Search companies",
+    userName: ctx.accountLabel,
+    userInitials: ctx.initials,
+    userGender: ctx.userGender,
+    userPhoto: ctx.userPhoto,
+    userSubtitle: ctx.userType === "company" ? "Recruiter" : "Talent",
+  };
+
+  if (ctx.connection.status !== "accepted") {
+    return (
+      <DashboardShell {...shellProps}>
+        <MessagingUnavailable connectionId={connectionId} kind="not_accepted" />
+      </DashboardShell>
+    );
+  }
+
   let conversation;
   let messages;
+  let messagingError: unknown = null;
   try {
     conversation = await getOrCreateConversation(supabase, ctx.connection.id);
     messages = await loadMessages(supabase, conversation.id);
-  } catch {
+  } catch (error) {
+    messagingError = error;
+  }
+
+  if (messagingError || !conversation || !messages) {
     return (
-      <DashboardShell
-        userType={ctx.userType}
-        userId={user.id}
-        title="Conversations"
-        searchPlaceholder={
-          ctx.userType === "company" ? "Search candidates or roles" : "Search companies"
-        }
-        userName={ctx.accountLabel}
-        userInitials={ctx.initials}
-        userGender={ctx.userGender}
-        userPhoto={ctx.userPhoto}
-        userSubtitle={ctx.userType === "company" ? "Recruiter" : "Talent"}
-      >
-        <MessagingUnavailable connectionId={connectionId} />
+      <DashboardShell {...shellProps}>
+        <MessagingUnavailable
+          connectionId={connectionId}
+          kind={classifyMessagingError(messagingError ?? new Error("unknown"))}
+        />
       </DashboardShell>
     );
   }

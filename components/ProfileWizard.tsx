@@ -862,7 +862,7 @@ export function ProfileWizard() {
 
             {step === 6 && (
               <div className="flex flex-col items-center">
-                <textarea
+                <textarea dir="auto"
                   value={profile.beyondCv}
                   onChange={(e) =>
                     setProfile((prev) => ({ ...prev, beyondCv: e.target.value }))

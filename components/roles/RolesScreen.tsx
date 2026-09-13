@@ -126,12 +126,12 @@ export function RolesScreen({
           until you choose to share them.
         </p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={openCreate} className="mingle-btn-primary text-xs">
-            Create role
-          </button>
-          <Link href="/roles/paste" className="mingle-btn-secondary text-xs">
-            Paste a job description instead
+          <Link href="/roles/paste" className="mingle-btn-primary text-xs">
+            Paste a job description
           </Link>
+          <button type="button" onClick={openCreate} className="mingle-btn-secondary text-xs">
+            Create role manually
+          </button>
         </div>
       </div>
 
@@ -159,9 +159,11 @@ export function RolesScreen({
           title={roles.length === 0 ? "No roles yet" : "Nothing in this view"}
           body={
             roles.length === 0
-              ? "Create a role in a few taps. Most fields are choices, not typing."
+              ? "Paste a job description or create a role in a few taps."
               : "Try another status, or create a new role."
           }
+          actionHref={roles.length === 0 ? "/roles/paste" : undefined}
+          actionLabel={roles.length === 0 ? "Paste a job description" : undefined}
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -184,7 +186,15 @@ export function RolesScreen({
                       .join(" · ")}
                   </p>
                 </div>
-                <MingleChip tone={role.status === "open" ? "pink" : "purple"}>
+                <MingleChip
+                  tone={
+                    role.status === "open"
+                      ? "green"
+                      : role.status === "paused"
+                        ? "amber"
+                        : "slate"
+                  }
+                >
                   {statusLabel(role.status)}
                 </MingleChip>
               </div>

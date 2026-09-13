@@ -107,8 +107,10 @@ export function CompanyProfilePreview({
           title="Who thrives here"
           onEdit={onEditStep ? () => onEditStep(5) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
-            {profile.whoThrivesHere}
+          <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
+            {profile.whoThrivesHere?.trim()
+              ? profile.whoThrivesHere
+              : "Still waiting on a fuller description of who thrives here."}
           </p>
         </ProfileSection>
 
@@ -116,8 +118,10 @@ export function CompanyProfilePreview({
           title="What we're building"
           onEdit={onEditStep ? () => onEditStep(5) : undefined}
         >
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
-            {profile.description}
+          <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
+            {profile.description?.trim()
+              ? profile.description
+              : "Still waiting on a fuller description of what they are building."}
           </p>
         </ProfileSection>
 
