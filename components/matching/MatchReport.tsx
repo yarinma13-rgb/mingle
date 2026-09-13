@@ -157,6 +157,14 @@ export function MatchReportBody({
         </p>
       </div>
       <FitBars axes={report.axes} />
+      {report.technicalSignal ? (
+        <p className="text-[11px] leading-snug text-mingle-text">
+          <span className="font-semibold">Verified technical signal:</span>{" "}
+          <span className="text-mingle-text-secondary">
+            {report.technicalSignal}
+          </span>
+        </p>
+      ) : null}
       <p className={`text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}>
         Confidence: {report.confidence}
       </p>

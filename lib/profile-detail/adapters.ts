@@ -28,6 +28,12 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     salaryExpectation:
       typeof row.salary_expectation === "number" ? row.salary_expectation : null,
     maxCommuteKm: typeof row.max_commute_km === "number" ? row.max_commute_km : 0,
+    githubUrl: typeof row.github_url === "string" ? row.github_url : null,
+    githubLogin: typeof row.github_login === "string" ? row.github_login : null,
+    githubMeta:
+      row.github_meta && typeof row.github_meta === "object"
+        ? (row.github_meta as Record<string, unknown>)
+        : null,
   };
 }
 

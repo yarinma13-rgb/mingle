@@ -30,6 +30,7 @@ import { PROFILE_QUESTIONS, BEYOND_CV_SUB_PROMPTS } from "@/lib/profile/question
 import { SkillFieldChips } from "@/components/profile/SkillFieldChips";
 import { SuggestInput } from "@/components/SuggestInput";
 import { matchSkillField, skillOptionsForField } from "@/lib/skills/options";
+import { saveTalentGithubUrlAction } from "@/lib/github/actions";
 import {
   INDUSTRY_SUGGESTIONS,
   LOCATION_SUGGESTIONS,
@@ -727,6 +728,24 @@ export function ProfileWizard() {
                     setProfile((prev) => ({ ...prev, skills }))
                   }
                 />
+                <label className="mt-8 block text-sm font-medium text-mingle-text">
+                  GitHub profile{" "}
+                  <span className="font-normal text-mingle-text-secondary">
+                    (optional · not shown as a score penalty if empty)
+                  </span>
+                  <input
+                    type="url"
+                    value={profile.githubUrl ?? ""}
+                    onChange={(event) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        githubUrl: event.target.value,
+                      }))
+                    }
+                    placeholder="https://github.com/username"
+                    className="mt-2 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                  />
+                </label>
                 {saveError && (
                   <p className="mt-6 text-center text-sm text-mingle-pink">
                     {saveError}
@@ -743,13 +762,30 @@ export function ProfileWizard() {
                   </button>
                   <motion.button
                     type="button"
-                    onClick={() =>
-                      persistAndAdvance(
-                        { skills: profile.skills, industry: profile.industry },
-                        profile,
-                        5,
-                      )
-                    }
+                    onClick={() => {
+                      void (async () => {
+                        const githubResult = await saveTalentGithubUrlAction(
+                          profile.githubUrl ?? "",
+                        );
+                        if (!githubResult.ok) {
+                          setSaveError(githubResult.error);
+                          return;
+                        }
+                        const nextProfile = {
+                          ...profile,
+                          githubUrl: githubResult.githubUrl,
+                          githubLogin: githubResult.githubLogin,
+                        };
+                        await persistAndAdvance(
+                          {
+                            skills: nextProfile.skills,
+                            industry: nextProfile.industry,
+                          },
+                          nextProfile,
+                          5,
+                        );
+                      })();
+                    }}
                     disabled={profile.skills.length === 0 || saving}
                     className={`font-display text-sm ${
                       profile.skills.length > 0

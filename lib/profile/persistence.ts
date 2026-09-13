@@ -24,6 +24,9 @@ export type ProfileState = {
   skills: string[];
   salaryExpectation: number | null;
   maxCommuteKm: number;
+  githubUrl: string | null;
+  githubLogin: string | null;
+  githubMeta: Record<string, unknown> | null;
 };
 
 export const EMPTY_PROFILE: ProfileState = {
@@ -46,6 +49,9 @@ export const EMPTY_PROFILE: ProfileState = {
   skills: [],
   salaryExpectation: null,
   maxCommuteKm: 0,
+  githubUrl: null,
+  githubLogin: null,
+  githubMeta: null,
 };
 
 const TOTAL_STEPS = 7;
@@ -117,6 +123,12 @@ export async function loadProfile(
     gender: isGender(data.gender) ? data.gender : null,
     birthDate: typeof data.birth_date === "string" ? data.birth_date : null,
     skills: Array.isArray(data.skills) ? data.skills : [],
+    githubUrl: typeof data.github_url === "string" ? data.github_url : null,
+    githubLogin: typeof data.github_login === "string" ? data.github_login : null,
+    githubMeta:
+      data.github_meta && typeof data.github_meta === "object"
+        ? (data.github_meta as Record<string, unknown>)
+        : null,
     salaryExpectation:
       typeof data.salary_expectation === "number" ? data.salary_expectation : null,
     maxCommuteKm:

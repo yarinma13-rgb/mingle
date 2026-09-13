@@ -123,6 +123,16 @@ export default async function ProfileViewPage({
       { title: "How they work", chips: talent.workStyle },
       { title: "What they're looking for", chips: talent.lookingFor },
       { title: "Skills", chips: talent.skills },
+      ...(talent.githubUrl
+        ? [
+            {
+              title: "GitHub",
+              text: talent.githubLogin
+                ? `@${talent.githubLogin}`
+                : talent.githubUrl,
+            } satisfies ProfileDetailSection,
+          ]
+        : []),
       { title: "Beyond the CV", text: talent.beyondCv },
     ];
 
