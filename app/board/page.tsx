@@ -13,6 +13,7 @@ import {
   loadTimelinesForConnections,
 } from "@/lib/relationship/persistence";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
+import { loadOpenRoleRediscoveryByCandidate } from "@/lib/matching/rediscovery";
 
 export default async function BoardPage() {
   const supabase = await createClient();
@@ -69,6 +70,15 @@ export default async function BoardPage() {
     });
   }
 
+  const rediscoveryByUser = await loadOpenRoleRediscoveryByCandidate(
+    supabase,
+    user.id,
+  );
+  const candidatesWithRediscovery = candidates.map((candidate) => ({
+    ...candidate,
+    rediscovery: rediscoveryByUser[candidate.userId] ?? null,
+  }));
+
   const chrome = await loadShellChrome(supabase, user, true);
 
   return (
@@ -83,7 +93,7 @@ export default async function BoardPage() {
       userPhoto={chrome.photo}
       userSubtitle="Recruiter"
     >
-      <CompanyBoardScreen actorId={user.id} candidates={candidates} />
+      <CompanyBoardScreen actorId={user.id} candidates={candidatesWithRediscovery} />
     </DashboardShell>
   );
 }

@@ -6,6 +6,7 @@ import type {
 } from "@/lib/supabase/types";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
+import { ensureRediscoveryForRole } from "@/lib/matching/rediscovery";
 
 const ROLE_LIST_COLUMNS =
   "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at";
@@ -168,7 +169,17 @@ export async function createCompanyRole(
     { role_id: data.id },
     companyId,
   );
-  return toRecord(data);
+  const record = toRecord(data);
+  try {
+    await ensureRediscoveryForRole(supabase, {
+      companyId,
+      roleId: record.id,
+      roleTitle: record.title,
+    });
+  } catch (error) {
+    console.error("rediscovery after role create", error);
+  }
+  return record;
 }
 
 export async function updateCompanyRole(

@@ -269,6 +269,42 @@ export interface Database {
         };
         Relationships: [];
       };
+
+      rediscovered_matches: {
+        Row: {
+          id: string;
+          role_id: string;
+          company_id: string;
+          candidate_id: string;
+          prior_signal: "interested" | "mutual" | "in_conversation";
+          prior_role_id: string | null;
+          prior_role_title: string | null;
+          prior_at: string | null;
+          score: number | null;
+          notified_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          role_id: string;
+          company_id: string;
+          candidate_id: string;
+          prior_signal: "interested" | "mutual" | "in_conversation";
+          prior_role_id?: string | null;
+          prior_role_title?: string | null;
+          prior_at?: string | null;
+          score?: number | null;
+          notified_at?: string | null;
+        };
+        Update: {
+          prior_signal?: "interested" | "mutual" | "in_conversation";
+          prior_role_id?: string | null;
+          prior_role_title?: string | null;
+          prior_at?: string | null;
+          score?: number | null;
+          notified_at?: string | null;
+        };
+        Relationships: [];
+      };
       match_reviews: {
         Row: {
           id: string;
