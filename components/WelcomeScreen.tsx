@@ -3,22 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Outfit, Manrope } from "next/font/google";
+import { Figtree, Poppins } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
-const welcomeDisplay = Outfit({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+/**
+ * monday.com typography scale (marketing site):
+ * Display → Poppins · Body / labels / legal → Figtree
+ * Sizes/weights match monday display-md, title-md, body-lg/sm, caption, legal.
+ */
+const welcomeDisplay = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
-const welcomeBody = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const welcomeBody = Figtree({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -30,22 +35,25 @@ const PATH_CARDS: {
   title: string;
   description: string;
   Art: typeof TalentPathArt;
+  tint: string;
 }[] = [
   {
     id: "talent",
-    eyebrow: "For you",
-    title: "Find roles that actually fit",
+    eyebrow: "For candidates",
+    title: "Roles that actually fit",
     description:
-      "Set your preferences once. See clear Why this match — and only talk when interest is mutual.",
+      "Clear matches with real reasons. Talk only when interest is mutual.",
     Art: TalentPathArt,
+    tint: "from-[#f4f0ff] to-[#eef2ff]",
   },
   {
     id: "company",
-    eyebrow: "For hiring teams",
-    title: "Meet people worth talking to",
+    eyebrow: "For companies",
+    title: "People worth talking to",
     description:
-      "Paste a role. Get a short explained list — Role, Human, and Motivation Fit — not another CV pile.",
+      "Paste a role. Get a short explained list, not another CV pile.",
     Art: CompanyPathArt,
+    tint: "from-[#eef5ff] to-[#f0f2ff]",
   },
 ];
 
@@ -63,11 +71,11 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden bg-[#f5f8ff] px-5 py-10 sm:px-10 sm:py-16`}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(246,95,124,0.12),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(0,115,234,0.12),transparent_32%),radial-gradient(circle_at_50%_100%,rgba(157,92,242,0.1),transparent_40%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_8%,rgba(140,110,255,0.11),transparent_44%),radial-gradient(circle_at_90%_12%,rgba(150,200,255,0.22),transparent_42%),radial-gradient(circle_at_48%_100%,rgba(110,150,255,0.1),transparent_48%),radial-gradient(circle_at_70%_55%,rgba(220,235,255,0.55),transparent_52%)]"
       />
 
       <AnimatePresence
@@ -87,21 +95,22 @@ export function WelcomeScreen() {
           >
             <MingleLogo variant="lockup" size={64} priority className="mb-10" />
 
+            {/* display-md → display-lg: Poppins 36/700 → 48/700 */}
             <h1
-              className={`${welcomeDisplay.className} text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]`}
+              className={`${welcomeDisplay.className} flex flex-col items-center text-[36px] font-bold leading-[1.18] tracking-[-0.01em] text-mingle-text sm:text-[48px] sm:leading-[1.1] sm:tracking-[-0.014em]`}
             >
-              The right people.{" "}
+              <span>The right people.</span>
               <span className="mingle-gradient-text">Worth talking to.</span>
             </h1>
 
-            <p className="mt-4 max-w-md text-base font-medium text-mingle-text-secondary sm:text-lg">
-              Mutual career matching — clear reasons for both sides, before the
-              first conversation.
+            {/* body-lg: Figtree 18/400 */}
+            <p className="mt-4 max-w-md text-[18px] font-normal leading-[1.55] text-mingle-text-secondary">
+              Mutual career matching with clear reasons for both sides, before
+              the first conversation.
             </p>
 
-            <p
-              className={`${welcomeDisplay.className} mt-8 text-sm font-semibold tracking-[-0.02em] text-mingle-text`}
-            >
+            {/* label-md: Figtree 16/600 */}
+            <p className="mt-9 text-[16px] font-semibold leading-[1.4] text-mingle-text">
               Choose how you start
             </p>
 
@@ -115,28 +124,36 @@ export function WelcomeScreen() {
                     onClick={() => choosePath(card.id)}
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.985 }}
-                    className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[22px] border border-mingle-border/80 bg-white/90 p-5 text-left shadow-[0_12px_32px_rgba(45,27,78,0.06)] backdrop-blur-sm transition-colors hover:border-mingle-purple/35"
+                    className="group flex min-w-0 flex-col items-stretch overflow-hidden rounded-[24px] border border-mingle-border/70 bg-white text-left shadow-[0_14px_36px_rgba(45,27,78,0.07)] transition-colors hover:border-mingle-purple/35"
                   >
-                    <div className="flex h-[84px] items-center justify-center rounded-2xl bg-[linear-gradient(160deg,#f7f4ff_0%,#eef5ff_100%)]">
+                    <div
+                      className={`flex h-[132px] items-center justify-center bg-gradient-to-br ${card.tint}`}
+                    >
                       <Art />
                     </div>
-                    <span className="mt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-mingle-purple">
-                      {card.eyebrow}
-                    </span>
-                    <span
-                      className={`${welcomeDisplay.className} mt-1.5 text-[1.05rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text`}
-                    >
-                      {card.title}
-                    </span>
-                    <span className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
-                      {card.description}
-                    </span>
+                    <div className="flex flex-col px-5 pb-5 pt-4">
+                      {/* caption: Figtree 13/600 / 0.04em */}
+                      <span className="text-[13px] font-semibold leading-[1.4] tracking-[0.04em] text-mingle-purple">
+                        {card.eyebrow}
+                      </span>
+                      {/* title-md: Poppins 22/600 */}
+                      <span
+                        className={`${welcomeDisplay.className} mt-1.5 text-[22px] font-semibold leading-[1.3] tracking-normal text-mingle-text`}
+                      >
+                        {card.title}
+                      </span>
+                      {/* body-sm: Figtree 14/400 */}
+                      <span className="mt-1.5 text-[14px] font-normal leading-[1.5] text-mingle-text-secondary">
+                        {card.description}
+                      </span>
+                    </div>
                   </motion.button>
                 );
               })}
             </div>
 
-            <p className="mt-8 text-xs text-mingle-text-secondary">
+            {/* legal: Figtree 12/400 / 0.01em */}
+            <p className="mt-8 text-[12px] font-normal leading-[1.4] tracking-[0.01em] text-mingle-text-secondary">
               <Link href="/legal/terms" className="underline underline-offset-2">
                 Terms of Service
               </Link>
