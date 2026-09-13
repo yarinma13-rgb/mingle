@@ -58,11 +58,15 @@ export function DiscoverSwipeActions({
         >
           <svg
             viewBox="0 0 24 24"
-            className="h-7 w-7"
-            fill="currentColor"
+            className="h-8 w-8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden
           >
-            <path d="M12 21s-6.7-4.35-9.33-8.1C.8 10.1 1.1 6.7 3.7 5.05 6.05 3.55 8.7 4.4 12 7.15c3.3-2.75 5.95-3.6 8.3-2.1 2.6 1.65 2.9 5.05 1.03 7.85C18.7 16.65 12 21 12 21z" />
+            <path d="M5 12.5l5 5L19 7" />
           </svg>
         </span>
         <span className="font-display text-xs font-bold tracking-wide text-mingle-accent-blue">
