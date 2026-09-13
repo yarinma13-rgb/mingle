@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import {
   ProfileDetailShell,
   type ProfileDetailSection,
@@ -20,6 +21,7 @@ import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
+import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
 
@@ -94,6 +96,10 @@ export default async function ProfileViewPage({
     .select("user_type")
     .eq("id", viewer.id)
     .maybeSingle();
+  if (!viewerUser) redirect("/auth");
+
+  const isCompanyViewer = viewerUser.user_type === "company";
+  const chrome = await loadShellChrome(supabase, viewer, isCompanyViewer);
 
   const connectionStatus =
     viewer.id === userId
@@ -104,7 +110,7 @@ export default async function ProfileViewPage({
     viewer.id === userId ? [] : await loadSavedUserIds(supabase, viewer.id);
   const initiallySaved = savedIds.includes(userId);
   const matchBundle =
-    viewerUser && viewer.id !== userId
+    viewer.id !== userId
       ? await loadViewerMatchReport(
           supabase,
           viewer.id,
@@ -113,6 +119,20 @@ export default async function ProfileViewPage({
           targetUser.user_type,
         )
       : { report: null, feedback: null };
+
+  const shellProps = {
+    userType: viewerUser.user_type,
+    userId: viewer.id,
+    title: "Profile",
+    searchPlaceholder: isCompanyViewer
+      ? "Search candidates or roles"
+      : "Search companies",
+    userName: chrome.userName,
+    userInitials: chrome.initials,
+    userGender: chrome.gender,
+    userPhoto: chrome.photo,
+    userSubtitle: isCompanyViewer ? "Recruiter" : "Talent",
+  } as const;
 
   if (targetUser.user_type === "talent") {
     const { data: talentRow } = await supabase
@@ -156,9 +176,9 @@ export default async function ProfileViewPage({
     const recommendations = await loadSubmittedRecommendations(supabase, userId);
 
     return (
-      <main className="flex min-h-screen flex-1 flex-col">
+      <DashboardShell {...shellProps}>
         {viewer.id === userId ? (
-          <div className="mx-auto w-full max-w-4xl px-4 pt-10">
+          <div className="mx-auto w-full max-w-4xl pb-4">
             <CandidateDnaPanel dna={buildCandidateDna(talent)} />
           </div>
         ) : null}
@@ -189,7 +209,7 @@ export default async function ProfileViewPage({
           recommendations={recommendations}
           canRequestRecommendation={viewer.id === userId}
         />
-      </main>
+      </DashboardShell>
     );
   }
 
@@ -226,14 +246,14 @@ export default async function ProfileViewPage({
   ];
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col">
-        <ProfileDetailShell
-          eyebrow="Company profile"
-          photo={company.logo}
-          initial={companyInitials(company.companyName)}
-          gender={null}
-          avatarShape="soft"
-          name={company.companyName}
+    <DashboardShell {...shellProps}>
+      <ProfileDetailShell
+        eyebrow="Company profile"
+        photo={company.logo}
+        initial={companyInitials(company.companyName)}
+        gender={null}
+        avatarShape="soft"
+        name={company.companyName}
         subtitle={company.mission}
         meta={[company.industry, company.location].filter(Boolean).join(" · ")}
         sections={sections}
@@ -246,6 +266,6 @@ export default async function ProfileViewPage({
         initialConnectionStatus={connectionStatus}
         initiallySaved={initiallySaved}
       />
-    </main>
+    </DashboardShell>
   );
 }
