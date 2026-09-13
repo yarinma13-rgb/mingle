@@ -56,12 +56,19 @@ export function CommandPaletteProvider({
   const [sessionOpen, setSessionOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [entityItems, setEntityItems] = useState<CommandItem[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [entityResult, setEntityResult] = useState<{
+    needle: string;
+    items: CommandItem[];
+  }>({ needle: "", items: [] });
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const open = enabled && sessionOpen;
+  const needle = query.trim();
+  const shouldSearchEntities =
+    open && userType === "company" && needle.length >= 2;
+  const searching =
+    shouldSearchEntities && entityResult.needle !== needle;
 
   useEffect(() => {
     if (!enabled) {
@@ -92,41 +99,31 @@ export function CommandPaletteProvider({
   }, [enabled, pathname]);
 
   useEffect(() => {
-    if (!open || userType !== "company") {
-      setEntityItems([]);
-      setSearching(false);
-      return;
-    }
-    const needle = query.trim();
-    if (needle.length < 2) {
-      setEntityItems([]);
-      setSearching(false);
-      return;
-    }
+    if (!shouldSearchEntities) return;
     let cancelled = false;
-    setSearching(true);
     const handle = window.setTimeout(() => {
       void searchCompanyCommandItems(needle).then((rows) => {
         if (cancelled) return;
-        setEntityItems(rows);
-        setSearching(false);
+        setEntityResult({ needle, items: rows });
       });
     }, 180);
     return () => {
       cancelled = true;
       window.clearTimeout(handle);
     };
-  }, [open, query, userType]);
+  }, [shouldSearchEntities, needle]);
 
   const items = useMemo(() => {
     const nav = userType
       ? filterCommandItems(commandItemsFor(userType), query)
       : [];
-    if (userType !== "company" || query.trim().length < 2) return nav;
+    if (!shouldSearchEntities) return nav;
+    const entityItems =
+      entityResult.needle === needle ? entityResult.items : [];
     const seen = new Set(nav.map((item) => item.id));
     const extras = entityItems.filter((item) => !seen.has(item.id));
     return [...extras, ...nav];
-  }, [userType, query, entityItems]);
+  }, [userType, query, shouldSearchEntities, entityResult, needle]);
 
   useEffect(() => {
     const node = listRef.current?.querySelector("[data-active=true]");
@@ -137,12 +134,14 @@ export function CommandPaletteProvider({
     setSessionOpen(false);
     setQuery("");
     setActiveIndex(0);
+    setEntityResult({ needle: "", items: [] });
   }, []);
 
   const openPalette = useCallback(() => {
     if (!enabled || !userType) return;
     setQuery("");
     setActiveIndex(0);
+    setEntityResult({ needle: "", items: [] });
     setSessionOpen(true);
   }, [enabled, userType]);
 
