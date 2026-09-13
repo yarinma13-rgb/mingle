@@ -74,6 +74,8 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 | `0009_relationship_events.sql` | `relationship_events` |
 | `0010_talent_cv_storage.sql` | bucket פרטי `talent-cvs` + `cv_path` / `cv_file_name` |
 
+| `0011`–`0030` | Continuations already in `supabase/migrations/` (roles, salary fields, commute, push subscriptions, rediscovery, calendar, GitHub signal, pilot learning tables, …). See folder for exact filenames. Run any not-yet-applied in order via SQL Editor. Full ops checklist: `docs/PILOT_OPS.md`. |
+
 אין שכבת קאש, אין תור. Realtime רק להודעות. Google OAuth לא מוגדר ב-Supabase.
 
 ---
@@ -194,7 +196,7 @@ npm install
 # .env.local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 # אופציונלי: NEXT_PUBLIC_SENTRY_DSN, NEXT_PUBLIC_POSTHOG_KEY, NEXT_PUBLIC_POSTHOG_HOST
 # אופציונלי: RESEND_API_KEY, NEXT_PUBLIC_APP_URL (קישור במייל בקשת החיבור)
-# מיגרציות 0001–0010 ב-SQL Editor
+# מיגרציות 0001–0030 ב-SQL Editor (ראה PILOT_OPS.md)
 npm run dev
 ```
 

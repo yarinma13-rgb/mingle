@@ -353,7 +353,7 @@ export function CompanyProfileWizard() {
                   <input
                     {...register("companyName")}
                     className={inputClass}
-                    placeholder=""
+                    placeholder="mingle"
                   />
                 </Field>
 
@@ -372,7 +372,7 @@ export function CompanyProfileWizard() {
                       listId="company-industry"
                       suggestions={INDUSTRY_SUGGESTIONS}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="HR tech"
                     />
                   </Field>
                   <Field label="Location" error={errors.location?.message}>
@@ -381,7 +381,7 @@ export function CompanyProfileWizard() {
                       listId="company-location"
                       suggestions={LOCATION_SUGGESTIONS}
                       className={inputClass}
-                      placeholder=""
+                      placeholder="Tel Aviv"
                     />
                   </Field>
                 </div>

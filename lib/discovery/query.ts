@@ -163,6 +163,7 @@ export async function loadDiscoveryPage(
         profile,
         careerGoal: pref?.career_goals ?? "",
         companyTypes: pref?.company_types ?? [],
+        salaryExpectation: profile.salaryExpectation,
       };
       const result = ownInput
         ? computeMatch(talentInput, ownInput)

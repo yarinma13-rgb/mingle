@@ -13,6 +13,7 @@ import {
   PeopleIcon,
 } from "@/components/dashboard/icons";
 import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
+import { PilotTips } from "@/components/pilot/PilotTips";
 
 export type CompanyRow = {
   userId: string;
@@ -38,6 +39,8 @@ export function TalentDashboard({
 }) {
   return (
     <div className="flex flex-col gap-8">
+      <PilotTips />
+
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <KpiTile
           icon={GaugeIcon}

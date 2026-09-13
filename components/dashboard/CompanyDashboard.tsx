@@ -8,6 +8,7 @@ import { CompanyPipelineDonut } from "@/components/dashboard/CompanyPipelineDonu
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
+import { PilotTips } from "@/components/pilot/PilotTips";
 import {
   GaugeIcon,
   PeopleIcon,
@@ -67,6 +68,8 @@ export function CompanyDashboard({
 
   return (
     <div className="flex flex-col gap-8">
+      <PilotTips />
+
       <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Suggested next step

@@ -27,6 +27,13 @@ export const metadata: Metadata = {
   title: "mingle | Worth Talking To",
   description:
     "mingle is the career relationship platform that connects talent and companies before a hiring decision is made.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "mingle",
+  appleWebApp: {
+    capable: true,
+    title: "mingle",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport = {

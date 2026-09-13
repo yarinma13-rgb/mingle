@@ -1,0 +1,18 @@
+{
+  "name": "mingle",
+  "short_name": "mingle",
+  "description": "Worth talking to — career relationships before the hire.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#0073ea",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/brand/mingle-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
