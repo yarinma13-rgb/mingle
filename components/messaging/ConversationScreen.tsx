@@ -215,7 +215,7 @@ export function ConversationScreen({
           </div>
         ) : null}
         {upcomingInterview && !canScheduleInterview ? (
-          <div className="mb-4 sm:hidden">
+          <div className="mb-4">
             <UpcomingInterviewBanner interview={upcomingInterview} />
           </div>
         ) : null}

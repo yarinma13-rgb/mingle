@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { scheduleInterviewAction } from "@/lib/interviews/actions";
 import {
+  cancelInterviewAction,
+  rescheduleInterviewAction,
+} from "@/lib/interviews/manage-actions";
+import {
   acceptInterviewSlotAction,
   disconnectGoogleCalendarAction,
   loadCompanyCalendarStatusAction,
@@ -67,6 +71,14 @@ export function ScheduleInterviewControls({
     if (busy) return;
     setBusy(true);
     setError(null);
+    if (upcoming) {
+      const cancelled = await cancelInterviewAction({ interviewId: upcoming.id });
+      if (!cancelled.ok) {
+        setBusy(false);
+        setError(cancelled.error);
+        return;
+      }
+    }
     const slots = [slotA || defaults.a, slotB || defaults.b, slotC || defaults.c].map(
       (value) => new Date(value).toISOString(),
     );
@@ -83,7 +95,7 @@ export function ScheduleInterviewControls({
       setError(result.error);
       return;
     }
-    toast("Time slots sent.");
+    toast(upcoming ? "Previous interview cleared. New slots sent." : "Time slots sent.");
     setOpen(false);
     router.refresh();
   };
@@ -92,6 +104,28 @@ export function ScheduleInterviewControls({
     if (busy) return;
     setBusy(true);
     setError(null);
+    if (upcoming) {
+      const result = await rescheduleInterviewAction({
+        interviewId: upcoming.id,
+        scheduledAt: new Date(when || defaults.a).toISOString(),
+        durationMinutes: duration,
+        locationType,
+        notes,
+      });
+      setBusy(false);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      toast(
+        result.meetLink
+          ? "Interview rescheduled + calendar updated."
+          : "Interview rescheduled.",
+      );
+      setOpen(false);
+      router.refresh();
+      return;
+    }
     const result = await scheduleInterviewAction({
       connectionId,
       companyId,
@@ -114,6 +148,21 @@ export function ScheduleInterviewControls({
     router.refresh();
   };
 
+  const cancelUpcoming = async () => {
+    if (!upcoming || busy) return;
+    if (!window.confirm("Cancel this interview?")) return;
+    setBusy(true);
+    setError(null);
+    const result = await cancelInterviewAction({ interviewId: upcoming.id });
+    setBusy(false);
+    if (!result.ok) {
+      toast(result.error);
+      return;
+    }
+    toast("Interview cancelled.");
+    router.refresh();
+  };
+
   return (
     <div className="flex flex-col items-end gap-2">
       {upcoming ? (
@@ -123,13 +172,34 @@ export function ScheduleInterviewControls({
           {upcoming.meetLink ? " · Meet ready" : ""}
         </p>
       ) : null}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="shrink-0 rounded-full bg-mingle-surface px-3 py-1.5 text-xs font-semibold text-mingle-text hover:bg-mingle-surface/70"
-      >
-        {upcoming ? "Reschedule" : "Propose times"}
-      </button>
+      <div className="flex items-center gap-2">
+        {upcoming ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void cancelUpcoming()}
+            className="shrink-0 rounded-full bg-mingle-bg px-3 py-1.5 text-xs font-semibold text-mingle-text-secondary hover:text-mingle-pink disabled:opacity-60"
+          >
+            Cancel
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => {
+            if (upcoming) {
+              setMode("direct");
+              setWhen(toLocalInput(new Date(upcoming.scheduledAt)));
+              setDuration(upcoming.durationMinutes);
+              setLocationType(upcoming.locationType);
+              setNotes(upcoming.notes ?? "");
+            }
+            setOpen(true);
+          }}
+          className="shrink-0 rounded-full bg-mingle-surface px-3 py-1.5 text-xs font-semibold text-mingle-text hover:bg-mingle-surface/70"
+        >
+          {upcoming ? "Reschedule" : "Propose times"}
+        </button>
+      </div>
       {open ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
@@ -336,23 +406,170 @@ export function UpcomingInterviewBanner({
 }: {
   interview: InterviewRecord;
 }) {
+  const toast = useToast();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [when, setWhen] = useState(() =>
+    toLocalInput(new Date(interview.scheduledAt)),
+  );
+  const [duration, setDuration] = useState(interview.durationMinutes);
+  const [locationType, setLocationType] = useState(interview.locationType);
+  const [error, setError] = useState<string | null>(null);
+
+  const onCancel = async () => {
+    if (busy) return;
+    if (!window.confirm("Cancel this interview?")) return;
+    setBusy(true);
+    setError(null);
+    const result = await cancelInterviewAction({ interviewId: interview.id });
+    setBusy(false);
+    if (!result.ok) {
+      toast(result.error);
+      return;
+    }
+    toast("Interview cancelled.");
+    router.refresh();
+  };
+
+  const onReschedule = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    const result = await rescheduleInterviewAction({
+      interviewId: interview.id,
+      scheduledAt: new Date(when).toISOString(),
+      durationMinutes: duration,
+      locationType,
+    });
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    toast(
+      result.meetLink
+        ? "Interview rescheduled + calendar updated."
+        : "Interview rescheduled.",
+    );
+    setOpen(false);
+    router.refresh();
+  };
+
   return (
-    <div className="rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-xs text-mingle-text-secondary">
-      Upcoming interview: {formatInterviewWhen(interview.scheduledAt)} ·{" "}
-      {interview.durationMinutes} min ·{" "}
-      {interview.locationType === "video" ? "Video" : "In person"}
-      {interview.meetLink ? (
-        <>
-          {" · "}
-          <a
-            href={interview.meetLink}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-mingle-cta underline"
+    <div className="rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2">
+      <p className="text-xs text-mingle-text-secondary">
+        Upcoming interview: {formatInterviewWhen(interview.scheduledAt)} ·{" "}
+        {interview.durationMinutes} min ·{" "}
+        {interview.locationType === "video" ? "Video" : "In person"}
+        {interview.meetLink ? (
+          <>
+            {" · "}
+            <a
+              href={interview.meetLink}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-mingle-cta underline"
+            >
+              Join Meet
+            </a>
+          </>
+        ) : null}
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            setWhen(toLocalInput(new Date(interview.scheduledAt)));
+            setDuration(interview.durationMinutes);
+            setLocationType(interview.locationType);
+            setOpen(true);
+          }}
+          className="rounded-full bg-mingle-surface px-3 py-1 text-xs font-semibold text-mingle-text disabled:opacity-60"
+        >
+          Reschedule
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void onCancel()}
+          className="rounded-full bg-mingle-surface px-3 py-1 text-xs font-semibold text-mingle-text-secondary hover:text-mingle-pink disabled:opacity-60"
+        >
+          Cancel
+        </button>
+      </div>
+      {open ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            role="dialog"
+            className="w-full max-w-sm rounded-2xl border border-mingle-border bg-mingle-surface p-6"
+            onClick={(event) => event.stopPropagation()}
           >
-            Join Meet
-          </a>
-        </>
+            <h2 className="font-display text-lg font-bold text-mingle-text">
+              Reschedule interview
+            </h2>
+            <label className="mt-4 block text-sm font-medium text-mingle-text">
+              New date and time
+              <input
+                type="datetime-local"
+                value={when}
+                onChange={(event) => setWhen(event.target.value)}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+              />
+            </label>
+            <label className="mt-4 block text-sm font-medium text-mingle-text">
+              Duration
+              <select
+                value={duration}
+                onChange={(event) => setDuration(Number(event.target.value))}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+              >
+                <option value={15}>15 minutes</option>
+                <option value={30}>30 minutes</option>
+                <option value={45}>45 minutes</option>
+                <option value={60}>60 minutes</option>
+              </select>
+            </label>
+            <div className="mt-4 flex gap-2">
+              {(["video", "in_person"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setLocationType(type)}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                    locationType === type
+                      ? "bg-mingle-cta text-white"
+                      : "bg-mingle-bg text-mingle-text-secondary"
+                  }`}
+                >
+                  {type === "video" ? "Video" : "In person"}
+                </button>
+              ))}
+            </div>
+            {error ? <p className="mt-3 text-sm text-mingle-pink">{error}</p> : null}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full bg-mingle-bg px-5 py-2.5 text-sm font-semibold text-mingle-text-secondary"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                disabled={busy || !when}
+                onClick={() => void onReschedule()}
+                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {busy ? "Saving…" : "Save new time"}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );
