@@ -31,6 +31,7 @@ Copy from `.env.example` and fill:
 | `RESEND_API_KEY` / `FOUNDERS_REPORT_EMAIL` / `CRON_SECRET` | Email + cron |
 | `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` | LinkedIn OAuth |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Calendar sync |
+| Google Auth provider (Supabase Auth → Providers) | Enables **Continue with Google** on `/auth` |
 | `GITHUB_TOKEN` | Optional GitHub rate limits |
 | `ADMIN_EMAILS` | Admin / founder inbox fallback |
 

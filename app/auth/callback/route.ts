@@ -35,6 +35,11 @@ export async function GET(request: Request) {
         pathParam,
         data.user.user_metadata?.user_type,
       );
+      // Google OAuth does not carry signup path in provider metadata — stamp it
+      // from the redirect query when missing so company/talent stays sticky.
+      if (data.user.user_metadata?.user_type !== path) {
+        await supabase.auth.updateUser({ data: { user_type: path } });
+      }
       await ensureUserProfile(supabase, data.user.id, data.user.email, path);
       const dest = await destinationAfterAuth(
         supabase,
