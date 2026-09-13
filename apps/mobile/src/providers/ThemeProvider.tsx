@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useColorScheme as useSystemScheme } from "react-native";
 import {
   THEME_STORAGE_KEY,
   themes,
@@ -26,7 +25,6 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const system = useSystemScheme();
   const [theme, setThemeState] = useState<ThemeName>("light");
   const [ready, setReady] = useState(false);
 
@@ -36,8 +34,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       try {
         const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (!alive) return;
+        // Product decision (יערין): light is the default for every user type.
+        // Dark mode stays available via the shared toggle — never follow OS dark by default.
         if (stored === "dark" || stored === "light") setThemeState(stored);
-        else if (system === "dark") setThemeState("dark");
+        else setThemeState("light");
       } finally {
         if (alive) setReady(true);
       }
@@ -45,7 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => {
       alive = false;
     };
-  }, [system]);
+  }, []);
 
   const setTheme = useCallback((next: ThemeName) => {
     setThemeState(next);
