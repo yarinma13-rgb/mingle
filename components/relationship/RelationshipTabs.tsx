@@ -2,18 +2,21 @@
 
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSelectedLayoutSegment } from "next/navigation";
 
 export function RelationshipTabs({ connectionId }: { connectionId: string }) {
-  const pathname = usePathname();
+  const segment = useSelectedLayoutSegment();
   const base = `/conversations/${connectionId}`;
   const tabs = [
-    { label: "Conversation", href: base },
-    { label: "Explore", href: `${base}/explore` },
-    { label: "Opportunity", href: `${base}/opportunity` },
-    { label: "Decision", href: `${base}/decision` },
+    { label: "Conversation", href: base, segment: null as string | null },
+    { label: "Explore", href: `${base}/explore`, segment: "explore" },
+    {
+      label: "Opportunity",
+      href: `${base}/opportunity`,
+      segment: "opportunity",
+    },
+    { label: "Decision", href: `${base}/decision`, segment: "decision" },
   ];
 
   return (
@@ -23,11 +26,13 @@ export function RelationshipTabs({ connectionId }: { connectionId: string }) {
       className="inline-flex max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain rounded-full border border-mingle-border bg-mingle-surface p-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {tabs.map((tab) => {
-        const active = pathname === tab.href;
+        const active = segment === tab.segment;
         return (
           <Link
             key={tab.href}
             href={tab.href}
+            prefetch
+            scroll={false}
             role="tab"
             aria-selected={active}
             onClick={() =>

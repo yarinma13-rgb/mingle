@@ -1,16 +1,9 @@
+"use client";
+
 import { EmptyState } from "@/components/EmptyState";
 import { InterviewListActions } from "@/components/interviews/InterviewListActions";
+import { formatInterviewWhen } from "@/lib/datetime/interview";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
-
-function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 export function InterviewsScreen({
   interviews,
@@ -52,7 +45,8 @@ export function InterviewsScreen({
             {namesByConnection[interview.connectionId] ?? "Candidate"}
           </p>
           <p className="mt-1 text-sm text-mingle-text-secondary">
-            {formatWhen(interview.scheduledAt)} · {interview.durationMinutes} min ·{" "}
+            {formatInterviewWhen(interview.scheduledAt)} ·{" "}
+            {interview.durationMinutes} min ·{" "}
             {interview.locationType === "video" ? "Video" : "In person"}
           </p>
           <p className="mt-1 text-xs text-mingle-text-secondary">

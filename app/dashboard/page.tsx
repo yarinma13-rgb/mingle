@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { CompanyDashboard, type CandidateRow } from "@/components/dashboard/CompanyDashboard";
 import { TalentDashboard, type CompanyRow } from "@/components/dashboard/TalentDashboard";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
+import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { matchScore } from "@/lib/profile-detail/why-match";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
@@ -89,7 +90,11 @@ export default async function DashboardPage() {
         userSubtitle="Recruiter"
       >
         <CompanyDashboard
-          profileCompletion={userRow.profile_completion}
+          profileCompletion={
+            ownProfile
+              ? companyProfileCompletion(ownProfile)
+              : userRow.profile_completion
+          }
           candidates={candidates}
           accountLabel={chrome.userName}
           funnel={funnel}

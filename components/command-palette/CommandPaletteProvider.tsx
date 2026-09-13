@@ -19,7 +19,9 @@ import {
   commandItemsFor,
   filterCommandItems,
   isCommandPalettePath,
+  type CommandItem,
 } from "@/lib/command-palette/items";
+import { searchCompanyCommandItems } from "@/lib/command-palette/search";
 import { SearchIcon } from "@/components/dashboard/icons";
 
 type CommandPaletteContextValue = {
@@ -54,6 +56,8 @@ export function CommandPaletteProvider({
   const [sessionOpen, setSessionOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [entityItems, setEntityItems] = useState<CommandItem[]>([]);
+  const [searching, setSearching] = useState(false);
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -87,10 +91,42 @@ export function CommandPaletteProvider({
     };
   }, [enabled, pathname]);
 
-  const items = useMemo(
-    () => (userType ? filterCommandItems(commandItemsFor(userType), query) : []),
-    [userType, query],
-  );
+  useEffect(() => {
+    if (!open || userType !== "company") {
+      setEntityItems([]);
+      setSearching(false);
+      return;
+    }
+    const needle = query.trim();
+    if (needle.length < 2) {
+      setEntityItems([]);
+      setSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const handle = window.setTimeout(() => {
+      void searchCompanyCommandItems(needle).then((rows) => {
+        if (cancelled) return;
+        setEntityItems(rows);
+        setSearching(false);
+      });
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+    };
+  }, [open, query, userType]);
+
+  const items = useMemo(() => {
+    const nav = userType
+      ? filterCommandItems(commandItemsFor(userType), query)
+      : [];
+    if (userType !== "company" || query.trim().length < 2) return nav;
+    const seen = new Set(nav.map((item) => item.id));
+    const extras = entityItems.filter((item) => !seen.has(item.id));
+    return [...extras, ...nav];
+  }, [userType, query, entityItems]);
 
   useEffect(() => {
     const node = listRef.current?.querySelector("[data-active=true]");
@@ -236,7 +272,11 @@ export function CommandPaletteProvider({
                           setQuery(event.target.value);
                           setActiveIndex(0);
                         }}
-                        placeholder="Search or jump to a screen"
+                        placeholder={
+                          userType === "company"
+                            ? "Search candidates, roles, or jump…"
+                            : "Search or jump to a screen"
+                        }
                         aria-autocomplete="list"
                         aria-controls="command-palette-list"
                         aria-activedescendant={
@@ -259,7 +299,9 @@ export function CommandPaletteProvider({
                     >
                       {items.length === 0 ? (
                         <p className="px-3 py-8 text-center text-sm text-mingle-text-secondary">
-                          Nothing matches that.
+                          {searching
+                            ? "Searching…"
+                            : "Nothing matches that."}
                         </p>
                       ) : (
                         items.map((item, index) => {

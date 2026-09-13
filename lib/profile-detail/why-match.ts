@@ -125,3 +125,31 @@ export const COMPANY_EXPLORE_PROMPTS = [
   "How they work day to day",
   "What they're looking for right now",
 ];
+
+/** Drop explore prompts that duplicate sections already shown on the profile. */
+export function filterTalentExplorePrompts(talent: {
+  drives: string[];
+  workStyle: string[];
+  lookingFor: string[];
+}): string[] {
+  return TALENT_EXPLORE_PROMPTS.filter((prompt, index) => {
+    if (index === 0) return talent.drives.length === 0;
+    if (index === 1) return talent.workStyle.length === 0;
+    if (index === 2) return talent.lookingFor.length === 0;
+    return true;
+  });
+}
+
+export function filterCompanyExplorePrompts(company: {
+  description: string;
+  workEnvironment: string[];
+  lookingFor: string[];
+}): string[] {
+  return COMPANY_EXPLORE_PROMPTS.filter((prompt, index) => {
+    if (index === 0) return !company.description.trim();
+    if (index === 1) return company.workEnvironment.length === 0;
+    if (index === 2) return company.lookingFor.length === 0;
+    return true;
+  });
+}
+
