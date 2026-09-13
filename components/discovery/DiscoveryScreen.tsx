@@ -222,21 +222,12 @@ function DiscoveryCardView({
       )}
 
       <div className="flex flex-col gap-2 p-4 pt-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/profile/view/${card.userId}`}
-            className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-          >
-            View profile
-          </Link>
-          <button
-            type="button"
-            onClick={() => onPass(card.userId)}
-            className="ml-auto rounded-full px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary hover:text-mingle-text"
-          >
-            Skip
-          </button>
-        </div>
+        <Link
+          href={`/profile/view/${card.userId}`}
+          className="self-start rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+        >
+          View profile
+        </Link>
         <MatchFeedbackActions
           audience={card.report.audience}
           action={feedback}

@@ -39,6 +39,14 @@ function timeAgo(iso: string): string {
   return `${days} days ago`;
 }
 
+
+function ownProfileMissingLogoHint(completion: number): string {
+  if (completion >= 83 && completion < 100) {
+    return "Almost there — add your company logo to reach 100% profile completion.";
+  }
+  return "Finish your company profile so talent can find you.";
+}
+
 export function CompanyDashboard({
   profileCompletion,
   candidates,
@@ -65,7 +73,7 @@ export function CompanyDashboard({
         </h2>
         <p className="mt-2 text-sm text-mingle-text-secondary">
           {profileCompletion < 100
-            ? "Finish your company profile so talent can find you."
+            ? ownProfileMissingLogoHint(profileCompletion)
             : "Open Discover and start conversations with people who fit."}
         </p>
         {profileCompletion < 100 ? (

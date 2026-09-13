@@ -364,6 +364,7 @@ export function ProfileDetailShell({
           </ProfileSection>
         )}
 
+        {whatToExplore.length > 0 ? (
         <ProfileSection title="What to explore">
           <ul className="flex flex-col gap-2">
             {whatToExplore.map((prompt) => (
@@ -380,6 +381,7 @@ export function ProfileDetailShell({
             ))}
           </ul>
         </ProfileSection>
+        ) : null}
 
         {!isSelf && (
           <div className="mt-2 flex flex-col gap-3">

@@ -20,6 +20,7 @@ import { distanceKmBetween } from "@/lib/geocoding/nominatim";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
+import { talentDisplayHeadline, talentDisplayMeta } from "@/lib/profile-detail/display";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -179,10 +180,18 @@ export async function loadDiscoveryPage(
       return {
         userId: row.user_id,
         name: `${profile.firstName} ${profile.lastName}`.trim(),
-        subtitle: profile.headline,
-        meta: [
+        subtitle: talentDisplayHeadline(
+          profile.headline,
           profile.location,
-          profile.industry,
+          profile.currentRole,
+        ),
+        meta: [
+          talentDisplayMeta(
+            profile.location,
+            profile.industry,
+            profile.headline,
+            profile.currentRole,
+          ) || null,
           wantsDistance && km != null ? `${Math.round(km)} km` : null,
         ]
           .filter(Boolean)

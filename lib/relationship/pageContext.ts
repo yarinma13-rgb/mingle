@@ -7,7 +7,7 @@ import { computeMatch, type MatchFactor } from "@/lib/matching/engine";
 import {
   loadTimeline,
   ensureConnectedEvent,
-  currentStage,
+  latestStage,
   type RelationshipEventRow,
 } from "@/lib/relationship/persistence";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
@@ -23,7 +23,7 @@ export type RelationshipPageContext = {
   alignedFactors: MatchFactor[];
   exploreFactors: MatchFactor[];
   timeline: RelationshipEventRow[];
-  stage: ReturnType<typeof currentStage>;
+  stage: ReturnType<typeof latestStage>;
   accountLabel: string;
   initials: string;
   userGender: Gender | null;
@@ -102,7 +102,7 @@ export async function loadRelationshipPageContext(
     alignedFactors,
     exploreFactors,
     timeline,
-    stage: currentStage(timeline),
+    stage: latestStage(timeline),
     accountLabel: chrome.userName,
     initials: chrome.initials,
     userGender: chrome.gender,

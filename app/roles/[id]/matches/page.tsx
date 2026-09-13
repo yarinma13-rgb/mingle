@@ -93,7 +93,6 @@ export default async function RoleMatchesPage({
         roleTitle={role.title}
         requiredSkills={role.requiredSkills}
         cards={cards}
-        total={ranked.total}
         rediscoveryByUser={rediscoveryByUser}
         viewerId={user.id}
         feedbackByUser={feedbackByUser}

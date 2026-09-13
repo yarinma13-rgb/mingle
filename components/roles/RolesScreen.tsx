@@ -194,31 +194,39 @@ export function RolesScreen({
                   <MingleChip key={skill}>{skill}</MingleChip>
                 ))}
               </div>
-              <div className="mt-auto flex flex-wrap items-center gap-2">
-                <Link
-                  href={`/roles/${role.id}/matches`}
-                  className="mingle-btn-primary text-xs"
-                >
-                  View matches
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => openEdit(role)}
-                  className="mingle-btn-secondary text-xs"
-                >
-                  Edit
-                </button>
-                {ROLE_STATUS_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    disabled={role.status === option.value}
-                    onClick={() => void setStatus(role, option.value)}
-                    className="rounded-full px-3 py-2 text-xs font-medium text-mingle-text-secondary hover:bg-mingle-surface disabled:text-mingle-text"
+              <div className="mt-auto flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/roles/${role.id}/matches`}
+                    className="mingle-btn-primary text-xs"
                   >
-                    {option.label}
+                    View matches
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => openEdit(role)}
+                    className="mingle-btn-secondary text-xs"
+                  >
+                    Edit
                   </button>
-                ))}
+                </div>
+                <label className="flex flex-wrap items-center gap-2 text-xs text-mingle-text-secondary">
+                  <span className="font-medium text-mingle-text">Status</span>
+                  <select
+                    value={role.status}
+                    onChange={(event) =>
+                      void setStatus(role, event.target.value as RoleStatus)
+                    }
+                    className="rounded-full border border-mingle-border bg-mingle-bg px-3 py-1.5 text-xs font-medium text-mingle-text"
+                    aria-label={`Status for ${role.title}`}
+                  >
+                    {ROLE_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
             </article>
           ))}

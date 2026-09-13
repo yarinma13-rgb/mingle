@@ -5,10 +5,11 @@ import {
   type ProfileDetailSection,
 } from "@/components/profile-detail/ProfileDetailShell";
 import {
-  TALENT_EXPLORE_PROMPTS,
-  COMPANY_EXPLORE_PROMPTS,
+  filterTalentExplorePrompts,
+  filterCompanyExplorePrompts,
 } from "@/lib/profile-detail/why-match";
 import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters";
+import { talentDisplayHeadline, talentDisplayMeta } from "@/lib/profile-detail/display";
 import { loadConnectionStatusWith } from "@/lib/connections/persistence";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { loadTalentMatchInput, loadCompanyMatchInput } from "@/lib/matching/context";
@@ -167,13 +168,18 @@ export default async function ProfileViewPage({
           initial={initials}
           gender={talent.gender}
           name={`${talent.firstName} ${talent.lastName}`.trim()}
-          subtitle={talent.headline}
-          meta={[talent.location, talent.industry].filter(Boolean).join(" · ")}
+          subtitle={talentDisplayHeadline(talent.headline, talent.location, talent.currentRole)}
+          meta={talentDisplayMeta(
+            talent.location,
+            talent.industry,
+            talent.headline,
+            talent.currentRole,
+          )}
           sections={sections}
           whyMatch={null}
           matchReport={matchBundle.report}
           initialFeedback={matchBundle.feedback}
-          whatToExplore={TALENT_EXPLORE_PROMPTS}
+          whatToExplore={filterTalentExplorePrompts(talent)}
           viewerId={viewer.id}
           targetUserId={userId}
           initialConnectionStatus={connectionStatus}
@@ -234,7 +240,7 @@ export default async function ProfileViewPage({
         whyMatch={null}
         matchReport={matchBundle.report}
         initialFeedback={matchBundle.feedback}
-        whatToExplore={COMPANY_EXPLORE_PROMPTS}
+        whatToExplore={filterCompanyExplorePrompts(company)}
         viewerId={viewer.id}
         targetUserId={userId}
         initialConnectionStatus={connectionStatus}
