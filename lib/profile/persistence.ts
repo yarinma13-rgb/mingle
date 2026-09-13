@@ -20,6 +20,7 @@ export type ProfileState = {
   cvPath: string | null;
   cvFileName: string | null;
   gender: Gender | null;
+  birthDate: string | null;
   skills: string[];
   salaryExpectation: number | null;
   maxCommuteKm: number;
@@ -41,12 +42,13 @@ export const EMPTY_PROFILE: ProfileState = {
   cvPath: null,
   cvFileName: null,
   gender: null,
+  birthDate: null,
   skills: [],
   salaryExpectation: null,
   maxCommuteKm: 0,
 };
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 
 function hasBasicInfo(p: ProfileState) {
   return Boolean(
@@ -65,9 +67,8 @@ export function resumeStep(p: ProfileState): number {
   if (!hasBasicInfo(p)) return 1;
   if (p.drives.length === 0) return 2;
   if (p.workStyle.length === 0) return 3;
-  if (p.lookingFor.length === 0) return 4;
-  if (p.skills.length === 0) return 5;
-  if (!hasBeyondCv(p)) return 7;
+  if (p.skills.length === 0) return 4;
+  if (!hasBeyondCv(p)) return 6;
   return TOTAL_STEPS;
 }
 
@@ -79,7 +80,6 @@ export function profileCompletion(p: ProfileState): number {
     Boolean(p.profilePhoto),
     p.drives.length > 0,
     p.workStyle.length > 0,
-    p.lookingFor.length > 0,
     p.skills.length > 0,
     hasBeyondCv(p),
   ];
@@ -115,6 +115,7 @@ export async function loadProfile(
     cvPath: data.cv_path ?? null,
     cvFileName: data.cv_file_name ?? null,
     gender: isGender(data.gender) ? data.gender : null,
+    birthDate: typeof data.birth_date === "string" ? data.birth_date : null,
     skills: Array.isArray(data.skills) ? data.skills : [],
     salaryExpectation:
       typeof data.salary_expectation === "number" ? data.salary_expectation : null,
@@ -142,6 +143,7 @@ export async function saveProfilePatch(
     cv_path: string | null;
     cv_file_name: string | null;
     gender: Gender | null;
+    birth_date?: string | null;
     skills: string[];
     salary_expectation: number | null;
     max_commute_km: number | null;

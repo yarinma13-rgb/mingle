@@ -2,7 +2,7 @@ export const ONBOARDING_INTRO = {
   talent: {
     eyebrow: "Your profile",
     headline: "Let's get to know you",
-    subtext: "Tell us what you're looking for, not just what you've done.",
+    subtext: "A few sharp signals — not a long form.",
   },
   company: {
     eyebrow: "Company profile",
@@ -19,6 +19,10 @@ export type OnboardingQuestion = {
   options: string[];
 };
 
+/**
+ * Talent preference questions. Values are curated to avoid near-duplicates
+ * (e.g. Growth vs Career development) while keeping match signal.
+ */
 export const TALENT_QUESTIONS: OnboardingQuestion[] = [
   {
     key: "q1",
@@ -34,27 +38,19 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
   },
   {
     key: "q2",
-    question: "What matters most to you in your next move?",
+    question: "What matters most in your next chapter?",
     type: "multi",
     options: [
-      "Growth",
+      "Growth & learning",
       "Compensation",
-      "Company culture",
-      "Flexibility",
-      "Leadership",
-      "Meaningful work",
-      "Career development",
-      "Work life balance",
-      "Location",
-      "Learning opportunities",
+      "Meaningful impact",
+      "Strong leadership",
+      "Flexibility & balance",
       "Ownership",
       "Stability",
-      "Team quality",
-      "Mission",
-      "Impact",
-      "Mentorship",
-      "Title",
-      "Craft",
+      "Great team",
+      "Mission-driven work",
+      "Craft excellence",
     ],
   },
   {
@@ -66,18 +62,14 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
       "Scale up",
       "Established company",
       "Enterprise",
-      "Open to anything",
-      "Agency",
-      "Nonprofit",
+      "Agency / consultancy",
       "Product studio",
-      "Consultancy",
-      "Public sector",
-      "Series A to B",
-      "Bootstrapped",
-      "Remote first company",
+      "Nonprofit / public sector",
+      "Remote first",
       "Local company",
       "International company",
       "High growth",
+      "Open to anything",
     ],
   },
 ];

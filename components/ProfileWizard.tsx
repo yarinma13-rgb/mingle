@@ -14,6 +14,8 @@ import { ProfilePreview } from "@/components/ProfilePreview";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
+import { extractTalentCvAction } from "@/lib/profile/cv-extract-action";
+import type { CvExtractResult } from "@/lib/profile/cv-extract";
 import { personInitials, type Gender } from "@/lib/profile/avatar";
 import { ChipMultiSelect } from "@/components/ChipMultiSelect";
 import { CustomChipInput } from "@/components/CustomChipInput";
@@ -51,7 +53,7 @@ import {
 import { clampSalary, SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
 import type { Database } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -95,6 +97,8 @@ export function ProfileWizard() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [cvExtractNote, setCvExtractNote] = useState<string | null>(null);
+  const [cvExtracting, setCvExtracting] = useState(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -144,11 +148,13 @@ export function ProfileWizard() {
       currentRole: profile.currentRole,
       industry: profile.industry,
       gender: profile.gender ?? undefined,
+      birthDate: profile.birthDate ?? "",
     } as BasicProfileValues,
   });
   const watchedFirstName = watch("firstName");
   const watchedLastName = watch("lastName");
   const watchedGender = watch("gender");
+  const watchedBirthDate = watch("birthDate");
   const watchedIndustry = watch("industry");
 
   const persistAndAdvance = async (
@@ -166,6 +172,7 @@ export function ProfileWizard() {
       looking_for: string[];
       beyond_cv: string;
       gender: Gender | null;
+      birth_date?: string | null;
       skills: string[];
       salary_expectation: number | null;
       max_commute_km: number | null;
@@ -198,11 +205,13 @@ export function ProfileWizard() {
   const onBasicInfoSubmit = (values: BasicProfileValues) => {
     const yearsExperience = values.yearsExperience ?? null;
     const gender = values.gender ?? null;
+    const birthDate = values.birthDate?.trim() ? values.birthDate.trim() : null;
     const nextProfile: ProfileState = {
       ...profile,
       ...values,
       yearsExperience,
       gender,
+      birthDate,
     };
     persistAndAdvance(
       {
@@ -214,13 +223,14 @@ export function ProfileWizard() {
         current_job_title: values.currentRole,
         industry: values.industry,
         gender,
+        birth_date: birthDate,
       },
       nextProfile,
       2,
     );
   };
 
-  const toggleMulti = (key: "drives" | "workStyle" | "lookingFor", option: string) => {
+  const toggleMulti = (key: "drives" | "workStyle", option: string) => {
     setProfile((prev) => ({
       ...prev,
       [key]: toggleCapped(prev[key], option),
@@ -228,17 +238,25 @@ export function ProfileWizard() {
   };
 
   const continueMultiStep = (
-    key: "drives" | "workStyle" | "lookingFor",
-    dbColumn: "drives" | "work_style" | "looking_for",
+    key: "drives" | "workStyle",
+    dbColumn: "drives" | "work_style",
     nextStep: number,
   ) => {
+    if (key === "drives") {
+      // One values step feeds both match fields (drives + looking_for).
+      const picks = profile.drives;
+      persistAndAdvance(
+        { drives: picks, looking_for: picks },
+        { ...profile, drives: picks, lookingFor: picks },
+        nextStep,
+      );
+      return;
+    }
     persistAndAdvance(
-      key === "lookingFor"
-        ? {
-            looking_for: profile.lookingFor,
-            max_commute_km: profile.maxCommuteKm || null,
-          }
-        : { [dbColumn]: profile[key] },
+      {
+        work_style: profile.workStyle,
+        max_commute_km: profile.maxCommuteKm || null,
+      },
       profile,
       nextStep,
     );
@@ -264,6 +282,67 @@ export function ProfileWizard() {
     if (step <= 1) return;
     setStep(step - 1);
   };
+
+  const applyCvExtract = (data: CvExtractResult) => {
+    if (data.firstName) setValue("firstName", data.firstName, { shouldValidate: true });
+    if (data.lastName) setValue("lastName", data.lastName, { shouldValidate: true });
+    if (data.headline) setValue("headline", data.headline, { shouldValidate: true });
+    if (data.currentRole) setValue("currentRole", data.currentRole, { shouldValidate: true });
+    if (data.location) setValue("location", data.location, { shouldValidate: true });
+    if (data.industry) setValue("industry", data.industry, { shouldValidate: true });
+    if (typeof data.yearsExperience === "number") {
+      setValue("yearsExperience", data.yearsExperience, { shouldValidate: true });
+    }
+    setProfile((prev) => ({
+      ...prev,
+      firstName: data.firstName || prev.firstName,
+      lastName: data.lastName || prev.lastName,
+      headline: data.headline || prev.headline,
+      currentRole: data.currentRole || prev.currentRole,
+      location: data.location || prev.location,
+      industry: data.industry || prev.industry,
+      yearsExperience:
+        typeof data.yearsExperience === "number"
+          ? data.yearsExperience
+          : prev.yearsExperience,
+      skills:
+        data.skills && data.skills.length
+          ? Array.from(new Set([...(prev.skills ?? []), ...data.skills])).slice(0, 20)
+          : prev.skills,
+      beyondCv: data.beyondCv || prev.beyondCv,
+    }));
+    setCvExtractNote(
+      "We filled what we could from your CV. Edit anything before continuing.",
+    );
+  };
+
+  const handleCvChanged = async (next: {
+    cvPath: string | null;
+    cvFileName: string | null;
+  }) => {
+    setProfile((prev) => ({ ...prev, ...next }));
+    if (!next.cvPath) {
+      setCvExtractNote(null);
+      return;
+    }
+    setCvExtracting(true);
+    setCvExtractNote("Reading your CV…");
+    try {
+      const result = await extractTalentCvAction(
+        next.cvPath,
+        watch("industry") || profile.industry,
+      );
+      if (result.ok) applyCvExtract(result.data);
+      else setCvExtractNote(result.error);
+    } catch {
+      setCvExtractNote(
+        "Could not read the CV automatically. You can still fill everything manually.",
+      );
+    } finally {
+      setCvExtracting(false);
+    }
+  };
+
 
   if (loadState === "loading") return <ProfileWizardSkeleton />;
   if (loadState === "error") return <ProfileWizardError onRetry={retry} />;
@@ -302,18 +381,12 @@ export function ProfileWizard() {
 
   const completionPct = profileCompletion(profile);
   const multiQuestion =
-    step === 2
-      ? PROFILE_QUESTIONS[0]
-      : step === 3
-        ? PROFILE_QUESTIONS[1]
-        : step === 4
-          ? PROFILE_QUESTIONS[2]
-          : null;
-  const multiKey: "drives" | "workStyle" | "lookingFor" | null =
-    step === 2 ? "drives" : step === 3 ? "workStyle" : step === 4 ? "lookingFor" : null;
-  const multiColumn: "drives" | "work_style" | "looking_for" | null =
-    step === 2 ? "drives" : step === 3 ? "work_style" : step === 4 ? "looking_for" : null;
-  const multiNextStep = step === 2 ? 3 : step === 3 ? 4 : 5;
+    step === 2 ? PROFILE_QUESTIONS[0] : step === 3 ? PROFILE_QUESTIONS[1] : null;
+  const multiKey: "drives" | "workStyle" | null =
+    step === 2 ? "drives" : step === 3 ? "workStyle" : null;
+  const multiColumn: "drives" | "work_style" | null =
+    step === 2 ? "drives" : step === 3 ? "work_style" : null;
+  const multiNextStep = step === 2 ? 3 : 4;
 
   return (
     <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
@@ -329,9 +402,9 @@ export function ProfileWizard() {
               ? "Your CV tells your story"
               : multiQuestion
                 ? multiQuestion.headline
-                : step === 5
+                : step === 4
                   ? "Skills"
-                  : step === 6
+                  : step === 5
                     ? "Salary expectation"
                     : "Beyond the CV"}
           </h1>
@@ -340,7 +413,7 @@ export function ProfileWizard() {
               ? "We want to know what comes next."
               : multiQuestion
                 ? multiQuestion.subtext
-                : step === 5
+                : step === 4
                   ? "Technologies and craft. Add your own if it is not listed."
                   : step === 6
                     ? "Private. Companies never see the number, only whether you fit a role budget."
@@ -451,9 +524,14 @@ export function ProfileWizard() {
 
                 <GenderField
                   value={watchedGender}
+                  birthDate={watchedBirthDate ?? ""}
                   error={errors.gender?.message}
+                  birthDateError={errors.birthDate?.message}
                   onChange={(gender) =>
                     setValue("gender", gender, { shouldValidate: true })
+                  }
+                  onBirthDateChange={(birthDate) =>
+                    setValue("birthDate", birthDate, { shouldValidate: true })
                   }
                 />
 
@@ -485,18 +563,25 @@ export function ProfileWizard() {
                   </p>
                 )}
 
-                {userId && (
-                  <TalentCvField
-                    supabase={supabase}
-                    userId={userId}
-                    cvPath={profile.cvPath}
-                    cvFileName={profile.cvFileName}
-                    editable
-                    onChanged={({ cvPath, cvFileName }) =>
-                      setProfile((prev) => ({ ...prev, cvPath, cvFileName }))
-                    }
-                  />
-                )}
+                {userId ? (
+                  <div className="flex flex-col gap-2">
+                    <TalentCvField
+                      supabase={supabase}
+                      userId={userId}
+                      cvPath={profile.cvPath}
+                      cvFileName={profile.cvFileName}
+                      editable
+                      onChanged={(next) => {
+                        void handleCvChanged(next);
+                      }}
+                    />
+                    {cvExtractNote ? (
+                      <p className="rounded-[12px] border border-mingle-border bg-mingle-lavender/40 px-3 py-2 text-xs text-mingle-text-secondary">
+                        {cvExtracting ? "Reading your CV…" : cvExtractNote}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 {saveError && (
                   <p className="text-center text-sm text-mingle-pink">
@@ -568,7 +653,7 @@ export function ProfileWizard() {
                 <p className="mt-3 text-center text-xs text-mingle-text-secondary">
                   {profile[multiKey].length} of {MAX_PROFILE_PICKS} selected
                 </p>
-                {multiKey === "lookingFor" ? (
+                {multiKey === "workStyle" ? (
                   <div className="mt-6">
                     <DistanceSlider
                       name="maxCommuteKm"
@@ -625,7 +710,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 5 && (
+            {step === 4 && (
               <div>
                 <SkillFieldChips
                   selected={matchSkillField(profile.industry)}
@@ -662,7 +747,7 @@ export function ProfileWizard() {
                       persistAndAdvance(
                         { skills: profile.skills, industry: profile.industry },
                         profile,
-                        6,
+                        5,
                       )
                     }
                     disabled={profile.skills.length === 0 || saving}
@@ -678,7 +763,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 6 && (
+            {step === 5 && (
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
                   Monthly salary in ILS. Optional. Capped at{" "}
@@ -725,7 +810,7 @@ export function ProfileWizard() {
                       persistAndAdvance(
                         { salary_expectation: salaryExpectation },
                         { ...profile, salaryExpectation },
-                        7,
+                        6,
                       );
                     }}
                     disabled={saving}
@@ -737,7 +822,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 7 && (
+            {step === 6 && (
               <div className="flex flex-col items-center">
                 <textarea
                   value={profile.beyondCv}

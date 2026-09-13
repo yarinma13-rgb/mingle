@@ -23,6 +23,7 @@ export function toTalentProfile(row: TalentRow): ProfileState {
     cvPath: row.cv_path ?? null,
     cvFileName: row.cv_file_name ?? null,
     gender: isGender(row.gender) ? row.gender : null,
+    birthDate: typeof row.birth_date === "string" ? row.birth_date : null,
     skills: row.skills ?? [],
     salaryExpectation:
       typeof row.salary_expectation === "number" ? row.salary_expectation : null,
