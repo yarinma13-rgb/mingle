@@ -79,7 +79,11 @@ export function AuthForm({
   const router = useRouter();
   const supabase = createClient();
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [path, setPath] = useState<UserType | null>(initialPath);
+  // Mirror AuthShell: signup without an explicit path starts as talent so the
+  // Continue button matches the default segment UI and is not silently disabled.
+  const [path, setPath] = useState<UserType | null>(
+    initialPath ?? (initialMode === "signup" ? "talent" : null),
+  );
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -362,6 +366,12 @@ export function AuthForm({
           <p className="text-sm text-mingle-pink">{serverError}</p>
         ) : null}
 
+        {mode === "signup" && !path ? (
+          <p className="text-sm text-mingle-pink" role="status">
+            Choose Talent or Company to continue.
+          </p>
+        ) : null}
+
         <button
           type="submit"
           disabled={isSubmitting || (mode === "signup" && !path)}
@@ -438,6 +448,8 @@ export function AuthForm({
                   onClick={() => {
                     track(AnalyticsEvent.authModeToggled, { mode: "signup" });
                     setMode("signup");
+                    // Sign-in pages often have no path; default Talent so Continue works.
+                    setPath((current) => current ?? "talent");
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
