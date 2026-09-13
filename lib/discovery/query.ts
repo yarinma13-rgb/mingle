@@ -193,6 +193,7 @@ export async function loadDiscoveryPage(
         score: result.score,
         factors: result.factors,
         report,
+        skills: profile.skills,
       };
     });
     cards.sort((a, b) => {

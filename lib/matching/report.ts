@@ -1,6 +1,7 @@
 import { profileCompletion } from "@/lib/profile/persistence";
 import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
+import { technicalSignalFinding } from "@/lib/github/meta";
 import type {
   MatchFactor,
   MatchFactorKey,
@@ -35,6 +36,11 @@ export type MatchReport = {
   mismatch: MatchBullet[];
   whatMattersMost: string;
   audience: MatchAudience;
+  /**
+   * Soft public GitHub finding only. Never folded into Role Fit /
+   * MATCH_WEIGHTS. Null when not linked — absence must not hurt score.
+   */
+  technicalSignal: string | null;
 };
 
 /** Existing engine factors, grouped onto the three PRD axes.
@@ -239,6 +245,7 @@ function whatMattersMost(factors: MatchFactor[]): string {
 export function emptyMatchReport(
   audience: MatchAudience,
   overall = 0,
+  technicalSignal: string | null = null,
 ): MatchReport {
   return {
     overall,
@@ -256,7 +263,18 @@ export function emptyMatchReport(
         ? "Complete both profiles to see why this may fit you."
         : "Complete both profiles to see why mingle recommends this person.",
     audience,
+    technicalSignal,
   };
+}
+
+function technicalSignalFromTalent(
+  talent: TalentMatchInput | null,
+): string | null {
+  if (!talent?.profile.githubLogin && !talent?.profile.githubUrl) return null;
+  return technicalSignalFinding(
+    talent.profile.githubLogin,
+    talent.profile.githubMeta,
+  );
 }
 
 export function buildMatchReport(
@@ -265,8 +283,9 @@ export function buildMatchReport(
   company: CompanyMatchInput | null,
   audience: MatchAudience,
 ): MatchReport {
+  const technicalSignal = technicalSignalFromTalent(talent);
   if (result.factors.length === 0) {
-    return emptyMatchReport(audience, result.score);
+    return emptyMatchReport(audience, result.score, technicalSignal);
   }
   return {
     overall: result.score,
@@ -281,5 +300,7 @@ export function buildMatchReport(
     mismatch: mismatchBullets(result.factors, talent, company, audience),
     whatMattersMost: whatMattersMost(result.factors),
     audience,
+    // Soft signal only — not included in AXIS_FACTOR_KEYS / MATCH_WEIGHTS.
+    technicalSignal,
   };
 }

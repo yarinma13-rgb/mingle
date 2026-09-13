@@ -35,6 +35,19 @@ export function buildCandidateDna(profile: ProfileState): CandidateDna {
   if (skills.length > 0) {
     professional.push({ label: "Skills", value: skills.join(", ") });
   }
+  if (profile.githubLogin || profile.githubUrl) {
+    const languages =
+      profile.githubMeta &&
+      Array.isArray((profile.githubMeta as { languages?: unknown }).languages)
+        ? ((profile.githubMeta as { languages: string[] }).languages ?? [])
+        : [];
+    professional.push({
+      label: "GitHub",
+      value: languages.length
+        ? `@${profile.githubLogin ?? "linked"} · ${languages.slice(0, 3).join(", ")}`
+        : `@${profile.githubLogin ?? "linked"}`,
+    });
+  }
 
   const preferences: CandidateDna["preferences"] = [];
   if (profile.location.trim()) {

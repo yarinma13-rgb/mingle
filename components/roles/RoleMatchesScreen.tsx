@@ -25,12 +25,14 @@ import {
   formatRediscoveryLabel,
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
+import { buildSkillOverlapSignal } from "@/lib/matching/skill-overlap";
 
 const TOP_N = 5;
 
 function ResultCard({
   card,
   roleId,
+  requiredSkills,
   viewerId,
   initialFeedback,
   rediscovery,
@@ -38,6 +40,7 @@ function ResultCard({
 }: {
   card: DiscoveryCard;
   roleId: string;
+  requiredSkills: string[];
   viewerId: string;
   initialFeedback: MatchFeedbackAction | null;
   rediscovery: RediscoveryBadge | null;
@@ -47,6 +50,10 @@ function ResultCard({
   const [supabase] = useState(() => createClient());
   const [feedback, setFeedback] = useState(initialFeedback);
   const [busy, setBusy] = useState(false);
+  const skillOverlap = buildSkillOverlapSignal(
+    card.skills ?? [],
+    requiredSkills,
+  );
 
   async function interested() {
     if (feedback === "interested") return;
@@ -107,6 +114,14 @@ function ResultCard({
         </div>
       </div>
       <MatchReportBody report={card.report} compact />
+      {skillOverlap ? (
+        <p className="text-[11px] leading-snug text-mingle-text">
+          <span className="font-semibold">Skill overlap vs role:</span>{" "}
+          <span className="text-mingle-text-secondary">
+            {skillOverlap.finding}
+          </span>
+        </p>
+      ) : null}
       <div className="flex flex-col gap-2">
         <Link
           href={`/profile/view/${card.userId}`}
@@ -135,6 +150,7 @@ function ResultCard({
 export function RoleMatchesScreen({
   roleId,
   roleTitle,
+  requiredSkills = [],
   cards,
   total,
   viewerId,
@@ -144,6 +160,7 @@ export function RoleMatchesScreen({
 }: {
   roleId: string;
   roleTitle: string;
+  requiredSkills?: string[];
   cards: DiscoveryCard[];
   total: number;
   viewerId: string;
@@ -201,6 +218,7 @@ export function RoleMatchesScreen({
               key={card.userId}
               card={card}
               roleId={roleId}
+              requiredSkills={requiredSkills}
               viewerId={viewerId}
               initialFeedback={feedbackByUser[card.userId] ?? null}
               rediscovery={rediscoveryByUser[card.userId] ?? null}

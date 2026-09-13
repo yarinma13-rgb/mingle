@@ -124,6 +124,10 @@ export interface Database {
           birth_date: string | null;
           salary_expectation: number | null;
           skills: string[];
+          github_url: string | null;
+          github_login: string | null;
+          github_meta: Record<string, unknown> | null;
+          github_fetched_at: string | null;
           latitude: number | null;
           longitude: number | null;
           max_commute_km: number | null;
@@ -154,6 +158,10 @@ export interface Database {
           birth_date?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
+          github_url?: string | null;
+          github_login?: string | null;
+          github_meta?: Record<string, unknown> | null;
+          github_fetched_at?: string | null;
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
@@ -181,6 +189,10 @@ export interface Database {
           birth_date?: string | null;
           salary_expectation?: number | null;
           skills?: string[];
+          github_url?: string | null;
+          github_login?: string | null;
+          github_meta?: Record<string, unknown> | null;
+          github_fetched_at?: string | null;
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;

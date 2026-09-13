@@ -112,6 +112,21 @@ export function ProfilePreview({
             {profile.yearsExperience !== null &&
               ` · ${profile.yearsExperience} years experience`}
           </p>
+          {profile.githubUrl ? (
+            <p className="mt-2 text-sm text-mingle-text-secondary">
+              GitHub:{" "}
+              <a
+                href={profile.githubUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-mingle-blue hover:underline"
+              >
+                {profile.githubLogin
+                  ? `@${profile.githubLogin}`
+                  : profile.githubUrl}
+              </a>
+            </p>
+          ) : null}
         </ProfileSection>
 
         {userId && (
