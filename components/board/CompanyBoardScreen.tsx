@@ -174,9 +174,9 @@ export function CompanyBoardScreen({
                   event.preventDefault();
                   handleDrop(column.id);
                 }}
-                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-shadow ${
+                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-all duration-200 ${
                   isOver
-                    ? "border-mingle-cta shadow-mingle"
+                    ? "scale-[1.01] border-mingle-cta bg-mingle-lavender/40 shadow-[0_12px_28px_rgba(0,115,234,0.14)]"
                     : "border-mingle-border"
                 }`}
               >
@@ -193,9 +193,11 @@ export function CompanyBoardScreen({
                 </header>
                 <div className="flex min-h-40 flex-col gap-2">
                   {cards.length === 0 ? (
-                    <p className="px-1 text-xs text-mingle-text-secondary">
-                      Drop a candidate here
-                    </p>
+                    <div className="flex min-h-28 flex-1 items-center justify-center rounded-xl border border-dashed border-mingle-border bg-mingle-bg/60 px-3 py-6 text-center">
+                      <p className="text-xs leading-relaxed text-mingle-text-secondary">
+                        Drop a candidate here
+                      </p>
+                    </div>
                   ) : (
                     cards.map((card) => (
                       <article

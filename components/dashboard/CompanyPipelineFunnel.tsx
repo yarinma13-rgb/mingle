@@ -45,7 +45,7 @@ export function CompanyPipelineFunnel({ funnel }: { funnel: CompanyFunnel }) {
                   </span>
                   <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-mingle-bg">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue"
+                      className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue transition-[width] duration-500 ease-out"
                       style={{ width: `${width}%` }}
                     />
                   </div>
