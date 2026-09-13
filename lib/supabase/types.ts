@@ -131,10 +131,6 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           max_commute_km: number | null;
-          github_url: string | null;
-          github_login: string | null;
-          github_meta: Record<string, unknown> | null;
-          github_fetched_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -165,10 +161,6 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
-          github_url?: string | null;
-          github_login?: string | null;
-          github_meta?: Record<string, unknown> | null;
-          github_fetched_at?: string | null;
         };
         Update: {
           first_name?: string | null;
@@ -196,10 +188,6 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
-          github_url?: string | null;
-          github_login?: string | null;
-          github_meta?: Record<string, unknown> | null;
-          github_fetched_at?: string | null;
         };
         Relationships: [];
       };
