@@ -7,7 +7,6 @@ import { toTalentProfile, toCompanyProfile } from "@/lib/profile-detail/adapters
 import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { computeMatch } from "@/lib/matching/engine";
-import { matchScore } from "@/lib/profile-detail/why-match";
 import {
   loadTalentMatchInput,
   loadCompanyMatchInput,
@@ -42,39 +41,49 @@ export default async function DashboardPage() {
   );
 
   if (userRow.user_type === "company") {
-    const [{ data: ownProfileRow }, { data: talentRows }, funnel] =
-      await Promise.all([
-        supabase
-          .from("company_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        supabase
-          .from("talent_profiles")
-          .select("*")
-          .neq("user_id", user.id)
-          .order("updated_at", { ascending: false })
-          .limit(8),
-        loadCompanyFunnel(supabase, user.id),
-      ]);
+    const [
+      { data: ownProfileRow },
+      { data: talentRows },
+      funnel,
+      ownMatchInput,
+    ] = await Promise.all([
+      supabase
+        .from("company_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("talent_profiles")
+        .select("*")
+        .neq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(8),
+      loadCompanyFunnel(supabase, user.id),
+      loadCompanyMatchInput(supabase, user.id),
+    ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
 
-    const candidates: CandidateRow[] = (talentRows ?? [])
-      .filter((row) => row.first_name)
-      .map((row) => {
-        const talent = toTalentProfile(row);
-        return {
-          userId: row.user_id,
-          name: `${talent.firstName} ${talent.lastName}`.trim(),
-          headline: talent.headline,
-          location: talent.location,
-          matchScore: ownProfile ? matchScore(talent, ownProfile) : 75,
-          updatedAt: row.updated_at,
-          initials: personInitials(talent.firstName, talent.lastName),
-          gender: talent.gender,
-          photo: talent.profilePhoto,
-        };
+    const candidates: CandidateRow[] = [];
+    for (const row of talentRows ?? []) {
+      if (!row.first_name) continue;
+      const talent = toTalentProfile(row);
+      const talentInput = await loadTalentMatchInput(supabase, row.user_id);
+      const score =
+        ownMatchInput && talentInput
+          ? computeMatch(talentInput, ownMatchInput).score
+          : 0;
+      candidates.push({
+        userId: row.user_id,
+        name: `${talent.firstName} ${talent.lastName}`.trim(),
+        headline: talent.headline,
+        location: talent.location,
+        matchScore: score,
+        updatedAt: row.updated_at,
+        initials: personInitials(talent.firstName, talent.lastName),
+        gender: talent.gender,
+        photo: talent.profilePhoto,
       });
+    }
     const photoUrls = await resolveTalentPhotoUrls(
       supabase,
       candidates.map((row) => row.photo),

@@ -243,7 +243,7 @@ export function ProfileDetailShell({
     connecting || connectionState?.status === "accepted" || connectionState?.status === "pending" && !isPendingIncoming;
 
   return (
-    <div className="flex min-h-screen flex-1 justify-center px-4 py-8 sm:px-8 sm:py-12">
+    <div className="flex flex-1 justify-center">
       {showMingleMoment && (
         <MingleMomentOverlay
           matchName={name}
