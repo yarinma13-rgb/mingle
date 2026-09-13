@@ -47,6 +47,14 @@ function buildActions(
   ];
 }
 
+function displayName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "them";
+  // Prefer the full label (company or person) with title-style casing on
+  // the first character so seed data like "yarin mingle" reads cleanly.
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
 export function ExploreScreen({
   connectionId,
   otherUserId,
@@ -67,7 +75,7 @@ export function ExploreScreen({
           Explore the relationship
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
-          A few ways to keep getting to know {otherName.split(" ")[0]}.
+          A few ways to keep getting to know {displayName(otherName)}.
         </p>
       </div>
 

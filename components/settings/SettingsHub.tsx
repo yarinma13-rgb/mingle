@@ -66,7 +66,7 @@ export function SettingsHub({
           {
             id: "email-alerts",
             title: "Email alerts",
-            body: "Connection and conversation emails stay on for now. Granular toggles will land here.",
+            body: "Coming soon — connection and conversation emails stay on for everyone right now.",
           },
         ],
       },
@@ -78,8 +78,8 @@ export function SettingsHub({
             id: "visibility",
             title: "Profile visibility",
             body: isCompany
-              ? "Your company profile is visible to talent on mingle."
-              : "Your talent profile is visible to companies on mingle.",
+              ? "Coming soon — your company profile is visible to talent on mingle today."
+              : "Coming soon — your talent profile is visible to companies on mingle today. A pause toggle will land here.",
           },
         ],
       },

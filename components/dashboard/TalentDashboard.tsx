@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
 import type { CandidateDna } from "@/lib/matching/dna";
+import type { TalentDashboardStats } from "@/lib/dashboard/talent-stats";
 import {
   BookmarkIcon,
   CompassIcon,
@@ -25,10 +26,14 @@ export function TalentDashboard({
   profileCompletion,
   companies,
   dna,
+  stats,
+  missingPhoto = false,
 }: {
   profileCompletion: number;
   companies: CompanyRow[];
   dna: CandidateDna | null;
+  stats: TalentDashboardStats;
+  missingPhoto?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -50,21 +55,21 @@ export function TalentDashboard({
         <KpiTile
           icon={CompassIcon}
           label="New connections"
-          value="0"
+          value={String(stats.newConnections)}
           accent="blue"
           href="/connections"
         />
         <KpiTile
           icon={MessageIcon}
           label="Active conversations"
-          value="0"
+          value={String(stats.activeConversations)}
           accent="magenta"
           href="/conversations"
         />
         <KpiTile
           icon={BookmarkIcon}
           label="Saved companies"
-          value="0"
+          value={String(stats.savedCompanies)}
           accent="violet"
           href="/saved"
         />
@@ -77,13 +82,19 @@ export function TalentDashboard({
         <p className="mt-2 text-sm text-mingle-text-secondary">
           {profileCompletion < 100
             ? "Finish your profile so companies can find you."
-            : "Explore companies below and start a conversation when one feels right."}
+            : missingPhoto
+              ? "Add a profile photo so companies recognize you faster."
+              : "Explore companies below and start a conversation when one feels right."}
         </p>
-        {profileCompletion < 100 && (
+        {profileCompletion < 100 ? (
           <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
             Finish my profile
           </Link>
-        )}
+        ) : missingPhoto ? (
+          <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+            Add a photo
+          </Link>
+        ) : null}
       </div>
 
       {dna ? <CandidateDnaPanel dna={dna} /> : null}
