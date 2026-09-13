@@ -152,10 +152,7 @@ export function MatchReportBody({
             Overall Match
           </p>
           <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>{report.overall}</span>{" "}
-            <span className="text-sm font-medium text-mingle-text-secondary">
-              {report.strength}
-            </span>
+            <span className={scoreTextClass(report.overall)}>{report.overall}</span>
           </p>
         </div>
         <span
