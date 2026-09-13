@@ -51,6 +51,12 @@ const TALENT_ITEMS: CommandItem[] = [
     keywords: ["account", "sign out", "logout"],
   },
   {
+    id: "support",
+    label: "Report a problem",
+    href: "/settings/support",
+    keywords: ["support", "help", "bug", "broken", "contact"],
+  },
+  {
     id: "plans",
     label: "See plans",
     href: "/coming-soon",
@@ -118,6 +124,12 @@ const COMPANY_ITEMS: CommandItem[] = [
     label: "Settings",
     href: "/settings",
     keywords: ["account", "sign out", "logout"],
+  },
+  {
+    id: "support",
+    label: "Report a problem",
+    href: "/settings/support",
+    keywords: ["support", "help", "bug", "broken", "contact"],
   },
   {
     id: "plans",

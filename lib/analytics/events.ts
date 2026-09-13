@@ -47,6 +47,9 @@ export const AnalyticsEvent = {
 
   // Relationship UI
   relationshipTabClicked: "relationship_tab_clicked",
+
+  // Support
+  supportReportSubmitted: "support_report_submitted",
 } as const;
 
 export type AnalyticsEventName =
