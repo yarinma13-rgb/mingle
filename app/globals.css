@@ -156,7 +156,20 @@ html {
   color-scheme: dark;
 }
 
+/* Atmosphere lives on a fixed layer so tall profile wizard/preview
+   pages do not stretch % gradients over document height and leave a
+   hard horizontal seam mid-scroll. */
 .mingle-app-canvas {
+  isolation: isolate;
+  background-color: var(--mingle-background);
+}
+
+.mingle-app-canvas::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-color: var(--mingle-background);
   background-image:
     radial-gradient(ellipse 85% 60% at 0% 0%, #fdeaf1 0%, transparent 52%),
@@ -167,6 +180,11 @@ html {
 
 [data-theme="dark"] .mingle-app-canvas,
 html[data-theme="dark"] .mingle-app-canvas {
+  background-color: #0f1420;
+}
+
+[data-theme="dark"] .mingle-app-canvas::before,
+html[data-theme="dark"] .mingle-app-canvas::before {
   background-color: #0f1420;
   background-image:
     radial-gradient(ellipse 85% 60% at 0% 0%, rgba(234, 30, 99, 0.14) 0%, transparent 52%),
