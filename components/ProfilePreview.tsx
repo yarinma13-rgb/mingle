@@ -206,7 +206,9 @@ export function ProfilePreview({
             dir="auto"
             className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary"
           >
-            {profile.beyondCv}
+            {profile.beyondCv?.trim()
+              ? profile.beyondCv
+              : "Still waiting to be filled in."}
           </p>
         </ProfileSection>
 

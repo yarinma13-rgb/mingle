@@ -212,6 +212,19 @@ export function CompanyBoardScreen({
                             : "cursor-grab"
                         } ${busyId === card.connectionId ? "pointer-events-none opacity-70" : ""}`}
                       >
+                        <div className="mb-2 flex items-center gap-2 text-mingle-text-secondary">
+                          <span aria-hidden className="grid grid-cols-2 gap-0.5 opacity-70">
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
+                          </span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wide">
+                            Drag
+                          </span>
+                        </div>
                         <Link
                           href={`/profile/view/${card.userId}`}
                           className="flex items-center gap-3"

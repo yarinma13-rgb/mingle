@@ -35,6 +35,7 @@ import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
 import { scoreChipClass } from "@/lib/matching/score-tone";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 
 export type DiscoveryCard = {
   userId: string;
@@ -208,11 +209,14 @@ function DiscoveryCardView({
                 <p className="truncate text-xs text-white/75">{card.meta}</p>
               ) : null}
             </div>
-            <span
-              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
-            >
-              {card.score}% · {card.report.strength}
-            </span>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <MatchScoreRing score={card.score} />
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
+              >
+                {card.report.strength}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -69,7 +69,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   : "border-mingle-border bg-mingle-white text-mingle-text"
               }`}
             >
-              {item.message}
+              <div className="flex items-start gap-2.5">
+                <span
+                  aria-hidden
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                    item.kind === "error"
+                      ? "bg-mingle-pink/15 text-mingle-pink"
+                      : "bg-mingle-success/15 text-mingle-success"
+                  }`}
+                >
+                  {item.kind === "error" ? "!" : "✓"}
+                </span>
+                <p className="min-w-0 flex-1 leading-snug">{item.message}</p>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
