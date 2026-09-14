@@ -296,39 +296,219 @@ export function MatchFeedbackActions({
   );
 }
 
+type AskThreadEntry =
+  | { id: string; kind: "human"; text: string }
+  | {
+      id: string;
+      kind: "ai";
+      status: "working" | "ready";
+      workingLabel: string;
+      summary?: string;
+      detail?: string;
+    };
+
+const FOLLOW_UPS_COMPANY = [
+  "What should I ask in a first conversation?",
+  "Which mismatch should I dig into first?",
+  "How confident is this ranking?",
+] as const;
+
+const FOLLOW_UPS_TALENT = [
+  "What should I ask them first?",
+  "Where might this not be a fit?",
+  "What matters most for this match?",
+] as const;
+
+function axisLine(report: MatchReport): string {
+  const parts = report.axes.map((axis) => `${axis.label} ${axis.score}%`);
+  const risk = report.mismatch[0];
+  if (risk) {
+    return `${parts.join(" · ")} · Open risk: ${risk.label.toLowerCase()}`;
+  }
+  return parts.join(" · ");
+}
+
+function answerForPrompt(report: MatchReport, prompt: string): {
+  summary: string;
+  detail: string;
+} {
+  const lower = prompt.toLowerCase();
+  if (lower.includes("ask") || lower.includes("conversation") || lower.includes("first")) {
+    const tip =
+      report.why[0]?.finding ??
+      report.whatMattersMost;
+    return {
+      summary: "Start from the strongest overlap.",
+      detail: tip,
+    };
+  }
+  if (lower.includes("mismatch") || lower.includes("not be a fit") || lower.includes("risk")) {
+    const risk = report.mismatch[0];
+    return {
+      summary: risk
+        ? `Main open risk: ${risk.label}.`
+        : "No strong mismatch flagged yet.",
+      detail: risk?.finding ?? report.whatMattersMost,
+    };
+  }
+  if (lower.includes("confident") || lower.includes("confidence")) {
+    return {
+      summary: `Confidence is ${report.confidence}.`,
+      detail: report.whatMattersMost,
+    };
+  }
+  if (lower.includes("matters most")) {
+    return {
+      summary: "What matters most for this match:",
+      detail: report.whatMattersMost,
+    };
+  }
+  return {
+    summary: axisLine(report),
+    detail:
+      report.why[0]
+        ? `${report.why[0].label}: ${report.why[0].finding}`
+        : report.whatMattersMost,
+  };
+}
+
+function workingLabelFor(report: MatchReport): string {
+  return report.audience === "talent"
+    ? "Checking Role DNA, Company DNA, and recent outcomes…"
+    : "Checking Role DNA, Company DNA, and recent outcomes…";
+}
+
+/**
+ * Linear-style activity thread: Ask mingle lives in the feed, not a modal.
+ * Does not change DNA / scoring — presentation only.
+ */
 export function AskMingleButton({ report }: { report: MatchReport }) {
-  const [open, setOpen] = useState(false);
+  const prompt =
+    report.audience === "talent"
+      ? "Why might this opportunity fit me?"
+      : "Why did you rank this candidate?";
+  const followUps =
+    report.audience === "talent" ? FOLLOW_UPS_TALENT : FOLLOW_UPS_COMPANY;
+
+  const [entries, setEntries] = useState<AskThreadEntry[]>([]);
+  const [busy, setBusy] = useState(false);
+  const started = entries.length > 0;
+
+  function appendAnswer(humanText: string) {
+    if (busy) return;
+    const humanId = `h-${Date.now()}`;
+    const aiId = `a-${Date.now()}`;
+    const working = workingLabelFor(report);
+    setBusy(true);
+    setEntries((prev) => [
+      ...prev,
+      { id: humanId, kind: "human", text: humanText },
+      {
+        id: aiId,
+        kind: "ai",
+        status: "working",
+        workingLabel: working,
+      },
+    ]);
+
+    window.setTimeout(() => {
+      const { summary, detail } = answerForPrompt(report, humanText);
+      setEntries((prev) =>
+        prev.map((entry) =>
+          entry.id === aiId && entry.kind === "ai"
+            ? {
+                ...entry,
+                status: "ready",
+                summary,
+                detail,
+              }
+            : entry,
+        ),
+      );
+      setBusy(false);
+    }, 1400);
+  }
+
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
-      >
-        Ask mingle:{" "}
-        {report.audience === "talent"
-          ? "Why might this opportunity fit me?"
-          : "Why did you rank this candidate?"}
-      </button>
-      {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-          <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-2xl bg-mingle-surface p-5 shadow-mingle">
-            <p className="font-display text-sm font-semibold text-mingle-text">
-              Why mingle ranked this
-            </p>
-            <div className="mt-4">
-              <MatchReportBody report={report} />
-            </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-4 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-            >
-              Close
-            </button>
-          </div>
+    <div className="rounded-xl border border-mingle-border/80 bg-mingle-bg/60 p-3.5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
+        Ask mingle
+      </p>
+
+      {!started ? (
+        <button
+          type="button"
+          onClick={() => appendAnswer(prompt)}
+          className="mt-2 text-left text-[12px] font-medium text-mingle-text underline decoration-dotted underline-offset-2"
+        >
+          {prompt}
+        </button>
+      ) : null}
+
+      {started ? (
+        <div className="mt-3 flex flex-col gap-3" role="log" aria-live="polite">
+          {entries.map((entry) =>
+            entry.kind === "human" ? (
+              <div key={entry.id} className="flex gap-2.5">
+                <span
+                  aria-hidden
+                  className="mt-0.5 h-[22px] w-[22px] shrink-0 rounded-md bg-mingle-border"
+                />
+                <p className="min-w-0 text-[12.5px] leading-relaxed text-mingle-text-secondary">
+                  <span className="font-semibold text-mingle-text">You</span>
+                  {" — "}
+                  {entry.text}
+                </p>
+              </div>
+            ) : (
+              <div key={entry.id} className="flex gap-2.5">
+                <span
+                  aria-hidden
+                  className="mt-0.5 h-[22px] w-[22px] shrink-0 rounded-md bg-gradient-to-br from-mingle-purple to-mingle-blue"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] font-semibold text-mingle-text">
+                    mingle
+                  </p>
+                  {entry.status === "working" ? (
+                    <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-mingle-surface px-2.5 py-1 text-[11px] text-mingle-text-secondary">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mingle-purple" />
+                      {entry.workingLabel}
+                    </span>
+                  ) : (
+                    <div className="mt-1 space-y-1.5">
+                      <p className="rounded-lg border border-mingle-border bg-mingle-surface px-2.5 py-2 font-display text-[11px] leading-snug text-mingle-text-secondary">
+                        {entry.summary}
+                      </p>
+                      {entry.detail ? (
+                        <p className="text-[12px] leading-relaxed text-mingle-text-secondary">
+                          {entry.detail}
+                        </p>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ),
+          )}
         </div>
       ) : null}
-    </>
+
+      {started ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {followUps.map((q) => (
+            <button
+              key={q}
+              type="button"
+              disabled={busy}
+              onClick={() => appendAnswer(q)}
+              className="rounded-full border border-mingle-border bg-mingle-surface px-2.5 py-1 text-[11px] font-medium text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text disabled:opacity-50"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }

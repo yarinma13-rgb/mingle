@@ -33,16 +33,29 @@ import { PushRegistrar } from "@/components/push/PushRegistrar";
 
 type NavItem = {
   label: string;
+  /** Shorter label for cramped mobile tab bars (iPhone / Android). */
+  shortLabel?: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   dividerAfter?: boolean;
 };
 
 const COMPANY_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
+  { label: "Dashboard", shortLabel: "Home", href: "/dashboard", icon: GridIcon },
   { label: "Roles", href: "/roles", icon: BriefcaseIcon },
-  { label: "Candidates", href: "/discover", icon: PeopleIcon, dividerAfter: true },
-  { label: "Conversations", href: "/conversations", icon: MessageIcon },
+  {
+    label: "Candidates",
+    shortLabel: "Talent",
+    href: "/discover",
+    icon: PeopleIcon,
+    dividerAfter: true,
+  },
+  {
+    label: "Conversations",
+    shortLabel: "Chat",
+    href: "/conversations",
+    icon: MessageIcon,
+  },
   { label: "Pipeline", href: "/connections", icon: FunnelIcon },
   { label: "Board", href: "/board", icon: ColumnsIcon, dividerAfter: true },
   { label: "Interviews", href: "/interviews", icon: CalendarIcon },
@@ -55,10 +68,21 @@ const COMPANY_NAV_PRIMARY = COMPANY_NAV.slice(0, 4);
 const COMPANY_NAV_MORE = COMPANY_NAV.slice(4);
 
 const TALENT_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
+  { label: "Dashboard", shortLabel: "Home", href: "/dashboard", icon: GridIcon },
   { label: "Discover", href: "/discover", icon: CompassIcon },
-  { label: "Connections", href: "/connections", icon: PeopleIcon },
-  { label: "Conversations", href: "/conversations", icon: MessageIcon, dividerAfter: true },
+  {
+    label: "Connections",
+    shortLabel: "Connect",
+    href: "/connections",
+    icon: PeopleIcon,
+  },
+  {
+    label: "Conversations",
+    shortLabel: "Chat",
+    href: "/conversations",
+    icon: MessageIcon,
+    dividerAfter: true,
+  },
   { label: "Saved", href: "/saved", icon: BookmarkIcon },
   { label: "My profile", href: "/profile/build", icon: UserIcon },
   { label: "Settings", href: "/settings", icon: GearIcon },
@@ -121,7 +145,7 @@ export function DashboardShell({
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
           <MingleLogo variant="mark" size={41} priority />
         </div>
-        <div className="flex w-full flex-1 flex-col items-center pb-5 pt-1">
+        <div className="flex w-full flex-1 flex-col items-center gap-0.5 pb-5 pt-2">
           {navItems.map((item) => {
             const active = isNavHrefActive(pathname, item.href);
             const Icon = item.icon;
@@ -130,7 +154,7 @@ export function DashboardShell({
                 <Link
                   href={item.href}
                   prefetch
-                  className="group flex w-full flex-col items-center gap-1 py-1.5"
+                  className="group flex w-full flex-col items-center gap-1.5 py-2"
                 >
                   <span
                     className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
@@ -150,7 +174,7 @@ export function DashboardShell({
                     />
                   </span>
                   <span
-                    className={`max-w-[4.75rem] text-center text-[10px] font-medium leading-tight ${
+                    className={`max-w-[5.25rem] px-0.5 text-center text-[10px] font-medium leading-snug ${
                       active
                         ? "text-mingle-nav-active"
                         : "text-mingle-nav-idle"
@@ -176,9 +200,9 @@ export function DashboardShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="relative z-30 flex min-h-[4.75rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pt-[env(safe-area-inset-top)] sm:gap-6 sm:px-6">
-          <div className="md:hidden">
-            <MingleLogo variant="mark" size={44} priority />
+        <header className="relative z-30 flex min-h-[4.25rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:min-h-[4.75rem] sm:gap-6 sm:px-6 sm:pb-0 sm:pt-[env(safe-area-inset-top)]">
+          <div className="shrink-0 md:hidden">
+            <MingleLogo variant="mark" size={34} priority />
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
@@ -248,8 +272,8 @@ export function DashboardShell({
         <main
           className={
             useFillMain
-              ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-4 pt-5 sm:px-10 md:pb-6"
-              : "min-w-0 flex-1 overflow-y-auto px-5 pb-24 pt-8 sm:px-10 sm:py-9 md:pb-10"
+              ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-4 pt-6 sm:px-10 sm:pt-5 md:pb-6"
+              : "min-w-0 flex-1 overflow-y-auto px-5 pb-24 pt-6 sm:px-10 sm:py-9 md:pb-10"
           }
         >
           {title ? (
