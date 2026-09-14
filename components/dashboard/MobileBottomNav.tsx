@@ -174,7 +174,7 @@ export function MobileBottomNav({
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 border-t border-mingle-border bg-mingle-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 gap-x-1 border-t border-mingle-border bg-mingle-surface px-1 pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
@@ -184,7 +184,7 @@ export function MobileBottomNav({
               key={item.label}
               href={item.href}
               prefetch
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
                 active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
               }`}
             >
@@ -196,7 +196,7 @@ export function MobileBottomNav({
         <button
           type="button"
           onClick={() => setMoreOpen(true)}
-          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
             moreActive ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
           }`}
         >
