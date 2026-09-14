@@ -21,6 +21,7 @@ import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { talentDisplayHeadline, talentDisplayMeta } from "@/lib/profile-detail/display";
+import { talentSearchStatusLabel } from "@/lib/profile/search-status";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -38,6 +39,8 @@ export async function loadDiscoveryPage(
     excludeUserIds?: string[];
     onlyUserIds?: string[];
     rankAll?: boolean;
+    roleTitle?: string | null;
+    roleDepartment?: string | null;
   } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
@@ -73,7 +76,7 @@ export async function loadDiscoveryPage(
     if (workModel) query = query.contains("work_style", [workModel]);
     if (role) {
       query = query.or(
-        `current_job_title.ilike.%${role}%,headline.ilike.%${role}%`,
+        `current_job_title.ilike.%${role}%,headline.ilike.%${role}%,target_role.ilike.%${role}%`,
       );
     }
     if (filters.yearsMin != null) {
@@ -165,11 +168,19 @@ export async function loadDiscoveryPage(
         companyTypes: pref?.company_types ?? [],
         salaryExpectation: profile.salaryExpectation,
       };
-      const result = ownInput
-        ? computeMatch(talentInput, ownInput)
+      const companyForMatch: CompanyMatchInput | null = ownInput
+        ? {
+            ...ownInput,
+            roleTitle: scope.roleTitle ?? ownInput.roleTitle ?? null,
+            roleDepartment:
+              scope.roleDepartment ?? ownInput.roleDepartment ?? null,
+          }
+        : null;
+      const result = companyForMatch
+        ? computeMatch(talentInput, companyForMatch)
         : { score: 0, factors: [] };
-      const report = ownInput
-        ? buildMatchReport(result, talentInput, ownInput, "company")
+      const report = companyForMatch
+        ? buildMatchReport(result, talentInput, companyForMatch, "company")
         : emptyMatchReport("company", result.score);
       const km = origin
         ? distanceKmBetween(origin, {
@@ -193,6 +204,13 @@ export async function loadDiscoveryPage(
             profile.headline,
             profile.currentRole,
           ) || null,
+          talentSearchStatusLabel({
+            isEmployed: profile.isEmployed,
+            discreetSearch: profile.discreetSearch,
+          }),
+          profile.targetRole.trim()
+            ? `Target: ${profile.targetRole.trim()}`
+            : null,
           wantsDistance && km != null ? `${Math.round(km)} km` : null,
         ]
           .filter(Boolean)

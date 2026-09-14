@@ -2,13 +2,12 @@ export const ONBOARDING_INTRO = {
   talent: {
     eyebrow: "Your profile",
     headline: "Let's get to know you",
-    subtext: "A few sharp signals — not a long form.",
+    subtext: "Two sharp signals — skip anything that can wait.",
   },
   company: {
     eyebrow: "Company profile",
     headline: "Let's find the right people",
-    subtext:
-      "Tell us what kind of talent and relationships you're looking to build.",
+    subtext: "Two sharp signals — skip anything that can wait.",
   },
 } as const;
 
@@ -17,11 +16,15 @@ export type OnboardingQuestion = {
   question: string;
   type: "single" | "multi";
   options: string[];
+  /** Non-essential steps can be skipped without inventing new IA. */
+  optional?: boolean;
 };
 
 /**
- * Talent preference questions. Values are curated to avoid near-duplicates
- * (e.g. Growth vs Career development) while keeping match signal.
+ * Compressed preference flow: required intent (q1) + one optional
+ * company/talent-type multi. The middle "what matters" ask overlaps the
+ * later profile wizard, so it stays in the bank but is skipped by default
+ * via `questionsForType` returning only q1 + q3.
  */
 export const TALENT_QUESTIONS: OnboardingQuestion[] = [
   {
@@ -40,6 +43,7 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
     key: "q2",
     question: "What matters most in your next chapter?",
     type: "multi",
+    optional: true,
     options: [
       "Growth & learning",
       "Compensation",
@@ -57,6 +61,7 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
     key: "q3",
     question: "What type of companies interest you?",
     type: "multi",
+    optional: true,
     options: [
       "Startup",
       "Scale up",
@@ -92,6 +97,7 @@ export const COMPANY_QUESTIONS: OnboardingQuestion[] = [
     key: "q2",
     question: "What matters most when meeting great talent?",
     type: "multi",
+    optional: true,
     options: [
       "Skills",
       "Experience",
@@ -117,6 +123,7 @@ export const COMPANY_QUESTIONS: OnboardingQuestion[] = [
     key: "q3",
     question: "What type of talent are you interested in?",
     type: "multi",
+    optional: true,
     options: [
       "Technology",
       "Sales",
@@ -140,8 +147,10 @@ export const COMPANY_QUESTIONS: OnboardingQuestion[] = [
   },
 ];
 
+/** Active flow: required q1 + optional company/talent types (q3). */
 export function questionsForType(type: "talent" | "company") {
-  return type === "company" ? COMPANY_QUESTIONS : TALENT_QUESTIONS;
+  const all = type === "company" ? COMPANY_QUESTIONS : TALENT_QUESTIONS;
+  return [all[0], all[2]];
 }
 
 export function introForType(type: "talent" | "company") {

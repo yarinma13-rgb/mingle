@@ -1,5 +1,5 @@
 export type CompanyMultiQuestion = {
-  key: "workEnvironment" | "values" | "lookingFor";
+  key: "workEnvironment" | "values";
   headline: string;
   subtext: string;
   options: string[];
@@ -11,7 +11,7 @@ export const COMPANY_QUESTIONS: CompanyMultiQuestion[] = [
   {
     key: "workEnvironment",
     headline: "How you work",
-    subtext: "Team culture and leadership style.",
+    subtext: "Team culture and day-to-day style.",
     options: [
       "Fast paced",
       "Structured",
@@ -36,7 +36,7 @@ export const COMPANY_QUESTIONS: CompanyMultiQuestion[] = [
   {
     key: "values",
     headline: "What you value",
-    subtext: "The culture you offer.",
+    subtext: "Culture signals we use for matching. Looking-for is filled from this.",
     options: [
       "Ownership",
       "Curiosity",
@@ -56,31 +56,6 @@ export const COMPANY_QUESTIONS: CompanyMultiQuestion[] = [
       "Inclusion",
       "Ambition",
       "Humility",
-    ],
-  },
-  {
-    key: "lookingFor",
-    headline: "What you're looking for",
-    subtext: "The kind of talent and roles you're hiring for.",
-    options: [
-      "Product roles",
-      "Engineering roles",
-      "Design roles",
-      "Data roles",
-      "Sales roles",
-      "Marketing roles",
-      "Operations roles",
-      "Leadership roles",
-      "Early career talent",
-      "Senior specialists",
-      "Customer success",
-      "People and culture",
-      "Finance",
-      "Legal",
-      "Research",
-      "Support",
-      "Growth",
-      "Founding team",
     ],
   },
 ];

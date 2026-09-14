@@ -2,6 +2,7 @@ import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import type { Database } from "@/lib/supabase/types";
 import { isGender } from "@/lib/profile/avatar";
+import { isStartAvailability } from "@/lib/profile/search-status";
 
 type TalentRow = Database["public"]["Tables"]["talent_profiles"]["Row"];
 type CompanyRow = Database["public"]["Tables"]["company_profiles"]["Row"];
@@ -34,6 +35,12 @@ export function toTalentProfile(row: TalentRow): ProfileState {
       row.github_meta && typeof row.github_meta === "object"
         ? (row.github_meta as Record<string, unknown>)
         : null,
+    isEmployed: typeof row.is_employed === "boolean" ? row.is_employed : null,
+    discreetSearch: Boolean(row.discreet_search),
+    startAvailability: isStartAvailability(row.start_availability)
+      ? row.start_availability
+      : null,
+    targetRole: typeof row.target_role === "string" ? row.target_role : "",
   };
 }
 

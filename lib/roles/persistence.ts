@@ -9,7 +9,7 @@ import { track } from "@/lib/analytics/track";
 import { ensureRediscoveryForRole } from "@/lib/matching/rediscovery";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, created_at, updated_at";
 
 export type RoleRecord = {
   id: string;
@@ -26,6 +26,10 @@ export type RoleRecord = {
   salaryMax: number | null;
   sourceJd: string | null;
   sourceUrl: string | null;
+  companyPresentation: string | null;
+  jobPresentation: string | null;
+  responsibilities: string | null;
+  requirements: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -42,6 +46,10 @@ export type RoleDraft = {
   salaryMax: number | null;
   sourceJd: string;
   sourceUrl: string;
+  companyPresentation: string;
+  jobPresentation: string;
+  responsibilities: string;
+  requirements: string;
 };
 
 export const EMPTY_ROLE_DRAFT: RoleDraft = {
@@ -56,6 +64,10 @@ export const EMPTY_ROLE_DRAFT: RoleDraft = {
   salaryMax: null,
   sourceJd: "",
   sourceUrl: "",
+  companyPresentation: "",
+  jobPresentation: "",
+  responsibilities: "",
+  requirements: "",
 };
 
 type RoleListRow = Pick<
@@ -74,6 +86,10 @@ type RoleListRow = Pick<
   | "salary_max"
   | "source_jd"
   | "source_url"
+  | "company_presentation"
+  | "job_presentation"
+  | "responsibilities"
+  | "requirements"
   | "created_at"
   | "updated_at"
 >;
@@ -94,6 +110,10 @@ function toRecord(row: RoleListRow): RoleRecord {
     salaryMax: row.salary_max,
     sourceJd: row.source_jd ?? null,
     sourceUrl: row.source_url ?? null,
+    companyPresentation: row.company_presentation ?? null,
+    jobPresentation: row.job_presentation ?? null,
+    responsibilities: row.responsibilities ?? null,
+    requirements: row.requirements ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -123,6 +143,10 @@ export function draftFromRole(role: RoleRecord): RoleDraft {
     salaryMax: role.salaryMax,
     sourceJd: role.sourceJd ?? "",
     sourceUrl: role.sourceUrl ?? "",
+    companyPresentation: role.companyPresentation ?? "",
+    jobPresentation: role.jobPresentation ?? "",
+    responsibilities: role.responsibilities ?? "",
+    requirements: role.requirements ?? "",
   };
 }
 
@@ -135,7 +159,28 @@ export async function loadCompanyRoles(
     .select(ROLE_LIST_COLUMNS)
     .eq("company_id", companyId)
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("roles")
+        .select(
+          "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
+        )
+        .eq("company_id", companyId)
+        .order("created_at", { ascending: false });
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? []).map((row) =>
+        toRecord({
+          ...row,
+          company_presentation: null,
+          job_presentation: null,
+          responsibilities: null,
+          requirements: null,
+        } as RoleListRow),
+      );
+    }
+    throw error;
+  }
   return (data ?? []).map(toRecord);
 }
 
@@ -160,10 +205,58 @@ export async function createCompanyRole(
       salary_max: draft.salaryMax,
       source_jd: draft.sourceJd.trim() || null,
       source_url: draft.sourceUrl.trim() || null,
+      company_presentation: draft.companyPresentation.trim() || null,
+      job_presentation: draft.jobPresentation.trim() || null,
+      responsibilities: draft.responsibilities.trim() || null,
+      requirements: draft.requirements.trim() || null,
     })
     .select(ROLE_LIST_COLUMNS)
     .single();
-  if (error) throw error;
+  if (error) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("roles")
+        .insert({
+          company_id: companyId,
+          title: draft.title.trim(),
+          department: draft.department || null,
+          seniority: draft.seniority || null,
+          employment_type: draft.employmentType,
+          work_model: draft.workModel || null,
+          required_skills: draft.requiredSkills,
+          description: draft.description.trim() || null,
+          status: "open",
+          salary_min: draft.salaryMin,
+          salary_max: draft.salaryMax,
+          source_jd: draft.sourceJd.trim() || null,
+          source_url: draft.sourceUrl.trim() || null,
+        })
+        .select(
+          "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
+        )
+        .single();
+      if (fallbackError) throw fallbackError;
+      const record = toRecord({
+        ...fallback,
+        company_presentation: null,
+        job_presentation: null,
+        responsibilities: null,
+        requirements: null,
+      } as RoleListRow);
+      try {
+        await ensureRediscoveryForRole(supabase, {
+          companyId,
+          roleId: record.id,
+          roleTitle: record.title,
+        });
+      } catch (rediscoveryError) {
+        console.error("rediscovery after role create", rediscoveryError);
+      }
+      track(AnalyticsEvent.roleCreated, { role_id: record.id }, companyId);
+      return record;
+    }
+    throw error;
+  }
   track(
     AnalyticsEvent.roleCreated,
     { role_id: data.id },
@@ -202,12 +295,49 @@ export async function updateCompanyRole(
       salary_max: draft.salaryMax,
       source_jd: draft.sourceJd.trim() || null,
       source_url: draft.sourceUrl.trim() || null,
+      company_presentation: draft.companyPresentation.trim() || null,
+      job_presentation: draft.jobPresentation.trim() || null,
+      responsibilities: draft.responsibilities.trim() || null,
+      requirements: draft.requirements.trim() || null,
     })
     .eq("id", roleId)
     .eq("company_id", companyId)
     .select(ROLE_LIST_COLUMNS)
     .single();
-  if (error) throw error;
+  if (error) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("roles")
+        .update({
+          title: draft.title.trim(),
+          department: draft.department || null,
+          seniority: draft.seniority || null,
+          employment_type: draft.employmentType,
+          work_model: draft.workModel || null,
+          required_skills: draft.requiredSkills,
+          description: draft.description.trim() || null,
+          salary_min: draft.salaryMin,
+          salary_max: draft.salaryMax,
+          source_jd: draft.sourceJd.trim() || null,
+          source_url: draft.sourceUrl.trim() || null,
+        })
+        .eq("id", roleId)
+        .eq("company_id", companyId)
+        .select(
+          "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
+        )
+        .single();
+      if (fallbackError) throw fallbackError;
+      return toRecord({
+        ...fallback,
+        company_presentation: null,
+        job_presentation: null,
+        responsibilities: null,
+        requirements: null,
+      } as RoleListRow);
+    }
+    throw error;
+  }
   return toRecord(data);
 }
 
