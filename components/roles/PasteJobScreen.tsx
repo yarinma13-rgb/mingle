@@ -12,18 +12,24 @@ import {
   type RoleDraft,
 } from "@/lib/roles/persistence";
 import {
-  extractRoleFromJd,
   looksLikeUrl,
   roleExtractNeedsBuilder,
 } from "@/lib/roles/extract-jd";
 import { importJdFromUrlAction } from "@/lib/roles/import-jd-action";
+import { structureJobFromFreeTextAction } from "@/lib/roles/structure-jd-action";
+import {
+  composeRoleDescription,
+  draftFromStructuredJd,
+  type StructuredJd,
+} from "@/lib/roles/structure-jd";
 
 type PasteMode = "text" | "url" | "manual";
+type Phase = "input" | "processing" | "review" | "builder";
 
 const STEPS = [
   "Reading the job description",
-  "Extracting requirements",
-  "Finding candidates",
+  "Structuring with AI",
+  "Preparing the role",
 ] as const;
 
 const URL_HINT =
@@ -33,7 +39,7 @@ function JobProcessing({ doneCount }: { doneCount: number }) {
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center gap-6 text-center">
       <p className="font-display text-lg font-semibold text-mingle-text">
-        Finding your matches
+        Structuring your role
       </p>
       <ul className="flex w-full flex-col gap-3 text-left">
         {STEPS.map((label, index) => {
@@ -55,9 +61,86 @@ function JobProcessing({ doneCount }: { doneCount: number }) {
           );
         })}
       </ul>
-      <p className="text-xs text-mingle-text-secondary">
-        Heuristic read only. No model is running on this JD yet.
-      </p>
+    </div>
+  );
+}
+
+function StructuredReview({
+  structured,
+  usedAi,
+  onChange,
+  onBack,
+  onContinue,
+}: {
+  structured: StructuredJd;
+  usedAi: boolean;
+  onChange: (next: StructuredJd) => void;
+  onBack: () => void;
+  onContinue: () => void;
+}) {
+  const fields: Array<{
+    key: keyof Pick<
+      StructuredJd,
+      | "companyPresentation"
+      | "jobPresentation"
+      | "responsibilities"
+      | "requirements"
+    >;
+    label: string;
+    rows: number;
+  }> = [
+    { key: "companyPresentation", label: "Company presentation", rows: 4 },
+    { key: "jobPresentation", label: "Job presentation", rows: 4 },
+    { key: "responsibilities", label: "Responsibilities", rows: 5 },
+    { key: "requirements", label: "Requirements", rows: 5 },
+  ];
+
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+      <div>
+        <h2 className="font-display text-xl font-semibold text-mingle-text">
+          Review structured role
+        </h2>
+        <p className="mt-1 text-sm text-mingle-text-secondary">
+          {usedAi
+            ? "Gemini drafted these sections from your paste. Edit anything, then continue to the role builder."
+            : "Structured from your paste with heuristics (Gemini key not set). Edit anything, then continue."}
+        </p>
+      </div>
+
+      {fields.map((field) => (
+        <label key={field.key} className="block">
+          <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
+            {field.label}
+          </span>
+          <textarea
+            dir="auto"
+            value={structured[field.key]}
+            onChange={(event) =>
+              onChange({ ...structured, [field.key]: event.target.value })
+            }
+            rows={field.rows}
+            className="w-full resize-y rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text focus:border-mingle-blue focus:outline-none"
+          />
+        </label>
+      ))}
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-full bg-mingle-surface px-6 py-3 font-display text-sm font-semibold text-mingle-text"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={onContinue}
+          className="rounded-full bg-mingle-cta px-6 py-3 font-display text-sm font-semibold text-white"
+        >
+          Continue to role builder
+        </button>
+      </div>
     </div>
   );
 }
@@ -68,8 +151,12 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
   const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<PasteMode>("text");
   const [value, setValue] = useState("");
-  const [processing, setProcessing] = useState(false);
+  const [phase, setPhase] = useState<Phase>("input");
   const [doneCount, setDoneCount] = useState(0);
+  const [structured, setStructured] = useState<StructuredJd | null>(null);
+  const [usedAi, setUsedAi] = useState(false);
+  const [sourceText, setSourceText] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [builderDraft, setBuilderDraft] = useState<RoleDraft | null>(null);
 
   const ready =
@@ -79,16 +166,18 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
         ? looksLikeUrl(value)
         : false;
 
-  async function runProcessing(draft: RoleDraft) {
-    setProcessing(true);
+  async function animateSteps() {
     setDoneCount(0);
     for (let i = 1; i <= STEPS.length; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setDoneCount(i);
     }
+  }
+
+  async function openBuilder(draft: RoleDraft) {
     if (roleExtractNeedsBuilder(draft)) {
-      setProcessing(false);
       setBuilderDraft(draft);
+      setPhase("builder");
       toast("Some fields need a tap in the builder.");
       return;
     }
@@ -97,7 +186,7 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
       router.push(`/roles/${saved.id}/matches`);
       router.refresh();
     } catch (caught) {
-      setProcessing(false);
+      setPhase("review");
       const missing = isMissingRolesTable(
         caught && typeof caught === "object"
           ? (caught as { message?: string; code?: string })
@@ -105,7 +194,7 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
       );
       toast(
         missing
-          ? "Run the roles migrations in Supabase first, including 0022."
+          ? "Run the roles migrations in Supabase first, including 0031."
           : "Could not save this role. Try again.",
         "error",
       );
@@ -113,23 +202,46 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
   }
 
   async function findMatches() {
-    if (!ready || processing) return;
+    if (!ready || phase === "processing") return;
+    setPhase("processing");
+    void animateSteps();
+
     if (mode === "url") {
-      setProcessing(true);
-      setDoneCount(0);
       const result = await importJdFromUrlAction(value.trim());
       if (!result.ok) {
-        setProcessing(false);
+        setPhase("input");
         toast(result.error, "error");
         return;
       }
-      void runProcessing(result.draft);
+      const source = result.draft.sourceJd || value.trim();
+      const structuredResult = await structureJobFromFreeTextAction(source);
+      if (!structuredResult.ok) {
+        setPhase("input");
+        toast(structuredResult.error, "error");
+        return;
+      }
+      setSourceText(source);
+      setSourceUrl(result.draft.sourceUrl || value.trim());
+      setStructured(structuredResult.structured);
+      setUsedAi(structuredResult.usedAi);
+      setPhase("review");
       return;
     }
-    void runProcessing(extractRoleFromJd(value));
+
+    const structuredResult = await structureJobFromFreeTextAction(value);
+    if (!structuredResult.ok) {
+      setPhase("input");
+      toast(structuredResult.error, "error");
+      return;
+    }
+    setSourceText(value.trim());
+    setSourceUrl("");
+    setStructured(structuredResult.structured);
+    setUsedAi(structuredResult.usedAi);
+    setPhase("review");
   }
 
-  if (builderDraft) {
+  if (phase === "builder" && builderDraft) {
     return (
       <RoleBuilder
         supabase={supabase}
@@ -138,6 +250,7 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
         editingId={null}
         onCancel={() => {
           setBuilderDraft(null);
+          setPhase(structured ? "review" : "input");
           setDoneCount(0);
         }}
         onSaved={(saved) => {
@@ -148,8 +261,28 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
     );
   }
 
-  if (processing) {
+  if (phase === "processing") {
     return <JobProcessing doneCount={doneCount} />;
+  }
+
+  if (phase === "review" && structured) {
+    return (
+      <StructuredReview
+        structured={structured}
+        usedAi={usedAi}
+        onChange={setStructured}
+        onBack={() => setPhase("input")}
+        onContinue={() => {
+          const draft = draftFromStructuredJd(structured, sourceText, sourceUrl);
+          draft.description = composeRoleDescription(structured);
+          draft.companyPresentation = structured.companyPresentation;
+          draft.jobPresentation = structured.jobPresentation;
+          draft.responsibilities = structured.responsibilities;
+          draft.requirements = structured.requirements;
+          void openBuilder(draft);
+        }}
+      />
+    );
   }
 
   return (
@@ -165,8 +298,9 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
           What are you hiring for?
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
-          Paste a description or an Israeli job-board URL. We fill the existing
-          role builder where the text is clear, and ask you to tap the rest.
+          Paste free-text requirements. Gemini rewrites them into company
+          presentation, job presentation, responsibilities, and requirements —
+          then you can edit before saving.
         </p>
       </div>
 
@@ -227,7 +361,7 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
             : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary"
         }`}
       >
-        Find my matches
+        Structure with AI
       </button>
     </div>
   );

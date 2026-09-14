@@ -2,6 +2,7 @@ import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
 import { applySalaryNudge } from "@/lib/matching/salary-nudge";
+import { applyTargetRoleNudge } from "@/lib/matching/target-role-nudge";
 
 // Deterministic weighted matching engine (PRODUCT_SPEC.md section 31,
 // weights overridden per explicit product decision — see below). No AI
@@ -51,6 +52,9 @@ export type CompanyMatchInput = {
   /** Optional private role/company budget (ILS). Soft score nudge only. */
   salaryMin?: number | null;
   salaryMax?: number | null;
+  /** Optional open role title / department for soft target-role boost. */
+  roleTitle?: string | null;
+  roleDepartment?: string | null;
 };
 
 function overlapFraction(a: string[], b: string[]): number {
@@ -339,6 +343,8 @@ function matchCacheKey(
     company.profile,
     company.salaryMin ?? null,
     company.salaryMax ?? null,
+    company.roleTitle ?? null,
+    company.roleDepartment ?? null,
   ]);
 }
 
@@ -359,12 +365,18 @@ function computeMatchUncached(
   const base = Math.round(
     factors.reduce((sum, factor) => sum + factor.fraction * factor.weight, 0),
   );
-  const { score } = applySalaryNudge(
+  const { score: salaryScore } = applySalaryNudge(
     base,
     talent.salaryExpectation,
     company.salaryMin,
     company.salaryMax,
   );
+  const { score } = applyTargetRoleNudge(salaryScore, talent.profile.targetRole, [
+    company.roleTitle,
+    company.roleDepartment,
+    ...company.profile.lookingFor,
+    company.profile.industry,
+  ]);
 
   return { score, factors };
 }

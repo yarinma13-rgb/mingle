@@ -40,7 +40,7 @@ import { destinationAfterAuth } from "@/lib/auth/destination";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import type { Database, UserType } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -217,7 +217,31 @@ export function OnboardingWizard({ path }: { path: UserType }) {
         step,
         question_key: currentQuestion.key,
       });
-      if (nextStep > 3) {
+      if (nextStep > questions.length) {
+        track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
+      }
+      setStep(nextStep);
+    } catch {
+      setSaveError("Couldn't save that. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (!userId || !currentQuestion?.optional) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const nextStep = step + 1;
+      await setOnboardingStep(supabase, userId, nextStep);
+      track(AnalyticsEvent.onboardingStepCompleted, {
+        path: resolvedType,
+        step,
+        question_key: currentQuestion.key,
+        skipped: true,
+      });
+      if (nextStep > questions.length) {
         track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
       }
       setStep(nextStep);
@@ -244,7 +268,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     );
   }
 
-  if (step > 3 || !currentQuestion) {
+  if (step > questions.length || !currentQuestion) {
     return <OnboardingComplete path={resolvedType} />;
   }
 
@@ -374,6 +398,18 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               Back
             </button>
           )}
+          {currentQuestion.optional ? (
+            <button
+              type="button"
+              onClick={() => {
+                void handleSkip();
+              }}
+              disabled={saving}
+              className="mingle-btn-secondary disabled:opacity-50"
+            >
+              Skip
+            </button>
+          ) : null}
           <motion.button
             type="button"
             onClick={handleContinue}

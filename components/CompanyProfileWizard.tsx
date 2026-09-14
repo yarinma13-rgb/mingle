@@ -48,7 +48,7 @@ import {
 } from "@/lib/validation/company-profile";
 import type { Database } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -211,7 +211,7 @@ export function CompanyProfileWizard() {
   };
 
   const toggleMulti = (
-    key: "workEnvironment" | "values" | "lookingFor",
+    key: "workEnvironment" | "values",
     option: string,
   ) => {
     setProfile((prev) => ({
@@ -221,11 +221,25 @@ export function CompanyProfileWizard() {
   };
 
   const continueMultiStep = (
-    key: "workEnvironment" | "values" | "lookingFor",
-    dbColumn: "work_environment" | "values" | "looking_for",
+    key: "workEnvironment" | "values",
+    dbColumn: "work_environment" | "values",
     nextStep: number,
   ) => {
+    if (key === "values") {
+      // One culture step feeds match fields (values + looking_for display).
+      const picks = profile.values;
+      persistAndAdvance(
+        { values: picks, looking_for: picks },
+        { ...profile, values: picks, lookingFor: picks },
+        nextStep,
+      );
+      return;
+    }
     persistAndAdvance({ [dbColumn]: profile[key] }, profile, nextStep);
+  };
+
+  const skipMultiStep = (nextStep: number) => {
+    persistAndAdvance({}, profile, nextStep);
   };
 
   const reflectionValid =
@@ -241,6 +255,10 @@ export function CompanyProfileWizard() {
       { ...profile, whoThrivesHere: thrives.data, description: building.data },
       TOTAL_STEPS,
     );
+  };
+
+  const skipReflection = () => {
+    persistAndAdvance({}, profile, TOTAL_STEPS);
   };
 
   const goBack = () => {
@@ -294,14 +312,13 @@ export function CompanyProfileWizard() {
       ? COMPANY_QUESTIONS[0]
       : step === 3
         ? COMPANY_QUESTIONS[1]
-        : step === 4
-          ? COMPANY_QUESTIONS[2]
-          : null;
-  const multiKey: "workEnvironment" | "values" | "lookingFor" | null =
-    step === 2 ? "workEnvironment" : step === 3 ? "values" : step === 4 ? "lookingFor" : null;
-  const multiColumn: "work_environment" | "values" | "looking_for" | null =
-    step === 2 ? "work_environment" : step === 3 ? "values" : step === 4 ? "looking_for" : null;
-  const multiNextStep = step === 2 ? 3 : step === 3 ? 4 : 5;
+        : null;
+  const multiKey: "workEnvironment" | "values" | null =
+    step === 2 ? "workEnvironment" : step === 3 ? "values" : null;
+  const multiColumn: "work_environment" | "values" | null =
+    step === 2 ? "work_environment" : step === 3 ? "values" : null;
+  const multiNextStep = step === 2 ? 3 : 4;
+  const multiOptional = step === 2;
 
   return (
     <div className="relative flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
@@ -331,7 +348,7 @@ export function CompanyProfileWizard() {
               ? "Your mission and what you're building."
               : multiQuestion
                 ? multiQuestion.subtext
-                : "The kind of person who does well on your team, and what you're building."}
+                : "Optional. Skip if the basics already say enough."}
           </p>
         </div>
 
@@ -525,6 +542,16 @@ export function CompanyProfileWizard() {
                   >
                     Back
                   </button>
+                  {multiOptional ? (
+                    <button
+                      type="button"
+                      onClick={() => skipMultiStep(multiNextStep)}
+                      disabled={saving}
+                      className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                    >
+                      Skip
+                    </button>
+                  ) : null}
                   <motion.button
                     type="button"
                     onClick={() =>
@@ -549,7 +576,7 @@ export function CompanyProfileWizard() {
               </div>
             )}
 
-            {step === 5 && (
+            {step === 4 && (
               <div className="flex flex-col items-center gap-4">
                 <div className="w-full">
                   <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
@@ -605,6 +632,14 @@ export function CompanyProfileWizard() {
                     className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
                   >
                     Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={skipReflection}
+                    disabled={saving}
+                    className="rounded-full bg-mingle-surface px-6 py-3.5 font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-surface/70 disabled:opacity-50"
+                  >
+                    Skip
                   </button>
                   <motion.button
                     type="button"

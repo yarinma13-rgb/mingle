@@ -22,6 +22,12 @@ export function buildCandidateDna(profile: ProfileState): CandidateDna {
   if (profile.currentRole.trim()) {
     professional.push({ label: "Current role", value: profile.currentRole.trim() });
   }
+  if (profile.targetRole.trim()) {
+    professional.push({
+      label: "Target role",
+      value: profile.targetRole.trim(),
+    });
+  }
   if (profile.yearsExperience != null) {
     professional.push({
       label: "Experience",
@@ -50,6 +56,23 @@ export function buildCandidateDna(profile: ProfileState): CandidateDna {
   }
 
   const preferences: CandidateDna["preferences"] = [];
+  const searchStatus = [
+    profile.isEmployed === null
+      ? null
+      : profile.isEmployed
+        ? profile.discreetSearch
+          ? "Employed · Discreet search"
+          : "Employed · Open search"
+        : profile.discreetSearch
+          ? "Not employed · Discreet search"
+          : "Not employed",
+    profile.startAvailability ? `Start: ${profile.startAvailability}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  if (searchStatus) {
+    preferences.push({ label: "Search", value: searchStatus });
+  }
   if (profile.location.trim()) {
     preferences.push({ label: "Location", value: profile.location.trim() });
   }

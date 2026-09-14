@@ -131,6 +131,10 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           max_commute_km: number | null;
+          is_employed: boolean | null;
+          discreet_search: boolean;
+          start_availability: string | null;
+          target_role: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -161,6 +165,10 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          is_employed?: boolean | null;
+          discreet_search?: boolean;
+          start_availability?: string | null;
+          target_role?: string | null;
         };
         Update: {
           first_name?: string | null;
@@ -188,6 +196,10 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          is_employed?: boolean | null;
+          discreet_search?: boolean;
+          start_availability?: string | null;
+          target_role?: string | null;
         };
         Relationships: [];
       };
@@ -672,6 +684,10 @@ export interface Database {
           salary_max: number | null;
           source_jd: string | null;
           source_url: string | null;
+          company_presentation: string | null;
+          job_presentation: string | null;
+          responsibilities: string | null;
+          requirements: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -689,6 +705,10 @@ export interface Database {
           salary_max?: number | null;
           source_jd?: string | null;
           source_url?: string | null;
+          company_presentation?: string | null;
+          job_presentation?: string | null;
+          responsibilities?: string | null;
+          requirements?: string | null;
         };
         Update: {
           title?: string;
@@ -703,6 +723,10 @@ export interface Database {
           salary_max?: number | null;
           source_jd?: string | null;
           source_url?: string | null;
+          company_presentation?: string | null;
+          job_presentation?: string | null;
+          responsibilities?: string | null;
+          requirements?: string | null;
         };
         Relationships: [];
       };

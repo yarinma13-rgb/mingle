@@ -57,7 +57,12 @@ export default async function RoleMatchesPage({
     { id: user.id, userType: "company" },
     filters,
     styleOptions,
-    { excludeUserIds, rankAll: true },
+    {
+      excludeUserIds,
+      rankAll: true,
+      roleTitle: role.title,
+      roleDepartment: role.department,
+    },
   );
   const cards = [...ranked.cards].sort((a, b) => {
     const ar = rediscoveredIds.has(a.userId) ? 1 : 0;

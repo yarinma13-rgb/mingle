@@ -3,6 +3,10 @@ import type { Database } from "@/lib/supabase/types";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 import { isGender, type Gender } from "@/lib/profile/avatar";
+import {
+  isStartAvailability,
+  type StartAvailability,
+} from "@/lib/profile/search-status";
 
 export type ProfileState = {
   firstName: string;
@@ -27,6 +31,10 @@ export type ProfileState = {
   githubUrl: string | null;
   githubLogin: string | null;
   githubMeta: Record<string, unknown> | null;
+  isEmployed: boolean | null;
+  discreetSearch: boolean;
+  startAvailability: StartAvailability | null;
+  targetRole: string;
 };
 
 export const EMPTY_PROFILE: ProfileState = {
@@ -52,9 +60,13 @@ export const EMPTY_PROFILE: ProfileState = {
   githubUrl: null,
   githubLogin: null,
   githubMeta: null,
+  isEmployed: null,
+  discreetSearch: false,
+  startAvailability: null,
+  targetRole: "",
 };
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 function hasBasicInfo(p: ProfileState) {
   return Boolean(
@@ -62,32 +74,32 @@ function hasBasicInfo(p: ProfileState) {
   );
 }
 
-function hasBeyondCv(p: ProfileState) {
-  return p.beyondCv.trim().length >= 20;
+function hasSearchStatus(p: ProfileState) {
+  return p.isEmployed !== null && Boolean(p.startAvailability) && Boolean(p.targetRole.trim());
 }
 
-/** No separate "step" column — the furthest-incomplete step is derived
- * directly from which fields are already filled, so resuming after a
- * refresh never needs its own persisted pointer. */
+/**
+ * Resume pointer. Work style + beyond-the-CV are skippable; once the
+ * required basics / drives / skills / search status are filled we land
+ * on preview even if those optional steps were skipped.
+ */
 export function resumeStep(p: ProfileState): number {
   if (!hasBasicInfo(p)) return 1;
-  if (p.drives.length === 0) return 2;
-  if (p.workStyle.length === 0) return 3;
-  if (p.skills.length === 0) return 4;
-  if (!hasBeyondCv(p)) return 6;
+  if (!hasSearchStatus(p)) return 2;
+  if (p.drives.length === 0) return 3;
+  if (p.skills.length === 0) return 5;
   return TOTAL_STEPS;
 }
 
-/** Basic info, photo, drives, work style, looking for, skills, beyond the CV.
- * Salary is optional and private, so it does not affect completion. */
+/** Basic info, photo, search status, drives, skills.
+ * Work style, salary, and beyond-the-CV are optional. */
 export function profileCompletion(p: ProfileState): number {
   const categories = [
     hasBasicInfo(p),
     Boolean(p.profilePhoto),
+    hasSearchStatus(p),
     p.drives.length > 0,
-    p.workStyle.length > 0,
     p.skills.length > 0,
-    hasBeyondCv(p),
   ];
   const done = categories.filter(Boolean).length;
   return Math.round((done / categories.length) * 100);
@@ -133,6 +145,12 @@ export async function loadProfile(
       typeof data.salary_expectation === "number" ? data.salary_expectation : null,
     maxCommuteKm:
       typeof data.max_commute_km === "number" ? data.max_commute_km : 0,
+    isEmployed: typeof data.is_employed === "boolean" ? data.is_employed : null,
+    discreetSearch: Boolean(data.discreet_search),
+    startAvailability: isStartAvailability(data.start_availability)
+      ? data.start_availability
+      : null,
+    targetRole: typeof data.target_role === "string" ? data.target_role : "",
   };
 }
 
@@ -159,9 +177,23 @@ export async function saveProfilePatch(
     skills: string[];
     salary_expectation: number | null;
     max_commute_km: number | null;
+    is_employed: boolean | null;
+    discreet_search: boolean;
+    start_availability: string | null;
+    target_role: string | null;
   }>,
 ) {
-  const { gender, skills, salary_expectation, max_commute_km, ...rest } = patch;
+  const {
+    gender,
+    skills,
+    salary_expectation,
+    max_commute_km,
+    is_employed,
+    discreet_search,
+    start_availability,
+    target_role,
+    ...rest
+  } = patch;
   const { error } = await supabase
     .from("talent_profiles")
     .upsert({ user_id: userId, ...rest }, { onConflict: "user_id" });
@@ -182,25 +214,39 @@ export async function saveProfilePatch(
   if (
     "skills" in patch ||
     "salary_expectation" in patch ||
-    "max_commute_km" in patch
+    "max_commute_km" in patch ||
+    "is_employed" in patch ||
+    "discreet_search" in patch ||
+    "start_availability" in patch ||
+    "target_role" in patch
   ) {
     const extra: {
       user_id: string;
       skills?: string[];
       salary_expectation?: number | null;
       max_commute_km?: number | null;
+      is_employed?: boolean | null;
+      discreet_search?: boolean;
+      start_availability?: string | null;
+      target_role?: string | null;
     } = {
       user_id: userId,
     };
     if ("skills" in patch) extra.skills = skills ?? [];
     if ("salary_expectation" in patch) extra.salary_expectation = salary_expectation ?? null;
     if ("max_commute_km" in patch) extra.max_commute_km = max_commute_km ?? null;
+    if ("is_employed" in patch) extra.is_employed = is_employed ?? null;
+    if ("discreet_search" in patch) extra.discreet_search = Boolean(discreet_search);
+    if ("start_availability" in patch) {
+      extra.start_availability = start_availability ?? null;
+    }
+    if ("target_role" in patch) extra.target_role = target_role?.trim() || null;
     const { error: extraError } = await supabase
       .from("talent_profiles")
       .upsert(extra, { onConflict: "user_id" });
     if (
       extraError &&
-      !/skills|salary_expectation|max_commute_km|schema cache|column/i.test(
+      !/skills|salary_expectation|max_commute_km|is_employed|discreet_search|start_availability|target_role|schema cache|column/i.test(
         extraError.message,
       )
     ) {

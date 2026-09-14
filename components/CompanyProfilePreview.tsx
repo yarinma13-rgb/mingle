@@ -98,14 +98,14 @@ export function CompanyProfilePreview({
 
         <ProfileSection
           title="What we're looking for"
-          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.lookingFor} />
         </ProfileSection>
 
         <ProfileSection
           title="Who thrives here"
-          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.whoThrivesHere?.trim()
@@ -116,7 +116,7 @@ export function CompanyProfilePreview({
 
         <ProfileSection
           title="What we're building"
-          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.description?.trim()

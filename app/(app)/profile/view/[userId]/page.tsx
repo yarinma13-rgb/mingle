@@ -122,8 +122,28 @@ export default async function ProfileViewPage({
         title: "Professional background",
         text: [
           talent.currentRole,
+          talent.targetRole.trim() ? `Looking for: ${talent.targetRole.trim()}` : null,
           talent.yearsExperience !== null
             ? `${talent.yearsExperience} years experience`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      },
+      {
+        title: "Search status",
+        text: [
+          talent.isEmployed === null
+            ? null
+            : talent.isEmployed
+              ? talent.discreetSearch
+                ? "Employed · Discreet search"
+                : "Employed · Open search"
+              : talent.discreetSearch
+                ? "Not employed · Discreet search"
+                : "Not employed",
+          talent.startAvailability
+            ? `Available: ${talent.startAvailability}`
             : null,
         ]
           .filter(Boolean)

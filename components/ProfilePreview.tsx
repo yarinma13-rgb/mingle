@@ -146,22 +146,49 @@ export function ProfilePreview({
         )}
 
         <ProfileSection
-          title="What drives me"
+          title="Search status"
           onEdit={onEditStep ? () => onEditStep(2) : undefined}
+        >
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
+            {[
+              profile.isEmployed === null
+                ? null
+                : profile.isEmployed
+                  ? profile.discreetSearch
+                    ? "Employed · Discreet search"
+                    : "Employed · Open search"
+                  : profile.discreetSearch
+                    ? "Not employed · Discreet search"
+                    : "Not employed",
+              profile.startAvailability
+                ? `Start: ${profile.startAvailability}`
+                : null,
+              profile.targetRole.trim()
+                ? `Target: ${profile.targetRole.trim()}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Not set yet"}
+          </p>
+        </ProfileSection>
+
+        <ProfileSection
+          title="What drives me"
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.drives} />
         </ProfileSection>
 
         <ProfileSection
           title="How I work"
-          onEdit={onEditStep ? () => onEditStep(3) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <ProfileChipRow items={profile.workStyle} />
         </ProfileSection>
 
         <ProfileSection
           title="What I'm looking for"
-          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.lookingFor} />
           {profile.maxCommuteKm ? (
