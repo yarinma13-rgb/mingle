@@ -162,11 +162,44 @@ const COPY = {
 } as const;
 
 type Props = {
-  /** When null (e.g. sign-in with no path), keep the company panel. */
+  /** Null = no segment yet — show a neutral brand panel (not company by default). */
   path?: UserType | null;
 };
 
 export function AuthVisualPanel({ path = null }: Props) {
+  if (path !== "talent" && path !== "company") {
+    return (
+      <aside
+        aria-hidden
+        className="relative hidden min-h-screen w-full overflow-hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center"
+        style={{
+          background:
+            "radial-gradient(70% 55% at 8% 12%, rgba(56,189,248,0.14), transparent 55%), radial-gradient(75% 60% at 92% 18%, rgba(167,139,250,0.18), transparent 52%), radial-gradient(80% 55% at 50% 90%, rgba(244,114,182,0.12), transparent 50%), linear-gradient(165deg, #f7f9fc 0%, #eef4ff 50%, #f7f4ff 100%)",
+        }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-35"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(99,102,241,0.12) 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="relative z-20 max-w-sm px-10 text-center">
+          <p className="font-display text-2xl font-semibold tracking-[-0.03em] text-[#1e1b4b]">
+            The right people.
+            <br />
+            Worth talking to.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-[#4338ca]/75">
+            Choose Talent or Company to continue — we&apos;ll match you from
+            there.
+          </p>
+        </div>
+      </aside>
+    );
+  }
+
   const variant: "company" | "talent" = path === "talent" ? "talent" : "company";
   const matches = variant === "talent" ? TALENT_MATCHES : COMPANY_MATCHES;
   const floaters = variant === "talent" ? TALENT_FLOATERS : COMPANY_FLOATERS;

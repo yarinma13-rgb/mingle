@@ -11,6 +11,10 @@ import { AuthVisualPanel } from "@/components/AuthVisualPanel";
 import { createClient } from "@/lib/supabase/client";
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import { authSchema, type AuthFormValues } from "@/lib/validation/auth";
+import {
+  COMPANY_WORK_EMAIL_MESSAGE,
+  isWorkEmail,
+} from "@/lib/auth/work-email";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import type { UserType } from "@/lib/supabase/types";
@@ -71,19 +75,20 @@ type AuthMode = "signup" | "signin";
 export function AuthForm({
   path: initialPath,
   initialMode = "signin",
+  initialError = null,
 }: {
   path: UserType | null;
   initialMode?: AuthMode;
+  initialError?: "work_email" | null;
 }) {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  // Mirror AuthShell: signup without an explicit path starts as talent so the
-  // Continue button matches the default segment UI and is not silently disabled.
-  const [path, setPath] = useState<UserType | null>(
-    initialPath ?? (initialMode === "signup" ? "talent" : null),
+  // Stay neutral until the user taps Talent or Company (or arrives with ?path=).
+  const [path, setPath] = useState<UserType | null>(initialPath);
+  const [serverError, setServerError] = useState<string | null>(
+    initialError === "work_email" ? COMPANY_WORK_EMAIL_MESSAGE : null,
   );
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [confirmingPath, setConfirmingPath] = useState(false);
@@ -125,6 +130,13 @@ export function AuthForm({
 
   const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
     setServerError(null);
+
+    if (selectedPath === "company" && !isWorkEmail(values.email)) {
+      setServerError(COMPANY_WORK_EMAIL_MESSAGE);
+      setConfirmingPath(false);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -210,6 +222,11 @@ export function AuthForm({
       return;
     }
 
+    if (path === "company" && !isWorkEmail(values.email)) {
+      setServerError(COMPANY_WORK_EMAIL_MESSAGE);
+      return;
+    }
+
     // Gate signup behind an explicit path confirmation.
     setConfirmingPath(true);
     track(AnalyticsEvent.authPathConfirmShown, { path });
@@ -231,14 +248,19 @@ export function AuthForm({
     }
     setServerError(null);
     setIsSubmitting(true);
-    const resolvedPath: UserType = path ?? "talent";
-    track(AnalyticsEvent.authGoogleClicked, { mode, path: resolvedPath });
+    // Sign-in can omit path (resolved after session). Signup always has path here.
+    const pathForRedirect = path ?? "talent";
+    track(AnalyticsEvent.authGoogleClicked, {
+      mode,
+      path: pathForRedirect,
+    });
     const origin = window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         // path query is read by /auth/callback → ensureUserProfile (user_type).
-        redirectTo: `${origin}/auth/callback?path=${resolvedPath}`,
+        // Callback also rejects personal emails on the company track.
+        redirectTo: `${origin}/auth/callback?path=${pathForRedirect}`,
         queryParams: { access_type: "offline", prompt: "select_account" },
       },
     });
@@ -489,8 +511,8 @@ export function AuthForm({
                   onClick={() => {
                     track(AnalyticsEvent.authModeToggled, { mode: "signup" });
                     setMode("signup");
-                    // Sign-in pages often have no path; default Talent so Continue works.
-                    setPath((current) => current ?? "talent");
+                    // Keep segment unset until they tap Talent or Company.
+                    setPath(null);
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
