@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const STORAGE_KEY = "mingle.plans.notify";
 
-export function NotifyMeButton() {
-  const [done, setDone] = useState(false);
+function readStoredPreference(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
-  useEffect(() => {
-    try {
-      setDone(window.localStorage.getItem(STORAGE_KEY) === "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
+export function NotifyMeButton() {
+  const [done, setDone] = useState(readStoredPreference);
 
   const onClick = () => {
     try {

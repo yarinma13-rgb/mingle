@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { acceptConnection, declineConnection } from "@/lib/connections/persistence";
 import { notifyPushConnection } from "@/lib/push/actions";
 import { EmptyState } from "@/components/EmptyState";
-import { MingleChip } from "@/components/MingleChip";
 import { StatusChip } from "@/components/StatusChip";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Avatar } from "@/components/Avatar";
