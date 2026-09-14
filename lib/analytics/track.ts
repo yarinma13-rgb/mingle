@@ -83,11 +83,26 @@ export async function initPosthogBrowser(): Promise<void> {
   }
 }
 
+/**
+ * Identifies the user and stamps their first-touch UTM data (captured by
+ * PostHog on their very first anonymous pageview) onto the person profile.
+ * Without this, signups can never be attributed back to a campaign/source
+ * because the anonymous session's UTM properties are otherwise never linked
+ * to the authenticated distinct_id.
+ */
 export function identifyUser(userId: string, traits?: EventProps): void {
   if (!posthogKey() || typeof window === "undefined") return;
   void import("posthog-js")
     .then((mod) => {
-      mod.default.identify(userId, cleanProps(traits));
+      const posthog = mod.default;
+      const attribution: EventProps = {
+        utm_source: posthog.get_property("$initial_utm_source"),
+        utm_medium: posthog.get_property("$initial_utm_medium"),
+        utm_campaign: posthog.get_property("$initial_utm_campaign"),
+        utm_content: posthog.get_property("$initial_utm_content"),
+        initial_referrer: posthog.get_property("$initial_referrer"),
+      };
+      posthog.identify(userId, cleanProps({ ...attribution, ...traits }));
     })
     .catch(() => {});
 }
