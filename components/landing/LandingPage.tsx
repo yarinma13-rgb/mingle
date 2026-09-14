@@ -28,7 +28,8 @@ const poppins = Poppins({
 });
 
 const SIGN_IN_HREF = "/auth";
-const GET_STARTED_HREF = "/auth?mode=signup&path=talent";
+// No default segment — user must pick Talent or Company on /auth.
+const GET_STARTED_HREF = "/auth?mode=signup";
 const DEMO_HREF = "/contact";
 
 function LandingPageInner() {

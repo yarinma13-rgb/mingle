@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { destinationAfterAuth } from "@/lib/auth/destination";
+import { isWorkEmail } from "@/lib/auth/work-email";
 import type { UserType } from "@/lib/supabase/types";
 
 function resolveUserType(
@@ -34,6 +35,15 @@ export async function GET(request: Request) {
         pathParam,
         data.user.user_metadata?.user_type,
       );
+
+      // Block personal mailboxes from landing on the company track (OAuth).
+      if (path === "company" && !isWorkEmail(data.user.email)) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(
+          `${origin}/auth?mode=signup&path=company&error=work_email`,
+        );
+      }
+
       // Google OAuth does not carry signup path in provider metadata — stamp it
       // from the redirect query when missing so company/talent stays sticky.
       if (data.user.user_metadata?.user_type !== path) {
@@ -50,6 +60,11 @@ export async function GET(request: Request) {
     }
   }
 
-  const fallback = pathParam === "company" ? "company" : "talent";
-  return NextResponse.redirect(`${origin}/auth?path=${fallback}`);
+  // Do not pre-select a segment on failure — keep signup neutral.
+  const mode = pathParam === "company" || pathParam === "talent" ? "signup" : "signin";
+  const pathQs =
+    pathParam === "company" || pathParam === "talent"
+      ? `&path=${pathParam}`
+      : "";
+  return NextResponse.redirect(`${origin}/auth?mode=${mode}${pathQs}`);
 }
