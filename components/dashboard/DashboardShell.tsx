@@ -107,7 +107,7 @@ export function DashboardShell({
   }, [navItems, router]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-transparent">
+    <div className="flex h-dvh overflow-hidden bg-transparent">
       <PushRegistrar />
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
