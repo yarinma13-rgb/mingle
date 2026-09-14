@@ -369,6 +369,27 @@ export async function loadCompanyRole(
     .eq("id", roleId)
     .eq("company_id", companyId)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("roles")
+        .select(
+          "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
+        )
+        .eq("id", roleId)
+        .eq("company_id", companyId)
+        .maybeSingle();
+      if (fallbackError) throw fallbackError;
+      if (!fallback) return null;
+      return toRecord({
+        ...fallback,
+        company_presentation: null,
+        job_presentation: null,
+        responsibilities: null,
+        requirements: null,
+      } as RoleListRow);
+    }
+    throw error;
+  }
   return data ? toRecord(data) : null;
 }
