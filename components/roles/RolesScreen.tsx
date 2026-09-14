@@ -126,11 +126,21 @@ export function RolesScreen({
           Open roles your team is hiring for. Candidates will not see these
           until you choose to share them.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/roles/paste" className="mingle-btn-primary text-xs">
-            Paste a job description
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/roles/paste"
+            className="mingle-btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold shadow-mingle"
+          >
+            <span aria-hidden className="text-base leading-none">
+              ✦
+            </span>
+            Paste a job description instead
           </Link>
-          <button type="button" onClick={openCreate} className="mingle-btn-secondary text-xs">
+          <button
+            type="button"
+            onClick={openCreate}
+            className="mingle-btn-secondary text-xs"
+          >
             Create role manually
           </button>
         </div>
@@ -166,7 +176,7 @@ export function RolesScreen({
             }
             actionHref={roles.length === 0 ? "/roles/paste" : "/roles/paste"}
             actionLabel={
-              roles.length === 0 ? "Paste a job description" : "Create a role"
+              roles.length === 0 ? "Paste a job description instead" : "Create a role"
             }
           />
           {roles.length > 0 ? (

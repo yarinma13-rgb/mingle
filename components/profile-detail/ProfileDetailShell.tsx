@@ -419,12 +419,17 @@ export function ProfileDetailShell({
               </ProfileSection>
             ) : null}
 
-            {sections.map((section) => {
+            {sections.map((section, index) => {
               const chips = section.chips?.filter(Boolean) ?? [];
               const text = section.text?.trim() ?? "";
               const empty = chips.length === 0 && !text;
               return (
-                <ProfileSection key={section.title} title={section.title}>
+                <ProfileSection
+                  key={section.title}
+                  title={section.title}
+                  elevated={index % 2 === 1}
+                  empty={empty}
+                >
                   {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
                   {text ? (
                     <p
@@ -433,10 +438,6 @@ export function ProfileDetailShell({
                     >
                       {text}
                     </p>
-                  ) : empty ? (
-                    <p className="text-sm italic text-mingle-text-secondary">
-                      Still waiting on a fuller description here.
-                    </p>
                   ) : null}
                 </ProfileSection>
               );
@@ -444,7 +445,7 @@ export function ProfileDetailShell({
 
             {(recommendations.length > 0 ||
               (canRequestRecommendation && isSelf)) && (
-              <ProfileSection title="Recommendations">
+              <ProfileSection title="Recommendations" elevated>
                 <RecommendationsList items={recommendations} />
                 {canRequestRecommendation && isSelf ? (
                   <div
