@@ -14,6 +14,7 @@ import { SeePlansButton } from "@/components/plans/SeePlansButton";
 
 type NavItem = {
   label: string;
+  shortLabel?: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
 };
@@ -175,17 +176,19 @@ export function MobileBottomNav({
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 gap-x-1 border-t border-mingle-border bg-mingle-surface px-1 pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 items-stretch gap-x-0.5 border-t border-mingle-border bg-mingle-surface px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 md:hidden"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
           const active = isNavHrefActive(pathname, item.href);
+          const tabLabel = item.shortLabel ?? item.label;
           return (
             <Link
               key={item.label}
               href={item.href}
               prefetch
-              className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
+              aria-label={item.label}
+              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
                 active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
               }`}
             >
@@ -193,19 +196,19 @@ export function MobileBottomNav({
                 <NavPendingIndicator />
                 <Icon size={20} className="relative" />
               </span>
-              {item.label}
+              <span className="max-w-full truncate">{tabLabel}</span>
             </Link>
           );
         })}
         <button
           type="button"
           onClick={() => setMoreOpen(true)}
-          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
+          className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
             moreActive ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />
-          More
+          <span>More</span>
         </button>
       </nav>
     </>
