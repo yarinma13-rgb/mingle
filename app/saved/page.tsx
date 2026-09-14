@@ -50,7 +50,7 @@ export default async function SavedPage() {
                 <Link
                   key={id}
                   href={`/profile/view/${id}`}
-                  className="flex items-center gap-4 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
+                  className="flex items-center gap-4 rounded-2xl border border-mingle-border border-l-[3px] border-l-mingle-accent-purple bg-mingle-white p-5 shadow-mingle transition-shadow hover:shadow-mingle"
                 >
                   <Avatar
                     photo={info?.photo}

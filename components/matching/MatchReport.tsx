@@ -21,6 +21,7 @@ import {
   GridIcon,
   PeopleIcon,
   TargetIcon,
+  ShieldCheckIcon,
 } from "@/components/dashboard/icons";
 import {
   scoreBandLabel,
@@ -170,8 +171,11 @@ export function MatchReportBody({
           </span>
         </p>
       ) : null}
-      <p className={`text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}>
-        Confidence: {report.confidence}
+      <p
+        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
+      >
+        <ShieldCheckIcon size={14} className="shrink-0" />
+        <span>Confidence: {report.confidence}</span>
       </p>
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-purple">

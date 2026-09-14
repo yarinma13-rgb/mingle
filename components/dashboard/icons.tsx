@@ -187,3 +187,22 @@ export function XIcon({ className, size = 18 }: IconProps) {
     </svg>
   );
 }
+
+export function HelpIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <circle cx="12" cy="12" r="8.25" />
+      <path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.8c0 1.5-2.2 2-2.2 3.5" />
+      <circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function ShieldCheckIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path d="M12 3.5 5.5 6v5.2c0 4 2.7 6.8 6.5 8.3 3.8-1.5 6.5-4.3 6.5-8.3V6L12 3.5Z" />
+      <path d="m9.2 12.1 1.9 1.9 3.7-4" />
+    </svg>
+  );
+}

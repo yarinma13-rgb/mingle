@@ -17,8 +17,8 @@ export function InterviewsScreen({
   if (tableMissing) {
     return (
       <EmptyState
-        title="Interviews are not live yet"
-        body="The founder still needs to run the interviews SQL in the Supabase editor. After that, scheduled times from a conversation will show here."
+        title="Interviews coming soon"
+        body="Scheduled interviews will show up here once this workspace is ready. Check back soon."
       />
     );
   }

@@ -114,7 +114,7 @@ export function RolesScreen({
     return (
       <EmptyState
         title="Roles are not live in the database yet"
-        body="Run supabase/migrations/0014_company_roles.sql in the Supabase SQL Editor, then refresh this page."
+        body="Roles are not available on this workspace yet. Please refresh later or contact support."
       />
     );
   }

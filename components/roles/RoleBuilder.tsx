@@ -155,7 +155,7 @@ export function RoleBuilder({
       );
       setError(
         missing
-          ? "Roles are not in the database yet. Run supabase/migrations/0014_company_roles.sql in the Supabase SQL Editor."
+          ? "Roles are not available on this workspace yet. Please try again later."
           : "Could not save this role. Try again.",
       );
     } finally {

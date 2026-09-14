@@ -54,11 +54,27 @@ export type DiscoveryCard = {
 const SWIPE_DISTANCE_THRESHOLD = 110;
 const SWIPE_VELOCITY_THRESHOLD = 500;
 
+function DiscoverySkeletonCard({ label }: { label: string }) {
+  return (
+    <div
+      aria-hidden
+      className="mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-dashed border-mingle-border bg-mingle-lavender/60"
+    >
+      <div className="aspect-[3/4] max-h-[min(40vh,280px)] w-full animate-pulse bg-mingle-border/40" />
+      <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+        <div className="h-3 w-28 animate-pulse rounded-full bg-mingle-border/50" />
+        <p className="text-xs font-medium text-mingle-text-secondary">{label}</p>
+      </div>
+    </div>
+  );
+}
+
 function DiscoveryCardView({
   card,
   initialFeedback,
   viewerId,
   swipeEnabled,
+  messageHref,
   onPass,
   onHide,
 }: {
@@ -66,6 +82,7 @@ function DiscoveryCardView({
   initialFeedback: MatchFeedbackAction | null;
   viewerId: string;
   swipeEnabled: boolean;
+  messageHref?: string | null;
   onPass: (userId: string) => void;
   onHide: (userId: string) => void;
 }) {
@@ -229,6 +246,7 @@ function DiscoveryCardView({
         <DiscoverSwipeActions
           busy={saving}
           interestedDone={feedback === "interested"}
+          messageHref={messageHref}
           onSkip={() => onPass(card.userId)}
           onInterested={() => void expressInterest()}
         />
@@ -242,6 +260,7 @@ export function DiscoveryScreen({
   subtitle,
   cards: initialCards,
   feedbackByUser = {},
+  acceptedConnectionByUser = {},
   viewerId,
   mode = "feed",
   emptyBody,
@@ -251,6 +270,8 @@ export function DiscoveryScreen({
   cards: DiscoveryCard[];
   savedUserIds: string[];
   feedbackByUser?: Record<string, MatchFeedbackAction>;
+  /** Map of other userId → accepted connection id for Message quick-action. */
+  acceptedConnectionByUser?: Record<string, string>;
   viewerId: string;
   mode?: "feed" | "passed";
   emptyBody?: string;
@@ -292,6 +313,7 @@ export function DiscoveryScreen({
     return (
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface">
         <EmptyState
+          variant="discover"
           title={title}
           body={
             emptyBody ??
@@ -360,7 +382,7 @@ export function DiscoveryScreen({
               ? `${cards.length} to review`
               : `${initialCards.length - cards.length + 1} of ${initialCards.length}`}
           </p>
-          <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
+          <div className="relative mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={cards[0].userId}
@@ -368,17 +390,28 @@ export function DiscoveryScreen({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.98 }}
                 transition={{ duration: 0.28, ease: "easeOut" }}
+                className="relative"
               >
                 <DiscoveryCardView
                   card={cards[0]}
                   initialFeedback={feedbackByUser[cards[0].userId] ?? null}
                   viewerId={viewerId}
                   swipeEnabled
+                  messageHref={
+                    acceptedConnectionByUser[cards[0].userId]
+                      ? `/conversations/${acceptedConnectionByUser[cards[0].userId]}`
+                      : null
+                  }
                   onPass={persistPass}
                   onHide={hideCard}
                 />
               </motion.div>
             </AnimatePresence>
+            {cards.length === 1 ? (
+              <div className="pointer-events-none absolute inset-x-0 -bottom-2 -z-10 opacity-70 lg:hidden">
+                <DiscoverySkeletonCard label="Still waiting for more matches…" />
+              </div>
+            ) : null}
             <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface-elevated p-5 shadow-mingle transition-shadow duration-200 lg:flex">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
                 Match report

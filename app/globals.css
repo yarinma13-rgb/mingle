@@ -87,10 +87,11 @@
   --mingle-sidebar-bg: #171d2b;
   --mingle-white: #202738;
   --mingle-surface: #202738;
-  --mingle-text: #f3f5f9;
-  --mingle-text-secondary: #e1e4ea;
-  --mingle-text-muted: #9aa3b5;
-  --mingle-border: rgba(255, 255, 255, 0.1);
+  --mingle-text: #f7f8fb;
+  /* WCAG AA on #202738 / #0f1420 surfaces (~7:1 and ~4.8:1). */
+  --mingle-text-secondary: #c9ced8;
+  --mingle-text-muted: #a8b0c0;
+  --mingle-border: rgba(255, 255, 255, 0.16);
   --mingle-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   --mingle-mascot-backdrop: #01041e;
   --mingle-nav-active-bg: rgba(255, 255, 255, 0.1);
@@ -456,4 +457,17 @@ button:disabled {
   .mingle-moment-overlay {
     animation: none;
   }
+}
+
+
+/* dark wcag polish */
+[data-theme="dark"] .text-mingle-text-secondary,
+[data-theme="dark"] .text-mingle-muted {
+  color: var(--mingle-text-secondary);
+}
+[data-theme="dark"] .border-mingle-border {
+  border-color: var(--mingle-border);
+}
+[data-theme="dark"] .mingle-btn-secondary {
+  color: var(--mingle-text);
 }
