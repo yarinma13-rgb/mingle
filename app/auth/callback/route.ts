@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import type { UserType } from "@/lib/supabase/types";
 
@@ -40,7 +39,7 @@ export async function GET(request: Request) {
       if (data.user.user_metadata?.user_type !== path) {
         await supabase.auth.updateUser({ data: { user_type: path } });
       }
-      await ensureUserProfile(supabase, data.user.id, data.user.email, path);
+      // destinationAfterAuth reconciles the profile — skip a duplicate ensure.
       const dest = await destinationAfterAuth(
         supabase,
         data.user.id,

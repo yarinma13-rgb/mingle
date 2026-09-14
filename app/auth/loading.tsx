@@ -1,7 +1,4 @@
-import { Suspense } from "react";
-import { AuthShell } from "@/components/AuthShell";
-
-function AuthFallback() {
+export default function AuthLoading() {
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex w-full flex-1 flex-col justify-center px-6 py-12 sm:px-10 lg:w-[48%] lg:px-16">
@@ -16,15 +13,5 @@ function AuthFallback() {
       </div>
       <div className="hidden flex-1 animate-pulse bg-mingle-lavender/60 lg:block" />
     </div>
-  );
-}
-
-export default function AuthPage() {
-  return (
-    <main className="flex min-h-screen flex-1 flex-col">
-      <Suspense fallback={<AuthFallback />}>
-        <AuthShell />
-      </Suspense>
-    </main>
   );
 }

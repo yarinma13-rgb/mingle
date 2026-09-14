@@ -7,6 +7,7 @@ import { MingleLogo } from "@/components/MingleLogo";
 import { useCommandPalette } from "@/components/command-palette/CommandPaletteProvider";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { NotificationBell } from "@/components/dashboard/NotificationBell";
+import { NavPendingIndicator } from "@/components/dashboard/NavPendingIndicator";
 import {
   SearchIcon,
   GridIcon,
@@ -65,10 +66,16 @@ const TALENT_NAV: NavItem[] = [
 const TALENT_NAV_PRIMARY = TALENT_NAV.slice(0, 4);
 const TALENT_NAV_MORE = TALENT_NAV.slice(4);
 
+/** Full-bleed chat thread: /conversations/:id (not explore/opportunity/decision). */
+function isConversationThreadPath(pathname: string): boolean {
+  return /^\/conversations\/[^/]+$/.test(pathname);
+}
+
 type DashboardShellProps = {
   userType: UserType;
   userId: string;
-  title: string;
+  /** Optional — pages under the shared layout render DashboardHeading themselves. */
+  title?: string;
   searchPlaceholder: string;
   userName: string;
   userInitials: string;
@@ -90,7 +97,7 @@ export function DashboardShell({
   userPhoto = null,
   userSubtitle,
   children,
-  fillMain = false,
+  fillMain,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -99,6 +106,7 @@ export function DashboardShell({
   const navItems = isCompany ? COMPANY_NAV : TALENT_NAV;
   const primaryItems = isCompany ? COMPANY_NAV_PRIMARY : TALENT_NAV_PRIMARY;
   const moreItems = isCompany ? COMPANY_NAV_MORE : TALENT_NAV_MORE;
+  const useFillMain = fillMain ?? isConversationThreadPath(pathname);
 
   useEffect(() => {
     for (const item of navItems) {
@@ -125,18 +133,19 @@ export function DashboardShell({
                   className="group flex w-full flex-col items-center gap-1 py-1.5"
                 >
                   <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
                       active
                         ? "bg-mingle-nav-active-bg"
                         : "bg-transparent group-hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
+                    <NavPendingIndicator />
                     <Icon
                       size={18}
                       className={
                         active
-                          ? "text-mingle-nav-active"
-                          : "text-mingle-nav-idle group-hover:text-mingle-nav-active"
+                          ? "relative text-mingle-nav-active"
+                          : "relative text-mingle-nav-idle group-hover:text-mingle-nav-active"
                       }
                     />
                   </span>
@@ -206,11 +215,13 @@ export function DashboardShell({
 
             <Link
               href="/settings/support"
+              prefetch
               aria-label="Help and support"
               title="Help"
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text"
+              className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text"
             >
-              <HelpIcon size={16} />
+              <NavPendingIndicator />
+              <HelpIcon size={16} className="relative" />
             </Link>
 
             <NotificationBell userId={userId} />
@@ -236,22 +247,24 @@ export function DashboardShell({
 
         <main
           className={
-            fillMain
+            useFillMain
               ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-4 pt-5 sm:px-10 md:pb-6"
               : "min-w-0 flex-1 overflow-y-auto px-5 pb-24 pt-8 sm:px-10 sm:py-9 md:pb-10"
           }
         >
-          <h1
-            className={`shrink-0 font-display font-bold tracking-tight text-mingle-text ${
-              fillMain
-                ? "mb-4 text-xl sm:text-2xl"
-                : "mb-8 text-[1.75rem] sm:mb-9 sm:text-3xl"
-            }`}
-          >
-            {title}
-          </h1>
+          {title ? (
+            <h1
+              className={`shrink-0 font-display font-bold tracking-tight text-mingle-text ${
+                useFillMain
+                  ? "mb-4 text-xl sm:text-2xl"
+                  : "mb-8 text-[1.75rem] sm:mb-9 sm:text-3xl"
+              }`}
+            >
+              {title}
+            </h1>
+          ) : null}
 
-          {fillMain ? (
+          {useFillMain ? (
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
           ) : (
             children

@@ -10,8 +10,7 @@ import {
   latestStage,
   type RelationshipEventRow,
 } from "@/lib/relationship/persistence";
-import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
-import type { Gender } from "@/lib/profile/avatar";
+
 type ConnectionRow = Database["public"]["Tables"]["connections"]["Row"];
 
 export type RelationshipPageContext = {
@@ -24,11 +23,6 @@ export type RelationshipPageContext = {
   exploreFactors: MatchFactor[];
   timeline: RelationshipEventRow[];
   stage: ReturnType<typeof latestStage>;
-  accountLabel: string;
-  initials: string;
-  userGender: Gender | null;
-  userPhoto: string | null;
-  userName: string;
 };
 
 export async function loadRelationshipPageContext(
@@ -43,7 +37,16 @@ export async function loadRelationshipPageContext(
     user.id,
   );
 
-  const info = await loadDisplayInfoForUsers(supabase, [otherUserId]);
+  const [info, otherUserResult, timelineInitial] = await Promise.all([
+    loadDisplayInfoForUsers(supabase, [otherUserId]),
+    supabase
+      .from("users")
+      .select("user_type")
+      .eq("id", otherUserId)
+      .maybeSingle(),
+    loadTimeline(supabase, connectionId),
+  ]);
+
   const otherDisplay = info.get(otherUserId) ?? {
     name: "mingle user",
     subtitle: "",
@@ -56,11 +59,7 @@ export async function loadRelationshipPageContext(
   let alignedFactors: MatchFactor[] = [];
   let exploreFactors: MatchFactor[] = [];
 
-  const { data: otherUserRow } = await supabase
-    .from("users")
-    .select("user_type")
-    .eq("id", otherUserId)
-    .maybeSingle();
+  const otherUserRow = otherUserResult.data;
 
   if (otherUserRow && otherUserRow.user_type !== userType) {
     const talentId = userType === "talent" ? user.id : otherUserId;
@@ -83,15 +82,13 @@ export async function loadRelationshipPageContext(
   // exist yet, but ensureConnectedEvent writes — guarded separately so
   // a missing table can't crash every page that loads this context,
   // the same class of bug already hit (and fixed) twice in Phase 6/7.
-  let timeline = await loadTimeline(supabase, connectionId);
+  let timeline = timelineInitial;
   try {
     const created = await ensureConnectedEvent(supabase, connectionId, timeline);
     if (created) timeline = await loadTimeline(supabase, connectionId);
   } catch {
     // Table not migrated yet — stage falls back to "connected" below.
   }
-
-  const chrome = await loadShellChrome(supabase, user, userType === "company");
 
   return {
     userType,
@@ -103,10 +100,5 @@ export async function loadRelationshipPageContext(
     exploreFactors,
     timeline,
     stage: latestStage(timeline),
-    accountLabel: chrome.userName,
-    initials: chrome.initials,
-    userGender: chrome.gender,
-    userPhoto: chrome.photo,
-    userName: chrome.userName,
   };
 }
