@@ -190,7 +190,7 @@ function DiscoveryCardView({
               ) : null}
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <MatchScoreRing score={card.score} />
+              <MatchScoreRing score={card.score} size={76} />
               <span
                 className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
               >
@@ -379,13 +379,21 @@ export function DiscoveryScreen({
                 />
               </motion.div>
             </AnimatePresence>
-            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle transition-shadow duration-200 lg:flex">
+            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface-elevated p-5 shadow-mingle transition-shadow duration-200 lg:flex">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
                 Match report
               </p>
-              <p className="mt-1 font-display text-sm font-semibold text-mingle-text">
-                {cards[0].name}
-              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <MatchScoreRing score={cards[0].score} size={88} showLabel />
+                <div className="min-w-0">
+                  <p className="font-display text-sm font-semibold text-mingle-text">
+                    {cards[0].name}
+                  </p>
+                  <p className="text-xs text-mingle-text-secondary">
+                    {cards[0].report.strength}
+                  </p>
+                </div>
+              </div>
               <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
                 <MatchReportBody report={cards[0].report} />
               </div>

@@ -13,6 +13,7 @@ import {
   PeopleIcon,
 } from "@/components/dashboard/icons";
 import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
+import { TalentMatchOverview } from "@/components/dashboard/TalentMatchOverview";
 import { PilotTips } from "@/components/pilot/PilotTips";
 
 export type CompanyRow = {
@@ -108,9 +109,18 @@ export function TalentDashboard({
         </div>
       </div>
 
+      <TalentMatchOverview
+        matchScores={companies.map((company) => company.matchScore)}
+        activity={{
+          newConnections: stats.newConnections,
+          activeConversations: stats.activeConversations,
+          savedCompanies: stats.savedCompanies,
+        }}
+      />
+
       {dna ? <CandidateDnaPanel dna={dna} /> : null}
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 shadow-mingle">
+      <div className="rounded-2xl border border-mingle-border bg-mingle-surface-elevated p-7 shadow-mingle">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Recommended companies
         </h2>

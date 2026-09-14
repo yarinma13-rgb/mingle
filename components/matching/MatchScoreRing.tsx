@@ -1,12 +1,19 @@
+/**
+ * Radial match gauge — uses brand semantic score colors only
+ * (success / warning / error from mingle tokens).
+ */
 export function MatchScoreRing({
   score,
-  size = 52,
+  size = 72,
+  showLabel = false,
 }: {
   score: number;
   size?: number;
+  /** When true, render for light surfaces (Discover desktop aside / list). */
+  showLabel?: boolean;
 }) {
   const value = Math.max(0, Math.min(100, Math.round(score)));
-  const stroke = 5;
+  const stroke = size >= 64 ? 7 : 5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
@@ -16,10 +23,17 @@ export function MatchScoreRing({
       : value >= 35
         ? "var(--mingle-warning)"
         : "var(--mingle-error)";
+  const track = showLabel
+    ? "var(--mingle-border)"
+    : "rgba(255,255,255,0.25)";
+  const labelColor = showLabel ? "text-mingle-text" : "text-white";
+  const shell = showLabel
+    ? "bg-mingle-surface-elevated shadow-mingle"
+    : "bg-black/25 shadow-sm backdrop-blur";
 
   return (
     <div
-      className="relative shrink-0 rounded-full bg-black/25 shadow-sm backdrop-blur"
+      className={`relative shrink-0 rounded-full ${shell}`}
       style={{ width: size, height: size }}
       aria-label={`Match score ${value}%`}
     >
@@ -29,7 +43,7 @@ export function MatchScoreRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="rgba(255,255,255,0.25)"
+          stroke={track}
           strokeWidth={stroke}
         />
         <circle
@@ -45,7 +59,11 @@ export function MatchScoreRing({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center font-display text-[11px] font-bold text-white">
+      <span
+        className={`absolute inset-0 flex items-center justify-center font-display font-bold ${labelColor} ${
+          size >= 64 ? "text-sm" : "text-[11px]"
+        }`}
+      >
         {value}%
       </span>
     </div>
