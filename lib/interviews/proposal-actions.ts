@@ -164,7 +164,7 @@ export async function proposeInterviewSlotsAction(input: {
       return {
         ok: false,
         error:
-          "Interview proposals are not live yet. Ask the founder to run migration 0029.",
+          "Interview proposals are not available yet. Please try again later.",
       };
     }
     return { ok: false, error: "Couldn't save those times. Try again." };
@@ -219,7 +219,7 @@ export async function acceptInterviewSlotAction(input: {
       return {
         ok: false,
         error:
-          "Interview booking is not live yet. Ask the founder to run migration 0029.",
+          "Interview booking is not available yet. Please try again later.",
       };
     }
     return {

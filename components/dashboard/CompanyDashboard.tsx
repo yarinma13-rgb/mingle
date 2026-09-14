@@ -48,6 +48,11 @@ function ownProfileMissingLogoHint(completion: number): string {
   return "Finish your company profile so talent can find you.";
 }
 
+function sparkFrom(seed: number): number[] {
+  const base = Math.max(1, seed);
+  return [base * 0.4, base * 0.5, base * 0.62, base * 0.58, base * 0.8, base];
+}
+
 export function CompanyDashboard({
   profileCompletion,
   candidates,
@@ -100,6 +105,7 @@ export function CompanyDashboard({
           value={`${profileCompletion}%`}
           accent="pink"
           href="/company-profile/build"
+          sparkline={sparkFrom(profileCompletion)}
         />
         <KpiTile
           icon={PeopleIcon}
@@ -107,6 +113,7 @@ export function CompanyDashboard({
           value={String(candidates.length)}
           accent="purple"
           href="/discover"
+          sparkline={sparkFrom(candidates.length)}
         />
         <KpiTile
           icon={CompassIcon}
@@ -114,6 +121,7 @@ export function CompanyDashboard({
           value={String(funnel.total)}
           accent="blue"
           href="/connections"
+          sparkline={sparkFrom(funnel.total)}
         />
         <KpiTile
           icon={MessageIcon}
@@ -121,6 +129,7 @@ export function CompanyDashboard({
           value={String(funnel.counts.in_conversation)}
           accent="success"
           href="/conversations"
+          sparkline={sparkFrom(funnel.counts.in_conversation)}
         />
         <KpiTile
           icon={BriefcaseIcon}
@@ -128,6 +137,7 @@ export function CompanyDashboard({
           value={String(funnel.counts.opportunity)}
           accent="waiting"
           href="/board"
+          sparkline={sparkFrom(funnel.counts.opportunity)}
         />
       </div>
 

@@ -38,6 +38,38 @@ const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(
 
 const subscribeNoop = () => () => {};
 
+const RECENT_SEARCHES_KEY = "mingle.cmdk.recent";
+const RECENT_SEARCHES_LIMIT = 5;
+
+type RecentSearch = { id: string; label: string; href: string };
+
+function readRecentSearches(): RecentSearch[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as RecentSearch[];
+    return Array.isArray(parsed) ? parsed.slice(0, RECENT_SEARCHES_LIMIT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushRecentSearch(item: Pick<CommandItem, "id" | "label" | "href">) {
+  if (typeof window === "undefined") return;
+  try {
+    const id = item.id.startsWith("recent:") ? item.id.slice(7) : item.id;
+    const next = [
+      { id, label: item.label, href: item.href },
+      ...readRecentSearches().filter((row) => row.id !== id),
+    ].slice(0, RECENT_SEARCHES_LIMIT);
+    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+
 export function useCommandPalette() {
   const ctx = useContext(CommandPaletteContext);
   if (!ctx) {
@@ -63,6 +95,8 @@ export function CommandPaletteProvider({
     needle: string;
     items: CommandItem[];
   }>({ needle: "", items: [] });
+  const [recent, setRecent] = useState<RecentSearch[]>([]);
+
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -126,13 +160,23 @@ export function CommandPaletteProvider({
     const nav = userType
       ? filterCommandItems(commandItemsFor(userType), query)
       : [];
+    if (!needle && recent.length > 0) {
+      const recentItems: CommandItem[] = recent.map((row) => ({
+        id: `recent:${row.id}`,
+        label: row.label,
+        href: row.href,
+        keywords: ["recent"],
+      }));
+      const seen = new Set(recentItems.map((item) => item.href));
+      return [...recentItems, ...nav.filter((item) => !seen.has(item.href))];
+    }
     if (!shouldSearchEntities) return nav;
     const entityItems =
       entityResult.needle === needle ? entityResult.items : [];
     const seen = new Set(nav.map((item) => item.id));
     const extras = entityItems.filter((item) => !seen.has(item.id));
     return [...extras, ...nav];
-  }, [userType, query, shouldSearchEntities, entityResult, needle]);
+  }, [userType, query, shouldSearchEntities, entityResult, needle, recent]);
 
   useEffect(() => {
     const node = listRef.current?.querySelector("[data-active=true]");
@@ -151,13 +195,16 @@ export function CommandPaletteProvider({
     setQuery("");
     setActiveIndex(0);
     setEntityResult({ needle: "", items: [] });
+    setRecent(readRecentSearches());
     setSessionOpen(true);
   }, [enabled, userType]);
 
   const runItem = useCallback(
-    (href: string) => {
+    (item: CommandItem | RecentSearch) => {
+      pushRecentSearch(item);
+      setRecent(readRecentSearches());
       close();
-      router.push(href);
+      router.push(item.href);
     },
     [close, router],
   );
@@ -174,6 +221,7 @@ export function CommandPaletteProvider({
           }
           setQuery("");
           setActiveIndex(0);
+          setRecent(readRecentSearches());
           return true;
         });
         return;
@@ -202,7 +250,7 @@ export function CommandPaletteProvider({
         const item = items[activeIndex];
         if (!item) return;
         event.preventDefault();
-        runItem(item.href);
+        runItem(item);
       }
     };
     window.addEventListener("keydown", onKeyDown, true);
@@ -323,14 +371,14 @@ export function CommandPaletteProvider({
                               aria-selected={active}
                               data-active={active}
                               onMouseEnter={() => setActiveIndex(index)}
-                              onClick={() => runItem(item.href)}
+                              onClick={() => runItem(item)}
                               className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
                                 active
                                   ? "bg-mingle-lavender text-mingle-text"
                                   : "text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
                               }`}
                             >
-                              {item.label}
+                              {item.id.startsWith("recent:") ? `Recent · ${item.label}` : item.label}
                             </button>
                           );
                         })

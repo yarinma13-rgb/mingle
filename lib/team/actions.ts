@@ -62,7 +62,7 @@ export async function inviteTeammateAction(input: {
     if (isMissingTeamTable(error as { message?: string; code?: string })) {
       return {
         ok: false,
-        error: "Team invites are not live yet. Ask the founder to run the SQL migration.",
+        error: "Team invites are not available yet. Please try again later.",
       };
     }
     const message =

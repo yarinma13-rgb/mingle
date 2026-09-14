@@ -42,12 +42,25 @@ export type ConnectionDisplayRow = {
 function PersonRow({
   row,
   children,
+  accent,
 }: {
   row: ConnectionDisplayRow;
   children?: React.ReactNode;
+  /** Left color bar grouping: New / In conversation / Saved. */
+  accent?: "new" | "conversation" | "saved";
 }) {
+  const barClass =
+    accent === "new"
+      ? "border-l-[3px] border-l-mingle-success"
+      : accent === "conversation"
+        ? "border-l-[3px] border-l-mingle-accent-blue"
+        : accent === "saved"
+          ? "border-l-[3px] border-l-mingle-accent-purple"
+          : "";
   return (
-    <div className="flex flex-col items-stretch justify-between gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 sm:flex-row sm:items-center sm:gap-4">
+    <div
+      className={`flex flex-col items-stretch justify-between gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 sm:flex-row sm:items-center sm:gap-4 ${barClass}`}
+    >
       <Link
         href={`/profile/view/${row.userId}`}
         className="flex min-w-0 items-center gap-3"
@@ -122,6 +135,18 @@ export function ConnectionsScreen({
 
   const nothingYet =
     incoming.length === 0 && outgoing.length === 0 && accepted.length === 0;
+
+  const newAccepted = accepted.filter(
+    (row) => !row.stage || row.stage === "connected" || row.stage === "exploring",
+  );
+  const conversationAccepted = accepted.filter(
+    (row) =>
+      row.stage === "in_conversation" ||
+      row.stage === "interview_booked" ||
+      row.stage === "opportunity" ||
+      row.stage === "decision" ||
+      row.stage === "relationship",
+  );
 
   const pipelineFunnel = useMemo(
     () => funnelFromStages(accepted.map((row) => row.stage)),
@@ -287,7 +312,7 @@ export function ConnectionsScreen({
         ) : (
           <div className="mt-4 flex flex-col gap-3">
             {incoming.map((row) => (
-              <PersonRow key={row.connectionId} row={row}>
+              <PersonRow key={row.connectionId} row={row} accent="new">
                 <div className="flex shrink-0 gap-2">
                   <button
                     type="button"
@@ -333,17 +358,19 @@ export function ConnectionsScreen({
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
         <h2 className="font-display text-sm font-semibold text-mingle-text">
-          Your connections
+          New
         </h2>
-        {accepted.length === 0 ? (
+        <p className="mt-1 text-xs text-mingle-text-secondary">
+          Fresh connections still warming up.
+        </p>
+        {newAccepted.length === 0 ? (
           <p className="mt-3 text-sm text-mingle-text-secondary">
-            No connections yet. Once you and someone else both express
-            interest, they&rsquo;ll show up here.
+            No new connections right now.
           </p>
         ) : (
           <div className="mt-4 flex flex-col gap-3">
-            {accepted.map((row) => (
-              <PersonRow key={row.connectionId} row={row}>
+            {newAccepted.map((row) => (
+              <PersonRow key={row.connectionId} row={row} accent="new">
                 <Link
                   href={`/conversations/${row.connectionId}`}
                   className="shrink-0 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
@@ -354,6 +381,71 @@ export function ConnectionsScreen({
             ))}
           </div>
         )}
+      </div>
+
+      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
+          In conversation
+        </h2>
+        <p className="mt-1 text-xs text-mingle-text-secondary">
+          People you&rsquo;re actively talking with.
+        </p>
+        {conversationAccepted.length === 0 ? (
+          <p className="mt-3 text-sm text-mingle-text-secondary">
+            No active conversations in this list yet.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            {conversationAccepted.map((row) => (
+              <PersonRow key={row.connectionId} row={row} accent="conversation">
+                <Link
+                  href={`/conversations/${row.connectionId}`}
+                  className="shrink-0 rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+                >
+                  Message
+                </Link>
+              </PersonRow>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-sm font-semibold text-mingle-text">
+            Saved
+          </h2>
+          <Link
+            href="/saved"
+            className="text-xs font-medium text-mingle-accent-blue hover:underline"
+          >
+            Open saved
+          </Link>
+        </div>
+        <p className="mt-1 text-xs text-mingle-text-secondary">
+          Profiles you bookmarked for later live on Saved.
+        </p>
+        <div className="mt-4">
+          <PersonRow
+            accent="saved"
+            row={{
+              connectionId: "saved-link",
+              userId: "saved",
+              name: "Your saved list",
+              subtitle: "Jump to everyone you bookmarked",
+              initial: "★",
+              photo: null,
+              gender: null,
+            }}
+          >
+            <Link
+              href="/saved"
+              className="shrink-0 rounded-full bg-mingle-lavender px-4 py-2 font-display text-xs font-semibold text-mingle-text"
+            >
+              View saved
+            </Link>
+          </PersonRow>
+        </div>
       </div>
         </>
       )}

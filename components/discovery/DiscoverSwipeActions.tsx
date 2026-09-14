@@ -1,6 +1,9 @@
+import Link from "next/link";
+
 type DiscoverSwipeActionsProps = {
   busy?: boolean;
   interestedDone?: boolean;
+  messageHref?: string | null;
   onSkip: () => void;
   onInterested: () => void;
 };
@@ -8,15 +11,17 @@ type DiscoverSwipeActionsProps = {
 /**
  * Dating-app style Skip / Interested controls.
  * Pink = female avatar accent (Skip). Blue = male avatar accent (Interested).
+ * Message appears when an accepted connection already exists.
  */
 export function DiscoverSwipeActions({
   busy = false,
   interestedDone = false,
+  messageHref = null,
   onSkip,
   onInterested,
 }: DiscoverSwipeActionsProps) {
   return (
-    <div className="flex items-center justify-center gap-10 py-1">
+    <div className="flex items-center justify-center gap-8 py-1 sm:gap-10">
       <button
         type="button"
         aria-label="Skip"
@@ -41,6 +46,32 @@ export function DiscoverSwipeActions({
           Skip
         </span>
       </button>
+
+      {messageHref ? (
+        <Link
+          href={messageHref}
+          aria-label="Message"
+          className="group flex flex-col items-center gap-2"
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-mingle-accent-blue/40 bg-mingle-lavender text-mingle-accent-blue transition-transform group-hover:scale-105 group-active:scale-95">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M4 5.5h16v11H9.5L5 20v-3.5H4v-11Z" />
+            </svg>
+          </span>
+          <span className="font-display text-xs font-bold tracking-wide text-mingle-accent-blue">
+            Message
+          </span>
+        </Link>
+      ) : null}
 
       <button
         type="button"

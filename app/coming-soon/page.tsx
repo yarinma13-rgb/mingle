@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NotifyMeButton } from "@/components/plans/NotifyMeButton";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { requireShellUser } from "@/lib/dashboard/require-shell-user";
 
@@ -21,7 +22,8 @@ export default async function ComingSoonPage() {
           Pricing is coming soon. We&apos;ll share plans here when they&apos;re
           ready — nothing to buy on this page yet.
         </p>
-        <Link href="/dashboard" className="mingle-btn-primary mt-6 inline-block text-xs">
+        <NotifyMeButton />
+        <Link href="/dashboard" className="mingle-btn-secondary mt-3 inline-block text-xs">
           Back to dashboard
         </Link>
       </div>

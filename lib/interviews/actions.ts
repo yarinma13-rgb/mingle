@@ -125,7 +125,7 @@ export async function scheduleInterviewAction(input: {
     if (isMissingInterviewsTable(error as { message?: string; code?: string })) {
       return {
         ok: false,
-        error: "Interviews are not live yet. Ask the founder to run the SQL migration.",
+        error: "Interviews are not available yet. Please try again later.",
       };
     }
     return { ok: false, error: "Couldn't save that. Try again in a moment." };

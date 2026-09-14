@@ -160,6 +160,7 @@ export default async function DashboardPage() {
       industry: company.industry,
       location: company.location,
       matchScore: score,
+      updatedAt: row.updated_at,
     });
   }
 

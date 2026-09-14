@@ -15,6 +15,7 @@ import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { loadPassedUserIds } from "@/lib/matching/passed";
 import { loadMatchFeedbackMap } from "@/lib/matching/feedback";
+import { loadAcceptedConnections } from "@/lib/connections/persistence";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { COMPANY_QUESTIONS } from "@/lib/company-profile/questions";
 import { loadShellChrome } from "@/lib/dashboard/require-shell-user";
@@ -56,11 +57,19 @@ export default async function DiscoverPage({
     PROFILE_QUESTIONS.find((question) => question.key === "drives")?.options ??
     [];
 
-  const [savedUserIds, passedUserIds, feedbackByUser] = await Promise.all([
-    loadSavedUserIds(supabase, user.id),
-    loadPassedUserIds(supabase, user.id),
-    loadMatchFeedbackMap(supabase, user.id),
-  ]);
+  const [savedUserIds, passedUserIds, feedbackByUser, acceptedConnections] =
+    await Promise.all([
+      loadSavedUserIds(supabase, user.id),
+      loadPassedUserIds(supabase, user.id),
+      loadMatchFeedbackMap(supabase, user.id),
+      loadAcceptedConnections(supabase, user.id),
+    ]);
+  const acceptedConnectionByUser: Record<string, string> = {};
+  for (const row of acceptedConnections) {
+    const otherId =
+      row.requester_id === user.id ? row.recipient_id : row.requester_id;
+    acceptedConnectionByUser[otherId] = row.id;
+  }
   const { cards, total, pageSize } = await loadDiscoveryPage(
     supabase,
     { id: user.id, userType: userRow.user_type },
@@ -151,6 +160,7 @@ export default async function DiscoverPage({
           cards={cards}
           savedUserIds={savedUserIds}
           feedbackByUser={feedbackByUser}
+          acceptedConnectionByUser={acceptedConnectionByUser}
           emptyBody={
             viewPassed
               ? undefined

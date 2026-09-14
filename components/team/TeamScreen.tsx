@@ -26,8 +26,8 @@ export function TeamScreen({
   if (tableMissing) {
     return (
       <EmptyState
-        title="Team invites are not live yet"
-        body="The founder still needs to run the team SQL in the Supabase editor. This page will list people after that."
+        title="Team invites coming soon"
+        body="Inviting teammates is not available on this workspace yet. Check back soon."
       />
     );
   }

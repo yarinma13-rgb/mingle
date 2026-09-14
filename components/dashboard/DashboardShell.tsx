@@ -20,6 +20,7 @@ import {
   BriefcaseIcon,
   CalendarIcon,
   BookmarkIcon,
+  HelpIcon,
 } from "@/components/dashboard/icons";
 import type { UserType } from "@/lib/supabase/types";
 import { isNavHrefActive } from "@/lib/dashboard/nav-active";
@@ -202,6 +203,15 @@ export function DashboardShell({
             >
               <SearchIcon size={16} />
             </button>
+
+            <Link
+              href="/settings/support"
+              aria-label="Help and support"
+              title="Help"
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text"
+            >
+              <HelpIcon size={16} />
+            </Link>
 
             <NotificationBell userId={userId} />
 
