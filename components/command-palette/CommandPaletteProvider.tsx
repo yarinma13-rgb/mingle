@@ -135,7 +135,7 @@ export function CommandPaletteProvider({
     return () => {
       cancelled = true;
     };
-  }, [enabled, pathname]);
+  }, [enabled]);
 
   useEffect(() => {
     if (!shouldSearchEntities || !userType) return;

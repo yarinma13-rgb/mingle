@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreIcon, XIcon } from "@/components/dashboard/icons";
+import { NavPendingIndicator } from "@/components/dashboard/NavPendingIndicator";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { isNavHrefActive } from "@/lib/dashboard/nav-active";
 import { Avatar } from "@/components/Avatar";
@@ -184,11 +185,14 @@ export function MobileBottomNav({
               key={item.label}
               href={item.href}
               prefetch
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
+              className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-center text-[10.5px] font-medium leading-tight ${
                 active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
               }`}
             >
-              <Icon size={20} />
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <NavPendingIndicator />
+                <Icon size={20} className="relative" />
+              </span>
               {item.label}
             </Link>
           );

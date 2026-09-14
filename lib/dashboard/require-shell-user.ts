@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -40,7 +41,7 @@ export async function loadShellChrome(
 
   const { data } = await supabase
     .from("talent_profiles")
-    .select("*")
+    .select("first_name, last_name, gender, profile_photo")
     .eq("user_id", user.id)
     .maybeSingle();
   const first = data?.first_name ?? "";
@@ -54,7 +55,13 @@ export async function loadShellChrome(
   };
 }
 
-export async function requireShellUser(opts?: { userType?: UserType }) {
+/**
+ * Auth + users row only. Cached per request so the shared (app) layout and
+ * leaf pages do not repeat getUser / users lookups.
+ */
+export const requireAppUser = cache(async function requireAppUser(opts?: {
+  userType?: UserType;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -63,7 +70,7 @@ export async function requireShellUser(opts?: { userType?: UserType }) {
 
   const { data: userRow } = await supabase
     .from("users")
-    .select("user_type")
+    .select("user_type, profile_completion, onboarding_status, onboarding_step")
     .eq("id", user.id)
     .maybeSingle();
   if (!userRow) redirect("/auth");
@@ -74,15 +81,33 @@ export async function requireShellUser(opts?: { userType?: UserType }) {
 
   const accountLabel = user.email?.split("@")[0] ?? "You";
   const isCompany = userRow.user_type === "company";
-  const chrome = await loadShellChrome(supabase, user, isCompany);
 
   return {
     supabase,
     user,
     userRow,
     accountLabel,
-    initials: chrome.initials,
     isCompany,
+  };
+});
+
+/**
+ * Full shell chrome for the persistent dashboard layout. Deduped with
+ * requireAppUser via React cache within the same request.
+ */
+export const requireShellUser = cache(async function requireShellUser(opts?: {
+  userType?: UserType;
+}) {
+  const base = await requireAppUser(opts);
+  const chrome = await loadShellChrome(
+    base.supabase,
+    base.user,
+    base.isCompany,
+  );
+
+  return {
+    ...base,
+    initials: chrome.initials,
     chrome,
     shellAvatar: {
       userName: chrome.userName,
@@ -91,4 +116,4 @@ export async function requireShellUser(opts?: { userType?: UserType }) {
       userPhoto: chrome.photo,
     },
   };
-}
+});

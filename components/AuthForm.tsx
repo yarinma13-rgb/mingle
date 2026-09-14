@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { AuthVisualPanel } from "@/components/AuthVisualPanel";
 import { createClient } from "@/lib/supabase/client";
-import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import { authSchema, type AuthFormValues } from "@/lib/validation/auth";
 import { AnalyticsEvent } from "@/lib/analytics/events";
@@ -77,7 +76,7 @@ export function AuthForm({
   initialMode?: AuthMode;
 }) {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<AuthMode>(initialMode);
   // Mirror AuthShell: signup without an explicit path starts as talent so the
   // Continue button matches the default segment UI and is not silently disabled.
@@ -99,12 +98,15 @@ export function AuthForm({
   } = useForm<AuthFormValues>({ resolver: zodResolver(authSchema) });
 
   const goAfterAuth = async (userId: string, resolvedPath: UserType) => {
+    // destinationAfterAuth already reconciles the users row — avoid a second
+    // ensureUserProfile round-trip that made sign-in feel stuck.
+    let next: string;
     try {
-      await ensureUserProfile(
+      next = await destinationAfterAuth(
         supabase,
         userId,
-        getValues("email"),
         resolvedPath,
+        getValues("email"),
       );
     } catch (profileError) {
       setServerError(
@@ -115,14 +117,10 @@ export function AuthForm({
       setIsSubmitting(false);
       return;
     }
-    const next = await destinationAfterAuth(
-      supabase,
-      userId,
-      resolvedPath,
-      getValues("email"),
-    );
-    router.push(next);
-    router.refresh();
+    startTransition(() => {
+      router.push(next);
+      router.refresh();
+    });
   };
 
   const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
