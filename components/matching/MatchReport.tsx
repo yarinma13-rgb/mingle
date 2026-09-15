@@ -153,7 +153,9 @@ export function MatchReportBody({
             Overall Match
           </p>
           <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>{report.overall}</span>
+            <span className={scoreTextClass(report.overall)}>
+              {report.overall}%
+            </span>
           </p>
         </div>
         <span
@@ -162,6 +164,10 @@ export function MatchReportBody({
           {scoreBandLabel(report.overall)}
         </span>
       </div>
+      <p className="text-[11px] leading-snug text-mingle-text-secondary">
+        Built from Role Fit, Human Fit, and Motivation Fit — not a black-box
+        score.
+      </p>
       <FitBars axes={report.axes} />
       {report.technicalSignal ? (
         <p className="text-[11px] leading-snug text-mingle-text">

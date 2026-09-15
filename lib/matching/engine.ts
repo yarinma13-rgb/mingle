@@ -86,6 +86,13 @@ const TALENT_COMMITMENT: Record<string, number> = {
 };
 
 const COMPANY_COMMITMENT: Record<string, number> = {
+  // Current company onboarding labels
+  "Hiring now": 1,
+  "Hiring soon": 0.65,
+  "Building a talent pipeline": 0.4,
+  "Exploring the market": 0.3,
+  "Networking with talent": 0.2,
+  // Legacy rows already saved in preferences
   Hiring: 1,
   "Future hiring": 0.6,
   "Talent discovery": 0.4,
@@ -181,20 +188,39 @@ function workStyleFactor(
   };
 }
 
+/** Soft industry compare: exact → contains → shared token → miss. */
+function industryOverlapFraction(a: string, b: string): number {
+  const left = a.trim().toLowerCase();
+  const right = b.trim().toLowerCase();
+  if (!left || !right) return 0;
+  if (left === right) return 1;
+  if (left.includes(right) || right.includes(left)) return 0.72;
+  const tokens = (value: string) =>
+    value
+      .split(/[\s/&,+\-_|]+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length > 2);
+  const leftTokens = new Set(tokens(left));
+  if (tokens(right).some((token) => leftTokens.has(token))) return 0.55;
+  return 0;
+}
+
 function industryFactor(
   talent: TalentMatchInput,
   company: CompanyMatchInput,
 ): MatchFactor {
-  const t = talent.profile.industry.trim().toLowerCase();
-  const c = company.profile.industry.trim().toLowerCase();
-  const fraction = !t || !c ? 0 : t === c ? 1 : 0;
+  const t = talent.profile.industry.trim();
+  const c = company.profile.industry.trim();
+  const fraction = industryOverlapFraction(t, c);
   const verdict = verdictFromFraction(fraction);
   const detail =
     !t || !c
       ? "Industry isn't set on one side yet."
-      : t === c
-        ? `Same industry — ${company.profile.industry}.`
-        : `Different industries — ${talent.profile.industry || "not set"} vs ${company.profile.industry}.`;
+      : fraction >= 1
+        ? `Same industry — ${c}.`
+        : fraction >= 0.55
+          ? `Related industries — ${t} and ${c}.`
+          : `Different industries — ${t || "not set"} vs ${c}.`;
   return {
     key: "industry",
     label: "Industry",
