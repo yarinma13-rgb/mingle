@@ -2,18 +2,30 @@
 
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
+import { demoEase } from "@/lib/demo/motion";
 
 export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
   return (
-    <div className="flex h-full min-h-[520px] flex-col items-center justify-center px-6 text-center">
+    <div className="relative flex h-full min-h-[520px] flex-col items-center justify-center overflow-hidden px-6 text-center">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse 65% 45% at 50% 0%, #e9effe 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 15% 100%, #fdeaf1 0%, transparent 50%)",
+        }}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="flex max-w-lg flex-col items-center"
+        transition={{ duration: 0.6, ease: demoEase }}
+        className="relative flex max-w-lg flex-col items-center"
       >
-        <MingleLogo size={64} priority />
-        <p className="mt-8 font-display text-xl font-semibold leading-snug tracking-tight text-mingle-text sm:text-2xl">
+        <MingleLogo size={68} priority />
+        <p className="mt-8 font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-mingle-text sm:text-2xl">
           Building a better way to connect talent and companies.
         </p>
         <p className="mt-5 text-sm text-mingle-text-secondary">
@@ -25,9 +37,14 @@ export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
         <p className="mt-2 text-base text-mingle-text-secondary">
           Beyond the match.
         </p>
-        <p className="mt-5 text-sm font-semibold text-mingle-accent-blue">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35, duration: 0.5 }}
+          className="mt-5 text-sm font-semibold text-mingle-accent-blue"
+        >
           mingle.careers
-        </p>
+        </motion.p>
         {onReplay ? (
           <button
             type="button"

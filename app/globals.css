@@ -474,24 +474,53 @@ button:disabled {
   color: var(--mingle-text);
 }
 
-/* Product demo (/demo) — subtle recording-ready polish */
+/* Product demo (/demo) — monday-calm recording polish */
 .demo-page {
   isolation: isolate;
 }
 
+.demo-experience {
+  --demo-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.demo-chrome {
+  transition: box-shadow 0.45s var(--demo-ease), border-color 0.45s var(--demo-ease);
+}
+
 .demo-highlight {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 35%, transparent);
-  background: color-mix(in srgb, var(--mingle-accent-purple) 6%, var(--mingle-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 28%, transparent);
+  background: color-mix(in srgb, var(--mingle-accent-purple) 5%, var(--mingle-surface));
+  animation: demo-highlight-pulse 2.8s var(--demo-ease) infinite;
+}
+
+@keyframes demo-highlight-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 40%, transparent),
+      0 10px 28px color-mix(in srgb, var(--mingle-accent-purple) 10%, transparent);
+  }
 }
 
 .demo-caption {
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+}
+
+html {
+  transition: background-color 0.45s var(--demo-ease, ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .demo-experience * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .demo-highlight {
+    animation: none;
   }
 }
 

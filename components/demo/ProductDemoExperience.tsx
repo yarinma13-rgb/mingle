@@ -20,6 +20,10 @@ import { ClosingScene } from "@/components/demo/scenes/ClosingScene";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { DEMO_SCENES, type DemoSceneId } from "@/lib/demo/scenes";
 import { DEMO_VOICEOVER } from "@/lib/demo/data";
+import {
+  demoEase,
+  demoFullBleedVariants,
+} from "@/lib/demo/motion";
 
 const NAV_TO_SCENE: Record<string, DemoSceneId> = {
   Dashboard: "introduce",
@@ -63,18 +67,23 @@ export function ProductDemoExperience({
   const [showScript, setShowScript] = useState(false);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [veil, setVeil] = useState(false);
   const sceneStartedAt = useRef(performance.now());
   const timerRef = useRef<number | null>(null);
-  const previousTheme = useRef<"light" | "dark">("light");
 
   const scene = DEMO_SCENES[sceneIndex];
   const isLast = sceneIndex >= DEMO_SCENES.length - 1;
+  const showChrome = Boolean(scene.showChrome);
 
   const goTo = useCallback((index: number) => {
     const next = Math.max(0, Math.min(DEMO_SCENES.length - 1, index));
-    setSceneIndex(next);
-    setElapsedInScene(0);
-    sceneStartedAt.current = performance.now();
+    setVeil(true);
+    window.setTimeout(() => {
+      setSceneIndex(next);
+      setElapsedInScene(0);
+      sceneStartedAt.current = performance.now();
+      window.setTimeout(() => setVeil(false), 180);
+    }, 120);
   }, []);
 
   const next = useCallback(() => {
@@ -96,6 +105,7 @@ export function ProductDemoExperience({
     setSceneIndex(0);
     setPlaying(true);
     setTheme("light");
+    setVeil(false);
   }, [setTheme]);
 
   const togglePlay = useCallback(() => {
@@ -127,22 +137,15 @@ export function ProductDemoExperience({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  /** Dark-mode flash: enter dark for this beat, restore light after. */
   useEffect(() => {
     if (scene.forceDark) {
-      previousTheme.current =
-        document.documentElement.getAttribute("data-theme") === "dark"
-          ? "dark"
-          : "light";
       setTheme("dark");
       return () => setTheme("light");
     }
     setTheme("light");
   }, [scene.forceDark, scene.id, setTheme]);
 
-  useEffect(() => {
-    return () => setTheme("light");
-  }, [setTheme]);
+  useEffect(() => () => setTheme("light"), [setTheme]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -184,7 +187,12 @@ export function ProductDemoExperience({
           setElapsedInScene(scene.durationMs);
           return;
         }
-        setSceneIndex((i) => i + 1);
+        // Soft veil advance for autoplay continuity
+        setVeil(true);
+        window.setTimeout(() => {
+          setSceneIndex((i) => i + 1);
+          window.setTimeout(() => setVeil(false), 180);
+        }, 140);
         return;
       }
       timerRef.current = window.setTimeout(tick, Math.min(100, remaining));
@@ -234,7 +242,6 @@ export function ProductDemoExperience({
     [elapsedInScene, sceneIndex],
   );
 
-  const showChrome = Boolean(scene.showChrome);
   const progress =
     ((sceneIndex + Math.min(1, elapsedInScene / scene.durationMs)) /
       DEMO_SCENES.length) *
@@ -295,62 +302,62 @@ export function ProductDemoExperience({
 
   return (
     <div className="demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-40 h-0.5 bg-mingle-border/40"
-        aria-hidden
-      >
-        <div
-          className="h-full bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue transition-[width] duration-150 ease-linear"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue"
+        style={{ scaleX: progress / 100 }}
+        transition={{ duration: 0.2, ease: "linear" }}
+      />
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-14 pt-3 sm:px-5 sm:pt-4 lg:px-8">
         <div className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={scene.id}
-              initial={
-                reducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }
-              }
-              animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="relative flex min-h-0 flex-1 flex-col"
+          {/* Soft transition veil — monday calm, not a hard cut */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-20 rounded-2xl bg-gradient-to-b from-white/70 via-white/40 to-transparent"
+            animate={{ opacity: veil && !reducedMotion ? 1 : 0 }}
+            transition={{ duration: 0.22, ease: demoEase }}
+          />
+
+          {showChrome ? (
+            <DemoChrome
+              activeNav={scene.chromeNav ?? "Dashboard"}
+              title={scene.chromeTitle ?? "mingle"}
+              audience={scene.audience ?? "company"}
+              contentKey={scene.id}
+              fillMain={scene.id === "conversation"}
+              reducedMotion={reducedMotion}
+              onNavSelect={(label) => {
+                const target = NAV_TO_SCENE[label];
+                if (!target) return;
+                const index = DEMO_SCENES.findIndex(
+                  (item) => item.id === target,
+                );
+                if (index >= 0) {
+                  goTo(index);
+                  setPlaying(false);
+                }
+              }}
             >
-              {showChrome ? (
-                <DemoChrome
-                  activeNav={scene.chromeNav ?? "Dashboard"}
-                  title={scene.chromeTitle ?? "mingle"}
-                  audience={scene.audience ?? "company"}
-                  fillMain={scene.id === "conversation"}
-                  onNavSelect={(label) => {
-                    const target = NAV_TO_SCENE[label];
-                    if (!target) return;
-                    const index = DEMO_SCENES.findIndex(
-                      (item) => item.id === target,
-                    );
-                    if (index >= 0) {
-                      goTo(index);
-                      setPlaying(false);
-                    }
-                  }}
-                >
-                  {body}
-                </DemoChrome>
-              ) : (
-                <div
-                  className={`flex flex-1 flex-col overflow-hidden ${
-                    scene.fullBleed
-                      ? ""
-                      : "rounded-2xl border border-mingle-border/60 bg-mingle-surface/80 shadow-mingle backdrop-blur-sm"
-                  }`}
-                >
-                  {body}
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              {body}
+            </DemoChrome>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={scene.id}
+                variants={reducedMotion ? undefined : demoFullBleedVariants}
+                initial={reducedMotion ? false : "initial"}
+                animate="animate"
+                exit={reducedMotion ? undefined : "exit"}
+                className={`flex flex-1 flex-col overflow-hidden ${
+                  scene.fullBleed
+                    ? ""
+                    : "rounded-2xl border border-mingle-border/50 bg-mingle-surface/85 shadow-[0_24px_80px_rgba(37,34,56,0.10)] backdrop-blur-sm"
+                }`}
+              >
+                {body}
+              </motion.div>
+            </AnimatePresence>
+          )}
 
           <DemoCaptions lines={hideCaptions ? [] : captions} visible={!hideCaptions} />
         </div>
@@ -362,8 +369,10 @@ export function ProductDemoExperience({
         onMouseLeave={() => setControlsOpen(false)}
       >
         <div
-          className={`border-t border-mingle-border/70 bg-mingle-surface/92 backdrop-blur-md transition-all duration-200 ${
-            controlsOpen || !playing ? "opacity-100" : "opacity-40 hover:opacity-100"
+          className={`border-t border-mingle-border/60 bg-mingle-surface/90 backdrop-blur-xl transition-all duration-300 ${
+            controlsOpen || !playing
+              ? "translate-y-0 opacity-100"
+              : "translate-y-1 opacity-25 hover:opacity-100"
           }`}
         >
           <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-5 lg:px-8">
@@ -419,10 +428,10 @@ export function ProductDemoExperience({
                     goTo(index);
                     setPlaying(false);
                   }}
-                  className={`h-1.5 w-1.5 rounded-full transition-all ${
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
                     index === sceneIndex
-                      ? "w-4 bg-mingle-accent-purple"
-                      : "bg-mingle-border hover:bg-mingle-text-muted"
+                      ? "w-5 bg-mingle-accent-purple"
+                      : "w-1.5 bg-mingle-border hover:bg-mingle-text-muted"
                   }`}
                 />
               ))}

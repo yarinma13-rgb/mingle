@@ -88,20 +88,22 @@ export function MingleMomentScene() {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        initial={{ opacity: 0, scale: 0.92, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-[2] flex flex-col items-center text-center"
       >
         <div className="relative flex items-center justify-center">
-          <span
+          <motion.span
             aria-hidden
-            className="absolute h-40 w-40 rounded-full bg-mingle-blue/15 blur-3xl"
+            className="absolute h-44 w-44 rounded-full bg-mingle-blue/15 blur-3xl"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
           />
           <MingleLogo variant="mark" size={88} className="relative" priority />
         </div>
 
-        <h2 className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl">
+        <h2 className="mt-6 max-w-full px-1 font-display text-3xl font-bold tracking-[-0.03em] text-mingle-text sm:text-5xl">
           {"It's a mingle"}
         </h2>
 
@@ -109,9 +111,14 @@ export function MingleMomentScene() {
           You and {DEMO_EMMA.name} both want to get to know each other.
         </p>
 
-        <div className="mt-8 w-full max-w-xs rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="mt-8 w-full max-w-xs rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,115,234,0.28)]"
+        >
           Start conversation
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

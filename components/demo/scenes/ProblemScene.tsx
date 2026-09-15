@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MingleChip } from "@/components/MingleChip";
 import { DEMO_ROLE, DEMO_COMPANY } from "@/lib/demo/data";
+import { demoEase } from "@/lib/demo/motion";
 
 /**
  * Soft product surface behind problem captions — role definition UI
@@ -12,9 +13,9 @@ export function ProblemScene() {
   return (
     <div className="relative mx-auto w-full max-w-3xl">
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 0.7, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+        animate={{ opacity: 0.72, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 0.65, ease: demoEase }}
         className="rounded-2xl border border-mingle-border bg-mingle-surface p-6 shadow-mingle sm:p-8"
         aria-hidden
       >
@@ -38,7 +39,9 @@ export function ProblemScene() {
         </div>
 
         <div className="mt-5">
-          <p className="text-xs font-semibold text-mingle-text">What matters beyond the CV</p>
+          <p className="text-xs font-semibold text-mingle-text">
+            What matters beyond the CV
+          </p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {DEMO_ROLE.whatMatters.map((item) => (
               <li
