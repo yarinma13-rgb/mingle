@@ -214,22 +214,13 @@ function DiscoveryCardView({
       {isCompanyCard ? (
         <div className="relative aspect-[3/4] max-h-[min(62vh,520px)] w-full shrink-0 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(160deg,#1e3a5f_0%,#3d4f7a_42%,#6b7db3_100%)]">
-            {card.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={card.photo}
-                alt=""
-                className="h-full w-full object-cover opacity-90"
-              />
-            ) : (
-              <div
-                className="absolute inset-0 opacity-40"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 42%), radial-gradient(circle at 80% 30%, rgba(167,139,250,0.45), transparent 40%), linear-gradient(180deg, transparent 30%, rgba(15,23,42,0.55) 100%)",
-                }}
-              />
-            )}
+            <div
+              className="absolute inset-0 opacity-40"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 42%), radial-gradient(circle at 80% 30%, rgba(167,139,250,0.45), transparent 40%), linear-gradient(180deg, transparent 30%, rgba(15,23,42,0.55) 100%)",
+              }}
+            />
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
 
@@ -239,6 +230,13 @@ function DiscoveryCardView({
               {card.score}% · {card.report.strength}
             </span>
           </div>
+
+          {card.photo ? (
+            <div className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white/95 p-1.5 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={card.photo} alt="" className="h-full w-full object-contain" />
+            </div>
+          ) : null}
 
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
             <div>
