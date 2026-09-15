@@ -112,6 +112,7 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Account executive",
     "Sales development",
     "Customer success manager",
+    "Customer Success & Account Manager",
   ],
   Marketing: [
     "Marketing manager",
@@ -132,7 +133,9 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Program manager",
   ],
   "Customer success": [
+    "Customer Success & Account Manager",
     "Customer success manager",
+    "Account manager",
     "Support lead",
   ],
   People: [
