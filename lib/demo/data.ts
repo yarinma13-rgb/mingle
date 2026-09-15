@@ -352,10 +352,89 @@ export const DEMO_MESSAGES: MessageRow[] = [
   },
 ];
 
+/** Companies Emma might discover from the talent side. */
+export const DEMO_TALENT_COMPANIES = [
+  {
+    userId: DEMO_IDS.companyUser,
+    companyName: DEMO_COMPANY.name,
+    mission: "Building clarity into B2B product workflows.",
+    industry: DEMO_COMPANY.industry,
+    location: DEMO_COMPANY.location,
+    matchScore: 92,
+    roleTitle: DEMO_ROLE.title,
+    tags: [...DEMO_COMPANY.culture],
+    about:
+      "Series B product team looking for a senior designer who owns end-to-end surfaces with PMs and engineers.",
+  },
+  {
+    userId: "demo-company-harbor",
+    companyName: "Harbor Systems",
+    mission: "Infrastructure that stays quiet until it matters.",
+    industry: "Developer tools",
+    location: "Remote · EU",
+    matchScore: 84,
+    roleTitle: "Product Designer",
+    tags: ["Autonomy", "Craft", "Async"],
+    about: "Small design pod partnering closely with platform engineering.",
+  },
+] as const;
+
+export const DEMO_BOARD_COLUMNS = [
+  {
+    id: "connected",
+    label: "Connected",
+    accent: "var(--mingle-accent-pink)",
+    names: ["Sofia Reyes"],
+  },
+  {
+    id: "exploring",
+    label: "Exploring",
+    accent: "var(--mingle-accent-purple)",
+    names: ["Daniel Morgan"],
+  },
+  {
+    id: "in_conversation",
+    label: "In conversation",
+    accent: "var(--mingle-accent-blue)",
+    names: ["Emma Carter"],
+  },
+  {
+    id: "interview_booked",
+    label: "Interview booked",
+    accent: "var(--mingle-success)",
+    names: ["Emma Carter"],
+  },
+] as const;
+
+/**
+ * Clearly labeled future roadmap — not shipped product.
+ * Shown only as Phase 2 vision for investors.
+ */
+export const DEMO_PHASE2 = {
+  eyebrow: "Phase 2 · Roadmap",
+  title: "After the first pilot",
+  lead: "The relationship layer expands beyond hiring into ongoing work — still human-first.",
+  pillars: [
+    {
+      title: "Employee lifecycle",
+      body: "Extend mingle from hire into the working relationship — onboarding context, check-ins, and continuity between people and companies.",
+    },
+    {
+      title: "Process automation",
+      body: "AI-assisted automation for employer–employee process forms and repetitive workflow paperwork — with humans still in control.",
+    },
+    {
+      title: "Mobile for both sides",
+      body: "Native apps so talent and recruiters can stay updated around the clock — conversations, interviews, and relationship stages on the go.",
+    },
+  ],
+  note: "Vision for Phase 2 — not part of the current pilot build.",
+} as const;
+
 export const DEMO_VOICEOVER = `Hiring is more than matching keywords.
 
 mingle helps companies and talent connect beyond the traditional hiring process — bringing together skills, values, goals and the human context behind the profile.
 
-This is the first working version of mingle, now moving into our first pilot stage.
+This is the first working version of mingle, and I'm now moving into the first pilot stage.
 
-mingle. Beyond the match.`;
+mingle — Beyond the match.`;

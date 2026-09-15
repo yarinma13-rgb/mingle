@@ -14,16 +14,19 @@ export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
       >
         <MingleLogo size={64} priority />
         <p className="mt-8 font-display text-xl font-semibold leading-snug tracking-tight text-mingle-text sm:text-2xl">
-          The first working version of mingle is now ready for pilot.
+          Building a better way to connect talent and companies.
         </p>
-        <p className="mt-6 font-display text-2xl font-semibold tracking-tight text-mingle-text">
+        <p className="mt-5 text-sm text-mingle-text-secondary">
+          Now entering the first pilot stage.
+        </p>
+        <p className="mt-8 font-display text-2xl font-semibold tracking-tight text-mingle-text">
           mingle
         </p>
         <p className="mt-2 text-base text-mingle-text-secondary">
           Beyond the match.
         </p>
-        <p className="mt-8 text-sm font-medium text-mingle-accent-purple">
-          Let&apos;s mingle.
+        <p className="mt-5 text-sm font-semibold text-mingle-accent-blue">
+          mingle.careers
         </p>
         {onReplay ? (
           <button
@@ -31,7 +34,7 @@ export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
             onClick={onReplay}
             className="mingle-btn-secondary mt-8 text-xs"
           >
-            Replay demo
+            Restart demo
           </button>
         ) : null}
       </motion.div>

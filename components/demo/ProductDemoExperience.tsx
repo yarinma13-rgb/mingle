@@ -6,25 +6,34 @@ import { DemoChrome } from "@/components/demo/DemoChrome";
 import { DemoCaptions } from "@/components/demo/DemoCaptions";
 import { OpeningScene } from "@/components/demo/scenes/OpeningScene";
 import { ProblemScene } from "@/components/demo/scenes/ProblemScene";
-import { CompanyScene } from "@/components/demo/scenes/CompanyScene";
+import { IntroduceScene } from "@/components/demo/scenes/IntroduceScene";
+import { RoleScene } from "@/components/demo/scenes/RoleScene";
 import { ProfileScene } from "@/components/demo/scenes/ProfileScene";
 import { MatchScene } from "@/components/demo/scenes/MatchScene";
+import { TalentScene } from "@/components/demo/scenes/TalentScene";
+import { MingleMomentScene } from "@/components/demo/scenes/MingleMomentScene";
 import { ConversationScene } from "@/components/demo/scenes/ConversationScene";
 import { RecommendationsScene } from "@/components/demo/scenes/RecommendationsScene";
+import { BoardScene } from "@/components/demo/scenes/BoardScene";
+import { Phase2Scene } from "@/components/demo/scenes/Phase2Scene";
 import { ClosingScene } from "@/components/demo/scenes/ClosingScene";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { DEMO_SCENES, type DemoSceneId } from "@/lib/demo/scenes";
 import { DEMO_VOICEOVER } from "@/lib/demo/data";
 
 const NAV_TO_SCENE: Record<string, DemoSceneId> = {
-  Dashboard: "company",
-  Roles: "problem",
+  Dashboard: "introduce",
+  Roles: "company",
   Candidates: "profile",
+  Discover: "talent",
   Conversations: "conversation",
-  Pipeline: "company",
-  Board: "company",
+  Connections: "talent",
+  Pipeline: "board",
+  Board: "board",
   Interviews: "conversation",
-  "My profile": "company",
-  Settings: "company",
+  Saved: "talent",
+  "My profile": "profile",
+  Settings: "introduce",
 };
 
 function activeCaptionLines(
@@ -47,13 +56,16 @@ export function ProductDemoExperience({
 }: {
   initialAutoplay?: boolean;
 }) {
+  const { setTheme } = useTheme();
   const [sceneIndex, setSceneIndex] = useState(0);
   const [playing, setPlaying] = useState(initialAutoplay);
   const [elapsedInScene, setElapsedInScene] = useState(0);
   const [showScript, setShowScript] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const sceneStartedAt = useRef(performance.now());
   const timerRef = useRef<number | null>(null);
+  const previousTheme = useRef<"light" | "dark">("light");
 
   const scene = DEMO_SCENES[sceneIndex];
   const isLast = sceneIndex >= DEMO_SCENES.length - 1;
@@ -83,7 +95,8 @@ export function ProductDemoExperience({
     setElapsedInScene(0);
     setSceneIndex(0);
     setPlaying(true);
-  }, []);
+    setTheme("light");
+  }, [setTheme]);
 
   const togglePlay = useCallback(() => {
     setPlaying((prev) => {
@@ -93,7 +106,6 @@ export function ProductDemoExperience({
     });
   }, []);
 
-  // When the user presses Play from a paused state, clear scene progress.
   const wasPlayingRef = useRef(playing);
   useEffect(() => {
     if (playing && !wasPlayingRef.current) {
@@ -115,7 +127,23 @@ export function ProductDemoExperience({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  /** Keep the recording on /demo — reused product tiles may link to live app routes. */
+  /** Dark-mode flash: enter dark for this beat, restore light after. */
+  useEffect(() => {
+    if (scene.forceDark) {
+      previousTheme.current =
+        document.documentElement.getAttribute("data-theme") === "dark"
+          ? "dark"
+          : "light";
+      setTheme("dark");
+      return () => setTheme("light");
+    }
+    setTheme("light");
+  }, [scene.forceDark, scene.id, setTheme]);
+
+  useEffect(() => {
+    return () => setTheme("light");
+  }, [setTheme]);
+
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
@@ -212,25 +240,32 @@ export function ProductDemoExperience({
       DEMO_SCENES.length) *
     100;
 
+  const jumpProfile = () => {
+    const index = DEMO_SCENES.findIndex((item) => item.id === "profile");
+    if (index >= 0) {
+      goTo(index);
+      setPlaying(false);
+    }
+  };
+
   const body = (() => {
     switch (scene.id) {
       case "opening":
         return <OpeningScene />;
       case "problem":
         return <ProblemScene />;
+      case "introduce":
+        return <IntroduceScene onOpenCandidate={jumpProfile} />;
       case "company":
-        return (
-          <CompanyScene
-            onOpenCandidate={() => {
-              goTo(DEMO_SCENES.findIndex((item) => item.id === "profile"));
-              setPlaying(false);
-            }}
-          />
-        );
+        return <RoleScene />;
       case "profile":
         return <ProfileScene />;
       case "match":
         return <MatchScene />;
+      case "talent":
+        return <TalentScene />;
+      case "mingleMoment":
+        return <MingleMomentScene />;
       case "conversation":
         return (
           <div className="pointer-events-none select-none">
@@ -239,12 +274,24 @@ export function ProductDemoExperience({
         );
       case "recommendations":
         return <RecommendationsScene />;
+      case "board":
+        return <BoardScene />;
+      case "darkMode":
+        return <IntroduceScene />;
+      case "phase2":
+        return <Phase2Scene />;
       case "closing":
         return <ClosingScene onReplay={replay} />;
       default:
         return null;
     }
   })();
+
+  const hideCaptions =
+    scene.id === "opening" ||
+    scene.id === "closing" ||
+    scene.id === "mingleMoment" ||
+    scene.id === "phase2";
 
   return (
     <div className="demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent">
@@ -258,8 +305,8 @@ export function ProductDemoExperience({
         />
       </div>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-20 pt-4 sm:px-5 sm:pt-5 lg:px-8">
-        <div className="relative flex min-h-[calc(100vh-6.5rem)] flex-1 flex-col">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-14 pt-3 sm:px-5 sm:pt-4 lg:px-8">
+        <div className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col">
           <AnimatePresence mode="wait">
             <motion.div
               key={scene.id}
@@ -268,13 +315,15 @@ export function ProductDemoExperience({
               }
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="relative flex min-h-0 flex-1 flex-col"
             >
               {showChrome ? (
                 <DemoChrome
                   activeNav={scene.chromeNav ?? "Dashboard"}
                   title={scene.chromeTitle ?? "mingle"}
+                  audience={scene.audience ?? "company"}
+                  fillMain={scene.id === "conversation"}
                   onNavSelect={(label) => {
                     const target = NAV_TO_SCENE[label];
                     if (!target) return;
@@ -290,101 +339,116 @@ export function ProductDemoExperience({
                   {body}
                 </DemoChrome>
               ) : (
-                <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-mingle-border/60 bg-mingle-surface/70 shadow-mingle backdrop-blur-sm">
+                <div
+                  className={`flex flex-1 flex-col overflow-hidden ${
+                    scene.fullBleed
+                      ? ""
+                      : "rounded-2xl border border-mingle-border/60 bg-mingle-surface/80 shadow-mingle backdrop-blur-sm"
+                  }`}
+                >
                   {body}
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
 
-          <DemoCaptions
-            lines={
-              scene.id === "opening" || scene.id === "closing" ? [] : captions
-            }
-            visible={scene.id !== "opening" && scene.id !== "closing"}
-          />
+          <DemoCaptions lines={hideCaptions ? [] : captions} visible={!hideCaptions} />
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-mingle-border/80 bg-mingle-surface/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-5 lg:px-8">
-          <button
-            type="button"
-            data-demo-play
-            onClick={togglePlay}
-            className="mingle-btn-primary min-w-[5.5rem] text-xs"
-            aria-label={playing ? "Pause demo" : "Play demo"}
-          >
-            {playing ? "Pause" : "Play"}
-          </button>
-          <button
-            type="button"
-            onClick={prev}
-            disabled={sceneIndex === 0}
-            className="mingle-btn-secondary text-xs disabled:opacity-40"
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              next();
-              setPlaying(false);
-            }}
-            disabled={isLast}
-            className="mingle-btn-secondary text-xs disabled:opacity-40"
-          >
-            Next
-          </button>
-          <button
-            type="button"
-            onClick={replay}
-            className="mingle-btn-secondary text-xs"
-          >
-            Restart
-          </button>
+      <div
+        className="fixed inset-x-0 bottom-0 z-50"
+        onMouseEnter={() => setControlsOpen(true)}
+        onMouseLeave={() => setControlsOpen(false)}
+      >
+        <div
+          className={`border-t border-mingle-border/70 bg-mingle-surface/92 backdrop-blur-md transition-all duration-200 ${
+            controlsOpen || !playing ? "opacity-100" : "opacity-40 hover:opacity-100"
+          }`}
+        >
+          <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-5 lg:px-8">
+            <button
+              type="button"
+              data-demo-play
+              onClick={togglePlay}
+              className="mingle-btn-primary min-w-[5rem] text-[11px]"
+              aria-label={playing ? "Pause demo" : "Play demo"}
+            >
+              {playing ? "Pause" : "Play"}
+            </button>
+            <button
+              type="button"
+              onClick={prev}
+              disabled={sceneIndex === 0}
+              className="mingle-btn-secondary text-[11px] disabled:opacity-40"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                next();
+                setPlaying(false);
+              }}
+              disabled={isLast}
+              className="mingle-btn-secondary text-[11px] disabled:opacity-40"
+            >
+              Next
+            </button>
+            <button
+              type="button"
+              onClick={replay}
+              className="mingle-btn-secondary text-[11px]"
+            >
+              Restart
+            </button>
 
-          <div className="mx-1 hidden items-center gap-1.5 sm:flex" role="tablist" aria-label="Demo scenes">
-            {DEMO_SCENES.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={index === sceneIndex}
-                aria-label={`Scene ${index + 1}`}
-                onClick={() => {
-                  goTo(index);
-                  setPlaying(false);
-                }}
-                className={`h-2 w-2 rounded-full transition-all ${
-                  index === sceneIndex
-                    ? "w-5 bg-mingle-accent-purple"
-                    : "bg-mingle-border hover:bg-mingle-text-muted"
-                }`}
-              />
-            ))}
+            <div
+              className="mx-1 hidden items-center gap-1 sm:flex"
+              role="tablist"
+              aria-label="Demo scenes"
+            >
+              {DEMO_SCENES.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={index === sceneIndex}
+                  aria-label={`Scene ${index + 1}: ${item.id}`}
+                  onClick={() => {
+                    goTo(index);
+                    setPlaying(false);
+                  }}
+                  className={`h-1.5 w-1.5 rounded-full transition-all ${
+                    index === sceneIndex
+                      ? "w-4 bg-mingle-accent-purple"
+                      : "bg-mingle-border hover:bg-mingle-text-muted"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <p className="ml-auto hidden text-[10px] text-mingle-text-secondary lg:block">
+              Space · ← → · 1440px
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowScript((value) => !value)}
+              className="text-[10px] font-medium text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
+            >
+              {showScript ? "Hide script" : "Voiceover"}
+            </button>
           </div>
 
-          <p className="ml-auto hidden text-[11px] text-mingle-text-secondary md:block">
-            Space play/pause · ← → scenes · optimized for 1440px recording
-          </p>
-
-          <button
-            type="button"
-            onClick={() => setShowScript((value) => !value)}
-            className="text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
-          >
-            {showScript ? "Hide voiceover" : "Voiceover script"}
-          </button>
+          {showScript ? (
+            <div className="border-t border-mingle-border bg-mingle-bg/80 px-3 py-3 sm:px-5 lg:px-8">
+              <pre className="mx-auto max-w-[1440px] whitespace-pre-wrap font-sans text-xs leading-relaxed text-mingle-text-secondary">
+                {DEMO_VOICEOVER}
+              </pre>
+            </div>
+          ) : null}
         </div>
-
-        {showScript ? (
-          <div className="border-t border-mingle-border bg-mingle-bg/80 px-3 py-3 sm:px-5 lg:px-8">
-            <pre className="mx-auto max-w-[1440px] whitespace-pre-wrap font-sans text-xs leading-relaxed text-mingle-text-secondary">
-              {DEMO_VOICEOVER}
-            </pre>
-          </div>
-        ) : null}
       </div>
     </div>
   );

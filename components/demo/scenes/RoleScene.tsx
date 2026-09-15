@@ -2,29 +2,28 @@
 
 import { motion } from "framer-motion";
 import { MingleChip } from "@/components/MingleChip";
-import { DEMO_ROLE, DEMO_COMPANY } from "@/lib/demo/data";
+import { DEMO_COMPANY, DEMO_ROLE } from "@/lib/demo/data";
 
-/**
- * Soft product surface behind problem captions — role definition UI
- * mirroring RoleBuilder / Roles list language without mutations.
- */
-export function ProblemScene() {
+/** Company role definition — full opacity product surface. */
+export function RoleScene() {
   return (
-    <div className="relative mx-auto w-full max-w-3xl">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 0.7, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="rounded-2xl border border-mingle-border bg-mingle-surface p-6 shadow-mingle sm:p-8"
-        aria-hidden
-      >
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="mx-auto w-full max-w-3xl"
+    >
+      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6 shadow-mingle sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-muted">
           Open role · {DEMO_COMPANY.name}
         </p>
         <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-mingle-text">
           {DEMO_ROLE.title}
         </h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-mingle-text-secondary">
+        <p className="mt-1 text-sm text-mingle-text-secondary">
+          {DEMO_ROLE.department} · {DEMO_ROLE.seniority} · {DEMO_ROLE.employment}
+        </p>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-mingle-text-secondary">
           {DEMO_ROLE.summary}
         </p>
 
@@ -38,7 +37,9 @@ export function ProblemScene() {
         </div>
 
         <div className="mt-5">
-          <p className="text-xs font-semibold text-mingle-text">What matters beyond the CV</p>
+          <p className="text-xs font-semibold text-mingle-text">
+            What matters beyond the CV
+          </p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {DEMO_ROLE.whatMatters.map((item) => (
               <li
@@ -54,7 +55,15 @@ export function ProblemScene() {
             ))}
           </ul>
         </div>
-      </motion.div>
-    </div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          {DEMO_ROLE.workModel.map((model) => (
+            <MingleChip key={model} tone="pink">
+              {model}
+            </MingleChip>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 }
