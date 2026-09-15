@@ -86,16 +86,22 @@ export function ProductDemoExperience({
   }, []);
 
   const togglePlay = useCallback(() => {
-    setPlaying((value) => {
-      if (!value) {
-        // Starting playback — always restart the current scene clock so
-        // idle time with autoplay off does not skip the scene immediately.
-        sceneStartedAt.current = performance.now();
-        setElapsedInScene(0);
-      }
-      return !value;
+    setPlaying((prev) => {
+      if (prev) return false;
+      sceneStartedAt.current = performance.now();
+      return true;
     });
   }, []);
+
+  // When the user presses Play from a paused state, clear scene progress.
+  const wasPlayingRef = useRef(playing);
+  useEffect(() => {
+    if (playing && !wasPlayingRef.current) {
+      setElapsedInScene(0);
+      sceneStartedAt.current = performance.now();
+    }
+    wasPlayingRef.current = playing;
+  }, [playing]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -304,6 +310,7 @@ export function ProductDemoExperience({
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-5 lg:px-8">
           <button
             type="button"
+            data-demo-play
             onClick={togglePlay}
             className="mingle-btn-primary min-w-[5.5rem] text-xs"
             aria-label={playing ? "Pause demo" : "Play demo"}

@@ -362,6 +362,8 @@ button:disabled {
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
+  width: auto;
+  height: auto;
   object-fit: contain;
   background: none;
 }
