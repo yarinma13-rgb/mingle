@@ -119,6 +119,7 @@ const COPY = {
       low: "Low",
     },
     floatWhy: "Why this match",
+    floatWhySub: "Role · Human · Motivation",
     floatRisk: "1 honest risk",
   },
   he: {
@@ -127,7 +128,7 @@ const COPY = {
     titleAccent: "ברור.",
     lead: "לוח גיוס חי עם התאמות חזקות, עניין, ולמה ההתאמה על כל כרטיס — לא עוד ערמת קורות חיים.",
     cta: "להתחיל",
-    boardTitle: "לוח גיוס · Product Designer",
+      boardTitle: "לוח גיוס · מעצב מוצר",
     columns: {
       sourcing: "התאמות חזקות",
       screening: "מעוניינים",
@@ -140,9 +141,29 @@ const COPY = {
       low: "נמוך",
     },
     floatWhy: "למה ההתאמה",
+    floatWhySub: "תפקיד · אדם · מוטיבציה",
     floatRisk: "סיכון כנה אחד",
   },
 } as const;
+
+const ROLE_HE: Record<string, string> = {
+  "Product Designer": "מעצב מוצר",
+  "Full-stack": "פולסטאק",
+  PM: "מנהל מוצר",
+  Backend: "בק-אנד",
+  Data: "דאטה",
+  "Design lead": "ראש עיצוב",
+  Engineer: "מהנדס",
+};
+
+const NOTE_HE: Record<string, string> = {
+  "Role 97 · Human 92": "תפקיד 97 · אדם 92",
+  "Motivation 95": "מוטיבציה 95",
+  "Thin profile": "פרופיל חלקי",
+  "Why this match open": "למה ההתאמה פתוח",
+  "Mutual interest": "עניין הדדי",
+  "Interview booked": "ראיון נקבע",
+};
 
 function initials(name: string) {
   return name
@@ -206,7 +227,7 @@ export function LandingCompanyBoard() {
                         </span>
                         <div>
                           <p className="landing-company-card-name">{card.name}</p>
-                          <p className="landing-company-card-role">{card.role}</p>
+                          <p className="landing-company-card-role">{locale === "he" ? (ROLE_HE[card.role] ?? card.role) : card.role}</p>
                         </div>
                         <span className="landing-company-match">{card.match}%</span>
                       </div>
@@ -216,7 +237,7 @@ export function LandingCompanyBoard() {
                         >
                           {copy.confidence[card.confidence]}
                         </span>
-                        {card.note ? <span>{card.note}</span> : null}
+                        {card.note ? <span>{locale === "he" ? (NOTE_HE[card.note] ?? card.note) : card.note}</span> : null}
                       </div>
                       {card.risk ? (
                         <p className="landing-company-card-risk">{copy.floatRisk}</p>
@@ -230,7 +251,7 @@ export function LandingCompanyBoard() {
 
           <div className="landing-company-float landing-company-float-why">
             <strong>{copy.floatWhy}</strong>
-            <span>Role · Human · Motivation</span>
+            <span>{copy.floatWhySub}</span>
           </div>
         </div>
       </div>
