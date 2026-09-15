@@ -38,6 +38,8 @@ export interface Database {
           created_at: string;
           updated_at: string;
           last_active_at: string;
+          deletion_requested_at: string | null;
+          deletion_scheduled_for: string | null;
         };
         Insert: {
           id: string;
@@ -46,6 +48,8 @@ export interface Database {
           onboarding_status?: OnboardingStatus;
           onboarding_step?: number;
           profile_completion?: number;
+          deletion_requested_at?: string | null;
+          deletion_scheduled_for?: string | null;
         };
         Update: {
           user_type?: UserType;
@@ -53,6 +57,8 @@ export interface Database {
           onboarding_step?: number;
           profile_completion?: number;
           last_active_at?: string;
+          deletion_requested_at?: string | null;
+          deletion_scheduled_for?: string | null;
         };
         Relationships: [];
       };

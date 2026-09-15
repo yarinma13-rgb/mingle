@@ -27,13 +27,33 @@ export async function destinationAfterAuth(
 
   const { data } = await supabase
     .from("users")
-    .select("user_type, onboarding_status, onboarding_step")
+    .select(
+      "user_type, onboarding_status, onboarding_step, deletion_requested_at, deletion_scheduled_for",
+    )
     .eq("id", userId)
     .maybeSingle();
 
   // Prefer the reconciler result. A follow-up read must never regress a
   // just-corrected company account back to the talent default.
   const type: UserType = reconciled ?? data?.user_type ?? path;
+
+  // 14-day grace: signing in again cancels scheduled deletion and restores access.
+  if (data?.deletion_requested_at && data?.deletion_scheduled_for) {
+    const { cancelAccountDeletion, readDeletionStatus } = await import(
+      "@/lib/account/deletion"
+    );
+    const status = readDeletionStatus(data);
+    if (status.pending && !status.expired) {
+      await cancelAccountDeletion(supabase, userId);
+      if (typeof window !== "undefined") {
+        try {
+          window.sessionStorage.setItem("mingle.account.restored", "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
 
   const onboarded =
     data?.onboarding_status === "completed" ||
