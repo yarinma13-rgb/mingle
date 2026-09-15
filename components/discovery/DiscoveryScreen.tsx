@@ -111,8 +111,16 @@ function DiscoveryCardView({
   const skipOpacity = useTransform(x, [0, -20, -120], [0, 0.35, 1]);
   const isCompanyCard = card.kind === "company";
 
-  const expressInterest = async () => {
-    if (feedback === "interested") return;
+  const advanceAfterInterest = () => {
+    flyOff(1, () => onHide(card.userId));
+  };
+
+  const expressInterest = async (opts?: { advance?: boolean }) => {
+    const shouldAdvance = opts?.advance !== false;
+    if (feedback === "interested") {
+      if (shouldAdvance) advanceAfterInterest();
+      return;
+    }
     setSaving(true);
     try {
       await saveProfile(supabase, viewerId, card.userId);
@@ -128,6 +136,7 @@ function DiscoveryCardView({
       setFeedback("interested");
       toast("Marked interested.");
       void notifyPushMatch(card.userId);
+      if (shouldAdvance) advanceAfterInterest();
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -168,8 +177,7 @@ function DiscoveryCardView({
       info.velocity.x < -SWIPE_VELOCITY_THRESHOLD;
 
     if (passedRight) {
-      expressInterest();
-      flyOff(1, () => onHide(card.userId));
+      void expressInterest({ advance: true });
     } else if (passedLeft) {
       flyOff(-1, () => onPass(card.userId));
     } else {
@@ -215,14 +223,34 @@ function DiscoveryCardView({
         <div className="relative aspect-[3/4] max-h-[min(62vh,520px)] w-full shrink-0 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(160deg,#1e3a5f_0%,#3d4f7a_42%,#6b7db3_100%)]">
             <div
-              className="absolute inset-0 opacity-40"
+              className="absolute inset-0 opacity-35"
               style={{
                 backgroundImage:
                   "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 42%), radial-gradient(circle at 80% 30%, rgba(167,139,250,0.45), transparent 40%), linear-gradient(180deg, transparent 30%, rgba(15,23,42,0.55) 100%)",
               }}
             />
+            {card.photo ? (
+              <div className="absolute inset-0 flex items-center justify-center p-10 pb-36 sm:p-14 sm:pb-40">
+                <div className="flex aspect-square w-full max-w-[220px] items-center justify-center overflow-hidden rounded-[28px] bg-white/95 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/40">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={card.photo}
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center pb-24">
+                <div className="flex h-36 w-36 items-center justify-center rounded-[28px] bg-white/15 ring-1 ring-white/25 backdrop-blur-sm sm:h-44 sm:w-44">
+                  <span className="font-display text-5xl font-bold text-white sm:text-6xl">
+                    {card.initial}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
           <div className="absolute left-4 top-4 z-10">
             <span className="inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
@@ -231,20 +259,13 @@ function DiscoveryCardView({
             </span>
           </div>
 
-          {card.photo ? (
-            <div className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white/95 p-1.5 shadow-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={card.photo} alt="" className="h-full w-full object-contain" />
-            </div>
-          ) : null}
-
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
             <div>
               <p className="font-display text-[1.65rem] font-bold leading-tight tracking-tight">
-                {card.roleTitle || card.subtitle}
+                {card.name}
               </p>
               <p className="mt-0.5 text-base font-medium text-white/90">
-                {card.name}
+                {card.roleTitle || card.subtitle}
               </p>
             </div>
 

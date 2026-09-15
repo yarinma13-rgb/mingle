@@ -39,6 +39,7 @@ export function MobileBottomNav({
   userPhoto = null,
   userSubtitle,
   profileHref,
+  avatarShape = "circle",
 }: {
   primaryItems: NavItem[];
   moreItems: NavItem[];
@@ -48,6 +49,7 @@ export function MobileBottomNav({
   userPhoto?: string | null;
   userSubtitle: string;
   profileHref: string;
+  avatarShape?: "circle" | "soft";
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -93,6 +95,7 @@ export function MobileBottomNav({
                 initials={userInitials}
                 gender={userGender}
                 size="md"
+                shape={avatarShape}
               />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-mingle-text">
