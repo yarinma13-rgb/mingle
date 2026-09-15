@@ -527,7 +527,7 @@ function FoundersStage({ he }: { he: boolean }) {
           <strong>{he ? "סיכונים לפני שיחה" : "Risks before the call"}</strong>
           <ul>
             <li>{he ? "ציפיית שכר גבוהה ב־8%" : "Salary band 8% above budget"}</li>
-            <li>{he ? "מעדיף remote · אתם hybrid" : "Prefers remote · you are hybrid"}</li>
+          <li>{he ? "מעדיף רימוט · אתם היברידי" : "Prefers remote · you are hybrid"}</li>
           </ul>
         </aside>
       </div>
