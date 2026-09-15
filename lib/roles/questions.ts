@@ -10,11 +10,17 @@ export const ROLE_DEPARTMENT_OPTIONS = [
   "Data",
   "Sales",
   "Marketing",
+  "Growth",
   "Operations",
   "Customer success",
   "People",
+  "HR",
   "Finance",
+  "Legal",
   "Research",
+  "Construction",
+  "Infrastructure",
+  "Building supervision",
   "Leadership",
 ] as const;
 
@@ -65,9 +71,18 @@ export const ROLE_SKILL_OPTIONS = [
   "Content",
   "Growth",
   "Brand",
+  "SEO",
+  "PPC",
   "People operations",
+  "Talent acquisition",
+  "Recruiting",
   "Project management",
   "Customer support",
+  "Site supervision",
+  "Building codes",
+  "Construction planning",
+  "Safety management",
+  "Infrastructure design",
 ] as const;
 
 export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
@@ -102,6 +117,14 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Marketing manager",
     "Content marketer",
     "Growth marketer",
+    "Product marketer",
+    "Brand manager",
+    "Performance marketer",
+  ],
+  Growth: [
+    "Growth manager",
+    "Growth marketer",
+    "Lifecycle manager",
   ],
   Operations: [
     "Operations manager",
@@ -117,13 +140,39 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Recruiter",
     "People operations",
   ],
+  HR: [
+    "HR manager",
+    "Talent acquisition lead",
+    "HR business partner",
+    "People operations specialist",
+  ],
   Finance: [
     "Finance manager",
     "Controller",
   ],
+  Legal: [
+    "Legal counsel",
+    "Compliance manager",
+  ],
   Research: [
     "Researcher",
     "Research scientist",
+  ],
+  Construction: [
+    "Construction manager",
+    "Site manager",
+    "Project engineer",
+    "Quantity surveyor",
+  ],
+  Infrastructure: [
+    "Infrastructure engineer",
+    "Civil engineer",
+    "Utilities project manager",
+  ],
+  "Building supervision": [
+    "Building supervisor",
+    "Site supervisor",
+    "Construction inspector",
   ],
   Leadership: [
     "Engineering manager",

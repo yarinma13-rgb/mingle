@@ -236,7 +236,7 @@ function DiscoveryCardView({
           <div className="absolute left-4 top-4 z-10">
             <span className="inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
               <span aria-hidden>🔥</span>
-              {card.score}% Match
+              {card.score}% · {card.report.strength}
             </span>
           </div>
 

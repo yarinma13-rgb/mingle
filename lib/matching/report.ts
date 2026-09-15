@@ -55,7 +55,8 @@ export const AXIS_FACTOR_KEYS: Record<MatchAxisId, readonly MatchFactorKey[]> = 
 
 const AXIS_LABEL: Record<MatchAxisId, string> = {
   role: "Role Fit",
-  company: "Company Fit",
+  /** Product + landing language: human/culture fit, not “company vs company”. */
+  company: "Human Fit",
   motivation: "Motivation Fit",
 };
 
@@ -144,12 +145,23 @@ function scanFinding(
       return aligned
         ? compactWords(`${stage.toLowerCase()}, matches ${yours ? "your" : "their"} interest`)
         : compactWords(`${stage.toLowerCase()}, not ${yours ? "your" : "their"} stated type`);
-    case "industry":
-      return aligned
-        ? compactWords(`same industry, ${company?.profile.industry || talent?.profile.industry}`)
-        : compactWords(
-            `${pairOrSolo(talent?.profile.industry ?? "", company?.profile.industry ?? "")}, no overlap yet`,
-          );
+    case "industry": {
+      const talentIndustry = talent?.profile.industry ?? "";
+      const companyIndustry = company?.profile.industry ?? "";
+      if (aligned) {
+        const same =
+          talentIndustry.trim().toLowerCase() ===
+          companyIndustry.trim().toLowerCase();
+        return compactWords(
+          same
+            ? `same industry, ${companyIndustry || talentIndustry}`
+            : `related industries, ${pairOrSolo(talentIndustry, companyIndustry)}`,
+        );
+      }
+      return compactWords(
+        `${pairOrSolo(talentIndustry, companyIndustry)}, no overlap yet`,
+      );
+    }
     case "workStyle":
       return aligned
         ? compactWords(`${sharedStyle.slice(0, 2).join(", ")} overlap`)

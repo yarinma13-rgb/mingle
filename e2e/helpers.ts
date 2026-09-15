@@ -72,7 +72,6 @@ export async function completeOnboarding(
       page.getByRole("heading", { name: "What are you looking for right now?" }),
     ).toBeVisible();
     await pickAndContinue(page, "Full time opportunity");
-    await pickAndContinue(page, "Growth");
     await pickAndContinue(page, "Startup");
   } else {
     await expect(
@@ -80,9 +79,8 @@ export async function completeOnboarding(
         name: "What are you looking to connect about?",
       }),
     ).toBeVisible();
-    await pickAndContinue(page, "Hiring");
-    await pickAndContinue(page, "Skills");
-    await pickAndContinue(page, "Technology");
+    await pickAndContinue(page, "Hiring now");
+    await pickAndContinue(page, "Experience");
   }
   await expect(page.getByRole("heading", { name: /all set/i })).toBeVisible();
   await page.getByRole("link", { name: "Build my profile" }).click();
