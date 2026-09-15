@@ -62,6 +62,7 @@ export default async function RoleMatchesPage({
       rankAll: true,
       roleTitle: role.title,
       roleDepartment: role.department,
+      roleRequiredSkills: role.requiredSkills,
     },
   );
   const cards = [...ranked.cards].sort((a, b) => {

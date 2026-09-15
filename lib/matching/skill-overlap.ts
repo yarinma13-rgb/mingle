@@ -6,7 +6,7 @@ export type SkillOverlapSignal = {
   finding: string;
 };
 
-/** Soft display helper for role matches. Does not affect match score. */
+/** Display helper for role-match chips. Scoring uses skillsFactor in the match engine. */
 export function buildSkillOverlapSignal(
   talentSkills: string[],
   requiredSkills: string[],

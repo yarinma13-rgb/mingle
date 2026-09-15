@@ -48,7 +48,7 @@ export type MatchReport = {
  *  Overall `matchScore` stays `computeMatch().score` — these groups are
  *  display-only averages, not a new weight table. */
 export const AXIS_FACTOR_KEYS: Record<MatchAxisId, readonly MatchFactorKey[]> = {
-  role: ["careerGoals", "industry", "experience"],
+  role: ["careerGoals", "industry", "experience", "skills"],
   company: ["workStyle", "location", "companyStage"],
   motivation: ["motivations"],
 };
@@ -66,6 +66,7 @@ const BULLET_LABEL: Record<MatchFactorKey, string> = {
   workStyle: "Work style",
   industry: "Industry",
   experience: "Experience",
+  skills: "Skills",
   location: "Location",
   companyStage: "Company stage",
 };
@@ -188,6 +189,18 @@ function scanFinding(
       return aligned
         ? compactWords(`${years} years, experience matters here`)
         : compactWords(`${years} years, thinner signal here`);
+    case "skills": {
+      const required = (company?.roleRequiredSkills ?? []).filter(Boolean);
+      const shared = overlapCanonical(
+        talent?.profile.skills ?? [],
+        required,
+      );
+      if (required.length === 0) return "role skills not set yet";
+      if (shared.length === 0) return "no shared skills with the role yet";
+      return aligned
+        ? compactWords(`${shared.slice(0, 2).join(", ")} cover role needs`)
+        : compactWords(`${shared.slice(0, 2).join(", ")}, partial skill cover`);
+    }
     case "careerGoals": {
       const goal = talent?.careerGoal.trim() ?? "";
       const need = company?.connectingAbout.trim() ?? "";
