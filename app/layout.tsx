@@ -4,6 +4,7 @@ import { Poppins, Rubik } from "next/font/google";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { IdentifySession } from "@/components/analytics/IdentifySession";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="mingle-app-canvas min-h-full flex flex-col font-sans text-mingle-text">
         <AppErrorBoundary>
+          <IdentifySession />
           <ThemeProvider>
             <ToastProvider>
               <Suspense fallback={null}>
