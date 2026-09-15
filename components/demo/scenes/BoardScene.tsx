@@ -47,6 +47,13 @@ export function BoardScene() {
           {DEMO_BOARD_COLUMNS.map((column) => (
             <section
               key={column.id}
+              data-demo-target={
+                column.id === "in_conversation"
+                  ? "board-conversation"
+                  : column.id === "interview_booked"
+                    ? "board-interview"
+                    : undefined
+              }
               className="flex w-56 shrink-0 flex-col rounded-2xl border border-mingle-border bg-mingle-surface p-3 shadow-mingle"
             >
               <div className="mb-3 flex items-center gap-2">

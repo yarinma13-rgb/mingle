@@ -17,7 +17,10 @@ export function RoleScene() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-muted">
           Open role · {DEMO_COMPANY.name}
         </p>
-        <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-mingle-text">
+        <h2
+          data-demo-target="role-title"
+          className="mt-2 font-display text-2xl font-semibold tracking-tight text-mingle-text"
+        >
           {DEMO_ROLE.title}
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
@@ -27,7 +30,7 @@ export function RoleScene() {
           {DEMO_ROLE.summary}
         </p>
 
-        <div className="mt-6">
+        <div data-demo-target="role-skills" className="mt-6">
           <p className="text-xs font-semibold text-mingle-text">Skills that matter</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {DEMO_ROLE.requiredSkills.map((skill) => (
@@ -36,7 +39,7 @@ export function RoleScene() {
           </div>
         </div>
 
-        <div className="mt-5">
+        <div data-demo-target="role-beyond" className="mt-5">
           <p className="text-xs font-semibold text-mingle-text">
             What matters beyond the CV
           </p>

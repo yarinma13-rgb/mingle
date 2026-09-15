@@ -35,12 +35,16 @@ export function MatchScene() {
             {DEMO_EMMA.headline} · {DEMO_EMMA.location}
           </p>
         </div>
-        <MatchScoreRing score={report.overall} size={72} showLabel />
+        <div data-demo-target="match-score">
+          <MatchScoreRing score={report.overall} size={72} showLabel />
+        </div>
       </div>
 
-      <ProfileSection title="Match Report">
-        <MatchReportBody report={report} />
-      </ProfileSection>
+      <div data-demo-target="match-report">
+        <ProfileSection title="Match Report">
+          <MatchReportBody report={report} />
+        </ProfileSection>
+      </div>
     </motion.div>
   );
 }

@@ -37,6 +37,13 @@ export function Phase2Scene() {
           {DEMO_PHASE2.pillars.map((pillar, index) => (
             <motion.article
               key={pillar.title}
+              data-demo-target={
+                index === 0
+                  ? "phase2-lifecycle"
+                  : index === 1
+                    ? "phase2-automation"
+                    : "phase2-mobile"
+              }
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12 + index * 0.08, duration: 0.35 }}

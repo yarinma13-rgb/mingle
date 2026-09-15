@@ -112,6 +112,7 @@ export function MingleMomentScene() {
         </p>
 
         <motion.div
+          data-demo-target="mingle-cta"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}

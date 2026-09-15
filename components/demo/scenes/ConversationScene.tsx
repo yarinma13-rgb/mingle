@@ -33,7 +33,10 @@ export function ConversationScene() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_300px]"
     >
-      <div className="flex h-[min(520px,58vh)] min-h-[420px] flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-mingle">
+      <div
+        data-demo-target="chat-thread"
+        className="flex h-[min(520px,58vh)] min-h-[420px] flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-mingle"
+      >
         <div className="flex items-center gap-3 border-b border-mingle-border p-4">
           <Avatar
             photo={DEMO_EMMA.photo}
@@ -92,7 +95,7 @@ export function ConversationScene() {
           </div>
         </div>
 
-        <div className="border-t border-mingle-border p-3">
+        <div data-demo-target="chat-composer" className="border-t border-mingle-border p-3">
           <div className="flex items-center gap-2">
             <div className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text-muted">
               Write a message
@@ -109,14 +112,16 @@ export function ConversationScene() {
         </div>
       </div>
 
-      <RelationshipContextPanel
-        connectionId={DEMO_IDS.connection}
-        score={DEMO_EMMA_MATCH_REPORT.overall}
-        alignedFactors={DEMO_ALIGNED_FACTORS}
-        exploreFactors={DEMO_EXPLORE_FACTORS}
-        stage="interview_booked"
-        timeline={DEMO_TIMELINE}
-      />
+      <div data-demo-target="chat-context">
+        <RelationshipContextPanel
+          connectionId={DEMO_IDS.connection}
+          score={DEMO_EMMA_MATCH_REPORT.overall}
+          alignedFactors={DEMO_ALIGNED_FACTORS}
+          exploreFactors={DEMO_EXPLORE_FACTORS}
+          stage="interview_booked"
+          timeline={DEMO_TIMELINE}
+        />
+      </div>
     </motion.div>
   );
 }

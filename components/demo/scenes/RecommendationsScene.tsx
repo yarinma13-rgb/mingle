@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/Avatar";
-import { RecommendationsList } from "@/components/recommendations/RecommendationsList";
+import { RecommendationStars } from "@/components/recommendations/RecommendationStars";
 import { ProfileSection } from "@/components/profile/ProfileSection";
 import { DEMO_EMMA, DEMO_RECOMMENDATIONS } from "@/lib/demo/data";
 
@@ -35,7 +35,30 @@ export function RecommendationsScene() {
       </div>
 
       <ProfileSection title="Recommendations" elevated>
-        <RecommendationsList items={DEMO_RECOMMENDATIONS} />
+        <div className="flex flex-col gap-4">
+          {DEMO_RECOMMENDATIONS.map((item, index) => (
+            <article
+              key={item.id}
+              data-demo-target={index === 0 ? "rec-first" : undefined}
+              className="flex flex-col gap-2"
+            >
+              <div data-demo-target={index === 0 ? "rec-stars" : undefined}>
+                <RecommendationStars rating={item.rating} />
+              </div>
+              <p className="text-sm font-medium text-mingle-text">
+                {item.recommenderName}
+              </p>
+              <p className="text-xs text-mingle-text-secondary">
+                Verified via LinkedIn
+              </p>
+              {item.body ? (
+                <p className="whitespace-pre-wrap text-sm text-mingle-text-secondary">
+                  {item.body}
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
       </ProfileSection>
     </motion.div>
   );

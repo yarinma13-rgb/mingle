@@ -27,6 +27,7 @@ export function TalentScene() {
         {DEMO_TALENT_COMPANIES.map((company, index) => (
           <article
             key={company.userId}
+            data-demo-target={index === 0 ? "talent-card" : undefined}
             className={`flex flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle ${
               index === 0 ? "demo-highlight ring-1 ring-mingle-accent-purple/20" : ""
             }`}
@@ -48,7 +49,9 @@ export function TalentScene() {
                   {company.industry}
                 </p>
               </div>
-              <MatchScoreRing score={company.matchScore} size={56} showLabel />
+              <div data-demo-target={index === 0 ? "talent-score" : undefined}>
+                <MatchScoreRing score={company.matchScore} size={56} showLabel />
+              </div>
             </div>
 
             <p className="text-sm leading-relaxed text-mingle-text-secondary">
@@ -62,7 +65,10 @@ export function TalentScene() {
             </div>
 
             <div className="mt-1 flex gap-2">
-              <div className="flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white">
+              <div
+                data-demo-target={index === 0 ? "talent-interested" : undefined}
+                className="flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white"
+              >
                 Interested
               </div>
               <div className="flex-1 rounded-full border border-mingle-border bg-mingle-white py-2.5 text-center text-xs font-semibold text-mingle-text">

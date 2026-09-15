@@ -42,7 +42,10 @@ export function CompanyScene({
       transition={{ duration: 0.45, ease: "easeOut" }}
       className="flex flex-col gap-6"
     >
-      <div className="mingle-banner rounded-2xl border border-mingle-border p-6">
+      <div
+        data-demo-target="role-banner"
+        className="mingle-banner rounded-2xl border border-mingle-border p-6"
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -57,6 +60,7 @@ export function CompanyScene({
           </div>
           <button
             type="button"
+            data-demo-target="view-candidates"
             onClick={onOpenCandidate}
             className="mingle-btn-primary text-xs"
           >
@@ -79,14 +83,16 @@ export function CompanyScene({
           href="#demo"
           sparkline={sparkFrom(100)}
         />
-        <KpiTile
-          icon={PeopleIcon}
-          label="Potential matches"
-          value={String(DEMO_CANDIDATES.length)}
-          accent="purple"
-          href="#demo"
-          sparkline={sparkFrom(DEMO_CANDIDATES.length)}
-        />
+        <div data-demo-target="kpi-matches">
+          <KpiTile
+            icon={PeopleIcon}
+            label="Potential matches"
+            value={String(DEMO_CANDIDATES.length)}
+            accent="purple"
+            href="#demo"
+            sparkline={sparkFrom(DEMO_CANDIDATES.length)}
+          />
+        </div>
         <KpiTile
           icon={CompassIcon}
           label="Connections"
@@ -131,6 +137,7 @@ export function CompanyScene({
               >
                 <button
                   type="button"
+                  data-demo-target={index === 0 ? "candidate-emma" : undefined}
                   onClick={onOpenCandidate}
                   className={`flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-mingle-bg/60 ${
                     index === 0 ? "demo-highlight rounded-xl px-2 -mx-2" : ""

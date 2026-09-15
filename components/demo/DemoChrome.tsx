@@ -162,7 +162,10 @@ export function DemoChrome({
               </motion.div>
             </AnimatePresence>
           </nav>
-          <div className="mt-auto flex w-full flex-col items-center pb-2 pt-6">
+          <div
+            data-demo-target="theme-toggle"
+            className="mt-auto flex w-full flex-col items-center pb-2 pt-6"
+          >
             <ThemeSwitch />
           </div>
         </div>

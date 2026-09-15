@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DemoChrome } from "@/components/demo/DemoChrome";
 import { DemoCaptions } from "@/components/demo/DemoCaptions";
+import { DemoGuidedCursor } from "@/components/demo/DemoGuidedCursor";
 import { OpeningScene } from "@/components/demo/scenes/OpeningScene";
 import { ProblemScene } from "@/components/demo/scenes/ProblemScene";
 import { IntroduceScene } from "@/components/demo/scenes/IntroduceScene";
@@ -70,6 +71,7 @@ export function ProductDemoExperience({
   const [veil, setVeil] = useState(false);
   const sceneStartedAt = useRef(performance.now());
   const timerRef = useRef<number | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
 
   const scene = DEMO_SCENES[sceneIndex];
   const isLast = sceneIndex >= DEMO_SCENES.length - 1;
@@ -309,7 +311,10 @@ export function ProductDemoExperience({
       />
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-14 pt-3 sm:px-5 sm:pt-4 lg:px-8">
-        <div className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col">
+        <div
+          ref={stageRef}
+          className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col"
+        >
           {/* Soft transition veil — monday calm, not a hard cut */}
           <motion.div
             aria-hidden
@@ -358,6 +363,14 @@ export function ProductDemoExperience({
               </motion.div>
             </AnimatePresence>
           )}
+
+          <DemoGuidedCursor
+            rootRef={stageRef}
+            sceneId={scene.id}
+            elapsedMs={elapsedInScene}
+            enabled={playing && !veil}
+            reducedMotion={reducedMotion}
+          />
 
           <DemoCaptions lines={hideCaptions ? [] : captions} visible={!hideCaptions} />
         </div>

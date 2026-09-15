@@ -36,7 +36,10 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
         <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
           Talent profile
         </p>
-        <div className="mt-4 flex flex-col items-center gap-3 text-center">
+        <div
+          data-demo-target="profile-avatar"
+          className="mt-4 flex flex-col items-center gap-3 text-center"
+        >
           <Avatar
             photo={DEMO_EMMA.photo}
             initials={DEMO_EMMA.initials}
@@ -63,7 +66,10 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
           </span>
         </div>
         <div className="mt-5 flex flex-col gap-2">
-          <div className="rounded-full bg-mingle-cta px-6 py-3 text-center font-display text-sm font-semibold text-white">
+          <div
+            data-demo-target="profile-connect"
+            className="rounded-full bg-mingle-cta px-6 py-3 text-center font-display text-sm font-semibold text-white"
+          >
             Start a connection
           </div>
           <div className="rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text">
@@ -82,12 +88,20 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
               title={section.title}
               elevated={index % 2 === 1}
             >
-              {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
-              {text ? (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
-                  {text}
-                </p>
-              ) : null}
+              <div
+                data-demo-target={
+                  section.title === "Values that drive me"
+                    ? "profile-values"
+                    : undefined
+                }
+              >
+                {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
+                {text ? (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
+                    {text}
+                  </p>
+                ) : null}
+              </div>
             </ProfileSection>
           );
         })}
