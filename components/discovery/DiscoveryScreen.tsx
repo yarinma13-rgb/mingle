@@ -231,7 +231,7 @@ function DiscoveryCardView({
             />
             {card.photo ? (
               <div className="absolute inset-0 flex items-center justify-center p-10 pb-36 sm:p-14 sm:pb-40">
-                <div className="flex aspect-square w-full max-w-[220px] items-center justify-center overflow-hidden rounded-[28px] bg-white/95 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/40">
+                <div className="flex aspect-square w-full max-w-[220px] items-center justify-center overflow-hidden rounded-[28px] bg-[#0B0B0F] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={card.photo}
