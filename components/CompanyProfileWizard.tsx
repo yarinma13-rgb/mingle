@@ -447,7 +447,7 @@ export function CompanyProfileWizard() {
                     {profile.logo && (
                       <StorageImage
                         src={profile.logo}
-                        className="h-14 w-14 rounded-xl bg-white p-1"
+                        className="h-14 w-14 rounded-xl bg-[#0B0B0F] p-1.5"
                         sizes="56px"
                         objectFit="contain"
                       />
