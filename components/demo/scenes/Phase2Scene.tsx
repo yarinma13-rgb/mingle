@@ -10,10 +10,10 @@ import { DEMO_PHASE2 } from "@/lib/demo/data";
  */
 export function Phase2Scene() {
   return (
-    <div className="flex h-full min-h-[520px] flex-col items-center justify-center px-5 py-8 sm:px-8">
+    <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center px-5 py-8 sm:px-8">
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.45, ease: "easeOut" }}
         className="w-full max-w-3xl"
       >

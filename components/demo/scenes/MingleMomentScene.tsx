@@ -65,7 +65,7 @@ export function MingleMomentScene() {
   );
 
   return (
-    <div className="mingle-moment-overlay relative flex h-full min-h-[520px] flex-col items-center justify-center overflow-hidden rounded-2xl bg-mingle-bg px-6">
+    <div className="mingle-moment-overlay relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6">
       <div className="pointer-events-none absolute inset-0 z-[1]" aria-hidden>
         {confetti.map((piece) => (
           <span
@@ -88,17 +88,15 @@ export function MingleMomentScene() {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
         className="relative z-[2] flex flex-col items-center text-center"
       >
         <div className="relative flex items-center justify-center">
-          <motion.span
+          <span
             aria-hidden
-            className="absolute h-44 w-44 rounded-full bg-mingle-blue/15 blur-3xl"
-            animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.85, 0.5] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute h-44 w-44 rounded-full bg-mingle-blue/12 blur-3xl"
           />
           <MingleLogo variant="mark" size={88} className="relative" priority />
         </div>

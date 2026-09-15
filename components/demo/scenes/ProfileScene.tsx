@@ -27,9 +27,9 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] lg:items-start"
     >
       <aside className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">

@@ -13,9 +13,9 @@ export function ProblemScene() {
   return (
     <div className="relative mx-auto w-full max-w-3xl">
       <motion.div
-        initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-        animate={{ opacity: 0.72, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.65, ease: demoEase }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 0.72, y: 0 }}
+        transition={{ duration: 0.55, ease: demoEase }}
         className="rounded-2xl border border-mingle-border bg-mingle-surface p-6 shadow-mingle sm:p-8"
         aria-hidden
       >

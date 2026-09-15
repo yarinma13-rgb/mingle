@@ -26,6 +26,8 @@ import {
   demoContentVariants,
   demoEase,
 } from "@/lib/demo/motion";
+import { useDemoPlayback } from "@/lib/demo/playback-context";
+import { typeProgress } from "@/lib/demo/typewriter";
 
 type NavItem = {
   label: string;
@@ -79,18 +81,31 @@ export function DemoChrome({
   fillMain?: boolean;
   reducedMotion?: boolean;
 }) {
+  const { sceneId, elapsedMs, playing, reducedMotion: motionPref } =
+    useDemoPlayback();
+  const preferReduced = reducedMotion || motionPref;
   const nav = audience === "talent" ? TALENT_NAV : COMPANY_NAV;
   const isCompany = audience === "company";
   const accountName = isCompany ? DEMO_COMPANY.name : DEMO_EMMA.name;
   const accountInitials = isCompany ? DEMO_COMPANY.initials : DEMO_EMMA.initials;
   const accountSubtitle = isCompany ? "Hiring workspace" : DEMO_EMMA.headline;
-  const searchLabel = isCompany ? "Search candidates" : "Search companies";
+  const searchPlaceholder = isCompany
+    ? "Search candidates"
+    : "Search companies";
+  const searchTyped =
+    sceneId === "introduce" && playing
+      ? preferReduced
+        ? elapsedMs >= 3000
+          ? "Emma Carter"
+          : ""
+        : typeProgress("Emma Carter", 3000, elapsedMs, 26)
+      : "";
+  const searchActive = Boolean(searchTyped);
 
   return (
     <motion.div
-      layout
       transition={demoChromeShellTransition}
-      className="demo-chrome flex h-full min-h-0 w-full overflow-hidden rounded-2xl border border-mingle-border/70 bg-mingle-surface/40 shadow-[0_24px_80px_rgba(37,34,56,0.10)] backdrop-blur-[2px]"
+      className="demo-chrome flex h-full min-h-0 w-full overflow-hidden bg-mingle-surface"
     >
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto border-r border-mingle-nav-divider/80 bg-mingle-sidebar px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
@@ -101,9 +116,9 @@ export function DemoChrome({
             <AnimatePresence mode="wait">
               <motion.div
                 key={audience}
-                initial={reducedMotion ? false : { opacity: 0, x: -6 }}
+                initial={preferReduced ? false : { opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={reducedMotion ? undefined : { opacity: 0, x: 6 }}
+                exit={preferReduced ? undefined : { opacity: 0, x: 6 }}
                 transition={{ duration: 0.35, ease: demoEase }}
                 className="flex w-full flex-col items-center"
               >
@@ -128,7 +143,7 @@ export function DemoChrome({
                             <motion.span
                               layoutId="demo-nav-glow"
                               className="absolute inset-0 rounded-xl bg-gradient-to-b from-mingle-accent-blue/10 to-transparent"
-                              transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                              transition={{ duration: 0.35, ease: demoEase }}
                             />
                           ) : null}
                           <Icon
@@ -178,13 +193,30 @@ export function DemoChrome({
           </div>
 
           <div className="hidden flex-1 justify-center md:flex">
-            <div className="relative w-full max-w-md">
+            <div className="relative w-full max-w-md" data-demo-target="search-field">
               <SearchIcon
                 size={16}
                 className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mingle-accent-blue"
               />
-              <div className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary shadow-[0_1px_0_rgba(255,255,255,0.8)]">
-                {searchLabel}
+              <div
+                className={`w-full rounded-[10px] border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm shadow-[0_1px_0_rgba(255,255,255,0.8)] transition-colors duration-300 ${
+                  searchActive
+                    ? "border-mingle-accent-blue/45 text-mingle-text shadow-[0_0_0_3px_rgba(62,107,224,0.08)]"
+                    : "border-mingle-border text-mingle-text-secondary"
+                }`}
+              >
+                {searchActive ? (
+                  <span className="demo-typed-line">
+                    {searchTyped}
+                    {playing &&
+                    searchTyped.length < "Emma Carter".length &&
+                    !preferReduced ? (
+                      <span className="demo-caret" aria-hidden />
+                    ) : null}
+                  </span>
+                ) : (
+                  searchPlaceholder
+                )}
               </div>
             </div>
           </div>
@@ -202,9 +234,9 @@ export function DemoChrome({
             <AnimatePresence mode="wait">
               <motion.div
                 key={accountName}
-                initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+                initial={preferReduced ? false : { opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
+                exit={preferReduced ? undefined : { opacity: 0, y: -4 }}
                 transition={{ duration: 0.3, ease: demoEase }}
                 className="flex items-center gap-2.5"
               >
@@ -238,9 +270,9 @@ export function DemoChrome({
           <AnimatePresence mode="wait">
             <motion.h1
               key={title}
-              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+              initial={preferReduced ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+              exit={preferReduced ? undefined : { opacity: 0, y: -6 }}
               transition={{ duration: 0.35, ease: demoEase }}
               className={`shrink-0 font-display font-bold tracking-tight text-mingle-text ${
                 fillMain
@@ -256,10 +288,10 @@ export function DemoChrome({
             <AnimatePresence mode="wait">
               <motion.div
                 key={contentKey}
-                variants={reducedMotion ? undefined : demoContentVariants}
-                initial={reducedMotion ? false : "initial"}
+                variants={preferReduced ? undefined : demoContentVariants}
+                initial={preferReduced ? false : "initial"}
                 animate="animate"
-                exit={reducedMotion ? undefined : "exit"}
+                exit={preferReduced ? undefined : "exit"}
                 className={fillMain ? "flex min-h-0 flex-1 flex-col" : undefined}
               >
                 {children}

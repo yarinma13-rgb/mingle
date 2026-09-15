@@ -9,9 +9,9 @@ import { DEMO_EMMA, DEMO_RECOMMENDATIONS } from "@/lib/demo/data";
 export function RecommendationsScene() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="mx-auto flex w-full max-w-2xl flex-col gap-5"
     >
       <div className="flex items-center gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">

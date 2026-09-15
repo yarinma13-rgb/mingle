@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CompanyScene } from "@/components/demo/scenes/CompanyScene";
+import { demoEase } from "@/lib/demo/motion";
 
 /** Brief product entrance — same company dashboard surface as the live app. */
 export function IntroduceScene({
@@ -11,9 +12,9 @@ export function IntroduceScene({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.985 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: demoEase }}
     >
       <CompanyScene onOpenCandidate={onOpenCandidate} />
     </motion.div>

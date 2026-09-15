@@ -25,6 +25,7 @@ import {
   demoEase,
   demoFullBleedVariants,
 } from "@/lib/demo/motion";
+import { DemoPlaybackProvider } from "@/lib/demo/playback-context";
 
 const NAV_TO_SCENE: Record<string, DemoSceneId> = {
   Dashboard: "introduce",
@@ -138,6 +139,22 @@ export function ProductDemoExperience({
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
+
+  // Hide the OS pointer for the whole viewport while recording/autoplay —
+  // only the guided demo cursor should be visible.
+  useEffect(() => {
+    if (!playing || reducedMotion) {
+      document.documentElement.style.removeProperty("cursor");
+      document.body.style.removeProperty("cursor");
+      return;
+    }
+    document.documentElement.style.cursor = "none";
+    document.body.style.cursor = "none";
+    return () => {
+      document.documentElement.style.removeProperty("cursor");
+      document.body.style.removeProperty("cursor");
+    };
+  }, [playing, reducedMotion]);
 
   useEffect(() => {
     if (scene.forceDark) {
@@ -303,26 +320,39 @@ export function ProductDemoExperience({
     scene.id === "phase2";
 
   return (
-    <div className="demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent">
+    <DemoPlaybackProvider
+      value={{
+        sceneId: scene.id,
+        elapsedMs: elapsedInScene,
+        playing,
+        reducedMotion,
+      }}
+    >
+    <div
+      className={`demo-experience relative flex h-[100dvh] min-h-[100dvh] flex-1 flex-col overflow-hidden bg-mingle-surface ${
+        playing ? "demo-playing" : ""
+      }`}
+    >
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue"
         style={{ scaleX: progress / 100 }}
         transition={{ duration: 0.2, ease: "linear" }}
       />
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-14 pt-3 sm:px-5 sm:pt-4 lg:px-8">
-        <div
-          ref={stageRef}
-          className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col"
-        >
-          {/* Soft transition veil — monday calm, not a hard cut */}
+      <div
+        ref={stageRef}
+        className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
+      >
+          {/* Soft transition veil */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-20 rounded-2xl bg-gradient-to-b from-white/70 via-white/40 to-transparent"
-            animate={{ opacity: veil && !reducedMotion ? 1 : 0 }}
-            transition={{ duration: 0.22, ease: demoEase }}
+            className="pointer-events-none absolute inset-0 z-20 bg-mingle-surface"
+            animate={{ opacity: veil && !reducedMotion ? 0.55 : 0 }}
+            transition={{ duration: 0.3, ease: demoEase }}
           />
 
+          {/* Camera zoom disabled for cinematic stability — cursor + type carry focus */}
+          <div className="relative flex min-h-0 flex-1 flex-col">
           {showChrome ? (
             <DemoChrome
               activeNav={scene.chromeNav ?? "Dashboard"}
@@ -353,16 +383,13 @@ export function ProductDemoExperience({
                 initial={reducedMotion ? false : "initial"}
                 animate="animate"
                 exit={reducedMotion ? undefined : "exit"}
-                className={`flex flex-1 flex-col overflow-hidden ${
-                  scene.fullBleed
-                    ? ""
-                    : "rounded-2xl border border-mingle-border/50 bg-mingle-surface/85 shadow-[0_24px_80px_rgba(37,34,56,0.10)] backdrop-blur-sm"
-                }`}
+                className="flex min-h-0 flex-1 flex-col overflow-hidden bg-mingle-surface"
               >
                 {body}
               </motion.div>
             </AnimatePresence>
           )}
+          </div>
 
           <DemoGuidedCursor
             rootRef={stageRef}
@@ -373,22 +400,21 @@ export function ProductDemoExperience({
           />
 
           <DemoCaptions lines={hideCaptions ? [] : captions} visible={!hideCaptions} />
-        </div>
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-50"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-50"
         onMouseEnter={() => setControlsOpen(true)}
         onMouseLeave={() => setControlsOpen(false)}
       >
         <div
-          className={`border-t border-mingle-border/60 bg-mingle-surface/90 backdrop-blur-xl transition-all duration-300 ${
+          className={`pointer-events-auto border-t border-mingle-border/40 bg-mingle-surface/95 transition-opacity duration-300 ${
             controlsOpen || !playing
-              ? "translate-y-0 opacity-100"
-              : "translate-y-1 opacity-25 hover:opacity-100"
+              ? "opacity-100"
+              : "opacity-0"
           }`}
         >
-          <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-5 lg:px-8">
+          <div className="flex flex-wrap items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6">
             <button
               type="button"
               data-demo-play
@@ -450,22 +476,18 @@ export function ProductDemoExperience({
               ))}
             </div>
 
-            <p className="ml-auto hidden text-[10px] text-mingle-text-secondary lg:block">
-              Space · ← → · 1440px
-            </p>
-
             <button
               type="button"
               onClick={() => setShowScript((value) => !value)}
-              className="text-[10px] font-medium text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
+              className="ml-auto text-[10px] font-medium text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
             >
               {showScript ? "Hide script" : "Voiceover"}
             </button>
           </div>
 
           {showScript ? (
-            <div className="border-t border-mingle-border bg-mingle-bg/80 px-3 py-3 sm:px-5 lg:px-8">
-              <pre className="mx-auto max-w-[1440px] whitespace-pre-wrap font-sans text-xs leading-relaxed text-mingle-text-secondary">
+            <div className="border-t border-mingle-border bg-mingle-bg/80 px-4 py-3 sm:px-6">
+              <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-mingle-text-secondary">
                 {DEMO_VOICEOVER}
               </pre>
             </div>
@@ -473,5 +495,6 @@ export function ProductDemoExperience({
         </div>
       </div>
     </div>
+    </DemoPlaybackProvider>
   );
 }

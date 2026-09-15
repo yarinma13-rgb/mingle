@@ -6,15 +6,21 @@ import { MatchReportBody } from "@/components/matching/MatchReport";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 import { ProfileSection } from "@/components/profile/ProfileSection";
 import { DEMO_EMMA, DEMO_EMMA_MATCH_REPORT, DEMO_ROLE } from "@/lib/demo/data";
+import { useDemoPlayback } from "@/lib/demo/playback-context";
+import { countUp } from "@/lib/demo/typewriter";
 
 export function MatchScene() {
   const report = DEMO_EMMA_MATCH_REPORT;
+  const { elapsedMs, reducedMotion } = useDemoPlayback();
+  const score = reducedMotion
+    ? report.overall
+    : countUp(report.overall, 280, 1100, elapsedMs);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="mx-auto flex w-full max-w-3xl flex-col gap-5"
     >
       <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
@@ -35,16 +41,24 @@ export function MatchScene() {
             {DEMO_EMMA.headline} · {DEMO_EMMA.location}
           </p>
         </div>
-        <div data-demo-target="match-score">
-          <MatchScoreRing score={report.overall} size={72} showLabel />
+        <div data-demo-target="match-score" className="demo-score-pop">
+          <MatchScoreRing score={score} size={72} showLabel />
         </div>
       </div>
 
-      <div data-demo-target="match-report">
+      <motion.div
+        data-demo-target="match-report"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{
+          opacity: elapsedMs >= 1400 || reducedMotion ? 1 : 0.55,
+          y: elapsedMs >= 1400 || reducedMotion ? 0 : 8,
+        }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+      >
         <ProfileSection title="Match Report">
           <MatchReportBody report={report} />
         </ProfileSection>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
