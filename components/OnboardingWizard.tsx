@@ -108,13 +108,21 @@ async function fetchWizardData(
   try {
     const state = await loadOnboardingState(supabase, user.id, resolvedType);
     if (state.status === "completed") {
-      const next = await destinationAfterAuth(
-        supabase,
-        user.id,
-        resolvedType,
-        user.email,
-      );
-      return { kind: "redirect", to: next };
+      try {
+        const next = await destinationAfterAuth(
+          supabase,
+          user.id,
+          resolvedType,
+          user.email,
+        );
+        // Never bounce a completed profile back onto the spinner onboarding URL.
+        const safeNext = next.startsWith("/onboarding/")
+          ? "/dashboard"
+          : next;
+        return { kind: "redirect", to: safeNext };
+      } catch {
+        return { kind: "redirect", to: "/dashboard" };
+      }
     }
     const invite =
       resolvedType === "company"
@@ -167,7 +175,18 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   const applyFetchResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
-      router.replace(result.to);
+      const target = result.to;
+      const alreadyHere =
+        typeof window !== "undefined" &&
+        (window.location.pathname === target ||
+          window.location.pathname.startsWith(`${target}/`));
+      if (alreadyHere) {
+        // Avoid infinite spinner when routing returns to the same onboarding URL
+        // (e.g. destinationAfterAuth could not read status and bounced back).
+        setLoadState("error");
+        return;
+      }
+      router.replace(target);
       return;
     }
     if (result.kind === "error") {
@@ -184,11 +203,22 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   useEffect(() => {
     let active = true;
-    fetchWizardData(supabase, path).then((result) => {
-      if (active) applyFetchResult(result);
-    });
+    const timeout = window.setTimeout(() => {
+      if (active) setLoadState((prev) => (prev === "loading" ? "error" : prev));
+    }, 12_000);
+    fetchWizardData(supabase, path)
+      .then((result) => {
+        if (active) applyFetchResult(result);
+      })
+      .catch(() => {
+        if (active) setLoadState("error");
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
     return () => {
       active = false;
+      window.clearTimeout(timeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, supabase]);
