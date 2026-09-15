@@ -161,15 +161,23 @@ export async function loadDiscoveryPage(
     const prefsByUser = new Map((prefRows ?? []).map((row) => [row.talent_id, row]));
 
     const talentIds = rowsForCards.map((row) => row.user_id);
-    const { data: deletionRows } = talentIds.length
-      ? await supabase
-          .from("users")
-          .select("id, deletion_requested_at")
-          .in("id", talentIds)
-          .not("deletion_requested_at", "is", null)
-      : { data: [] as never[] };
-    const pendingDeletion = new Set((deletionRows ?? []).map((row) => row.id));
-    const activeRows = rowsForCards.filter((row) => !pendingDeletion.has(row.user_id));
+    let activeRows = rowsForCards;
+    if (talentIds.length > 0) {
+      const { data: deletionRows, error: deletionError } = await supabase
+        .from("users")
+        .select("id, deletion_requested_at")
+        .in("id", talentIds)
+        .not("deletion_requested_at", "is", null);
+      // Missing deletion columns (migration not applied) → show everyone.
+      if (!deletionError) {
+        const pendingDeletion = new Set(
+          (deletionRows ?? []).map((row) => row.id),
+        );
+        activeRows = rowsForCards.filter(
+          (row) => !pendingDeletion.has(row.user_id),
+        );
+      }
+    }
 
     const cards: DiscoveryCard[] = activeRows.map((row) => {
       const profile = toTalentProfile(row);
@@ -345,20 +353,23 @@ export async function loadDiscoveryPage(
   const distanceByUser = new Map<string, number | null>();
 
   const companyIdsForDeletion = rowsForCards.map((row) => row.user_id);
-  const { data: companyDeletionRows } = companyIdsForDeletion.length
-    ? await supabase
+  let companyRowsForCards = rowsForCards;
+  if (companyIdsForDeletion.length > 0) {
+    const { data: companyDeletionRows, error: companyDeletionError } =
+      await supabase
         .from("users")
         .select("id, deletion_requested_at")
         .in("id", companyIdsForDeletion)
-        .not("deletion_requested_at", "is", null)
-    : { data: [] as never[] };
-  const companyPendingDeletion = new Set(
-    (companyDeletionRows ?? []).map((row) => row.id),
-  );
-  const activeCompanyRows = rowsForCards.filter(
-    (row) => !companyPendingDeletion.has(row.user_id),
-  );
-  const companyRowsForCards = activeCompanyRows;
+        .not("deletion_requested_at", "is", null);
+    if (!companyDeletionError) {
+      const companyPendingDeletion = new Set(
+        (companyDeletionRows ?? []).map((row) => row.id),
+      );
+      companyRowsForCards = rowsForCards.filter(
+        (row) => !companyPendingDeletion.has(row.user_id),
+      );
+    }
+  }
 
   // Preload freshest open role (incl. required skills) so Role Fit can score skills.
   const { data: openRolesForMatch } = companyRowsForCards.length

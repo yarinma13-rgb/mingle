@@ -46,7 +46,17 @@ export async function requestAccountDeletion(
       deletion_scheduled_for: scheduledFor,
     } as never)
     .eq("id", userId);
-  if (error) throw error;
+  if (error) {
+    const missing =
+      /deletion_requested_at|deletion_scheduled_for|schema cache/i.test(
+        error.message,
+      );
+    throw new Error(
+      missing
+        ? "Account deletion is not available yet — apply migration 0032_account_deletion.sql (and reload PostgREST schema)."
+        : error.message,
+    );
+  }
   return { scheduledFor };
 }
 
