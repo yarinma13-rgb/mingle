@@ -25,7 +25,13 @@ export function talentPhotoObjectPath(userId: string): string {
 }
 
 export function isPublicPhotoUrl(value: string): boolean {
-  return value.startsWith("http://") || value.startsWith("https://");
+  return (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/landing/") ||
+    value.startsWith("/brand/") ||
+    value.startsWith("/mascot/")
+  );
 }
 
 export function isTalentPhotoFile(file: File): boolean {

@@ -362,6 +362,8 @@ button:disabled {
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
+  width: auto;
+  height: auto;
   object-fit: contain;
   background: none;
 }
@@ -471,3 +473,25 @@ button:disabled {
 [data-theme="dark"] .mingle-btn-secondary {
   color: var(--mingle-text);
 }
+
+/* Product demo (/demo) — subtle recording-ready polish */
+.demo-page {
+  isolation: isolate;
+}
+
+.demo-highlight {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 35%, transparent);
+  background: color-mix(in srgb, var(--mingle-accent-purple) 6%, var(--mingle-surface));
+}
+
+.demo-caption {
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-experience * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

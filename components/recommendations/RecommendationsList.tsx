@@ -21,12 +21,8 @@ export function RecommendationsList({
             <p className="text-sm font-medium text-mingle-text">
               {item.recommenderName}
             </p>
-            <p
-              lang="he"
-              dir="rtl"
-              className="text-xs text-mingle-text-secondary"
-            >
-              מאומת דרך LinkedIn
+            <p className="text-xs text-mingle-text-secondary">
+              Verified via LinkedIn
             </p>
             {item.body ? (
               <p

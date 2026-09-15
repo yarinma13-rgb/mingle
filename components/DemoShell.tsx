@@ -1,19 +1,17 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { HomeShell } from "@/components/HomeShell";
-import type { SplashVariant } from "@/components/SplashScreen";
+import { ProductDemoExperience } from "@/components/demo/ProductDemoExperience";
 
 /**
- * Renders the real app flow only — no review chrome. An optional
- * ?splash=mobile|web query param can force a variant for testing;
- * otherwise it behaves exactly like "/".
+ * Investor-ready product demo at /demo.
+ * Optional ?autoplay=0 starts paused for manual screen recording control.
+ * Legacy ?splash= is ignored — splash testing remains on / and /demo/mascot.
  */
 export function DemoShell() {
   const searchParams = useSearchParams();
-  const splashParam = searchParams.get("splash");
-  const forceSplash: SplashVariant | undefined =
-    splashParam === "mobile" || splashParam === "web" ? splashParam : undefined;
+  const autoplayParam = searchParams.get("autoplay");
+  const initialAutoplay = autoplayParam !== "0" && autoplayParam !== "false";
 
-  return <HomeShell key={splashParam ?? "auto"} forceSplash={forceSplash} />;
+  return <ProductDemoExperience initialAutoplay={initialAutoplay} />;
 }
