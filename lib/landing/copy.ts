@@ -402,7 +402,7 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
         {
           id: "founders",
           label: "מייסדים",
-          lead: "מגייסים כאילו יש לכם צוות גיוס מלא. Top Matches עם התאמת תפקיד, אדם ומוטיבציה — וסיכונים לפני השיחה, כדי לשמור על זמן, כסף ופוקוס.",
+          lead: "מגייסים כאילו יש לכם צוות גיוס מלא. ההתאמות הכי גבוהות עם התאמת תפקיד, אדם ומוטיביציה — וסיכונים לפני השיחה, כדי לשמור על זמן, כסף ופוקוס.",
         },
         {
           id: "talents",
@@ -527,7 +527,7 @@ export const LANDING_COPY: Record<LandingLocale, LandingCopy> = {
     compare: {
       title: "איפה mingle חזק יותר",
       lead: "נבנה לרשימות קצרות מוסברות — לא לעוד ערמת קורות חיים.",
-      columns: ["", "mingle", "Competitors"],
+      columns: ["", "mingle", "מתחרים"],
       rows: [
         {
           feature: "למה ההתאמה",
