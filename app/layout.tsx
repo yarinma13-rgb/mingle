@@ -6,6 +6,7 @@ import { CommandPaletteProvider } from "@/components/command-palette/CommandPale
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { IdentifySession } from "@/components/analytics/IdentifySession";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { AppLocaleProvider } from "@/components/i18n/AppLocaleProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
 
@@ -58,11 +59,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AppErrorBoundary>
           <IdentifySession />
           <ThemeProvider>
-            <ToastProvider>
-              <Suspense fallback={null}>
-                <CommandPaletteProvider>{children}</CommandPaletteProvider>
-              </Suspense>
-            </ToastProvider>
+            <AppLocaleProvider>
+              <ToastProvider>
+                <Suspense fallback={null}>
+                  <CommandPaletteProvider>{children}</CommandPaletteProvider>
+                </Suspense>
+              </ToastProvider>
+            </AppLocaleProvider>
           </ThemeProvider>
         </AppErrorBoundary>
       </body>

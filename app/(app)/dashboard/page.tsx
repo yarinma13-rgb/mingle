@@ -15,6 +15,7 @@ import { requireAppUser, requireShellUser } from "@/lib/dashboard/require-shell-
 import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { profileCompletion } from "@/lib/profile/persistence";
+import { AccountRestoredBanner } from "@/components/settings/AccountRestoredBanner";
 
 export default async function DashboardPage() {
   const { supabase, user, userRow } = await requireAppUser();
@@ -77,7 +78,8 @@ export default async function DashboardPage() {
 
     return (
       <>
-        <DashboardHeading>Dashboard</DashboardHeading>
+        <AccountRestoredBanner />
+      <DashboardHeading>Dashboard</DashboardHeading>
         <CompanyDashboard
           profileCompletion={
             ownProfile
@@ -143,6 +145,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <AccountRestoredBanner />
       <DashboardHeading>Dashboard</DashboardHeading>
       <TalentDashboard
         profileCompletion={liveCompletion}

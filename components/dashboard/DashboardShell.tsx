@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { MingleLogo } from "@/components/MingleLogo";
@@ -30,6 +30,10 @@ import type { Gender } from "@/lib/profile/avatar";
 import { ThemeSwitch } from "@/components/theme/ThemeSwitch";
 import { SeePlansButton } from "@/components/plans/SeePlansButton";
 import { PushRegistrar } from "@/components/push/PushRegistrar";
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
 type NavItem = {
   label: string;
@@ -126,10 +130,44 @@ export function DashboardShell({
   const pathname = usePathname();
   const router = useRouter();
   const { openPalette, enabled: paletteEnabled } = useCommandPalette();
+  const { t, dir, locale } = useAppLocale();
   const isCompany = userType === "company";
-  const navItems = isCompany ? COMPANY_NAV : TALENT_NAV;
-  const primaryItems = isCompany ? COMPANY_NAV_PRIMARY : TALENT_NAV_PRIMARY;
-  const moreItems = isCompany ? COMPANY_NAV_MORE : TALENT_NAV_MORE;
+  const localizeNav = (items: NavItem[]) =>
+    items.map((item) =>
+      item.href === "/settings"
+        ? { ...item, label: t.shell.settings }
+        : item.href === "/discover"
+          ? { ...item, label: t.shell.discover }
+          : item.href === "/conversations"
+            ? { ...item, label: t.shell.conversations, shortLabel: item.shortLabel }
+            : item.href === "/connections"
+              ? { ...item, label: t.shell.connections, shortLabel: item.shortLabel }
+              : item.href === "/board"
+                ? { ...item, label: t.shell.board }
+                : item.href === "/roles"
+                  ? { ...item, label: t.shell.roles }
+                  : item.href === "/team"
+                    ? { ...item, label: t.shell.team }
+                    : item,
+    );
+  const navItems = useMemo(
+    () => localizeNav(isCompany ? COMPANY_NAV : TALENT_NAV),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isCompany, locale, t],
+  );
+  const primaryItems = useMemo(
+    () => localizeNav(isCompany ? COMPANY_NAV_PRIMARY : TALENT_NAV_PRIMARY),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isCompany, locale, t],
+  );
+  const moreItems = useMemo(
+    () => localizeNav(isCompany ? COMPANY_NAV_MORE : TALENT_NAV_MORE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isCompany, locale, t],
+  );
+  const resolvedSearchPlaceholder = isCompany
+    ? t.shell.searchCandidates
+    : t.shell.searchCompanies;
   const useFillMain = fillMain ?? isConversationThreadPath(pathname);
 
   useEffect(() => {
@@ -139,7 +177,7 @@ export function DashboardShell({
   }, [navItems, router]);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-transparent">
+    <div className="flex h-dvh overflow-hidden bg-transparent" dir={dir} lang={locale}>
       <PushRegistrar />
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">
@@ -221,7 +259,7 @@ export function DashboardShell({
                 disabled={!paletteEnabled}
                 className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text focus:border-mingle-blue focus:outline-none disabled:opacity-60"
               >
-                {searchPlaceholder}
+                {searchPlaceholder || resolvedSearchPlaceholder}
               </button>
             </div>
           </div>
@@ -237,11 +275,13 @@ export function DashboardShell({
               <SearchIcon size={16} />
             </button>
 
+            <LocaleGlobeButton compact />
+
             <Link
               href="/settings/support"
               prefetch
-              aria-label="Help and support"
-              title="Help"
+              aria-label={t.shell.help}
+              title={t.shell.help}
               className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text"
             >
               <NavPendingIndicator />

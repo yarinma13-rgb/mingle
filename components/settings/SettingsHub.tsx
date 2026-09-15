@@ -6,6 +6,11 @@ import { SignOutButton } from "@/components/settings/SignOutButton";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { PushOptIn } from "@/components/push/PushOptIn";
 import { GoogleCalendarConnectCard } from "@/components/interviews/ScheduleInterviewControls";
+import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
 type SettingsHubProps = {
   email: string;
@@ -20,6 +25,7 @@ export function SettingsHub({
   profileHref,
   isCompany,
 }: SettingsHubProps) {
+  const { t, dir, locale } = useAppLocale();
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
 
@@ -27,72 +33,80 @@ export function SettingsHub({
     () => [
       {
         id: "account",
-        title: "Account",
+        title: t.settings.account,
         items: [
           {
             id: "signed-in",
-            title: "Signed in as",
+            title: t.settings.signedInAs,
             body: email,
           },
           {
             id: "path",
-            title: "Path",
-            body: pathLabel,
+            title: t.settings.path,
+            body:
+              pathLabel === "Company" || pathLabel === "company"
+                ? t.auth.segmentCompany
+                : t.auth.segmentTalent,
           },
           {
             id: "profile",
-            title: "Edit profile",
-            body: "Update the profile companies and talent see.",
+            title: t.settings.editProfile,
+            body: t.settings.editProfileBody,
             href: profileHref,
-            action: "Open profile",
+            action: t.settings.openProfile,
+          },
+          {
+            id: "language",
+            title: t.settings.language,
+            body: t.settings.languageBody,
           },
         ],
       },
       {
         id: "security",
-        title: "Security",
+        title: t.settings.security,
         items: [
           {
             id: "password",
-            title: "Password",
-            body: "Change the password for this account.",
+            title: t.settings.password,
+            body: t.settings.passwordBody,
           },
         ],
       },
       {
         id: "notifications",
-        title: "Notifications",
+        title: t.settings.notifications,
         items: [
           {
             id: "email-alerts",
-            title: "Email alerts",
-            body: "Coming soon — connection and conversation emails stay on for everyone right now.",
+            title: t.settings.emailAlerts,
+            body: t.settings.emailAlertsBody,
           },
         ],
       },
       {
         id: "privacy",
-        title: "Privacy",
+        title: t.settings.privacy,
         items: [
           {
             id: "visibility",
-            title: "Profile visibility",
+            title: t.settings.visibility,
             body: isCompany
-              ? "Coming soon — your company profile is visible to talent on mingle today."
-              : "Coming soon — your talent profile is visible to companies on mingle today. A pause toggle will land here.",
+              ? t.settings.visibilityCompany
+              : t.settings.visibilityTalent,
           },
         ],
       },
       {
         id: "support",
-        title: "Support",
+        title: t.settings.support,
         items: [
           {
             id: "report-problem",
-            title: "Report a problem",
-            body: "Something broke or looks wrong? Send us a note from inside the app.",
+            title: t.settings.reportProblem,
+            body: t.settings.reportProblemBody,
             href: "/settings/support",
-            action: "Open support",
+            action: t.settings.openSupport,
           },
         ],
       },
@@ -104,17 +118,17 @@ export function SettingsHub({
               items: [
                 {
                   id: "team",
-                  title: "Team members",
+                  title: t.shell.team,
                   body: "Invite HR and hiring managers once team accounts ship.",
                   href: "/team",
-                  action: "Open Team",
+                  action: t.shell.team,
                 },
               ],
             },
           ]
         : []),
     ],
-    [email, isCompany, pathLabel, profileHref],
+    [email, isCompany, pathLabel, profileHref, t],
   );
 
   const visible = sections
@@ -130,22 +144,20 @@ export function SettingsHub({
     .filter((section) => section.items.length > 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5" dir={dir} lang={locale}>
       <label className="block">
-        <span className="sr-only">Search settings</span>
+        <span className="sr-only">{t.settings.search}</span>
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search settings"
+          placeholder={t.settings.search}
           className="w-full rounded-[10px] border border-mingle-border bg-mingle-white px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
         />
       </label>
 
       {visible.length === 0 ? (
-        <p className="text-sm text-mingle-text-secondary">
-          No settings match that search.
-        </p>
+        <p className="text-sm text-mingle-text-secondary">{t.settings.noMatch}</p>
       ) : (
         visible.map((section) => (
           <section
@@ -169,7 +181,9 @@ export function SettingsHub({
                       {item.body}
                     </p>
                   </div>
-                  {"href" in item && item.href ? (
+                  {item.id === "language" ? (
+                    <LocaleGlobeButton />
+                  ) : "href" in item && item.href ? (
                     <Link
                       href={item.href}
                       className="mingle-btn-secondary shrink-0 text-xs"
@@ -198,6 +212,8 @@ export function SettingsHub({
           </section>
         ))
       )}
+
+      <DeleteAccountCard />
 
       <div className="rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle">
         <SignOutButton />

@@ -39,6 +39,10 @@ import {
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import type { Database, UserType } from "@/lib/supabase/types";
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
 const TOTAL_STEPS = 3;
 
@@ -131,6 +135,7 @@ async function fetchWizardData(
 
 export function OnboardingWizard({ path }: { path: UserType }) {
   const router = useRouter();
+  const { t, dir, locale } = useAppLocale();
   const [supabase] = useState(() => createClient());
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -145,7 +150,20 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   // Always render from the reconciled DB type, never from the URL alone.
   const questions = questionsForType(resolvedType);
-  const intro = introForType(resolvedType);
+  const introBase = introForType(resolvedType);
+  const intro =
+    resolvedType === "company"
+      ? {
+          eyebrow: t.onboarding.companyEyebrow,
+          headline: t.onboarding.companyHeadline,
+          subtext: t.onboarding.companySub,
+        }
+      : {
+          eyebrow: t.onboarding.talentEyebrow,
+          headline: t.onboarding.talentHeadline,
+          subtext: t.onboarding.talentSub,
+        };
+  void introBase;
 
   const applyFetchResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -273,10 +291,13 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
+    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10" dir={dir} lang={locale}>
       <div className="w-full max-w-lg">
         <div className="mb-10 flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={44} className="mb-6" />
+          <div className="mb-6 flex w-full items-center justify-between gap-3">
+            <MingleLogo variant="mark" size={44} />
+            <LocaleGlobeButton />
+          </div>
           <ProgressBar step={step} total={TOTAL_STEPS} />
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             {intro.eyebrow}
@@ -395,7 +416,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               disabled={saving}
               className="mingle-btn-secondary disabled:opacity-50"
             >
-              Back
+              {t.onboarding.back}
             </button>
           )}
           {currentQuestion.optional ? (
@@ -407,7 +428,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               disabled={saving}
               className="mingle-btn-secondary disabled:opacity-50"
             >
-              Skip
+              {t.onboarding.skip}
             </button>
           ) : null}
           <motion.button
@@ -426,7 +447,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                 : "mingle-btn-secondary cursor-not-allowed opacity-45"
             }`}
           >
-            {saving ? "Saving…" : "Continue"}
+            {saving ? (locale === "he" ? "שומרים…" : "Saving…") : t.onboarding.continue}
           </motion.button>
         </div>
       </div>

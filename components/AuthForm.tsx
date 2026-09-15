@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, startTransition } from "react";
+import { useState, startTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -18,57 +18,10 @@ import {
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import type { UserType } from "@/lib/supabase/types";
-
-const PATH_COPY: Record<
-  UserType,
-  { eyebrow: string; headline: string; sub: string }
-> = {
-  talent: {
-    eyebrow: "Continuing as talent",
-    headline: "Welcome to mingle",
-    sub: "Get matched with roles that fit — free for talent.",
-  },
-  company: {
-    eyebrow: "Continuing as a company",
-    headline: "Welcome to mingle",
-    sub: "See the few people worth talking to, with clear reasons.",
-  },
-};
-
-const PATH_CONFIRM: Record<
-  UserType,
-  {
-    segmentLabel: string;
-    confirm: string;
-    switchTo: UserType;
-    switchLabel: string;
-  }
-> = {
-  talent: {
-    segmentLabel: "Talent",
-    confirm: "Confirm Talent",
-    switchTo: "company",
-    switchLabel: "Switch to Company",
-  },
-  company: {
-    segmentLabel: "Company",
-    confirm: "Confirm Company",
-    switchTo: "talent",
-    switchLabel: "Switch to Talent",
-  },
-};
-
-const SIGNIN_COPY = {
-  eyebrow: "Welcome back",
-  headline: "Sign in to mingle",
-  sub: "Pick up where you left off.",
-};
-
-const SIGNUP_GENERIC = {
-  eyebrow: "Get started — it’s free for talent",
-  headline: "Welcome to mingle",
-  sub: "No credit card needed. Choose how you’re joining.",
-};
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
 type AuthMode = "signup" | "signin";
 
@@ -82,6 +35,7 @@ export function AuthForm({
   initialError?: "work_email" | null;
 }) {
   const router = useRouter();
+  const { t, locale, dir } = useAppLocale();
   const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<AuthMode>(initialMode);
   // Stay neutral until the user taps Talent or Company (or arrives with ?path=).
@@ -93,7 +47,19 @@ export function AuthForm({
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [confirmingPath, setConfirmingPath] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [deletionScheduledNotice, setDeletionScheduledNotice] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("deleted") === "1") {
+        queueMicrotask(() => setDeletionScheduledNotice(true));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const {
     register,
@@ -154,7 +120,7 @@ export function AuthForm({
     if (!signUpData.session) {
       const existingAccount = (signUpData.user?.identities?.length ?? 0) === 0;
       if (existingAccount) {
-        setServerError("That email already has an account. Sign in instead.");
+        setServerError(t.auth.emailExists);
         setConfirmingPath(false);
         setMode("signin");
         setIsSubmitting(false);
@@ -221,7 +187,7 @@ export function AuthForm({
     }
 
     if (!path) {
-      setServerError("Choose talent or company to create your account.");
+      setServerError(t.auth.choosePath);
       return;
     }
 
@@ -237,16 +203,48 @@ export function AuthForm({
 
   const copy =
     mode === "signin"
-      ? SIGNIN_COPY
-      : path
-        ? PATH_COPY[path]
-        : SIGNUP_GENERIC;
+      ? {
+          eyebrow: t.auth.welcomeBack,
+          headline: t.auth.signInHeadline,
+          sub: t.auth.signInSub,
+        }
+      : path === "talent"
+        ? {
+            eyebrow: t.auth.talentEyebrow,
+            headline: t.auth.talentHeadline,
+            sub: t.auth.talentSub,
+          }
+        : path === "company"
+          ? {
+              eyebrow: t.auth.companyEyebrow,
+              headline: t.auth.companyHeadline,
+              sub: t.auth.companySub,
+            }
+          : {
+              eyebrow: t.auth.signupGenericEyebrow,
+              headline: t.auth.signupGenericHeadline,
+              sub: t.auth.signupGenericSub,
+            };
 
-  const confirmCopy = path ? PATH_CONFIRM[path] : null;
+  const confirmCopy = path
+    ? path === "talent"
+      ? {
+          segmentLabel: t.auth.segmentTalent,
+          confirm: t.auth.confirmTalent,
+          switchTo: "company" as const,
+          switchLabel: t.auth.switchToCompany,
+        }
+      : {
+          segmentLabel: t.auth.segmentCompany,
+          confirm: t.auth.confirmCompany,
+          switchTo: "talent" as const,
+          switchLabel: t.auth.switchToTalent,
+        }
+    : null;
 
   const continueWithGoogle = async () => {
     if (mode === "signup" && !path) {
-      setServerError("Choose Talent or Company to continue.");
+      setServerError(t.auth.choosePathContinue);
       return;
     }
     setServerError(null);
@@ -276,13 +274,15 @@ export function AuthForm({
 
   const formInner = awaitingConfirmation ? (
     <div className="flex w-full max-w-[400px] flex-col items-start text-left">
-      <MingleLogo variant="mark" size={44} className="mb-8" />
+      <div className="mb-8 flex w-full items-center justify-between gap-3">
+        <MingleLogo variant="mark" size={44} />
+        <LocaleGlobeButton />
+      </div>
       <h1 className="font-display text-[2rem] font-normal tracking-[-0.04em] text-mingle-text">
-        Check your email
+        {t.auth.checkEmailTitle}
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-mingle-text-secondary">
-        We sent a confirmation link to your inbox. Confirm your email, then come
-        back and continue.
+        {t.auth.checkEmailBody}
       </p>
     </div>
   ) : (
@@ -290,9 +290,19 @@ export function AuthForm({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex w-full max-w-[400px] flex-col"
+      className="relative flex w-full max-w-[400px] flex-col"
     >
-      <MingleLogo variant="mark" size={44} priority className="mb-8" />
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <MingleLogo variant="mark" size={44} priority />
+        <LocaleGlobeButton />
+      </div>
+      {deletionScheduledNotice ? (
+        <p className="mb-4 rounded-xl border border-mingle-warning/40 bg-mingle-warning/15 px-3 py-2 text-xs leading-relaxed text-mingle-text">
+          {locale === "he"
+            ? "תזמנו מחיקה בעוד 14 יום. התחברות מחדש בתוך התקופה תשחזר את החשבון והפרופיל."
+            : "Account deletion is scheduled in 14 days. Sign in again within that window to restore your profile."}
+        </p>
+      ) : null}
       <p className="text-sm font-normal text-mingle-text-secondary">{copy.eyebrow}</p>
       <h1 className="mt-2 font-display text-[2rem] font-normal leading-[1.15] tracking-[-0.04em] text-mingle-text sm:text-[2.25rem]">
         {copy.headline}
@@ -312,7 +322,7 @@ export function AuthForm({
                 : "text-mingle-text-secondary hover:text-mingle-text"
             }`}
           >
-            Talent
+            {t.auth.segmentTalent}
           </button>
           <button
             type="button"
@@ -323,7 +333,7 @@ export function AuthForm({
                 : "text-mingle-text-secondary hover:text-mingle-text"
             }`}
           >
-            Company
+            {t.auth.segmentCompany}
           </button>
         </div>
       ) : null}
@@ -336,13 +346,13 @@ export function AuthForm({
       >
         <div>
           <label htmlFor="email" className="sr-only">
-            Email
+            {t.auth.email}
           </label>
           <input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="Email"
+            placeholder={t.auth.email}
             {...register("email")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
@@ -353,13 +363,13 @@ export function AuthForm({
 
         <div>
           <label htmlFor="password" className="sr-only">
-            Password
+            {t.auth.password}
           </label>
           <input
             id="password"
             type="password"
             autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            placeholder="Password"
+            placeholder={t.auth.password}
             {...register("password")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
@@ -399,11 +409,11 @@ export function AuthForm({
                 }}
                 className="mt-2 text-xs font-normal text-mingle-blue underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
               >
-                {resetBusy ? "Sending…" : "Forgot password"}
+                {resetBusy ? t.auth.sending : t.auth.forgotPassword}
               </button>
               {resetSent && (
                 <p className="mt-1.5 text-xs text-mingle-text-secondary">
-                  If that email is on mingle, we sent a reset link.
+                  {t.auth.resetSent}
                 </p>
               )}
             </>
@@ -416,7 +426,7 @@ export function AuthForm({
 
         {mode === "signup" && !path ? (
           <p className="text-sm text-mingle-pink" role="status">
-            Choose Talent or Company to continue.
+            {t.auth.choosePathContinue}
           </p>
         ) : null}
 
@@ -427,17 +437,17 @@ export function AuthForm({
         >
           {isSubmitting
             ? mode === "signup"
-              ? "Creating account…"
-              : "Signing in…"
+              ? t.auth.creating
+              : t.auth.signingIn
             : mode === "signup"
-              ? "Continue"
-              : "Sign in"}
+              ? t.auth.continue
+              : t.auth.signIn}
         </button>
 
         <div className="relative my-1 flex items-center gap-3">
           <div className="h-px flex-1 bg-mingle-border" />
           <span className="text-[11px] font-medium uppercase tracking-wide text-mingle-text-secondary">
-            or
+            {t.auth.or}
           </span>
           <div className="h-px flex-1 bg-mingle-border" />
         </div>
@@ -449,7 +459,7 @@ export function AuthForm({
           className="inline-flex items-center justify-center gap-2 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
         >
           <GoogleMark />
-          Continue with Google
+          {t.auth.continueGoogle}
         </button>
       </form>
 
@@ -479,7 +489,7 @@ export function AuthForm({
       : "bg-[#f5f9ff] text-[#2563eb]";
 
   return (
-    <div className="relative flex min-h-screen flex-1 bg-mingle-white">
+    <div className="relative flex min-h-screen flex-1 bg-mingle-white" dir={dir} lang={locale}>
       <section className="relative flex min-h-screen w-full flex-col lg:w-1/2">
         <div
           className={`flex flex-1 items-center justify-center px-6 py-12 sm:px-10 ${
@@ -493,7 +503,7 @@ export function AuthForm({
           <div className="border-t border-mingle-border px-6 py-5 text-center text-sm text-mingle-text-secondary sm:px-10">
             {mode === "signup" ? (
               <>
-                Already have an account?{" "}
+                {t.auth.haveAccount.split("?")[0]}?{" "}
                 <button
                   type="button"
                   onClick={() => {
@@ -503,12 +513,12 @@ export function AuthForm({
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
-                  Log in
+                  {t.auth.signIn}
                 </button>
               </>
             ) : (
               <>
-                Don&apos;t have an account?{" "}
+                {t.auth.needAccount.split("?")[0]}?{" "}
                 <button
                   type="button"
                   onClick={() => {
@@ -519,7 +529,7 @@ export function AuthForm({
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
-                  Sign up
+                  {locale === "he" ? "הרשמה" : "Sign up"}
                 </button>
               </>
             )}
