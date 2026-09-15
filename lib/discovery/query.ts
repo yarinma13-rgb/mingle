@@ -351,23 +351,39 @@ export async function loadDiscoveryPage(
         })
       : null;
     distanceByUser.set(row.user_id, km);
+    const workModel = profile.workEnvironment[0] ?? null;
+    const locationLabel = [profile.location, workModel]
+      .filter(Boolean)
+      .join(", ");
+    const tags = [
+      ...profile.values,
+      ...profile.workEnvironment,
+    ].filter(Boolean).slice(0, 3);
+    const about =
+      profile.whoThrivesHere.trim() ||
+      profile.description.trim() ||
+      profile.mission.trim() ||
+      null;
+    const roleTitle =
+      profile.lookingFor[0] ??
+      (profile.industry ? `${profile.industry} roles` : "Open roles");
     return {
       userId: row.user_id,
       name: profile.companyName,
-      subtitle: profile.mission,
-      meta: [
-        profile.industry,
-        profile.location,
-        applyDistance && km != null ? `${Math.round(km)} km` : null,
-      ]
-        .filter(Boolean)
-        .join(" · "),
+      subtitle: roleTitle,
+      meta: locationLabel,
       initial: companyInitials(profile.companyName),
       photo: profile.logo,
       gender: null,
       score: result.score,
       factors: result.factors,
       report,
+      kind: "company" as const,
+      roleTitle,
+      locationLabel: locationLabel || null,
+      salaryLabel: null as string | null,
+      tags,
+      about: about ? about.slice(0, 160) : null,
     };
   });
   cards.sort((a, b) => {
@@ -378,6 +394,61 @@ export async function loadDiscoveryPage(
     }
     return b.score - a.score;
   });
+
+  // Attach salary / role title from the company's freshest open role when present.
+  const companyIds = cards.map((card) => card.userId);
+  if (companyIds.length > 0) {
+    const { data: openRoles } = await supabase
+      .from("roles")
+      .select(
+        "company_id, title, work_model, salary_min, salary_max, job_presentation, description, updated_at",
+      )
+      .in("company_id", companyIds)
+      .eq("status", "open")
+      .order("updated_at", { ascending: false });
+    const roleByCompany = new Map<
+      string,
+      {
+        title: string;
+        work_model: string | null;
+        salary_min: number | null;
+        salary_max: number | null;
+        job_presentation: string | null;
+        description: string | null;
+      }
+    >();
+    for (const role of openRoles ?? []) {
+      if (!roleByCompany.has(role.company_id)) {
+        roleByCompany.set(role.company_id, role);
+      }
+    }
+    for (const card of cards) {
+      const role = roleByCompany.get(card.userId);
+      if (!role) continue;
+      card.roleTitle = role.title;
+      card.subtitle = role.title;
+      if (role.work_model) {
+        const base = card.locationLabel?.split(",")[0]?.trim() || card.locationLabel;
+        card.locationLabel = [base, role.work_model].filter(Boolean).join(", ");
+        card.meta = card.locationLabel ?? card.meta;
+      }
+      if (role.salary_min != null || role.salary_max != null) {
+        const min =
+          role.salary_min != null
+            ? role.salary_min.toLocaleString("en-US")
+            : null;
+        const max =
+          role.salary_max != null
+            ? role.salary_max.toLocaleString("en-US")
+            : null;
+        card.salaryLabel =
+          min && max ? `${min} - ${max}` : min ? `${min}+` : `up to ${max}`;
+      }
+      const roleAbout = (role.job_presentation || role.description || "").trim();
+      if (roleAbout) card.about = roleAbout.slice(0, 160);
+    }
+  }
+
   const photoUrls = await resolveTalentPhotoUrls(
     supabase,
     cards.map((card) => card.photo),
