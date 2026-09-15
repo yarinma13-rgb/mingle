@@ -53,7 +53,7 @@ export function ProductDemoExperience({
   const [showScript, setShowScript] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const sceneStartedAt = useRef(performance.now());
-  const rafRef = useRef<number | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   const scene = DEMO_SCENES[sceneIndex];
   const isLast = sceneIndex >= DEMO_SCENES.length - 1;
@@ -79,9 +79,23 @@ export function ProductDemoExperience({
   }, [goTo, sceneIndex]);
 
   const replay = useCallback(() => {
-    goTo(0);
+    sceneStartedAt.current = performance.now();
+    setElapsedInScene(0);
+    setSceneIndex(0);
     setPlaying(true);
-  }, [goTo]);
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    setPlaying((value) => {
+      if (!value) {
+        // Starting playback — always restart the current scene clock so
+        // idle time with autoplay off does not skip the scene immediately.
+        sceneStartedAt.current = performance.now();
+        setElapsedInScene(0);
+      }
+      return !value;
+    });
+  }, []);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -119,28 +133,35 @@ export function ProductDemoExperience({
 
   useEffect(() => {
     if (!playing) {
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
       return;
     }
 
     const tick = () => {
       const elapsed = performance.now() - sceneStartedAt.current;
       setElapsedInScene(elapsed);
-      if (elapsed >= scene.durationMs) {
+      const remaining = scene.durationMs - elapsed;
+      if (remaining <= 0) {
         if (sceneIndex >= DEMO_SCENES.length - 1) {
           setPlaying(false);
           setElapsedInScene(scene.durationMs);
-        } else {
-          setSceneIndex((i) => i + 1);
+          return;
         }
+        setSceneIndex((i) => i + 1);
         return;
       }
-      rafRef.current = requestAnimationFrame(tick);
+      timerRef.current = window.setTimeout(tick, Math.min(100, remaining));
     };
 
-    rafRef.current = requestAnimationFrame(tick);
+    timerRef.current = window.setTimeout(tick, 50);
     return () => {
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [playing, scene.durationMs, sceneIndex]);
 
@@ -157,7 +178,7 @@ export function ProductDemoExperience({
       }
       if (event.key === " " || event.code === "Space") {
         event.preventDefault();
-        setPlaying((value) => !value);
+        togglePlay();
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         next();
@@ -172,7 +193,7 @@ export function ProductDemoExperience({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [next, prev, replay]);
+  }, [next, prev, replay, togglePlay]);
 
   const captions = useMemo(
     () => activeCaptionLines(sceneIndex, elapsedInScene),
@@ -283,7 +304,7 @@ export function ProductDemoExperience({
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-5 lg:px-8">
           <button
             type="button"
-            onClick={() => setPlaying((value) => !value)}
+            onClick={togglePlay}
             className="mingle-btn-primary min-w-[5.5rem] text-xs"
             aria-label={playing ? "Pause demo" : "Play demo"}
           >
