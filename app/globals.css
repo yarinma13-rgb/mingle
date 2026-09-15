@@ -509,6 +509,60 @@ button:disabled {
   letter-spacing: -0.015em;
 }
 
+.demo-camera {
+  transform-box: fill-box;
+}
+
+.demo-typed-line {
+  display: inline;
+  color: inherit;
+}
+
+.demo-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1em;
+  margin-left: 1px;
+  vertical-align: -0.12em;
+  background: var(--mingle-accent-blue, #3e6be0);
+  animation: demo-caret-blink 0.9s steps(1) infinite;
+}
+
+@keyframes demo-caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.demo-cta-pulse {
+  animation: demo-cta-pulse 2.4s var(--demo-ease) infinite;
+}
+
+@keyframes demo-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--mingle-cta, #3e6be0) 18%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 10px 28px color-mix(in srgb, var(--mingle-cta, #3e6be0) 32%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--mingle-cta, #3e6be0) 12%, transparent);
+  }
+}
+
+.demo-score-pop {
+  transition: transform 0.45s var(--demo-ease);
+}
+
+.demo-focus-vignette {
+  mix-blend-mode: multiply;
+}
+
 html {
   transition: background-color 0.45s var(--demo-ease, ease);
 }
@@ -519,7 +573,9 @@ html {
     transition-duration: 0.01ms !important;
   }
 
-  .demo-highlight {
+  .demo-highlight,
+  .demo-cta-pulse,
+  .demo-caret {
     animation: none;
   }
 }

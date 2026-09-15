@@ -66,7 +66,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "introduce",
-    durationMs: 5000,
+    durationMs: 5600,
     captions: [
       { lines: ["A better way to connect talent and companies."] },
       { atMs: 2400, lines: ["Meet mingle."] },
@@ -78,7 +78,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "company",
-    durationMs: 6000,
+    durationMs: 6500,
     captions: [
       { lines: ["Start with what matters."] },
       { atMs: 2500, lines: ["Define the opportunity."] },
@@ -102,7 +102,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "match",
-    durationMs: 5000,
+    durationMs: 5500,
     captions: [{ lines: ["More context.", "Better connections."] }],
     showChrome: true,
     chromeNav: "Candidates",
@@ -129,8 +129,11 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "conversation",
-    durationMs: 5500,
-    captions: [{ lines: ["Start a meaningful conversation."] }],
+    durationMs: 7200,
+    captions: [
+      { lines: ["Start a meaningful conversation."] },
+      { atMs: 2800, lines: ["Type what matters — then send."] },
+    ],
     showChrome: true,
     chromeNav: "Conversations",
     chromeTitle: "Conversation",

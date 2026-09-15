@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   DEMO_CURSOR_SCRIPT,
+  activeCursorBeat,
   type DemoCursorBeat,
 } from "@/lib/demo/cursor-script";
 import type { DemoSceneId } from "@/lib/demo/scenes";
@@ -25,18 +26,6 @@ function resolveTargetPoint(
     x: rect.left - rootRect.left + rect.width * 0.62,
     y: rect.top - rootRect.top + rect.height * 0.55,
   };
-}
-
-function activeBeat(
-  script: DemoCursorBeat[] | undefined,
-  elapsedMs: number,
-): DemoCursorBeat | null {
-  if (!script?.length) return null;
-  let current: DemoCursorBeat | null = null;
-  for (const beat of script) {
-    if (beat.atMs <= elapsedMs) current = beat;
-  }
-  return current;
 }
 
 function CursorGlyph({ clicking }: { clicking: boolean }) {
@@ -64,7 +53,7 @@ function CursorGlyph({ clicking }: { clicking: boolean }) {
 
 /**
  * Guided product cursor for investor recordings — moves between
- * data-demo-target nodes with calm easing and a soft click pulse.
+ * data-demo-target nodes with calm easing, zoom-aligned rings, and click pulse.
  */
 export function DemoGuidedCursor({
   rootRef,
@@ -80,8 +69,8 @@ export function DemoGuidedCursor({
   reducedMotion?: boolean;
 }) {
   const script = DEMO_CURSOR_SCRIPT[sceneId];
-  const beat = useMemo(
-    () => activeBeat(script, elapsedMs),
+  const beat: DemoCursorBeat | null = useMemo(
+    () => activeCursorBeat(script, elapsedMs),
     [script, elapsedMs],
   );
 
@@ -118,10 +107,10 @@ export function DemoGuidedCursor({
         const rect = el.getBoundingClientRect();
         setRing(
           new DOMRect(
-            rect.left - rootRect.left - 6,
-            rect.top - rootRect.top - 6,
-            rect.width + 12,
-            rect.height + 12,
+            rect.left - rootRect.left - 8,
+            rect.top - rootRect.top - 8,
+            rect.width + 16,
+            rect.height + 16,
           ),
         );
       }
@@ -138,8 +127,7 @@ export function DemoGuidedCursor({
       }
     };
 
-    // Remeasure a few times — scene content may still be animating in.
-    for (const delay of [0, 80, 200, 360]) {
+    for (const delay of [0, 80, 200, 360, 520]) {
       timers.push(window.setTimeout(apply, delay));
     }
 
@@ -149,7 +137,6 @@ export function DemoGuidedCursor({
     };
   }, [beat, enabled, reducedMotion, rootRef, sceneId, elapsedMs]);
 
-  // Re-measure on resize while visible
   useEffect(() => {
     if (!enabled || !beat || !rootRef.current) return;
     const onResize = () => {
@@ -162,8 +149,33 @@ export function DemoGuidedCursor({
 
   if (!enabled || reducedMotion) return null;
 
+  const typing = beat?.action === "type";
+
   return (
     <div className="pointer-events-none absolute inset-0 z-[25] overflow-hidden">
+      {/* Soft vignette — dim everything except the focus ring */}
+      <AnimatePresence>
+        {visible && ring ? (
+          <motion.div
+            key={`${sceneId}-vignette`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: demoEase }}
+            className="demo-focus-vignette absolute inset-0"
+            style={{
+              background: `radial-gradient(
+                ellipse ${Math.max(ring.width * 1.6, 220)}px ${Math.max(ring.height * 1.8, 160)}px
+                at ${ring.x + ring.width / 2}px ${ring.y + ring.height / 2}px,
+                transparent 0%,
+                transparent 42%,
+                rgba(22, 19, 34, 0.10) 100%
+              )`,
+            }}
+          />
+        ) : null}
+      </AnimatePresence>
+
       <AnimatePresence>
         {visible && ring ? (
           <motion.div
@@ -172,7 +184,7 @@ export function DemoGuidedCursor({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.35, ease: demoEase }}
-            className="absolute rounded-2xl border border-mingle-accent-blue/35 bg-mingle-accent-blue/[0.06] shadow-[0_0_0_1px_rgba(62,107,224,0.08),0_12px_40px_rgba(62,107,224,0.12)]"
+            className="absolute rounded-2xl border border-mingle-accent-blue/40 bg-mingle-accent-blue/[0.07] shadow-[0_0_0_1px_rgba(62,107,224,0.1),0_16px_48px_rgba(62,107,224,0.14)]"
             style={{
               left: ring.x,
               top: ring.y,
@@ -217,6 +229,14 @@ export function DemoGuidedCursor({
                 />
               ) : null}
             </AnimatePresence>
+            {typing ? (
+              <motion.span
+                aria-hidden
+                className="absolute left-5 top-5 h-4 w-[1.5px] rounded-full bg-mingle-accent-blue"
+                animate={{ opacity: [1, 0.15, 1] }}
+                transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }}
+              />
+            ) : null}
           </motion.div>
         ) : null}
       </AnimatePresence>

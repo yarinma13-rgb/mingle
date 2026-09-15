@@ -67,7 +67,9 @@ export function TalentScene() {
             <div className="mt-1 flex gap-2">
               <div
                 data-demo-target={index === 0 ? "talent-interested" : undefined}
-                className="flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white"
+                className={`flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white ${
+                  index === 0 ? "demo-cta-pulse" : ""
+                }`}
               >
                 Interested
               </div>

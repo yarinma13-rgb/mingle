@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DemoChrome } from "@/components/demo/DemoChrome";
 import { DemoCaptions } from "@/components/demo/DemoCaptions";
 import { DemoGuidedCursor } from "@/components/demo/DemoGuidedCursor";
+import { DemoCamera } from "@/components/demo/DemoCamera";
 import { OpeningScene } from "@/components/demo/scenes/OpeningScene";
 import { ProblemScene } from "@/components/demo/scenes/ProblemScene";
 import { IntroduceScene } from "@/components/demo/scenes/IntroduceScene";
@@ -25,6 +26,7 @@ import {
   demoEase,
   demoFullBleedVariants,
 } from "@/lib/demo/motion";
+import { DemoPlaybackProvider } from "@/lib/demo/playback-context";
 
 const NAV_TO_SCENE: Record<string, DemoSceneId> = {
   Dashboard: "introduce",
@@ -303,6 +305,14 @@ export function ProductDemoExperience({
     scene.id === "phase2";
 
   return (
+    <DemoPlaybackProvider
+      value={{
+        sceneId: scene.id,
+        elapsedMs: elapsedInScene,
+        playing,
+        reducedMotion,
+      }}
+    >
     <div className="demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent">
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue"
@@ -313,7 +323,7 @@ export function ProductDemoExperience({
       <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-3 pb-14 pt-3 sm:px-5 sm:pt-4 lg:px-8">
         <div
           ref={stageRef}
-          className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col"
+          className="relative flex min-h-[calc(100vh-5rem)] flex-1 flex-col overflow-hidden"
         >
           {/* Soft transition veil — monday calm, not a hard cut */}
           <motion.div
@@ -323,6 +333,19 @@ export function ProductDemoExperience({
             transition={{ duration: 0.22, ease: demoEase }}
           />
 
+          <DemoCamera
+            rootRef={stageRef}
+            sceneId={scene.id}
+            elapsedMs={elapsedInScene}
+            enabled={
+              playing &&
+              !veil &&
+              scene.id !== "opening" &&
+              scene.id !== "closing" &&
+              scene.id !== "problem"
+            }
+            reducedMotion={reducedMotion}
+          >
           {showChrome ? (
             <DemoChrome
               activeNav={scene.chromeNav ?? "Dashboard"}
@@ -363,6 +386,7 @@ export function ProductDemoExperience({
               </motion.div>
             </AnimatePresence>
           )}
+          </DemoCamera>
 
           <DemoGuidedCursor
             rootRef={stageRef}
@@ -473,5 +497,6 @@ export function ProductDemoExperience({
         </div>
       </div>
     </div>
+    </DemoPlaybackProvider>
   );
 }
