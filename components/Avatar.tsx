@@ -36,10 +36,11 @@ export function Avatar({
   const dim = SIZES[size];
   const radius = SHAPE[shape];
   const label = initials.trim() || "?";
+  const fit = shape === "soft" ? "object-contain" : "object-cover";
   return (
     <TalentPhotoImg
       photo={photo}
-      className={`${dim.box} shrink-0 ${radius} object-cover shadow-[0_8px_24px_rgba(45,27,78,0.08)] ring-1 ring-black/[0.04]`}
+      className={`${dim.box} shrink-0 ${radius} ${fit} bg-white shadow-[0_8px_24px_rgba(45,27,78,0.08)] ring-1 ring-black/[0.04]`}
       fallback={
         <div
           className={`flex ${dim.box} shrink-0 items-center justify-center ${radius} font-display font-bold text-white ${dim.text} ${avatarToneClass(gender)} shadow-[0_8px_24px_rgba(45,27,78,0.08)]`}

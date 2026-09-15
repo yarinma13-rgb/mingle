@@ -15,7 +15,8 @@ const PHOTO_MIME: Record<string, string> = {
 export const TALENT_PHOTO_COPY = {
   notReady:
     "Photo upload isn't ready yet. You can skip this for now and add a photo later.",
-  invalidFile: "Please choose a JPEG, PNG, or WebP of 5 MB or less.",
+  invalidFile:
+    "Please choose a JPEG, PNG, or WebP of 5 MB or less. iPhone HEIC/Live Photos need to be exported as JPEG first.",
   uploadFailed: "Couldn't upload that. Try again in a moment.",
   removeFailed: "Couldn't remove that. Try again in a moment.",
 } as const;
@@ -25,12 +26,20 @@ export function talentPhotoObjectPath(userId: string): string {
 }
 
 export function isPublicPhotoUrl(value: string): boolean {
-  return value.startsWith("http://") || value.startsWith("https://");
+  return (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("blob:") ||
+    value.startsWith("data:")
+  );
 }
 
 export function isTalentPhotoFile(file: File): boolean {
   const type = file.type.toLowerCase();
   const name = file.name.toLowerCase();
+  if (type.includes("heic") || type.includes("heif") || name.endsWith(".heic")) {
+    return false;
+  }
   if (PHOTO_MIME[type]) return true;
   return (
     name.endsWith(".jpg") ||
@@ -84,13 +93,26 @@ export async function uploadTalentPhoto(
     .upload(path, file, {
       upsert: true,
       contentType: contentTypeFor(file),
+      cacheControl: "3600",
     });
   if (uploadError) throw uploadError;
 
-  const { error: saveError } = await supabase.from("talent_profiles").upsert(
-    { user_id: userId, profile_photo: path },
-    { onConflict: "user_id" },
-  );
+  // Prefer update when a row already exists so we never wipe other columns.
+  const { data: existing } = await supabase
+    .from("talent_profiles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const { error: saveError } = existing
+    ? await supabase
+        .from("talent_profiles")
+        .update({ profile_photo: path })
+        .eq("user_id", userId)
+    : await supabase.from("talent_profiles").upsert(
+        { user_id: userId, profile_photo: path },
+        { onConflict: "user_id" },
+      );
   if (saveError) {
     await supabase.storage.from(TALENT_PHOTO_BUCKET).remove([path]);
     throw saveError;

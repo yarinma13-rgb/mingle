@@ -296,6 +296,7 @@ export function DashboardShell({
                 initials={userInitials}
                 gender={userGender}
                 size="sm"
+                shape={isCompany ? "soft" : "circle"}
               />
               <div className="hidden leading-tight sm:block">
                 <p className="text-sm font-semibold text-mingle-text">
@@ -344,6 +345,7 @@ export function DashboardShell({
         userGender={userGender}
         userPhoto={userPhoto}
         userSubtitle={userSubtitle}
+        avatarShape={isCompany ? "soft" : "circle"}
         profileHref={
           isCompany ? "/company-profile/build" : "/profile/build"
         }

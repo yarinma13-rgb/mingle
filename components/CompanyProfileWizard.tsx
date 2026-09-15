@@ -272,30 +272,43 @@ export function CompanyProfileWizard() {
     setLogoError(null);
     setUploadingLogo(true);
     try {
-      const path = `${userId}/${Date.now()}-${file.name}`;
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const path = `${userId}/${Date.now()}-${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("logos")
-        .upload(path, file, { upsert: true });
+        .upload(path, file, {
+          upsert: true,
+          contentType: file.type || "image/png",
+          cacheControl: "3600",
+        });
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage
         .from("logos")
         .getPublicUrl(path);
+      const logoUrl = `${publicUrl.publicUrl}?v=${Date.now()}`;
       await saveCompanyProfilePatch(supabase, userId, {
         logo: publicUrl.publicUrl,
       });
-      const nextProfile = { ...profile, logo: publicUrl.publicUrl };
+      const nextProfile = { ...profile, logo: logoUrl };
       await saveProfileCompletion(
         supabase,
         userId,
         companyProfileCompletion(nextProfile),
       );
-      setProfile(nextProfile);
-    } catch {
+      setProfile({ ...nextProfile, logo: publicUrl.publicUrl });
+    } catch (error) {
+      const text =
+        error && typeof error === "object" && "message" in error
+          ? String((error as { message: string }).message)
+          : "";
       setLogoError(
-        "Logo upload isn't set up yet — you can skip this for now and add it later.",
+        /bucket|not found|policy|permission|row-level/i.test(text)
+          ? "Logo upload isn't set up yet — you can skip this for now and add it later."
+          : "Couldn't upload that logo. Try a JPEG or PNG under 5 MB.",
       );
     } finally {
       setUploadingLogo(false);
+      e.target.value = "";
     }
   };
 
@@ -434,15 +447,16 @@ export function CompanyProfileWizard() {
                     {profile.logo && (
                       <StorageImage
                         src={profile.logo}
-                        className="h-14 w-14 rounded-xl"
+                        className="h-14 w-14 rounded-xl bg-white p-1"
                         sizes="56px"
+                        objectFit="contain"
                       />
                     )}
                     <label className="mingle-btn-secondary cursor-pointer text-xs">
                       {uploadingLogo ? "Uploading…" : "Choose logo"}
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
                         className="hidden"
                         onChange={handleLogoChange}
                         disabled={uploadingLogo}
