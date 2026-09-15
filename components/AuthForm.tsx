@@ -36,14 +36,6 @@ export function AuthForm({
 }) {
   const router = useRouter();
   const { t, locale, dir } = useAppLocale();
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("deleted") === "1") setDeletionScheduledNotice(true);
-    } catch {
-      /* ignore */
-    }
-  }, []);
   const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<AuthMode>(initialMode);
   // Stay neutral until the user taps Talent or Company (or arrives with ?path=).
@@ -57,6 +49,17 @@ export function AuthForm({
   const [resetSent, setResetSent] = useState(false);
   const [deletionScheduledNotice, setDeletionScheduledNotice] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("deleted") === "1") {
+        queueMicrotask(() => setDeletionScheduledNotice(true));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const {
     register,

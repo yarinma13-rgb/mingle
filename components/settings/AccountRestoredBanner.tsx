@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAppLocale } from "@/components/i18n/AppLocaleProvider";
+
+function readRestoredFlag(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.sessionStorage.getItem("mingle.account.restored") === "1") {
+      window.sessionStorage.removeItem("mingle.account.restored");
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
 
 /** Shows once after sign-in cancelled a pending 14-day account deletion. */
 export function AccountRestoredBanner() {
   const { t } = useAppLocale();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (window.sessionStorage.getItem("mingle.account.restored") === "1") {
-        window.sessionStorage.removeItem("mingle.account.restored");
-        setVisible(true);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const [visible, setVisible] = useState(readRestoredFlag);
 
   if (!visible) return null;
 
