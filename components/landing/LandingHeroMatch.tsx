@@ -86,11 +86,7 @@ export function LandingHeroCopy() {
 
       <div className="landing-hero-actions">
         <Link
-          href={
-            audienceId === "talents"
-              ? "/auth?mode=signup&path=talent"
-              : "/auth?mode=signup&path=company"
-          }
+          href="/auth?mode=signup"
           onClick={() =>
             track(AnalyticsEvent.landingCtaClicked, {
               cta: "get_started",
