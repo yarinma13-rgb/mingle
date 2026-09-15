@@ -144,7 +144,7 @@ export function DemoChrome({
                             <motion.span
                               layoutId="demo-nav-glow"
                               className="absolute inset-0 rounded-xl bg-gradient-to-b from-mingle-accent-blue/10 to-transparent"
-                              transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                              transition={{ duration: 0.35, ease: demoEase }}
                             />
                           ) : null}
                           <Icon

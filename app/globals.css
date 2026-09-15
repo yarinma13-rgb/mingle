@@ -480,37 +480,28 @@ button:disabled {
 }
 
 .demo-experience {
-  --demo-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --demo-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide OS cursor while autoplay runs — only the guided demo cursor remains. */
+.demo-experience.demo-playing,
+.demo-experience.demo-playing * {
+  cursor: none !important;
 }
 
 .demo-chrome {
-  transition: box-shadow 0.45s var(--demo-ease), border-color 0.45s var(--demo-ease);
+  transition: box-shadow 0.4s var(--demo-ease), border-color 0.4s var(--demo-ease);
 }
 
 .demo-highlight {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 28%, transparent);
-  background: color-mix(in srgb, var(--mingle-accent-purple) 5%, var(--mingle-surface));
-  animation: demo-highlight-pulse 2.8s var(--demo-ease) infinite;
-}
-
-@keyframes demo-highlight-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 22%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 40%, transparent),
-      0 10px 28px color-mix(in srgb, var(--mingle-accent-purple) 10%, transparent);
-  }
-}
-
-.demo-caption {
-  letter-spacing: -0.015em;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 22%, transparent);
+  background: color-mix(in srgb, var(--mingle-accent-purple) 4%, var(--mingle-surface));
 }
 
 .demo-camera {
-  transform-box: fill-box;
+  /* Stable compositing layer — prevents zoom paint flicker */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
 }
 
 .demo-typed-line {
@@ -525,12 +516,12 @@ button:disabled {
   margin-left: 1px;
   vertical-align: -0.12em;
   background: var(--mingle-accent-blue, #3e6be0);
-  animation: demo-caret-blink 0.9s steps(1) infinite;
+  animation: demo-caret-blink 1s steps(1) infinite;
 }
 
 @keyframes demo-caret-blink {
   0%,
-  45% {
+  49% {
     opacity: 1;
   }
   50%,
@@ -539,32 +530,12 @@ button:disabled {
   }
 }
 
-.demo-cta-pulse {
-  animation: demo-cta-pulse 2.4s var(--demo-ease) infinite;
-}
-
-@keyframes demo-cta-pulse {
-  0%,
-  100% {
-    box-shadow: 0 8px 20px color-mix(in srgb, var(--mingle-cta, #3e6be0) 18%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 10px 28px color-mix(in srgb, var(--mingle-cta, #3e6be0) 32%, transparent),
-      0 0 0 4px color-mix(in srgb, var(--mingle-cta, #3e6be0) 12%, transparent);
-  }
-}
-
-.demo-score-pop {
-  transition: transform 0.45s var(--demo-ease);
-}
-
-.demo-focus-vignette {
-  mix-blend-mode: multiply;
+.demo-caption {
+  letter-spacing: -0.015em;
 }
 
 html {
-  transition: background-color 0.45s var(--demo-ease, ease);
+  transition: background-color 0.4s var(--demo-ease, ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -573,10 +544,13 @@ html {
     transition-duration: 0.01ms !important;
   }
 
-  .demo-highlight,
-  .demo-cta-pulse,
   .demo-caret {
     animation: none;
+  }
+
+  .demo-experience.demo-playing,
+  .demo-experience.demo-playing * {
+    cursor: auto !important;
   }
 }
 

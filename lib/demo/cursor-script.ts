@@ -8,81 +8,80 @@ export type DemoCursorBeat = {
   /** Matches [data-demo-target="..."] */
   target: string;
   action?: DemoCursorAction;
-  /** Camera zoom toward target (1 = none). */
+  /** Camera zoom toward target (1 = none). Keep subtle to avoid flicker. */
   zoom?: number;
   /** Auto-type into the focused field when action is "type". */
   typeText?: string;
 };
 
 /**
- * Guided attention path — monday-style cursor + zoom + in-screen typing.
- * Targets must exist as data-demo-target in the rendered scene.
+ * Guided attention path — calm zooms (≤1.08) so the camera never wobbles.
  */
 export const DEMO_CURSOR_SCRIPT: Partial<Record<DemoSceneId, DemoCursorBeat[]>> = {
   introduce: [
-    { atMs: 400, target: "role-banner", action: "move", zoom: 1.06 },
-    { atMs: 1200, target: "kpi-matches", action: "move", zoom: 1.12 },
-    { atMs: 2100, target: "candidate-emma", action: "hover", zoom: 1.14 },
+    { atMs: 450, target: "role-banner", action: "move", zoom: 1.03 },
+    { atMs: 1400, target: "kpi-matches", action: "move", zoom: 1.05 },
+    { atMs: 2300, target: "candidate-emma", action: "hover", zoom: 1.06 },
     {
-      atMs: 3000,
+      atMs: 3200,
       target: "search-field",
       action: "type",
-      zoom: 1.1,
+      zoom: 1.04,
       typeText: "Emma Carter",
     },
-    { atMs: 4300, target: "view-candidates", action: "click", zoom: 1.08 },
+    { atMs: 4500, target: "view-candidates", action: "click", zoom: 1.03 },
   ],
   company: [
-    { atMs: 350, target: "role-title", action: "move", zoom: 1.1 },
-    { atMs: 1300, target: "role-skills", action: "hover", zoom: 1.14 },
-    { atMs: 2800, target: "role-beyond", action: "hover", zoom: 1.12 },
+    { atMs: 400, target: "role-title", action: "move", zoom: 1.04 },
+    { atMs: 1500, target: "role-skills", action: "hover", zoom: 1.05 },
+    { atMs: 3000, target: "role-beyond", action: "hover", zoom: 1.04 },
   ],
   profile: [
-    { atMs: 350, target: "profile-avatar", action: "move", zoom: 1.1 },
-    { atMs: 1300, target: "profile-values", action: "hover", zoom: 1.14 },
-    { atMs: 2800, target: "profile-connect", action: "click", zoom: 1.1 },
+    { atMs: 400, target: "profile-avatar", action: "move", zoom: 1.04 },
+    { atMs: 1500, target: "profile-values", action: "hover", zoom: 1.05 },
+    { atMs: 3000, target: "profile-connect", action: "click", zoom: 1.04 },
   ],
   match: [
-    { atMs: 300, target: "match-score", action: "move", zoom: 1.18 },
-    { atMs: 1600, target: "match-report", action: "hover", zoom: 1.1 },
+    { atMs: 350, target: "match-score", action: "move", zoom: 1.07 },
+    { atMs: 1800, target: "match-report", action: "hover", zoom: 1.04 },
   ],
   talent: [
-    { atMs: 350, target: "talent-card", action: "move", zoom: 1.08 },
-    { atMs: 1400, target: "talent-score", action: "hover", zoom: 1.16 },
-    { atMs: 2800, target: "talent-interested", action: "click", zoom: 1.12 },
+    { atMs: 400, target: "talent-card", action: "move", zoom: 1.03 },
+    { atMs: 1500, target: "talent-score", action: "hover", zoom: 1.06 },
+    { atMs: 3000, target: "talent-interested", action: "click", zoom: 1.04 },
   ],
   mingleMoment: [
-    { atMs: 800, target: "mingle-cta", action: "move", zoom: 1.08 },
-    { atMs: 2200, target: "mingle-cta", action: "click", zoom: 1.12 },
+    { atMs: 900, target: "mingle-cta", action: "move", zoom: 1.03 },
+    { atMs: 2300, target: "mingle-cta", action: "click", zoom: 1.05 },
   ],
   conversation: [
-    { atMs: 400, target: "chat-thread", action: "move", zoom: 1.06 },
-    { atMs: 1400, target: "chat-context", action: "hover", zoom: 1.1 },
+    { atMs: 450, target: "chat-thread", action: "move", zoom: 1.03 },
+    { atMs: 1500, target: "chat-context", action: "hover", zoom: 1.04 },
     {
-      atMs: 2600,
+      atMs: 2700,
       target: "chat-composer",
       action: "type",
-      zoom: 1.14,
+      zoom: 1.05,
       typeText: "Perfect — I'll bring a few product examples for Thursday.",
     },
-    { atMs: 5600, target: "chat-send", action: "click", zoom: 1.12 },
+    { atMs: 5600, target: "chat-send", action: "click", zoom: 1.04 },
   ],
   recommendations: [
-    { atMs: 350, target: "rec-first", action: "move", zoom: 1.1 },
-    { atMs: 1600, target: "rec-stars", action: "hover", zoom: 1.16 },
+    { atMs: 400, target: "rec-first", action: "move", zoom: 1.04 },
+    { atMs: 1800, target: "rec-stars", action: "hover", zoom: 1.06 },
   ],
   board: [
-    { atMs: 350, target: "board-conversation", action: "move", zoom: 1.1 },
-    { atMs: 1700, target: "board-interview", action: "click", zoom: 1.14 },
+    { atMs: 400, target: "board-conversation", action: "move", zoom: 1.04 },
+    { atMs: 1800, target: "board-interview", action: "click", zoom: 1.05 },
   ],
   darkMode: [
-    { atMs: 250, target: "theme-toggle", action: "move", zoom: 1.2 },
-    { atMs: 900, target: "theme-toggle", action: "click", zoom: 1.22 },
+    { atMs: 300, target: "theme-toggle", action: "move", zoom: 1.08 },
+    { atMs: 1000, target: "theme-toggle", action: "click", zoom: 1.08 },
   ],
   phase2: [
-    { atMs: 400, target: "phase2-lifecycle", action: "move", zoom: 1.08 },
-    { atMs: 1600, target: "phase2-automation", action: "move", zoom: 1.1 },
-    { atMs: 2900, target: "phase2-mobile", action: "hover", zoom: 1.12 },
+    { atMs: 450, target: "phase2-lifecycle", action: "move", zoom: 1.03 },
+    { atMs: 1700, target: "phase2-automation", action: "move", zoom: 1.04 },
+    { atMs: 3000, target: "phase2-mobile", action: "hover", zoom: 1.05 },
   ],
 };
 
@@ -96,4 +95,9 @@ export function activeCursorBeat(
     if (beat.atMs <= elapsedMs) current = beat;
   }
   return current;
+}
+
+export function beatKey(beat: DemoCursorBeat | null): string {
+  if (!beat) return "";
+  return `${beat.target}:${beat.action ?? "move"}:${beat.zoom ?? 1}`;
 }

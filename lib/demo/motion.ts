@@ -1,82 +1,80 @@
-/** monday-like motion tokens — calm ease, no bounce. */
-export const demoEase = [0.22, 1, 0.36, 1] as const;
-export const demoEaseSoft = [0.33, 1, 0.68, 1] as const;
+/** monday-like motion tokens — calm, no overshoot / bounce. */
+export const demoEase = [0.4, 0.0, 0.2, 1] as const;
+export const demoEaseSoft = [0.33, 0.0, 0.2, 1] as const;
 
 export const demoTransition = {
-  duration: 0.55,
+  duration: 0.5,
   ease: demoEase,
 };
 
+/** Opacity-first scene content — no blur (blur causes recording flicker). */
 export const demoContentVariants = {
   initial: {
     opacity: 0,
-    y: 18,
-    filter: "blur(6px)",
+    y: 8,
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.55,
+      duration: 0.48,
       ease: demoEase,
       when: "beforeChildren" as const,
-      staggerChildren: 0.05,
+      staggerChildren: 0.04,
     },
   },
   exit: {
     opacity: 0,
-    y: -12,
-    filter: "blur(4px)",
+    y: -4,
     transition: {
-      duration: 0.32,
+      duration: 0.28,
       ease: demoEaseSoft,
     },
   },
 };
 
 export const demoItemVariants = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 6 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: demoEase },
+  },
+};
+
+export const demoChromeShellTransition = {
+  duration: 0.4,
+  ease: demoEase,
+};
+
+export const demoCaptionVariants = {
+  initial: { opacity: 0, y: 8 },
   animate: {
     opacity: 1,
     y: 0,
     transition: { duration: 0.4, ease: demoEase },
   },
-};
-
-export const demoChromeShellTransition = {
-  duration: 0.45,
-  ease: demoEase,
-};
-
-export const demoCaptionVariants = {
-  initial: { opacity: 0, y: 16, scale: 0.97, filter: "blur(8px)" },
-  animate: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: { duration: 0.45, ease: demoEase },
-  },
   exit: {
     opacity: 0,
-    y: -10,
-    scale: 0.98,
-    filter: "blur(6px)",
-    transition: { duration: 0.28, ease: demoEaseSoft },
+    y: -4,
+    transition: { duration: 0.22, ease: demoEaseSoft },
   },
 };
 
 export const demoFullBleedVariants = {
-  initial: { opacity: 0, scale: 0.985 },
+  initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    scale: 1,
-    transition: { duration: 0.6, ease: demoEase },
+    transition: { duration: 0.55, ease: demoEase },
   },
   exit: {
     opacity: 0,
-    scale: 1.01,
-    transition: { duration: 0.35, ease: demoEaseSoft },
+    transition: { duration: 0.3, ease: demoEaseSoft },
   },
+};
+
+/** Camera zoom — longer, flatter ease for cinematic stability. */
+export const demoCameraTransition = {
+  duration: 0.95,
+  ease: demoEase,
 };

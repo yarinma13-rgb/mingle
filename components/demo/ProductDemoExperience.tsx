@@ -141,6 +141,22 @@ export function ProductDemoExperience({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  // Hide the OS pointer for the whole viewport while recording/autoplay —
+  // only the guided demo cursor should be visible.
+  useEffect(() => {
+    if (!playing || reducedMotion) {
+      document.documentElement.style.removeProperty("cursor");
+      document.body.style.removeProperty("cursor");
+      return;
+    }
+    document.documentElement.style.cursor = "none";
+    document.body.style.cursor = "none";
+    return () => {
+      document.documentElement.style.removeProperty("cursor");
+      document.body.style.removeProperty("cursor");
+    };
+  }, [playing, reducedMotion]);
+
   useEffect(() => {
     if (scene.forceDark) {
       setTheme("dark");
@@ -313,7 +329,11 @@ export function ProductDemoExperience({
         reducedMotion,
       }}
     >
-    <div className="demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent">
+    <div
+      className={`demo-experience relative flex min-h-screen flex-1 flex-col bg-transparent ${
+        playing ? "demo-playing" : ""
+      }`}
+    >
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue"
         style={{ scaleX: progress / 100 }}
@@ -328,9 +348,9 @@ export function ProductDemoExperience({
           {/* Soft transition veil — monday calm, not a hard cut */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-20 rounded-2xl bg-gradient-to-b from-white/70 via-white/40 to-transparent"
+            className="pointer-events-none absolute inset-0 z-20 rounded-2xl bg-white/55"
             animate={{ opacity: veil && !reducedMotion ? 1 : 0 }}
-            transition={{ duration: 0.22, ease: demoEase }}
+            transition={{ duration: 0.28, ease: demoEase }}
           />
 
           <DemoCamera

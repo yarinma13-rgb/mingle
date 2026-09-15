@@ -48,10 +48,9 @@ export function RoleScene() {
                   initial={false}
                   animate={{
                     opacity: visible ? 1 : 0,
-                    y: visible ? 0 : 8,
-                    scale: visible ? 1 : 0.96,
+                    y: visible ? 0 : 6,
                   }}
-                  transition={{ duration: 0.35, ease: demoEase }}
+                  transition={{ duration: 0.4, ease: demoEase }}
                 >
                   <MingleChip>{skill}</MingleChip>
                 </motion.div>

@@ -32,9 +32,9 @@ const AVATAR_BY_NAME: Record<
 export function BoardScene() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="flex flex-col gap-4"
     >
       <p className="text-sm text-mingle-text-secondary">

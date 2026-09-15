@@ -13,9 +13,9 @@ import { DEMO_TALENT_COMPANIES } from "@/lib/demo/data";
 export function TalentScene() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="mx-auto flex w-full max-w-4xl flex-col gap-5"
     >
       <p className="text-sm text-mingle-text-secondary">
@@ -67,9 +67,7 @@ export function TalentScene() {
             <div className="mt-1 flex gap-2">
               <div
                 data-demo-target={index === 0 ? "talent-interested" : undefined}
-                className={`flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white ${
-                  index === 0 ? "demo-cta-pulse" : ""
-                }`}
+                className="flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white"
               >
                 Interested
               </div>

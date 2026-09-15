@@ -61,9 +61,9 @@ export function ConversationScene() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
       className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_300px]"
     >
       <div
