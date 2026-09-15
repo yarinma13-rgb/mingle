@@ -65,7 +65,7 @@ export function MingleMomentScene() {
   );
 
   return (
-    <div className="mingle-moment-overlay relative flex h-full min-h-[520px] flex-col items-center justify-center overflow-hidden rounded-2xl bg-mingle-bg px-6">
+    <div className="mingle-moment-overlay relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6">
       <div className="pointer-events-none absolute inset-0 z-[1]" aria-hidden>
         {confetti.map((piece) => (
           <span

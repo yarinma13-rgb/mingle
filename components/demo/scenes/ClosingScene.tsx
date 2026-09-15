@@ -6,22 +6,19 @@ import { demoEase } from "@/lib/demo/motion";
 
 export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
   return (
-    <div className="relative flex h-full min-h-[520px] flex-col items-center justify-center overflow-hidden px-6 text-center">
-      <motion.div
+    <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-6 text-center">
+      <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
         style={{
           backgroundImage:
             "radial-gradient(ellipse 65% 45% at 50% 0%, #e9effe 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 15% 100%, #fdeaf1 0%, transparent 50%)",
         }}
       />
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: demoEase }}
+        transition={{ duration: 0.55, ease: demoEase }}
         className="relative flex max-w-lg flex-col items-center"
       >
         <MingleLogo size={68} priority />

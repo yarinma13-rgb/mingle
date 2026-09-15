@@ -6,7 +6,7 @@ import { demoEase } from "@/lib/demo/motion";
 
 export function OpeningScene() {
   return (
-    <div className="relative flex h-full min-h-[520px] flex-col items-center justify-center overflow-hidden px-6">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-6">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

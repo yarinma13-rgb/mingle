@@ -104,9 +104,8 @@ export function DemoChrome({
 
   return (
     <motion.div
-      layout
       transition={demoChromeShellTransition}
-      className="demo-chrome flex h-full min-h-0 w-full overflow-hidden rounded-2xl border border-mingle-border/70 bg-mingle-surface/40 shadow-[0_24px_80px_rgba(37,34,56,0.10)] backdrop-blur-[2px]"
+      className="demo-chrome flex h-full min-h-0 w-full overflow-hidden bg-mingle-surface"
     >
       <aside className="mingle-app-sidebar hidden w-[6.25rem] shrink-0 flex-col items-center self-stretch overflow-y-auto border-r border-mingle-nav-divider/80 bg-mingle-sidebar px-2 md:flex">
         <div className="flex h-[4.75rem] w-full shrink-0 items-center justify-center pt-1">

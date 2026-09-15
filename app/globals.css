@@ -474,9 +474,21 @@ button:disabled {
   color: var(--mingle-text);
 }
 
-/* Product demo (/demo) — monday-calm recording polish */
+/* Product demo (/demo) — full-bleed product surface for recording */
 .demo-page {
   isolation: isolate;
+  min-height: 100dvh;
+  background: var(--mingle-surface, #fff);
+}
+
+/* Kill the marketing canvas gradient behind /demo — product only */
+body:has(.demo-page).mingle-app-canvas {
+  background: var(--mingle-surface, #fff) !important;
+}
+
+body:has(.demo-page).mingle-app-canvas::before {
+  content: none !important;
+  display: none !important;
 }
 
 .demo-experience {
