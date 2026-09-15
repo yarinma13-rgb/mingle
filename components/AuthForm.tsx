@@ -168,6 +168,9 @@ export function AuthForm({
         { path: selectedPath, awaiting_confirmation: true },
         signUpData.user?.id,
       );
+      if (signUpData.user?.id) {
+        identifyUser(signUpData.user.id, { path: selectedPath, email: values.email });
+      }
       return;
     }
 
@@ -178,7 +181,7 @@ export function AuthForm({
       return;
     }
     track(AnalyticsEvent.signup, { path: selectedPath }, userId);
-    identifyUser(userId, { path: selectedPath });
+    identifyUser(userId, { path: selectedPath, email: values.email });
     await goAfterAuth(userId, selectedPath);
   };
 
@@ -212,7 +215,7 @@ export function AuthForm({
             : path ?? "talent";
 
       track(AnalyticsEvent.signIn, { path: resolvedPath }, data.user.id);
-      identifyUser(data.user.id, { path: resolvedPath });
+      identifyUser(data.user.id, { path: resolvedPath, email: data.user.email });
       await goAfterAuth(data.user.id, resolvedPath);
       return;
     }
