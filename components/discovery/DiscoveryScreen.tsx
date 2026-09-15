@@ -49,6 +49,16 @@ export type DiscoveryCard = {
   report: MatchReport;
   /** Talent skills when available (role matches soft overlap). */
   skills?: string[];
+  /**
+   * Talent Discover shows company/role cards (job-poster style).
+   * Company Discover keeps person cards.
+   */
+  kind?: "person" | "company";
+  roleTitle?: string | null;
+  locationLabel?: string | null;
+  salaryLabel?: string | null;
+  tags?: string[];
+  about?: string | null;
 };
 
 const SWIPE_DISTANCE_THRESHOLD = 110;
@@ -97,7 +107,9 @@ function DiscoveryCardView({
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-10, 10]);
   const interestOpacity = useTransform(x, [20, 120], [0, 1]);
-  const skipOpacity = useTransform(x, [-120, -20], [1, 0]);
+  // Opacity rises as the card moves left (negative x) — not at rest.
+  const skipOpacity = useTransform(x, [0, -20, -120], [0, 0.35, 1]);
+  const isCompanyCard = card.kind === "company";
 
   const expressInterest = async () => {
     if (feedback === "interested") return;
@@ -105,11 +117,33 @@ function DiscoveryCardView({
     try {
       await saveProfile(supabase, viewerId, card.userId);
       await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
-      track(AnalyticsEvent.matchInterested, { target_user_id: card.userId, source: "discover" });
-      track(AnalyticsEvent.profileSaved, { target_user_id: card.userId, saved: true });
+      track(AnalyticsEvent.matchInterested, {
+        target_user_id: card.userId,
+        source: "discover",
+      });
+      track(AnalyticsEvent.profileSaved, {
+        target_user_id: card.userId,
+        saved: true,
+      });
       setFeedback("interested");
       toast("Marked interested.");
       void notifyPushMatch(card.userId);
+    } catch {
+      toast("Couldn't save that. Try again in a moment.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveForLater = async () => {
+    setSaving(true);
+    try {
+      await saveProfile(supabase, viewerId, card.userId);
+      track(AnalyticsEvent.profileSaved, {
+        target_user_id: card.userId,
+        saved: true,
+      });
+      toast("Saved for later.");
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -163,91 +197,164 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: interestOpacity }}
-            className="pointer-events-none absolute right-4 top-4 z-20 -rotate-6 rounded-full bg-mingle-accent-blue px-3 py-1 text-xs font-bold text-white shadow-sm"
+            className="pointer-events-none absolute right-4 top-4 z-30 -rotate-6 rounded-full bg-[#7B2FF7] px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Interested
           </motion.span>
           <motion.span
             aria-hidden
             style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute left-4 top-4 z-20 rotate-6 rounded-full bg-mingle-accent-pink px-3 py-1 text-xs font-bold text-white shadow-sm"
+            className="pointer-events-none absolute left-4 top-4 z-30 rotate-6 rounded-full bg-[#EA1E63] px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Skip
           </motion.span>
         </>
       )}
 
-      {/* Portrait photo plane — dating-app visual weight (roughly 3:4). */}
-      <div className="relative aspect-[3/4] max-h-[min(58vh,480px)] w-full shrink-0 overflow-hidden">
-        <div className="absolute inset-0">
-          <TalentPhotoImg
-            photo={card.photo}
-            className="h-full w-full object-cover"
-            sizes="(max-width: 640px) 100vw, 420px"
-            fallback={
+      {isCompanyCard ? (
+        <div className="relative aspect-[3/4] max-h-[min(62vh,520px)] w-full shrink-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(160deg,#1e3a5f_0%,#3d4f7a_42%,#6b7db3_100%)]">
+            {card.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={card.photo}
+                alt=""
+                className="h-full w-full object-cover opacity-90"
+              />
+            ) : (
               <div
-                className={`flex h-full w-full items-center justify-center ${avatarToneClass(card.gender)}`}
-              >
-                <span className="font-display text-6xl font-bold text-white sm:text-7xl">
-                  {card.initial}
-                </span>
-              </div>
-            }
-          />
-        </div>
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-5 pb-5 pt-24 text-white">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate font-display text-2xl font-semibold tracking-tight">
+                className="absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 42%), radial-gradient(circle at 80% 30%, rgba(167,139,250,0.45), transparent 40%), linear-gradient(180deg, transparent 30%, rgba(15,23,42,0.55) 100%)",
+                }}
+              />
+            )}
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
+
+          <div className="absolute left-4 top-4 z-10">
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+              <span aria-hidden>🔥</span>
+              {card.score}% Match
+            </span>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
+            <div>
+              <p className="font-display text-[1.65rem] font-bold leading-tight tracking-tight">
                 {card.name}
               </p>
-              <p className="truncate text-sm text-white/90">{card.subtitle}</p>
-              {card.meta ? (
-                <p className="truncate text-xs text-white/75">{card.meta}</p>
+              <p className="mt-0.5 text-base font-medium text-white/90">
+                {card.roleTitle || card.subtitle}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-1 text-[13px] text-white/85">
+              {card.locationLabel ? (
+                <p className="flex items-center gap-1.5">
+                  <span aria-hidden className="opacity-80">
+                    📍
+                  </span>
+                  {card.locationLabel}
+                </p>
+              ) : null}
+              {card.salaryLabel ? (
+                <p className="flex items-center gap-1.5">
+                  <span aria-hidden className="opacity-80">
+                    ₪
+                  </span>
+                  {card.salaryLabel}
+                </p>
               ) : null}
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <MatchScoreRing score={card.score} size={76} />
-              <span
-                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
-              >
-                {card.report.strength}
-              </span>
+
+            {(card.tags?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {card.tags!.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            {card.about ? (
+              <div className="mt-0.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/70">
+                  About the role
+                </p>
+                <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-white/90">
+                  {card.about}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <div className="relative aspect-[3/4] max-h-[min(58vh,480px)] w-full shrink-0 overflow-hidden">
+          <div className="absolute inset-0">
+            <TalentPhotoImg
+              photo={card.photo}
+              className="h-full w-full object-cover"
+              sizes="(max-width: 640px) 100vw, 420px"
+              fallback={
+                <div
+                  className={`flex h-full w-full items-center justify-center ${avatarToneClass(card.gender)}`}
+                >
+                  <span className="font-display text-6xl font-bold text-white sm:text-7xl">
+                    {card.initial}
+                  </span>
+                </div>
+              }
+            />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-5 pb-5 pt-24 text-white">
+            <div className="flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-display text-2xl font-semibold tracking-tight">
+                  {card.name}
+                </p>
+                <p className="truncate text-sm text-white/90">{card.subtitle}</p>
+                {card.meta ? (
+                  <p className="truncate text-xs text-white/75">{card.meta}</p>
+                ) : null}
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <MatchScoreRing score={card.score} size={76} />
+                <span
+                  className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur ${scoreChipClass(card.score)}`}
+                >
+                  {card.report.strength}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile: short teaser only — full report stays in the desktop aside. */}
-      <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
-          Why this match
-        </p>
-        <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
-          {card.report.why[0]?.finding ?? card.report.whatMattersMost}
-        </p>
-      </div>
-
-      {isMobile && swipeEnabled && (
-        <p className="shrink-0 px-4 pb-1 text-center text-[11px] text-mingle-text-secondary">
-          Swipe right for interested, left to skip, or use the buttons below.
-        </p>
       )}
 
-      <div className="shrink-0 border-t border-mingle-border bg-mingle-white p-4">
-        <div className="mb-3 flex justify-center">
-          <Link
-            href={`/profile/view/${card.userId}`}
-            className="rounded-full border border-mingle-border bg-mingle-surface px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender"
-          >
-            View profile
-          </Link>
+      {!isCompanyCard ? (
+        <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+            Why this match
+          </p>
+          <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
+            {card.report.why[0]?.finding ?? card.report.whatMattersMost}
+          </p>
         </div>
+      ) : null}
+
+      <div className="shrink-0 bg-mingle-white px-4 pb-4 pt-3">
         <DiscoverSwipeActions
           busy={saving}
           interestedDone={feedback === "interested"}
           messageHref={messageHref}
+          dragX={isMobile && swipeEnabled ? x : null}
           onSkip={() => onPass(card.userId)}
+          onSave={() => void saveForLater()}
           onInterested={() => void expressInterest()}
         />
       </div>
