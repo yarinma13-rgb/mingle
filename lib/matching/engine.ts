@@ -10,13 +10,14 @@ import { applyTargetRoleNudge } from "@/lib/matching/target-role-nudge";
 //
 // Weights (sum to 100), overriding the spec's original example set:
 export const MATCH_WEIGHTS = {
-  careerGoals: 20,
-  motivations: 20,
-  workStyle: 18,
-  industry: 14,
-  experience: 13,
-  location: 8,
-  companyStage: 7,
+  careerGoals: 17,
+  motivations: 17,
+  workStyle: 15,
+  industry: 12,
+  experience: 11,
+  skills: 16,
+  location: 7,
+  companyStage: 5,
 } as const;
 
 export type MatchFactorKey = keyof typeof MATCH_WEIGHTS;
@@ -55,6 +56,8 @@ export type CompanyMatchInput = {
   /** Optional open role title / department for soft target-role boost. */
   roleTitle?: string | null;
   roleDepartment?: string | null;
+  /** Required skills from an open role — primary skills signal for Role Fit. */
+  roleRequiredSkills?: string[] | null;
 };
 
 function overlapFraction(a: string[], b: string[]): number {
@@ -308,6 +311,60 @@ function locationFactor(
   };
 }
 
+
+function skillsFactor(
+  talent: TalentMatchInput,
+  company: CompanyMatchInput,
+): MatchFactor {
+  const talentSkills = talent.profile.skills;
+  const required = (company.roleRequiredSkills ?? [])
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (required.length === 0) {
+    return {
+      key: "skills",
+      label: "Skills",
+      weight: MATCH_WEIGHTS.skills,
+      fraction: 0.55,
+      verdict: "unknown",
+      detail:
+        "No role-required skills yet, so this stays a neutral Role Fit signal.",
+    };
+  }
+
+  if (talentSkills.length === 0) {
+    return {
+      key: "skills",
+      label: "Skills",
+      weight: MATCH_WEIGHTS.skills,
+      fraction: 0.15,
+      verdict: "not-aligned",
+      detail:
+        "Required skills are set on the role, but their profile doesn't list skills yet.",
+    };
+  }
+
+  const shared = overlapCanonical(talentSkills, required);
+  const fraction = Math.min(1, shared.length / required.length);
+  const verdict = verdictFromFraction(fraction);
+  const preview = shared.slice(0, 3).join(", ");
+  const detail =
+    shared.length === 0
+      ? `Little overlap with the role's required skills (${required.slice(0, 3).join(", ")}${required.length > 3 ? "…" : ""}).`
+      : verdict === "aligned"
+        ? `Covers ${shared.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}.`
+        : `Partial skill coverage — ${shared.length} of ${required.length} required${preview ? ` (${preview})` : ""}.`;
+  return {
+    key: "skills",
+    label: "Skills",
+    weight: MATCH_WEIGHTS.skills,
+    fraction,
+    verdict,
+    detail,
+  };
+}
+
 function companyStageFactor(
   talent: TalentMatchInput,
   company: CompanyMatchInput,
@@ -371,6 +428,7 @@ function matchCacheKey(
     company.salaryMax ?? null,
     company.roleTitle ?? null,
     company.roleDepartment ?? null,
+    company.roleRequiredSkills ?? null,
   ]);
 }
 
@@ -384,6 +442,7 @@ function computeMatchUncached(
     workStyleFactor(talent, company),
     industryFactor(talent, company),
     experienceFactor(talent, company),
+    skillsFactor(talent, company),
     locationFactor(talent, company),
     companyStageFactor(talent, company),
   ];

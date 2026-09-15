@@ -19,6 +19,7 @@ import {
   ColumnsIcon,
   CompassIcon,
   GridIcon,
+  GearIcon,
   PeopleIcon,
   TargetIcon,
   ShieldCheckIcon,
@@ -45,6 +46,7 @@ const BULLET_ICON: Record<
   workStyle: ColumnsIcon,
   industry: GridIcon,
   experience: ClockIcon,
+  skills: GearIcon,
   location: CompassIcon,
   companyStage: BriefcaseIcon,
 };

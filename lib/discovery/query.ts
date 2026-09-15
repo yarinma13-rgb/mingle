@@ -41,6 +41,7 @@ export async function loadDiscoveryPage(
     rankAll?: boolean;
     roleTitle?: string | null;
     roleDepartment?: string | null;
+    roleRequiredSkills?: string[] | null;
   } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
@@ -174,6 +175,8 @@ export async function loadDiscoveryPage(
             roleTitle: scope.roleTitle ?? ownInput.roleTitle ?? null,
             roleDepartment:
               scope.roleDepartment ?? ownInput.roleDepartment ?? null,
+            roleRequiredSkills:
+              scope.roleRequiredSkills ?? ownInput.roleRequiredSkills ?? null,
           }
         : null;
       const result = companyForMatch
@@ -330,13 +333,49 @@ export async function loadDiscoveryPage(
   const prefsByUser = new Map((prefRows ?? []).map((row) => [row.company_id, row]));
   const distanceByUser = new Map<string, number | null>();
 
+  // Preload freshest open role (incl. required skills) so Role Fit can score skills.
+  const { data: openRolesForMatch } = rowsForCards.length
+    ? await supabase
+        .from("roles")
+        .select(
+          "company_id, title, department, work_model, salary_min, salary_max, job_presentation, description, required_skills, updated_at",
+        )
+        .in(
+          "company_id",
+          rowsForCards.map((row) => row.user_id),
+        )
+        .eq("status", "open")
+        .order("updated_at", { ascending: false })
+    : { data: [] as never[] };
+  type OpenRoleRow = {
+    company_id: string;
+    title: string;
+    department: string | null;
+    work_model: string | null;
+    salary_min: number | null;
+    salary_max: number | null;
+    job_presentation: string | null;
+    description: string | null;
+    required_skills: string[] | null;
+  };
+  const roleByCompany = new Map<string, OpenRoleRow>();
+  for (const role of openRolesForMatch ?? []) {
+    if (!roleByCompany.has(role.company_id)) {
+      roleByCompany.set(role.company_id, role as OpenRoleRow);
+    }
+  }
+
   const cards: DiscoveryCard[] = rowsForCards.map((row) => {
     const profile = toCompanyProfile(row);
     const pref = prefsByUser.get(row.user_id);
+    const openRole = roleByCompany.get(row.user_id);
     const companyInput: CompanyMatchInput = {
       profile,
       connectingAbout: pref?.hiring_needs ?? "",
       culturePriorities: pref?.culture_priorities ?? [],
+      roleTitle: openRole?.title ?? null,
+      roleDepartment: openRole?.department ?? null,
+      roleRequiredSkills: openRole?.required_skills ?? null,
     };
     const result = ownInput
       ? computeMatch(ownInput, companyInput)
@@ -395,58 +434,31 @@ export async function loadDiscoveryPage(
     return b.score - a.score;
   });
 
-  // Attach salary / role title from the company's freshest open role when present.
-  const companyIds = cards.map((card) => card.userId);
-  if (companyIds.length > 0) {
-    const { data: openRoles } = await supabase
-      .from("roles")
-      .select(
-        "company_id, title, work_model, salary_min, salary_max, job_presentation, description, updated_at",
-      )
-      .in("company_id", companyIds)
-      .eq("status", "open")
-      .order("updated_at", { ascending: false });
-    const roleByCompany = new Map<
-      string,
-      {
-        title: string;
-        work_model: string | null;
-        salary_min: number | null;
-        salary_max: number | null;
-        job_presentation: string | null;
-        description: string | null;
-      }
-    >();
-    for (const role of openRoles ?? []) {
-      if (!roleByCompany.has(role.company_id)) {
-        roleByCompany.set(role.company_id, role);
-      }
+  // Attach salary / role title from the open role already used for skills scoring.
+  for (const card of cards) {
+    const role = roleByCompany.get(card.userId);
+    if (!role) continue;
+    card.roleTitle = role.title;
+    card.subtitle = role.title;
+    if (role.work_model) {
+      const base = card.locationLabel?.split(",")[0]?.trim() || card.locationLabel;
+      card.locationLabel = [base, role.work_model].filter(Boolean).join(", ");
+      card.meta = card.locationLabel ?? card.meta;
     }
-    for (const card of cards) {
-      const role = roleByCompany.get(card.userId);
-      if (!role) continue;
-      card.roleTitle = role.title;
-      card.subtitle = role.title;
-      if (role.work_model) {
-        const base = card.locationLabel?.split(",")[0]?.trim() || card.locationLabel;
-        card.locationLabel = [base, role.work_model].filter(Boolean).join(", ");
-        card.meta = card.locationLabel ?? card.meta;
-      }
-      if (role.salary_min != null || role.salary_max != null) {
-        const min =
-          role.salary_min != null
-            ? role.salary_min.toLocaleString("en-US")
-            : null;
-        const max =
-          role.salary_max != null
-            ? role.salary_max.toLocaleString("en-US")
-            : null;
-        card.salaryLabel =
-          min && max ? `${min} - ${max}` : min ? `${min}+` : `up to ${max}`;
-      }
-      const roleAbout = (role.job_presentation || role.description || "").trim();
-      if (roleAbout) card.about = roleAbout.slice(0, 160);
+    if (role.salary_min != null || role.salary_max != null) {
+      const min =
+        role.salary_min != null
+          ? role.salary_min.toLocaleString("en-US")
+          : null;
+      const max =
+        role.salary_max != null
+          ? role.salary_max.toLocaleString("en-US")
+          : null;
+      card.salaryLabel =
+        min && max ? `${min} - ${max}` : min ? `${min}+` : `up to ${max}`;
     }
+    const roleAbout = (role.job_presentation || role.description || "").trim();
+    if (roleAbout) card.about = roleAbout.slice(0, 160);
   }
 
   const photoUrls = await resolveTalentPhotoUrls(
