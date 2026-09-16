@@ -333,8 +333,8 @@ export function ProductDemoExperience({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-20 bg-mingle-surface"
-            animate={{ opacity: veil && !reducedMotion ? 0.55 : 0 }}
-            transition={{ duration: 0.3, ease: demoEase }}
+            animate={{ opacity: veil && !reducedMotion ? 0.4 : 0 }}
+            transition={{ duration: 0.35, ease: demoEase }}
           />
 
           {/* Camera zoom disabled for cinematic stability — cursor + type carry focus */}
