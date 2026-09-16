@@ -3,7 +3,7 @@
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -200,6 +200,15 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     setInvite(result.invite);
     setLoadState("ready");
   };
+
+  const onboardingStartedSent = useRef(false);
+  useEffect(() => {
+    if (loadState !== "ready" || !resolvedType || onboardingStartedSent.current) {
+      return;
+    }
+    onboardingStartedSent.current = true;
+    track(AnalyticsEvent.onboardingStarted, { path: resolvedType, step });
+  }, [loadState, resolvedType, step]);
 
   useEffect(() => {
     let active = true;

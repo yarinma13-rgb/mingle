@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  buildInsightsReport,
-  sendInsightsReportEmail,
-} from "@/lib/analytics/insights-report";
+  buildGrowthReport,
+  sendGrowthReportEmail,
+} from "@/lib/analytics/growth-report";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,26 +14,33 @@ function authorized(req: Request): boolean {
   return header === `Bearer ${secret}`;
 }
 
-/** Biweekly founder UX insights email. Protected by CRON_SECRET. */
+/** Biweekly founder growth + learning report. Protected by CRON_SECRET. */
 export async function GET(req: Request) {
   if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const report = await buildInsightsReport(14);
-    const result = await sendInsightsReportEmail(report);
+    const report = await buildGrowthReport(14);
+    const result = await sendGrowthReportEmail(report);
     if (!result.ok) {
       return NextResponse.json(
-        { ok: false, error: result.error, recipients: result.recipients, report },
-        { status: 500 },
+        {
+          ok: false,
+          error: result.error,
+          recipients: result.recipients,
+          markdownPreview: report.markdown.slice(0, 500),
+        },
+        { status: result.error?.includes("missing") ? 503 : 500 },
       );
     }
     return NextResponse.json({
       ok: true,
       recipients: result.recipients,
-      source: report.source,
       generatedAt: report.generatedAt,
+      northStar: report.snapshot.current.minglesCreated,
+      snapshotSource: report.snapshot.source,
+      nudges: report.nudges.actions.length,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

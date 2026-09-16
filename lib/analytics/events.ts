@@ -43,8 +43,16 @@ export const AnalyticsEvent = {
   profileSaved: "profile_saved",
 
   // Onboarding
+  onboardingStarted: "onboarding_started",
   onboardingStepCompleted: "onboarding_step_completed",
   onboardingCompleted: "onboarding_completed",
+  onboardingAbandoned: "onboarding_abandoned",
+
+  // Discover / activation
+  discoverViewed: "discover_viewed",
+  matchCardViewed: "match_card_viewed",
+  boardStageChanged: "board_stage_changed",
+  returningSession: "returning_session",
 
   // Relationship UI
   relationshipTabClicked: "relationship_tab_clicked",
