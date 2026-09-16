@@ -30,12 +30,15 @@ export function DiscoveryFiltersForm({
   valueOptions = [],
   audience,
   formAction = "/discover",
+  preserveView = null,
 }: {
   filters: DiscoveryFilters;
   styleOptions: string[];
   valueOptions?: string[];
   audience: "company" | "talent";
   formAction?: string;
+  /** Keep Discover layout mode across filter submits (e.g. browse). */
+  preserveView?: string | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -77,6 +80,9 @@ export function DiscoveryFiltersForm({
             onClick={(event) => event.stopPropagation()}
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle"
           >
+            {preserveView ? (
+              <input type="hidden" name="view" value={preserveView} />
+            ) : null}
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-mingle-text">
@@ -284,10 +290,12 @@ export function DiscoveryPagination({
   filters,
   total,
   pageSize,
+  view = null,
 }: {
   filters: DiscoveryFilters;
   total: number;
   pageSize: number;
+  view?: string | null;
 }) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(filters.page, pageCount);
@@ -297,7 +305,7 @@ export function DiscoveryPagination({
     <div className="flex items-center justify-between gap-3">
       {page > 1 ? (
         <Link
-          href={discoveryQueryString(filters, page - 1)}
+          href={discoveryQueryString(filters, page - 1, view)}
           className="mingle-btn-secondary cursor-pointer text-xs"
         >
           Previous
@@ -310,7 +318,7 @@ export function DiscoveryPagination({
       </p>
       {page < pageCount ? (
         <Link
-          href={discoveryQueryString(filters, page + 1)}
+          href={discoveryQueryString(filters, page + 1, view)}
           className="mingle-btn-secondary cursor-pointer text-xs"
         >
           Next

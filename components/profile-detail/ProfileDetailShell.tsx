@@ -20,6 +20,7 @@ import {
   MatchReportBody,
 } from "@/components/matching/MatchReport";
 import { TalentCvField } from "@/components/profile/TalentCvField";
+import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import {
   ProfileChipRow,
   ProfileSection,
@@ -366,19 +367,37 @@ export function ProfileDetailShell({
                   >
                     {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
                   </button>
+                  {cvPath ? (
+                    <OpenTalentCvButton
+                      cvPath={cvPath}
+                      cvFileName={cvFileName}
+                      label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
+                      className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                    />
+                  ) : null}
+                </div>
+              ) : null}
+              {isSelf && cvPath ? (
+                <div className="mt-5">
+                  <OpenTalentCvButton
+                    cvPath={cvPath}
+                    cvFileName={cvFileName}
+                    label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
+                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                  />
                 </div>
               ) : null}
             </div>
           </aside>
 
           <div className="flex flex-col gap-4">
-            {cvPath && cvFileName ? (
+            {cvPath ? (
               <ProfileSection title="CV">
                 <TalentCvField
                   supabase={supabase}
                   userId={targetUserId}
                   cvPath={cvPath}
-                  cvFileName={cvFileName}
+                  cvFileName={cvFileName ?? "CV.pdf"}
                   editable={false}
                   showLabel={false}
                   onChanged={() => {}}

@@ -121,6 +121,9 @@ export default async function ConversationPage({
               exploreFactors={ctx.exploreFactors}
               stage={stage}
               timeline={timeline}
+              otherUserId={ctx.otherUserId}
+              cvPath={ctx.otherCvPath}
+              cvFileName={ctx.otherCvFileName}
             />
           </div>
         </div>

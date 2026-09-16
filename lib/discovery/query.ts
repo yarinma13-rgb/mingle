@@ -244,6 +244,8 @@ export async function loadDiscoveryPage(
         factors: result.factors,
         report,
         skills: profile.skills,
+        cvPath: profile.cvPath,
+        cvFileName: profile.cvFileName,
       };
     });
     cards.sort((a, b) => {

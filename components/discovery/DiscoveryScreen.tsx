@@ -35,6 +35,8 @@ import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
 import { scoreChipClass } from "@/lib/matching/score-tone";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
+import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
+import { Avatar } from "@/components/Avatar";
 
 export type DiscoveryCard = {
   userId: string;
@@ -59,6 +61,9 @@ export type DiscoveryCard = {
   salaryLabel?: string | null;
   tags?: string[];
   about?: string | null;
+  /** Present when talent uploaded a CV PDF (company viewers). */
+  cvPath?: string | null;
+  cvFileName?: string | null;
 };
 
 const SWIPE_DISTANCE_THRESHOLD = 110;
@@ -375,6 +380,29 @@ function DiscoveryCardView({
       ) : null}
 
       <div className="shrink-0 bg-mingle-white px-4 pb-4 pt-3">
+        {!isCompanyCard ? (
+          <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href={`/profile/view/${card.userId}`}
+              onClick={() =>
+                track(AnalyticsEvent.matchViewed, {
+                  target_user_id: card.userId,
+                  source: "discover_card",
+                })
+              }
+              className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+            >
+              View profile
+            </Link>
+            {card.cvPath ? (
+              <OpenTalentCvButton
+                cvPath={card.cvPath}
+                cvFileName={card.cvFileName}
+                label="Open CV"
+              />
+            ) : null}
+          </div>
+        ) : null}
         <DiscoverSwipeActions
           busy={saving}
           interestedDone={feedback === "interested"}
@@ -407,7 +435,7 @@ export function DiscoveryScreen({
   /** Map of other userId → accepted connection id for Message quick-action. */
   acceptedConnectionByUser?: Record<string, string>;
   viewerId: string;
-  mode?: "feed" | "passed";
+  mode?: "feed" | "passed" | "browse";
   emptyBody?: string;
 }) {
   const toast = useToast();
@@ -415,6 +443,7 @@ export function DiscoveryScreen({
   const [supabase] = useState(() => createClient());
   const [cards, setCards] = useState(initialCards);
   const isPassed = mode === "passed";
+  const isBrowse = mode === "browse";
 
   const hideCard = (userId: string) => {
     setCards((prev) => prev.filter((card) => card.userId !== userId));
@@ -499,6 +528,13 @@ export function DiscoveryScreen({
               >
                 View profile
               </Link>
+              {card.cvPath ? (
+                <OpenTalentCvButton
+                  cvPath={card.cvPath}
+                  cvFileName={card.cvFileName}
+                  label="Open CV"
+                />
+              ) : null}
               <button
                 type="button"
                 onClick={() => void restore(card.userId)}
@@ -507,6 +543,63 @@ export function DiscoveryScreen({
                 View again
               </button>
             </div>
+          ))}
+        </div>
+      ) : isBrowse ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-medium text-mingle-text-secondary">
+            {cards.length} candidate{cards.length === 1 ? "" : "s"} on this page —
+            open any profile without advancing one-by-one.
+          </p>
+          {cards.map((card) => (
+            <article
+              key={card.userId}
+              className="flex min-w-0 flex-wrap items-center gap-3 rounded-2xl border border-mingle-border bg-mingle-surface p-4"
+            >
+              <Avatar
+                photo={card.photo}
+                initials={card.initial}
+                gender={card.gender}
+                size="md"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-sm font-semibold text-mingle-text">
+                  {card.name}
+                </p>
+                <p className="truncate text-xs text-mingle-text-secondary">
+                  {card.subtitle}
+                </p>
+                {card.meta ? (
+                  <p className="mt-0.5 truncate text-[11px] text-mingle-text-muted">
+                    {card.meta}
+                  </p>
+                ) : null}
+              </div>
+              <span
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(card.score)}`}
+              >
+                {card.score}% · {card.report.strength}
+              </span>
+              <Link
+                href={`/profile/view/${card.userId}`}
+                onClick={() =>
+                  track(AnalyticsEvent.matchViewed, {
+                    target_user_id: card.userId,
+                    source: "discover_browse",
+                  })
+                }
+                className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+              >
+                View profile
+              </Link>
+              {card.cvPath ? (
+                <OpenTalentCvButton
+                  cvPath={card.cvPath}
+                  cvFileName={card.cvFileName}
+                  label="Open CV"
+                />
+              ) : null}
+            </article>
           ))}
         </div>
       ) : (
@@ -561,6 +654,20 @@ export function DiscoveryScreen({
                   </p>
                 </div>
               </div>
+              {cards[0].cvPath ? (
+                <div className="mt-3">
+                  <OpenTalentCvButton
+                    cvPath={cards[0].cvPath}
+                    cvFileName={cards[0].cvFileName}
+                    label={
+                      cards[0].cvFileName?.trim()
+                        ? `Open CV · ${cards[0].cvFileName}`
+                        : "Open CV"
+                    }
+                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-4 py-2.5 text-center font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                  />
+                </div>
+              ) : null}
               <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
                 <MatchReportBody report={cards[0].report} />
               </div>

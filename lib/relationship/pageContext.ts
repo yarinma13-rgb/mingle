@@ -23,6 +23,9 @@ export type RelationshipPageContext = {
   exploreFactors: MatchFactor[];
   timeline: RelationshipEventRow[];
   stage: ReturnType<typeof latestStage>;
+  /** Talent CV when the other party is talent (company viewers). */
+  otherCvPath: string | null;
+  otherCvFileName: string | null;
 };
 
 export async function loadRelationshipPageContext(
@@ -58,15 +61,24 @@ export async function loadRelationshipPageContext(
   let matchScore = 0;
   let alignedFactors: MatchFactor[] = [];
   let exploreFactors: MatchFactor[] = [];
+  let otherCvPath: string | null = null;
+  let otherCvFileName: string | null = null;
 
   const otherUserRow = otherUserResult.data;
 
   if (otherUserRow && otherUserRow.user_type !== userType) {
     const talentId = userType === "talent" ? user.id : otherUserId;
     const companyId = userType === "company" ? user.id : otherUserId;
-    const [talentInput, companyInput] = await Promise.all([
+    const [talentInput, companyInput, talentCvRow] = await Promise.all([
       loadTalentMatchInput(supabase, talentId),
       loadCompanyMatchInput(supabase, companyId),
+      userType === "company" && otherUserRow.user_type === "talent"
+        ? supabase
+            .from("talent_profiles")
+            .select("cv_path, cv_file_name")
+            .eq("user_id", otherUserId)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
     if (talentInput && companyInput) {
       const result = computeMatch(talentInput, companyInput);
@@ -76,6 +88,8 @@ export async function loadRelationshipPageContext(
         .filter((f) => f.verdict === "not-aligned" || f.verdict === "partial")
         .slice(0, 2);
     }
+    otherCvPath = talentCvRow.data?.cv_path ?? null;
+    otherCvFileName = talentCvRow.data?.cv_file_name ?? null;
   }
 
   // loadTimeline already degrades to [] if relationship_events doesn't
@@ -100,5 +114,7 @@ export async function loadRelationshipPageContext(
     exploreFactors,
     timeline,
     stage: latestStage(timeline),
+    otherCvPath,
+    otherCvFileName,
   };
 }

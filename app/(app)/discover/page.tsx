@@ -8,6 +8,7 @@ import {
 } from "@/components/discovery/DiscoveryFilters";
 import {
   discoveryFiltersActive,
+  discoveryQueryString,
   parseDiscoveryFilters,
 } from "@/lib/discovery/filters";
 import { loadDiscoveryPage } from "@/lib/discovery/query";
@@ -24,9 +25,9 @@ export default async function DiscoverPage({
 }: PageProps<"/discover">) {
   const { supabase, user, userRow } = await requireAppUser();
   const params = await searchParams;
-  const viewRaw = params.view;
-  const viewPassed =
-    (Array.isArray(viewRaw) ? viewRaw[0] : viewRaw) === "passed";
+  const viewRaw = Array.isArray(params.view) ? params.view[0] : params.view;
+  const viewPassed = viewRaw === "passed";
+  const viewBrowse = viewRaw === "browse" && userRow.user_type === "company";
   const filters = parseDiscoveryFilters(params);
   const styleOptions =
     userRow.user_type === "company"
@@ -74,16 +75,28 @@ export default async function DiscoverPage({
     filters.page,
   ].join("|");
 
+  const mode = viewPassed ? "passed" : viewBrowse ? "browse" : "feed";
   const title = viewPassed
     ? "Passed"
-    : userRow.user_type === "company"
-      ? "People worth getting to know"
-      : "Companies worth getting to know";
+    : viewBrowse
+      ? "Browse all candidates"
+      : userRow.user_type === "company"
+        ? "People worth getting to know"
+        : "Companies worth getting to know";
   const subtitle = viewPassed
     ? "Everyone you skipped. View again puts them back in Discover."
-    : userRow.user_type === "company"
-      ? "Every candidate here, scored honestly against your company profile — including where you don't overlap yet."
-      : "Every company here, scored honestly against your profile — including where you don't overlap yet.";
+    : viewBrowse
+      ? "Scan everyone on this page, open any profile or CV, then page through the rest."
+      : userRow.user_type === "company"
+        ? "Every candidate here, scored honestly against your company profile — including where you don't overlap yet."
+        : "Every company here, scored honestly against your profile — including where you don't overlap yet.";
+
+  const tabClass = (active: boolean) =>
+    `rounded-full px-4 py-2 font-display text-xs font-semibold ${
+      active
+        ? "bg-mingle-lavender text-mingle-text"
+        : "text-mingle-text-secondary hover:text-mingle-text"
+    }`;
 
   return (
     <>
@@ -92,24 +105,25 @@ export default async function DiscoverPage({
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/discover"
+            href={discoveryQueryString(filters, 1)}
             prefetch
-            className={`rounded-full px-4 py-2 font-display text-xs font-semibold ${
-              viewPassed
-                ? "text-mingle-text-secondary hover:text-mingle-text"
-                : "bg-mingle-lavender text-mingle-text"
-            }`}
+            className={tabClass(!viewPassed && !viewBrowse)}
           >
             Discover
           </Link>
+          {userRow.user_type === "company" ? (
+            <Link
+              href={discoveryQueryString(filters, filters.page, "browse")}
+              prefetch
+              className={tabClass(viewBrowse)}
+            >
+              Browse all
+            </Link>
+          ) : null}
           <Link
             href="/discover?view=passed"
             prefetch
-            className={`rounded-full px-4 py-2 font-display text-xs font-semibold ${
-              viewPassed
-                ? "bg-mingle-lavender text-mingle-text"
-                : "text-mingle-text-secondary hover:text-mingle-text"
-            }`}
+            className={tabClass(viewPassed)}
           >
             Passed{passedUserIds.length ? ` · ${passedUserIds.length}` : ""}
           </Link>
@@ -120,12 +134,14 @@ export default async function DiscoverPage({
             styleOptions={styleOptions}
             valueOptions={valueOptions}
             audience={userRow.user_type === "company" ? "company" : "talent"}
+            formAction="/discover"
+            preserveView={viewBrowse ? "browse" : null}
           />
         )}
         <DiscoveryScreen
-          key={`${screenKey}|${viewPassed ? "passed" : "feed"}`}
+          key={`${screenKey}|${mode}`}
           viewerId={user.id}
-          mode={viewPassed ? "passed" : "feed"}
+          mode={mode}
           title={title}
           subtitle={subtitle}
           cards={cards}
@@ -145,6 +161,7 @@ export default async function DiscoverPage({
             filters={filters}
             total={total}
             pageSize={pageSize}
+            view={viewBrowse ? "browse" : null}
           />
         )}
       </div>
