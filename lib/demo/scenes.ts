@@ -5,14 +5,15 @@ export type DemoSceneId =
   | "company"
   | "profile"
   | "match"
-  | "talent"
   | "mingleMoment"
   | "conversation"
   | "recommendations"
+  | "closing"
+  // Kept for manual nav / chrome jumps (not in the investor autoplay path)
+  | "talent"
   | "board"
   | "darkMode"
-  | "phase2"
-  | "closing";
+  | "phase2";
 
 export type DemoCaption = {
   lines: string[];
@@ -40,23 +41,24 @@ export type DemoSceneConfig = {
 };
 
 /**
- * Faster pacing (~80–90s) covering company + talent sides, mingle moment,
- * dark mode flash, and a clearly labeled Phase 2 roadmap beat.
+ * Investor product demo (~75–80s) aligned to the agreed caption + voiceover
+ * script: opening → problem → company path → beyond CV → match →
+ * conversation (via mingle beat) → recommendations → closing.
  */
 export const DEMO_SCENES: DemoSceneConfig[] = [
   {
     id: "opening",
-    durationMs: 4000,
+    durationMs: 4800,
     captions: [{ lines: ["Meet mingle.", "Beyond the match."] }],
   },
   {
     id: "problem",
-    durationMs: 5000,
+    durationMs: 6800,
     captions: [
       { lines: ["Hiring is more than matching keywords."] },
       {
-        atMs: 2200,
-        lines: ["Skills matter.", "So do people, values, and fit."],
+        atMs: 2800,
+        lines: ["Skills matter.", "So do people, values, goals and fit."],
       },
     ],
     showChrome: true,
@@ -66,10 +68,9 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "introduce",
-    durationMs: 5600,
+    durationMs: 7000,
     captions: [
       { lines: ["A better way to connect talent and companies."] },
-      { atMs: 2400, lines: ["Meet mingle."] },
     ],
     showChrome: true,
     chromeNav: "Dashboard",
@@ -78,10 +79,9 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "company",
-    durationMs: 6500,
+    durationMs: 6000,
     captions: [
-      { lines: ["Start with what matters."] },
-      { atMs: 2500, lines: ["Define the opportunity."] },
+      { lines: ["A better way to connect talent and companies."] },
     ],
     showChrome: true,
     chromeNav: "Roles",
@@ -90,10 +90,10 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "profile",
-    durationMs: 5500,
+    durationMs: 11000,
     captions: [
       { lines: ["Go beyond the CV."] },
-      { atMs: 2500, lines: ["Discover the person behind the profile."] },
+      { atMs: 4500, lines: ["Discover the person behind the profile."] },
     ],
     showChrome: true,
     chromeNav: "Candidates",
@@ -102,7 +102,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "match",
-    durationMs: 5500,
+    durationMs: 10000,
     captions: [{ lines: ["More context.", "Better connections."] }],
     showChrome: true,
     chromeNav: "Candidates",
@@ -110,30 +110,15 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
     audience: "company",
   },
   {
-    id: "talent",
-    durationMs: 5500,
-    captions: [
-      { lines: ["Talent discovers companies too."] },
-      { atMs: 2400, lines: ["Look beyond the keywords."] },
-    ],
-    showChrome: true,
-    chromeNav: "Discover",
-    chromeTitle: "Discover",
-    audience: "talent",
-  },
-  {
     id: "mingleMoment",
-    durationMs: 5500,
-    captions: [{ lines: ["Mutual interest.", "It's a mingle."] }],
+    durationMs: 3800,
+    captions: [],
     fullBleed: true,
   },
   {
     id: "conversation",
-    durationMs: 7200,
-    captions: [
-      { lines: ["Start a meaningful conversation."] },
-      { atMs: 2800, lines: ["Type what matters — then send."] },
-    ],
+    durationMs: 13000,
+    captions: [{ lines: ["Start a meaningful conversation."] }],
     showChrome: true,
     chromeNav: "Conversations",
     chromeTitle: "Conversation",
@@ -141,7 +126,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "recommendations",
-    durationMs: 4000,
+    durationMs: 7500,
     captions: [{ lines: ["Context you can trust."] }],
     showChrome: true,
     chromeNav: "Candidates",
@@ -149,51 +134,18 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
     audience: "company",
   },
   {
-    id: "board",
-    durationMs: 4500,
-    captions: [{ lines: ["Follow the relationship,", "not just the resume."] }],
-    showChrome: true,
-    chromeNav: "Board",
-    chromeTitle: "Board",
-    audience: "company",
-  },
-  {
-    id: "darkMode",
-    durationMs: 2500,
-    captions: [{ lines: ["Light or dark — same product."] }],
-    showChrome: true,
-    chromeNav: "Dashboard",
-    chromeTitle: "Dashboard",
-    audience: "company",
-    forceDark: true,
-  },
-  {
-    id: "phase2",
-    durationMs: 5500,
-    captions: [
-      { lines: ["Phase 2 — where mingle goes next."] },
-      {
-        atMs: 2400,
-        lines: ["Employee lifecycle.", "Mobile for talent and recruiters."],
-      },
-    ],
-  },
-  {
     id: "closing",
-    durationMs: 6000,
+    durationMs: 10000,
     captions: [
       {
         lines: [
-          "Building a better way to connect talent and companies.",
+          "The first working version of mingle",
+          "is now ready for pilot.",
         ],
       },
       {
-        atMs: 2400,
-        lines: ["Now entering the first pilot stage."],
-      },
-      {
         atMs: 4200,
-        lines: ["mingle — Beyond the match.", "mingle.careers"],
+        lines: ["mingle", "Beyond the match."],
       },
     ],
   },

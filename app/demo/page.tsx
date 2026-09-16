@@ -5,7 +5,7 @@ import { DemoShell } from "@/components/DemoShell";
 export const metadata: Metadata = {
   title: "Product demo | mingle",
   description:
-    "A short, recording-ready walkthrough of the mingle product — company hiring, talent profiles, relevance, and conversation.",
+    "Investor-ready mingle product demo (~75–80s) — captions and screens aligned to the agreed voiceover script.",
   robots: {
     index: false,
     follow: false,

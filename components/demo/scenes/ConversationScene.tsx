@@ -20,8 +20,8 @@ import { demoEase } from "@/lib/demo/motion";
 
 const DRAFT_TEXT =
   "Perfect — I'll bring a few product examples for Thursday.";
-const TYPE_START_MS = 2600;
-const SEND_AT_MS = 5600;
+const TYPE_START_MS = 4000;
+const SEND_AT_MS = 9000;
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, {

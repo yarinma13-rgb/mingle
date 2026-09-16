@@ -48,7 +48,10 @@ export function RecommendationsScene() {
               <p className="text-sm font-medium text-mingle-text">
                 {item.recommenderName}
               </p>
-              <p className="text-xs text-mingle-text-secondary">
+              <p
+                data-demo-target={index === 0 ? "rec-linkedin" : undefined}
+                className="text-xs text-mingle-text-secondary"
+              >
                 Verified via LinkedIn
               </p>
               {item.body ? (

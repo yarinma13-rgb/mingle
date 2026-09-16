@@ -56,7 +56,9 @@ export function MatchScene() {
         transition={{ duration: 0.45, ease: "easeOut" }}
       >
         <ProfileSection title="Match Report">
-          <MatchReportBody report={report} />
+          <div data-demo-target="match-aligned">
+            <MatchReportBody report={report} />
+          </div>
         </ProfileSection>
       </motion.div>
     </motion.div>

@@ -3,8 +3,12 @@
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { demoEase } from "@/lib/demo/motion";
+import { useDemoPlayback } from "@/lib/demo/playback-context";
 
 export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
+  const { elapsedMs, reducedMotion } = useDemoPlayback();
+  const showTagline = reducedMotion || elapsedMs >= 4200;
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-6 text-center">
       <div
@@ -22,31 +26,35 @@ export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
         className="relative flex max-w-lg flex-col items-center"
       >
         <MingleLogo size={68} priority />
-        <p className="mt-8 font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-mingle-text sm:text-2xl">
-          Building a better way to connect talent and companies.
-        </p>
-        <p className="mt-5 text-sm text-mingle-text-secondary">
-          Now entering the first pilot stage.
-        </p>
-        <p className="mt-8 font-display text-2xl font-semibold tracking-tight text-mingle-text">
-          mingle
-        </p>
-        <p className="mt-2 text-base text-mingle-text-secondary">
-          Beyond the match.
-        </p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-          className="mt-5 text-sm font-semibold text-mingle-accent-blue"
+        <motion.div
+          key={showTagline ? "tagline" : "pilot"}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: demoEase }}
+          className="mt-8 flex flex-col items-center"
         >
-          mingle.careers
-        </motion.p>
+          {showTagline ? (
+            <>
+              <p className="font-display text-3xl font-semibold tracking-tight text-mingle-text sm:text-4xl">
+                mingle
+              </p>
+              <p className="mt-3 text-base text-mingle-text-secondary sm:text-lg">
+                Beyond the match.
+              </p>
+            </>
+          ) : (
+            <p className="font-display text-xl font-semibold leading-snug tracking-[-0.02em] text-mingle-text sm:text-2xl">
+              The first working version of mingle
+              <br />
+              is now ready for pilot.
+            </p>
+          )}
+        </motion.div>
         {onReplay ? (
           <button
             type="button"
             onClick={onReplay}
-            className="mingle-btn-secondary mt-8 text-xs"
+            className="mingle-btn-secondary mt-10 text-xs"
           >
             Restart demo
           </button>

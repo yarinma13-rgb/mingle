@@ -431,10 +431,24 @@ export const DEMO_PHASE2 = {
   note: "Vision for Phase 2 — not part of the current pilot build.",
 } as const;
 
-export const DEMO_VOICEOVER = `Hiring is more than matching keywords.
+/**
+ * Full investor voiceover — record separately, then lay over a clean
+ * screen capture. Target runtime ~75–80s.
+ */
+export const DEMO_VOICEOVER = `Meet mingle — the relationship layer between talent and companies.
 
-mingle helps companies and talent connect beyond the traditional hiring process — bringing together skills, values, goals and the human context behind the profile.
+Hiring is more than matching keywords. Skills matter — but so do people, values, goals and fit.
 
-This is the first working version of mingle, and I'm now moving into the first pilot stage.
+mingle brings companies and talent together with more context from the very beginning.
 
-mingle — Beyond the match.`;
+Instead of relying only on a CV, mingle helps companies understand the person behind the profile — their experience, goals, values and expectations.
+
+The result is a more meaningful way to discover relevant connections — beyond keywords alone.
+
+And when there’s mutual interest, mingle moves the experience forward — from matching to an actual conversation.
+
+With additional context such as recommendations, companies can build a richer picture of the people they meet.
+
+This is the first working version of mingle — now moving into our first pilot stage.
+
+mingle. Beyond the match.`;

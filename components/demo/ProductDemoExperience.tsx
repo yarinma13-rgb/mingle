@@ -11,12 +11,9 @@ import { IntroduceScene } from "@/components/demo/scenes/IntroduceScene";
 import { RoleScene } from "@/components/demo/scenes/RoleScene";
 import { ProfileScene } from "@/components/demo/scenes/ProfileScene";
 import { MatchScene } from "@/components/demo/scenes/MatchScene";
-import { TalentScene } from "@/components/demo/scenes/TalentScene";
 import { MingleMomentScene } from "@/components/demo/scenes/MingleMomentScene";
 import { ConversationScene } from "@/components/demo/scenes/ConversationScene";
 import { RecommendationsScene } from "@/components/demo/scenes/RecommendationsScene";
-import { BoardScene } from "@/components/demo/scenes/BoardScene";
-import { Phase2Scene } from "@/components/demo/scenes/Phase2Scene";
 import { ClosingScene } from "@/components/demo/scenes/ClosingScene";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { DEMO_SCENES, type DemoSceneId } from "@/lib/demo/scenes";
@@ -31,13 +28,13 @@ const NAV_TO_SCENE: Record<string, DemoSceneId> = {
   Dashboard: "introduce",
   Roles: "company",
   Candidates: "profile",
-  Discover: "talent",
+  Discover: "introduce",
   Conversations: "conversation",
-  Connections: "talent",
-  Pipeline: "board",
-  Board: "board",
+  Connections: "match",
+  Pipeline: "recommendations",
+  Board: "recommendations",
   Interviews: "conversation",
-  Saved: "talent",
+  Saved: "profile",
   "My profile": "profile",
   Settings: "introduce",
 };
@@ -288,8 +285,6 @@ export function ProductDemoExperience({
         return <ProfileScene />;
       case "match":
         return <MatchScene />;
-      case "talent":
-        return <TalentScene />;
       case "mingleMoment":
         return <MingleMomentScene />;
       case "conversation":
@@ -300,12 +295,6 @@ export function ProductDemoExperience({
         );
       case "recommendations":
         return <RecommendationsScene />;
-      case "board":
-        return <BoardScene />;
-      case "darkMode":
-        return <IntroduceScene />;
-      case "phase2":
-        return <Phase2Scene />;
       case "closing":
         return <ClosingScene onReplay={replay} />;
       default:
@@ -313,11 +302,11 @@ export function ProductDemoExperience({
     }
   })();
 
+  // Opening/closing carry brand copy in-scene; mingle moment is visual-only.
   const hideCaptions =
     scene.id === "opening" ||
     scene.id === "closing" ||
-    scene.id === "mingleMoment" ||
-    scene.id === "phase2";
+    scene.id === "mingleMoment";
 
   return (
     <DemoPlaybackProvider

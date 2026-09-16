@@ -23,7 +23,7 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
   const sections =
     highlight === "sections"
       ? DEMO_EMMA_SECTIONS
-      : DEMO_EMMA_SECTIONS.slice(0, 5);
+      : DEMO_EMMA_SECTIONS; // Full person-behind-the-profile for investor script
 
   return (
     <motion.div
@@ -92,7 +92,9 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
                 data-demo-target={
                   section.title === "Values that drive me"
                     ? "profile-values"
-                    : undefined
+                    : section.title === "Career goals"
+                      ? "profile-goals"
+                      : undefined
                 }
               >
                 {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
