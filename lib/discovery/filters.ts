@@ -102,8 +102,10 @@ export function discoveryActiveFilterCount(filters: DiscoveryFilters): number {
 export function discoveryQueryString(
   filters: DiscoveryFilters,
   page = filters.page,
+  view?: string | null,
 ): string {
   const params = new URLSearchParams();
+  if (view && view !== "feed") params.set("view", view);
   if (filters.industry) params.set("industry", filters.industry);
   if (filters.location) params.set("location", filters.location);
   if (filters.style) params.set("style", filters.style);

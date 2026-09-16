@@ -27,6 +27,7 @@ import {
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
 import { buildSkillOverlapSignal } from "@/lib/matching/skill-overlap";
+import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 
 const TOP_N = 5;
 
@@ -136,6 +137,18 @@ function ResultCard({
         >
           View profile
         </Link>
+        {card.cvPath ? (
+          <OpenTalentCvButton
+            cvPath={card.cvPath}
+            cvFileName={card.cvFileName}
+            label={
+              card.cvFileName?.trim()
+                ? `Open CV · ${card.cvFileName}`
+                : "Open CV"
+            }
+            className="self-start rounded-full border border-mingle-border bg-mingle-white px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+          />
+        ) : null}
         <MatchFeedbackActions
           audience="company"
           action={feedback}

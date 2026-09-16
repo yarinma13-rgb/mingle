@@ -35,7 +35,8 @@ export function TalentCvField({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const hasFile = Boolean(cvPath && cvFileName);
+  const displayName = cvFileName?.trim() || "CV.pdf";
+  const hasFile = Boolean(cvPath);
 
   const handlePick = async (file: File | undefined) => {
     if (!file) return;
@@ -111,7 +112,7 @@ export function TalentCvField({
             disabled={busy}
             className="mingle-btn-secondary max-w-full cursor-pointer truncate text-xs disabled:opacity-60"
           >
-            {cvFileName}
+            {displayName}
           </button>
         )}
         {editable && (
