@@ -16,7 +16,6 @@ See docs/PHANTOMBUSTER_PLAYBOOK.md for free-minute contact URL extraction.
 from __future__ import annotations
 
 import csv
-import re
 import time
 from typing import Any
 from urllib.parse import urlparse

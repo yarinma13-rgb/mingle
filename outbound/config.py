@@ -30,11 +30,14 @@ CORE_VALUE_PROP = (
 # ---------------------------------------------------------------------------
 # ICP — companies
 # ---------------------------------------------------------------------------
+# Soft ceiling: we sell into small/mid teams. HR persona is only valid ≤200.
+MAX_EMPLOYEES = 200
+
 TARGET_VERTICALS = [
-    "Tech Startups (Seed to Series B)",
-    "Fast-growing Digital/Product Agencies",
-    "High-volume Tech Companies",
-    "Boutique Recruiting Agencies",
+    "Tech Startups (Seed to Series B, typically ≤200 employees)",
+    "Fast-growing Digital/Product Agencies (≤200)",
+    "Small/mid tech product companies currently hiring (≤200)",
+    "Boutique recruiting agencies (≤200) buying tools for faster shortlists",
 ]
 
 # Keywords used by scraper + scorer to flag ICP-ish companies
@@ -71,33 +74,87 @@ TRIGGER_ROLES = [
 ]
 
 # ---------------------------------------------------------------------------
-# ICP — personas (decision makers)
+# ICP — personas (decision makers) — STRICT
 # ---------------------------------------------------------------------------
+# A) HR / People / Talent at a SMALL company (≤200 employees)
+# B) Founder / CEO only when there is NO dedicated HR function and NO recruiter
 TARGET_PERSONAS = [
     {
-        "title": "VP HR / Head of Talent Acquisition / HR Manager",
-        "pain": "Too many noisy CVs, hours wasted screening.",
+        "id": "hr_small_company",
+        "title": "HR / People / Talent (company ≤200 employees)",
+        "examples": [
+            "HR Manager",
+            "People Ops",
+            "Head of People",
+            "Head of Talent",
+            "Talent Acquisition (often the only hiring person)",
+        ],
+        "pain": "Too many noisy CVs, hours wasted screening — no big TA team behind them.",
+        "rules": "Company size must be ≤200. Prefer sole/lean HR over enterprise TA orgs.",
     },
     {
-        "title": "Founder / CEO (early-stage)",
-        "pain": "No time to source, hiring is slow, hiring mistakes cost too much.",
+        "id": "founder_no_hr",
+        "title": "Founder / CEO with no HR function and no recruiter",
+        "examples": ["Founder", "Co-Founder", "CEO"],
+        "pain": "They own hiring themselves; slow screens and bad hires are expensive.",
+        "rules": (
+            "Only when the company has no dedicated HR / People / Talent role "
+            "and no in-house or retained recruiter handling hiring."
+        ),
     },
 ]
 
-PERSONA_TITLE_KEYWORDS = [
-    "head of talent",
-    "talent acquisition",
+# Titles that count as the HR/People persona (path A)
+HR_PERSONA_KEYWORDS = [
+    "hr manager",
+    "hr lead",
+    "hrbp",
+    "human resources",
+    "people ops",
+    "people operations",
+    "head of people",
     "vp people",
     "vp hr",
-    "head of people",
-    "hr manager",
-    "people ops",
+    "head of hr",
+    "head of talent",
+    "talent acquisition",
+    "talent partner",
+    "people partner",
     "chief people",
+]
+
+# Titles that count as founder/CEO persona (path B) — only if no HR/recruiter
+FOUNDER_PERSONA_KEYWORDS = [
     "founder",
     "co-founder",
+    "cofounder",
     "ceo",
-    "managing partner",
+    "chief executive",
+    "managing partner",  # tiny agency/shop where partner owns hiring
 ]
+
+# Signals that a company ALREADY has hiring coverage → founder/CEO is NOT the ICP
+HAS_HR_OR_RECRUITER_SIGNALS = [
+    "has hr",
+    "has recruiter",
+    "in-house recruiter",
+    "internal recruiter",
+    "talent team",
+    "ta team",
+    "people team",
+    "hr department",
+    "hr function",
+    "staffing partner",
+    "retained recruiter",
+    "recruitment agency hired",
+]
+
+# Backward-compatible union used by simple keyword scans
+PERSONA_TITLE_KEYWORDS = HR_PERSONA_KEYWORDS + FOUNDER_PERSONA_KEYWORDS
+
+# Size buckets we treat as ≤200
+ICP_SIZE_BUCKETS = ("1-10", "11-50", "51-200", "1-50", "50-200", "under 200", "≤200", "<=200")
+
 
 # ---------------------------------------------------------------------------
 # Scoring gate
@@ -126,6 +183,7 @@ CRM_COLUMNS = [
     "Status",
     "Domain",
     "Company Size",
+    "Has HR Function",  # yes/no — founders only ICP when this is no/unknown-false
     "Source",
     "Reasoning",
     "Updated At",

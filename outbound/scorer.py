@@ -4,70 +4,201 @@ Phase 2 — Automated lead scoring & ICP gating.
 Uses OpenAI gpt-4o-mini when OPENAI_API_KEY is set.
 Falls back to a deterministic local heuristic in DEMO_MODE / without a key
 so the pipeline is runnable at $0.
+
+Strict persona rules:
+  A) HR / People / Talent ONLY if company size ≤200
+  B) Founder / CEO ONLY if there is no HR function and no recruiter
 """
 
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from config import (
     DEMO_MODE,
+    FOUNDER_PERSONA_KEYWORDS,
+    HAS_HR_OR_RECRUITER_SIGNALS,
+    HR_PERSONA_KEYWORDS,
     ICP_COMPANY_KEYWORDS,
     ICP_MIN_SCORE,
+    ICP_SIZE_BUCKETS,
+    MAX_EMPLOYEES,
     OPENAI_API_KEY,
     OPENAI_MODEL,
-    PERSONA_TITLE_KEYWORDS,
+    TARGET_PERSONAS,
     TARGET_VERTICALS,
     TRIGGER_ROLES,
 )
 
-SCORING_SYSTEM = """You are an ICP gate for mingle.careers, an AI hiring platform.
-Score leads for outbound. Be strict: only true fits should score >= 85.
+SCORING_SYSTEM = f"""You are an ICP gate for mingle.careers, an AI hiring platform.
+Be STRICT. Only true fits should score >= 85.
+
+Personas (ONLY these):
+1) HR / People / Talent at a company with ≤{MAX_EMPLOYEES} employees.
+2) Founder / CEO only when the company has NO dedicated HR function and NO recruiter.
+
+Reject: enterprise HR/TA teams, companies clearly >{MAX_EMPLOYEES}, founders/CEOs who already have HR or a recruiter, office managers, and non-hiring roles.
+
 Return ONLY valid JSON with keys: is_match (bool), score (int 0-100), reasoning (one short sentence)."""
+
+
+def parse_employee_count(size_raw: str) -> int | None:
+    """Best-effort upper bound from strings like '11-50', '51-200', '~80', '150 employees'."""
+    text = (size_raw or "").strip().lower()
+    if not text:
+        return None
+
+    # Longest / most specific ranges first so '501-1000' does not match '1-10'
+    range_patterns: list[tuple[str, int]] = [
+        (r"\b10000\+\b", 10000),
+        (r"\b1000\+\b", 1000),
+        (r"\b500\+\b", 500),
+        (r"\b201\+\b", 201),
+        (r"\b501\s*[-–]\s*1000\b", 1000),
+        (r"\b201\s*[-–]\s*500\b", 500),
+        (r"\b51\s*[-–]\s*200\b", 200),
+        (r"\b50\s*[-–]\s*200\b", 200),
+        (r"\b11\s*[-–]\s*50\b", 50),
+        (r"\b1\s*[-–]\s*50\b", 50),
+        (r"\b1\s*[-–]\s*10\b", 10),
+    ]
+    for pattern, high in range_patterns:
+        if re.search(pattern, text):
+            return high
+
+    if any(x in text for x in ("under 200", "≤200", "<=200", "<200")):
+        return 200
+    if any(x in text for x in ("over 200", ">200", "enterprise")):
+        return 500
+
+    nums = [int(n) for n in re.findall(r"\d+", text)]
+    if not nums:
+        return None
+    return max(nums)
+
+
+def _is_hr_title(title: str) -> bool:
+    return any(k in title for k in HR_PERSONA_KEYWORDS)
+
+
+def _is_founder_title(title: str) -> bool:
+    return any(k in title for k in FOUNDER_PERSONA_KEYWORDS)
+
+
+def _has_hr_or_recruiter(lead: dict[str, Any]) -> bool:
+    """
+    Explicit signals that hiring is already covered.
+    Also treat Contact Title itself being a recruiter/HR hire-target as coverage
+    when evaluating a separate founder row (via notes / flags).
+    """
+    flag = (lead.get("Has HR Function") or lead.get("has_hr_function") or "").strip().lower()
+    if flag in {"1", "true", "yes", "y"}:
+        return True
+    if flag in {"0", "false", "no", "n"}:
+        return False
+
+    blob = " ".join(
+        [
+            str(lead.get("Reasoning") or ""),
+            str(lead.get("Notes") or ""),
+            str(lead.get("Source") or ""),
+            str(lead.get("Company") or ""),
+        ]
+    ).lower()
+    return any(sig in blob for sig in HAS_HR_OR_RECRUITER_SIGNALS)
 
 
 def _heuristic_score(lead: dict[str, Any]) -> dict[str, Any]:
     """Free local scorer used when no OpenAI key / DEMO_MODE."""
-    company = (lead.get("Company") or "").lower()
     role = (lead.get("Open Role Found") or "").lower()
     title = (lead.get("Contact Title") or lead.get("Persona Title") or "").lower()
-    size = (lead.get("Company Size") or "").lower()
+    size_raw = lead.get("Company Size") or ""
+    headcount = parse_employee_count(str(size_raw))
     source_blob = " ".join(
         [
-            company,
+            (lead.get("Company") or "").lower(),
             role,
             title,
-            size,
+            str(size_raw).lower(),
             (lead.get("Domain") or "").lower(),
             (lead.get("Notes") or "").lower(),
+            (lead.get("Reasoning") or "").lower(),
         ]
     )
 
-    score = 40
+    score = 35
     reasons: list[str] = []
 
+    # --- hard size gate when known ---
+    if headcount is not None and headcount > MAX_EMPLOYEES:
+        return {
+            "is_match": False,
+            "score": min(40, 30 + (10 if any(k in source_blob for k in ICP_COMPANY_KEYWORDS) else 0)),
+            "reasoning": f"company size ~{headcount} exceeds ≤{MAX_EMPLOYEES} ICP ceiling",
+        }
+
+    if headcount is not None and headcount <= MAX_EMPLOYEES:
+        score += 15
+        reasons.append(f"size ≤{MAX_EMPLOYEES}")
+    elif any(b in str(size_raw).lower() for b in ICP_SIZE_BUCKETS):
+        score += 15
+        reasons.append(f"size bucket ≤{MAX_EMPLOYEES}")
+    elif not str(size_raw).strip():
+        score += 5
+        reasons.append("size unknown (soft pass)")
+
     if any(k in source_blob for k in ICP_COMPANY_KEYWORDS):
-        score += 20
-        reasons.append("ICP vertical keywords present")
+        score += 15
+        reasons.append("ICP vertical keywords")
 
-    if any(tr.lower() in role for tr in TRIGGER_ROLES) or any(
+    hiring = any(tr.lower() in role for tr in TRIGGER_ROLES) or any(
         word in role for word in ("engineer", "designer", "product manager")
-    ):
+    )
+    if hiring:
+        score += 20
+        reasons.append("active hiring trigger")
+
+    # --- persona paths ---
+    hr_title = _is_hr_title(title)
+    founder_title = _is_founder_title(title)
+    covered = _has_hr_or_recruiter(lead)
+
+    if hr_title:
+        if headcount is not None and headcount > MAX_EMPLOYEES:
+            return {
+                "is_match": False,
+                "score": 25,
+                "reasoning": "HR persona but company above 200 employees",
+            }
         score += 25
-        reasons.append("active hiring trigger role")
-
-    if any(p in title for p in PERSONA_TITLE_KEYWORDS) or not title:
-        # Unknown contact still ok if company+role strong; assume TA/founder later
-        score += 15 if title else 10
-        reasons.append("decision-maker persona" if title else "persona TBD (company+role strong)")
-
-    if any(x in size for x in ("1-10", "11-50", "51-200", "seed", "series", "startup", "agency")):
-        score += 10
-        reasons.append("ICP company size")
+        reasons.append("HR/People persona at small/mid company")
+    elif founder_title:
+        if covered:
+            return {
+                "is_match": False,
+                "score": 35,
+                "reasoning": "Founder/CEO but HR function or recruiter already present",
+            }
+        score += 25
+        reasons.append("Founder/CEO with no HR/recruiter")
+    elif not title:
+        # Contact not resolved yet — keep alive only if size+hiring look right
+        score += 5
+        reasons.append("persona TBD — resolve HR (≤200) or Founder without HR")
+    else:
+        score -= 20
+        reasons.append(f"non-ICP title: {title[:40]}")
 
     score = max(0, min(100, score))
-    is_match = score >= ICP_MIN_SCORE
+    is_match = score >= ICP_MIN_SCORE and (hr_title or founder_title or not title)
+    # Unknown title cannot clear the gate — force resolve persona first
+    if not title:
+        is_match = False
+        score = min(score, ICP_MIN_SCORE - 1)
+        reasons.append("blocked until persona resolved")
+
     reasoning = "; ".join(reasons) if reasons else "weak ICP signal"
     return {"is_match": is_match, "score": score, "reasoning": reasoning}
 
@@ -81,12 +212,18 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
         "Current Job Openings": lead.get("Open Role Found"),
         "Persona Title": lead.get("Contact Title") or lead.get("Persona Title"),
         "Company Size": lead.get("Company Size"),
+        "Parsed headcount (upper)": parse_employee_count(str(lead.get("Company Size") or "")),
+        "Has HR Function / recruiter": _has_hr_or_recruiter(lead),
         "Domain": lead.get("Domain"),
         "ICP verticals": TARGET_VERTICALS,
+        "ICP personas": TARGET_PERSONAS,
+        "Max employees": MAX_EMPLOYEES,
     }
     user_prompt = (
-        "Analyze the extracted lead data. Determine if they fit the mingle.careers ICP "
-        "(Tech companies/agencies currently hiring, targeting HR/Founders).\n"
+        "Analyze the lead against mingle.careers ICP.\n"
+        f"Approve ONLY if: (HR/People/Talent AND size ≤{MAX_EMPLOYEES}) "
+        "OR (Founder/CEO AND no HR function AND no recruiter), "
+        "AND the company is currently hiring for a relevant role.\n"
         f"Lead data:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
         "Return a strict JSON object:\n"
         "{\n"

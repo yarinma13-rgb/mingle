@@ -21,7 +21,7 @@ from config import (
     GOOGLE_SHEET_ID,
     LEADS_LOG,
 )
-from lead_store import ensure_log, read_leads, write_leads
+from lead_store import ensure_log, read_leads
 
 
 def _hyperlink_formula(linkedin_url: str, row_number: int) -> str:

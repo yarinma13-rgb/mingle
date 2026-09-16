@@ -5,24 +5,30 @@ Use Phantombuster’s free daily minutes, then paste results back into the pipel
 
 ## Goal
 
-For each company in `data/leads_log.csv` with `Status=scored` or `ready`, get:
+For each company in `data/leads_log.csv` that is hiring and looks ≤200 employees, get the **right** persona:
 
-- LinkedIn profile URL of **Head of Talent / VP People / HR Manager**, or
-- **Founder / CEO** for Seed–Series A startups
+1. **Prefer:** HR / People / Talent / People Ops (lean team — often the only hiring person)
+2. **Else:** Founder / CEO **only if** LinkedIn/company shows **no** HR, People, Talent, or Recruiter role
+
+Skip enterprise TA orgs and companies clearly over 200 employees.
 
 ## Steps (≈10 minutes)
 
 1. Create a free Phantombuster account.
-2. Export companies from the sheet/CSV (Company + Domain columns).
+2. Export companies from the sheet/CSV (Company + Domain + Company Size columns).
 3. Use a Phantom such as:
-   - **LinkedIn Search Export** — query: `"[Company]" ("Head of Talent" OR "Talent Acquisition" OR Founder OR CEO)`
-   - **LinkedIn Company Employees Export** — then filter titles locally
+   - **LinkedIn Search Export** — try in order:
+     1. `"[Company]" ("HR Manager" OR "People Ops" OR "Head of People" OR "Head of Talent" OR "Talent Acquisition")`
+     2. If none: `"[Company]" (Founder OR "Co-Founder" OR CEO)` — then verify there is still no HR/recruiter on the company page
+   - **LinkedIn Company Employees Export** — filter titles locally with the same rules
 4. Run only within free daily minutes; keep batches small (20–40 companies/day).
 5. Download the CSV result.
 6. Map columns into `leads_log.csv`:
    - `Contact Name`
+   - `Contact Title`
    - `LinkedIn URL`
-   - optional persona title → helps `scorer.py`
+   - `Has HR Function` → `yes` / `no` (critical for Founder/CEO rows)
+7. Re-run scoring after the merge so wrong personas get dropped.
 
 ### Minimal merge tip
 

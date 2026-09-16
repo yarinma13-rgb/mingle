@@ -55,8 +55,10 @@ python crm_sync.py --sheets --ready-only
 ## ICP (hardcoded in `config.py`)
 
 - **Product:** paste JD → DNA match shortlist + Match Reports (Role / Human / Motivation) in ~60s
-- **Companies:** Seed–Series B tech, digital/product agencies, high-volume tech, boutique recruiting
-- **Personas:** Head of Talent / VP HR / HR Manager; Founder/CEO early-stage
+- **Companies:** tech startups / product agencies / small-mid tech / boutique recruiting — **≤200 employees**
+- **Personas (strict):**
+  1. **HR / People / Talent** at a company with **≤200 employees**
+  2. **Founder / CEO** only when there is **no HR function and no recruiter**
 - **Gate:** `score < 85` → `Status=dropped` (never pushed to send queues)
 
 ## Scripts
