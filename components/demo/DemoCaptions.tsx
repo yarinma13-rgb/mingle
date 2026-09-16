@@ -11,7 +11,7 @@ export function DemoCaptions({
   visible: boolean;
 }) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-7 sm:pb-9">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-16 sm:pb-[4.5rem]">
       <AnimatePresence mode="wait">
         {visible && lines.length > 0 ? (
           <motion.div
@@ -20,7 +20,7 @@ export function DemoCaptions({
             initial="initial"
             animate="animate"
             exit="exit"
-            className="demo-caption max-w-xl rounded-2xl border border-white/15 bg-[#161322]/82 px-6 py-3.5 text-center shadow-[0_18px_50px_rgba(22,19,34,0.35)] backdrop-blur-xl"
+            className="demo-caption max-w-xl rounded-2xl border border-white/15 bg-[#161322]/88 px-6 py-3.5 text-center shadow-[0_18px_50px_rgba(22,19,34,0.4)] backdrop-blur-xl"
           >
             {lines.map((line, index) => (
               <motion.p
