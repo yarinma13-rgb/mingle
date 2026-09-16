@@ -49,3 +49,12 @@ next-env.d.ts
 apps/mobile/.expo/
 apps/mobile/dist/
 apps/mobile/web-build/
+
+# Outbound automation (secrets + local CRM runtime)
+outbound/.env
+outbound/.venv/
+outbound/credentials/*.json
+outbound/data/leads_log.csv
+outbound/data/yamm_ready.csv
+outbound/__pycache__/
+outbound/**/__pycache__/
