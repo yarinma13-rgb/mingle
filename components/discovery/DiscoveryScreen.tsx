@@ -270,10 +270,10 @@ function DiscoveryCardView({
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
             <div>
               <p className="font-display text-[1.65rem] font-bold leading-tight tracking-tight">
-                {card.name}
+                {card.roleTitle || card.subtitle}
               </p>
               <p className="mt-0.5 text-base font-medium text-white/90">
-                {card.roleTitle || card.subtitle}
+                {card.name}
               </p>
             </div>
 
