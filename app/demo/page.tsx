@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { DemoShell } from "@/components/DemoShell";
+import { isDemoRouteEnabled } from "@/lib/demo/access";
 
 export const metadata: Metadata = {
   title: "Product demo | mingle",
   description:
-    "Investor-ready mingle product demo (~75–80s) — captions and screens aligned to the agreed voiceover script.",
+    "Private investor walkthrough of mingle — not a public product surface.",
   robots: {
     index: false,
     follow: false,
@@ -13,6 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default function DemoPage() {
+  if (!isDemoRouteEnabled()) notFound();
+
   return (
     <main className="demo-page flex h-[100dvh] min-h-[100dvh] flex-1 flex-col overflow-hidden bg-mingle-surface">
       <Suspense
