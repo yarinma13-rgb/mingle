@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
+import { DiscoverGrowthTracker } from "@/components/discovery/DiscoverGrowthTracker";
 import { DiscoveryScreen } from "@/components/discovery/DiscoveryScreen";
 import {
   DiscoveryFiltersForm,
@@ -86,6 +87,7 @@ export default async function DiscoverPage({
 
   return (
     <>
+      <DiscoverGrowthTracker userType={userRow.user_type} />
       <DashboardHeading>Discover</DashboardHeading>
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-2">

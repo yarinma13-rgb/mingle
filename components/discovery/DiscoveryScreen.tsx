@@ -3,7 +3,7 @@
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -103,6 +103,14 @@ function DiscoveryCardView({
     initialFeedback,
   );
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    track(AnalyticsEvent.matchCardViewed, {
+      target_user_id: card.userId,
+      score: card.score,
+      card_kind: card.kind,
+    });
+  }, [card.userId, card.score, card.kind]);
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-10, 10]);

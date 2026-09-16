@@ -1,5 +1,7 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -109,6 +111,11 @@ export function CompanyBoardScreen({
         return;
       }
       if (result === "unchanged") return;
+      track(AnalyticsEvent.boardStageChanged, {
+        from: latestStage(card.timeline),
+        to: target,
+        connection_id: card.connectionId,
+      });
       const timeline = await loadTimeline(supabase, card.connectionId);
       applyTimeline(card.connectionId, timeline);
     } catch {
