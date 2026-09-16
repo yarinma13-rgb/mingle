@@ -330,7 +330,7 @@ export function ProductDemoExperience({
 
       <div
         ref={stageRef}
-        className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
+        className="absolute inset-0 flex flex-col overflow-hidden"
       >
           {/* Soft transition veil */}
           <motion.div
