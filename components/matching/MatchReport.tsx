@@ -12,7 +12,7 @@ import {
   type MatchFeedbackAction,
   type NotFitReason,
 } from "@/lib/matching/feedback";
-import { IconBadge, type IconAccent } from "@/components/dashboard/IconBadge";
+import { IconBadge } from "@/components/dashboard/IconBadge";
 import {
   BriefcaseIcon,
   ClockIcon,
@@ -51,7 +51,7 @@ const BULLET_ICON: Record<
   companyStage: BriefcaseIcon,
 };
 
-const MISMATCH_PREVIEW = 3;
+const MISMATCH_PREVIEW = 4;
 
 function FitBars({ axes }: { axes: MatchReport["axes"] }) {
   return (
@@ -76,33 +76,48 @@ function FitBars({ axes }: { axes: MatchReport["axes"] }) {
   );
 }
 
-function BulletRow({
+function SignalChip({
   bullet,
-  accent,
+  tone,
 }: {
   bullet: MatchBullet;
-  accent: IconAccent;
+  tone: "fit" | "risk";
 }) {
   const Icon = BULLET_ICON[bullet.key];
+  const shell =
+    tone === "fit"
+      ? "border-mingle-success/25 bg-mingle-success/10"
+      : "border-mingle-error/20 bg-mingle-error/10";
+  const labelTone =
+    tone === "fit" ? "text-mingle-success" : "text-mingle-error";
   return (
-    <li className="flex items-center gap-2 py-0.5">
-      <IconBadge icon={Icon} accent={accent} size={22} iconSize={11} />
-      <p className="min-w-0 text-xs leading-snug text-mingle-text">
-        <span className="font-semibold">{bullet.label}:</span>{" "}
-        <span className="text-mingle-text-secondary">{bullet.finding}</span>
-      </p>
-    </li>
+    <div
+      className={`flex min-w-0 flex-col gap-1 rounded-2xl border px-3 py-2.5 ${shell}`}
+    >
+      <div className="flex items-center gap-1.5">
+        <IconBadge
+          icon={Icon}
+          accent={tone === "fit" ? "success" : "waiting"}
+          size={20}
+          iconSize={10}
+        />
+        <p className={`text-[11px] font-semibold ${labelTone}`}>
+          {bullet.label}
+        </p>
+      </div>
+      <p className="text-[12px] leading-snug text-mingle-text">{bullet.finding}</p>
+    </div>
   );
 }
 
-function BulletList({
+function ChipGrid({
   items,
-  accent,
+  tone,
   previewCount,
   empty,
 }: {
   items: MatchBullet[];
-  accent: IconAccent;
+  tone: "fit" | "risk";
   previewCount: number;
   empty: string;
 }) {
@@ -111,21 +126,21 @@ function BulletList({
   const visible = open ? items : items.slice(0, previewCount);
 
   if (items.length === 0) {
-    return <p className="mt-1 text-xs text-mingle-text-secondary">{empty}</p>;
+    return <p className="mt-2 text-xs text-mingle-text-secondary">{empty}</p>;
   }
 
   return (
     <>
-      <ul className="mt-1 flex flex-col">
+      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {visible.map((bullet) => (
-          <BulletRow key={bullet.key} bullet={bullet} accent={accent} />
+          <SignalChip key={`${bullet.key}-${bullet.label}`} bullet={bullet} tone={tone} />
         ))}
-      </ul>
+      </div>
       {hidden > 0 ? (
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="mt-0.5 text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
+          className="mt-1.5 text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
         >
           {open ? "Show less" : `Show ${hidden} more`}
         </button>
@@ -141,14 +156,30 @@ export function MatchReportBody({
   report: MatchReport;
   compact?: boolean;
 }) {
-  const isTalent = report.audience === "talent";
-  const whyTitle = isTalent
-    ? "Why this opportunity may fit you"
-    : "Why this match";
-  const mismatchTitle = isTalent ? "Potential consideration" : "Potential mismatch";
+  const whyTitle = "Why this is a potential match";
+  const mismatchTitle = "What to examine / risks";
+  const riskItems =
+    report.salaryGapPercent != null &&
+    !report.mismatch.some((b) => b.label === "Salary")
+      ? [
+          {
+            key: "experience" as const,
+            label: "Salary",
+            finding: `Salary gap of about ${report.salaryGapPercent}%`,
+          },
+          ...report.mismatch,
+        ]
+      : report.mismatch.map((b) =>
+          b.label === "Salary" && report.salaryGapPercent != null
+            ? {
+                ...b,
+                finding: `Salary gap of about ${report.salaryGapPercent}%`,
+              }
+            : b,
+        );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
@@ -166,11 +197,9 @@ export function MatchReportBody({
           {scoreBandLabel(report.overall)}
         </span>
       </div>
-      <p className="text-[11px] leading-snug text-mingle-text-secondary">
-        Built from Role Fit, Human Fit, and Motivation Fit — not a black-box
-        score.
-      </p>
-      <FitBars axes={report.axes} />
+
+      {!compact ? <FitBars axes={report.axes} /> : null}
+
       {report.technicalSignal ? (
         <p className="text-[11px] leading-snug text-mingle-text">
           <span className="font-semibold">Verified technical signal:</span>{" "}
@@ -179,36 +208,40 @@ export function MatchReportBody({
           </span>
         </p>
       ) : null}
+
       <p
         className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
       >
         <ShieldCheckIcon size={14} className="shrink-0" />
         <span>Confidence: {report.confidence}</span>
       </p>
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-purple">
+
+      <section>
+        <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
           {whyTitle}
         </h3>
-        <BulletList
+        <ChipGrid
           items={report.why}
-          accent="success"
+          tone="fit"
           previewCount={compact ? 2 : 4}
           empty="Nothing strongly aligned yet."
         />
-      </div>
-      {report.mismatch.length > 0 ? (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-mingle-warning">
+      </section>
+
+      {riskItems.length > 0 ? (
+        <section>
+          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-error">
             {mismatchTitle}
           </h3>
-          <BulletList
-            items={report.mismatch}
-            accent="waiting"
-            previewCount={compact ? 1 : MISMATCH_PREVIEW}
+          <ChipGrid
+            items={riskItems}
+            tone="risk"
+            previewCount={compact ? 2 : MISMATCH_PREVIEW}
             empty=""
           />
-        </div>
+        </section>
       ) : null}
+
       {!compact ? (
         <p className="text-sm italic text-mingle-text-secondary">
           {report.whatMattersMost}

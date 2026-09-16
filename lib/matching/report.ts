@@ -3,6 +3,7 @@ import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
 import { scoreBandLabel } from "@/lib/matching/score-tone";
 import { technicalSignalFinding } from "@/lib/github/meta";
+import { salaryGapPercent } from "@/lib/roles/salary-alignment";
 import type {
   MatchFactor,
   MatchFactorKey,
@@ -42,6 +43,11 @@ export type MatchReport = {
    * MATCH_WEIGHTS. Null when not linked — absence must not hurt score.
    */
   technicalSignal: string | null;
+  /**
+   * Private salary gap % for risk UI. Never pair with raw amounts.
+   * Null when aligned / unknown.
+   */
+  salaryGapPercent: number | null;
 };
 
 /** Existing engine factors, grouped onto the three PRD axes.
@@ -289,6 +295,7 @@ export function emptyMatchReport(
         : "Complete both profiles to see why mingle recommends this person.",
     audience,
     technicalSignal,
+    salaryGapPercent: null,
   };
 }
 
@@ -309,8 +316,34 @@ export function buildMatchReport(
   audience: MatchAudience,
 ): MatchReport {
   const technicalSignal = technicalSignalFromTalent(talent);
+  const gap = salaryGapPercent(
+    talent?.salaryExpectation,
+    company?.salaryMin,
+    company?.salaryMax,
+  );
   if (result.factors.length === 0) {
-    return emptyMatchReport(audience, result.score, technicalSignal);
+    return {
+      ...emptyMatchReport(audience, result.score, technicalSignal),
+      salaryGapPercent: gap,
+    };
+  }
+  const mismatch = mismatchBullets(result.factors, talent, company, audience);
+  if (gap != null) {
+    const already = mismatch.some((b) => /salary|compensation|שכר/i.test(b.label + b.finding));
+    if (!already) {
+      mismatch.unshift({
+        key: "experience",
+        label: "Salary",
+        finding: `Salary expectations differ by about ${gap}%`,
+      });
+    } else {
+      for (const bullet of mismatch) {
+        if (/salary|compensation|שכר/i.test(bullet.label + bullet.finding)) {
+          bullet.finding = `Salary gap of about ${gap}%`;
+          bullet.label = "Salary";
+        }
+      }
+    }
   }
   return {
     overall: result.score,
@@ -322,10 +355,11 @@ export function buildMatchReport(
     })),
     confidence: matchConfidence(talent, company),
     why: whyBullets(result.factors, talent, company, audience),
-    mismatch: mismatchBullets(result.factors, talent, company, audience),
+    mismatch,
     whatMattersMost: whatMattersMost(result.factors),
     audience,
     // Soft signal only — not included in AXIS_FACTOR_KEYS / MATCH_WEIGHTS.
     technicalSignal,
+    salaryGapPercent: gap,
   };
 }

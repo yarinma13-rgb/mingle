@@ -25,3 +25,29 @@ export function salaryAlignment(
   if (salaryMax != null && expectation > salaryMax) return "above_budget";
   return "aligned";
 }
+
+/**
+ * Private gap % for Match Report risk chips — never expose amounts.
+ * Returns null when aligned or unknown.
+ */
+export function salaryGapPercent(
+  expectation: number | null | undefined,
+  salaryMin: number | null | undefined,
+  salaryMax: number | null | undefined,
+): number | null {
+  if (expectation == null || expectation <= 0) return null;
+  if (salaryMax != null && expectation > salaryMax && salaryMax > 0) {
+    return Math.max(1, Math.round(((expectation - salaryMax) / salaryMax) * 100));
+  }
+  if (
+    salaryMin != null &&
+    salaryMin > 0 &&
+    expectation < salaryMin * 0.85
+  ) {
+    return Math.max(
+      1,
+      Math.round(((salaryMin - expectation) / salaryMin) * 100),
+    );
+  }
+  return null;
+}
