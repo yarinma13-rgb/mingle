@@ -103,52 +103,57 @@ def hebrew_first_name(lead: dict[str, Any]) -> str:
 
 
 def _template_email(lead: dict[str, Any]) -> str:
-    company = (lead.get("Company") or "").strip() or "החברה שלכם"
+    """Full message — same founder-approved soft angle as the LinkedIn note."""
     role = (lead.get("Open Role Found") or "").strip() or "התפקיד הפתוח"
     name = hebrew_first_name(lead)
 
     if COPY_LANGUAGE == "en":
         greeting = f"Hi {name}," if name else "Hi,"
         return (
-            f"{greeting}\n\n"
-            f"Saw you're hiring a {role} at {company}.\n\n"
-            "How long does it take you to go from CVs to 3–5 people actually worth talking to?\n\n"
-            "mingle does that in 60 seconds — ranking by Role, Human, and Motivation fit, "
-            "with a Match Report that shows why they match and where the risk is.\n\n"
-            "Want me to send a 60-second Match Report for this role?"
+            f"{greeting} Saw you're hiring a {role}. "
+            "At mingle we have a slightly different way to spot role fit — beyond CV and experience. "
+            "Thought this open role could be a great example to see it in action. Want a look?"
         )
 
     greeting = f"היי {name}," if name else "היי,"
-    # Founder-approved Hebrew structure
     return (
-        f"{greeting}\n\n"
-        f"ראיתי שאתם מגייסים {role} ב־{company}.\n\n"
-        "כמה זמן לוקח לכם להגיע מ־CVs ל־3–5 מועמדים שבאמת שווה לדבר איתם?\n\n"
-        "mingle עושה את זה תוך 60 שניות — ומדרגת את המועמדים לפי Role, Human ו־Motivation, "
-        "עם Match Report שמראה גם למה יש התאמה וגם איפה הסיכון.\n\n"
-        "רוצה שאשלח לך Match Report של 60 שניות על המשרה שלכם?"
+        f"{greeting} ראיתי שאתם מגייסים {role}. "
+        "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
+        "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
+        "תרצי לראות?"
     )
 
 
 def _template_linkedin_note(lead: dict[str, Any]) -> str:
-    """Connection request note — must stay ≤ 300 chars."""
-    company = (lead.get("Company") or "").strip() or "החברה"
+    """Connection request note — must stay ≤ 300 chars. Same copy as email when it fits."""
     role = (lead.get("Open Role Found") or "").strip() or "התפקיד"
     name = hebrew_first_name(lead)
 
     if COPY_LANGUAGE == "en":
         greeting = f"Hi {name}," if name else "Hi,"
         candidates = [
-            f"{greeting} Saw you're hiring a {role} at {company}. mingle shortlists 3–5 worth-talking-to candidates in 60s with a Match Report. Worth connecting?",
-            f"{greeting} Hiring {role} at {company}? mingle ranks a shortlist in 60s. Open to connect?",
-            f"{greeting} Re {role} @ {company} — 60s Match Report shortlist via mingle. Connect?",
+            f"{greeting} Saw you're hiring a {role}. mingle spots fit beyond CV/experience — worth a quick look?",
+            f"{greeting} Hiring {role}? We identify fit beyond the CV. Want to see an example?",
+            f"{greeting} Re {role}: mingle finds fit beyond CV. Open to a peek?",
         ]
     else:
         greeting = f"היי {name}," if name else "היי,"
         candidates = [
-            f"{greeting} ראיתי שאתם מגייסים {role} ב־{company}. mingle מדרגת 3–5 מועמדים ששווה לדבר איתם תוך 60 שניות עם Match Report. שווה להתחבר?",
-            f"{greeting} מגייסים {role} ב־{company}? mingle בונה שורטליסט ב־60 שניות עם Match Report. פתוח/ה להתחבר?",
-            f"{greeting} לגבי גיוס {role} ב־{company} — mingle מדרגת מועמדים ב־60 שניות. נתחבר?",
+            (
+                f"{greeting} ראיתי שאתם מגייסים {role}. "
+                "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
+                "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
+                "תרצי לראות?"
+            ),
+            (
+                f"{greeting} מגייסים {role}? "
+                "ב־mingle יש דרך אחרת לזהות התאמה מעבר ל־CV ולניסיון. "
+                "המשרה הזו יכולה להיות דוגמה טובה. תרצי לראות?"
+            ),
+            (
+                f"{greeting} לגבי {role} — "
+                "mingle מזהה התאמה מעבר ל־CV. תרצי לראות דוגמה קצרה?"
+            ),
         ]
 
     for text in candidates:
