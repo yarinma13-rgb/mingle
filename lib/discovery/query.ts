@@ -295,6 +295,7 @@ export async function loadDiscoveryPage(
         skills: profile.skills,
         cvPath: profile.cvPath,
         cvFileName: profile.cvFileName,
+        kind: "person" as const,
       };
     });
     cards.sort((a, b) => {

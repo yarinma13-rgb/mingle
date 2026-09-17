@@ -200,6 +200,7 @@ export default async function ProfileViewPage({
           initiallySaved={initiallySaved}
           cvPath={talent.cvPath}
           cvFileName={talent.cvFileName}
+          showCv
           recommendations={recommendations}
           canRequestRecommendation={isSelf}
         />

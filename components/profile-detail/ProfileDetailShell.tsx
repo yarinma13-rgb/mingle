@@ -91,6 +91,8 @@ type ProfileDetailShellProps = {
   initiallySaved: boolean;
   cvPath?: string | null;
   cvFileName?: string | null;
+  /** When true, show CV slot under the photo even if empty (talent profiles). */
+  showCv?: boolean;
   recommendations?: SubmittedRecommendation[];
   canRequestRecommendation?: boolean;
 };
@@ -122,6 +124,7 @@ export function ProfileDetailShell({
   initiallySaved,
   cvPath = null,
   cvFileName = null,
+  showCv = false,
   recommendations = [],
   canRequestRecommendation = false,
 }: ProfileDetailShellProps) {
@@ -320,6 +323,23 @@ export function ProfileDetailShell({
                 </div>
               </div>
 
+              {showCv ? (
+                <div className="mt-4 flex justify-center">
+                  {cvPath ? (
+                    <OpenTalentCvButton
+                      cvPath={cvPath}
+                      cvFileName={cvFileName}
+                      label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
+                      className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
+                    />
+                  ) : (
+                    <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+                      No CV uploaded
+                    </span>
+                  )}
+                </div>
+              ) : null}
+
               {!isSelf ? (
                 <div className="mt-5 flex flex-col gap-2">
                   {connectError ? (
@@ -367,22 +387,14 @@ export function ProfileDetailShell({
                   >
                     {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
                   </button>
-                  {cvPath ? (
-                    <OpenTalentCvButton
-                      cvPath={cvPath}
-                      cvFileName={cvFileName}
-                      label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
-                      className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
-                    />
-                  ) : null}
                 </div>
               ) : null}
-              {isSelf && cvPath ? (
+              {isSelf && showCv && cvPath ? (
                 <div className="mt-5">
                   <OpenTalentCvButton
                     cvPath={cvPath}
                     cvFileName={cvFileName}
-                    label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
+                    label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
                     className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
                   />
                 </div>

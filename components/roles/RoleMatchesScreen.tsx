@@ -124,7 +124,7 @@ function ResultCard({
           </span>
         </p>
       ) : null}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/profile/view/${card.userId}`}
           onClick={() =>
@@ -133,7 +133,7 @@ function ResultCard({
               target_user_id: card.userId,
             })
           }
-          className="self-start rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
         >
           View profile
         </Link>
@@ -141,14 +141,16 @@ function ResultCard({
           <OpenTalentCvButton
             cvPath={card.cvPath}
             cvFileName={card.cvFileName}
-            label={
-              card.cvFileName?.trim()
-                ? `Open CV · ${card.cvFileName}`
-                : "Open CV"
-            }
-            className="self-start rounded-full border border-mingle-border bg-mingle-white px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+            label={card.cvFileName?.trim() ? card.cvFileName.trim() : "Open CV"}
+            className="inline-flex max-w-[11rem] items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-white px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
           />
-        ) : null}
+        ) : (
+          <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+            No CV
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
         <MatchFeedbackActions
           audience="company"
           action={feedback}
