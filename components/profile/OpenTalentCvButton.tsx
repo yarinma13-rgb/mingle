@@ -46,7 +46,7 @@ export function OpenTalentCvButton({
         disabled={busy}
         className={
           className ??
-          "mingle-btn-secondary max-w-full cursor-pointer truncate text-xs disabled:opacity-60"
+          "rounded-full border border-mingle-border bg-mingle-lavender px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
         }
       >
         {busy ? "Opening…" : label ?? cvFileName ?? "Open CV"}

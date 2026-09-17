@@ -134,10 +134,15 @@ function DiscoveryCardView({
       if (shouldAdvance) advanceAfterInterest();
       return;
     }
+    // Optimistic: advance immediately so the deck never feels stuck.
+    setFeedback("interested");
+    if (shouldAdvance) advanceAfterInterest();
     setSaving(true);
     try {
-      await saveProfile(supabase, viewerId, card.userId);
-      await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
+      await Promise.all([
+        saveProfile(supabase, viewerId, card.userId),
+        recordMatchFeedback(supabase, viewerId, card.userId, "interested"),
+      ]);
       track(AnalyticsEvent.matchInterested, {
         target_user_id: card.userId,
         source: "discover",
@@ -146,10 +151,8 @@ function DiscoveryCardView({
         target_user_id: card.userId,
         saved: true,
       });
-      setFeedback("interested");
       toast("Marked interested.");
       void notifyPushMatch(card.userId);
-      if (shouldAdvance) advanceAfterInterest();
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -275,10 +278,10 @@ function DiscoveryCardView({
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
             <div>
               <p className="font-display text-[1.65rem] font-bold leading-tight tracking-tight">
-                {card.roleTitle || card.subtitle}
+                {card.name}
               </p>
               <p className="mt-0.5 text-base font-medium text-white/90">
-                {card.name}
+                {card.roleTitle || card.subtitle}
               </p>
             </div>
 
@@ -289,14 +292,6 @@ function DiscoveryCardView({
                     📍
                   </span>
                   {card.locationLabel}
-                </p>
-              ) : null}
-              {card.salaryLabel ? (
-                <p className="flex items-center gap-1.5">
-                  <span aria-hidden className="opacity-80">
-                    ₪
-                  </span>
-                  {card.salaryLabel}
                 </p>
               ) : null}
             </div>
@@ -370,8 +365,8 @@ function DiscoveryCardView({
 
       {!isCompanyCard ? (
         <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
-            Why this match
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-success">
+            Why this is a potential match
           </p>
           <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
             {card.report.why[0]?.finding ?? card.report.whatMattersMost}
@@ -399,6 +394,7 @@ function DiscoveryCardView({
                 cvPath={card.cvPath}
                 cvFileName={card.cvFileName}
                 label="Open CV"
+                className="rounded-full border border-mingle-border bg-mingle-lavender px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
               />
             ) : null}
           </div>
