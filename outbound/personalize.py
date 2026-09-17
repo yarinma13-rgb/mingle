@@ -80,7 +80,14 @@ def _openai_message(lead: dict[str, Any]) -> str:
 
 def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
     use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
-    message = _openai_message(lead) if use_openai else _template_message(lead)
+    if use_openai:
+        try:
+            message = _openai_message(lead)
+        except Exception as exc:
+            print(f"[personalize] OpenAI unavailable ({exc.__class__.__name__}); using template")
+            message = _template_message(lead)
+    else:
+        message = _template_message(lead)
     out = dict(lead)
     out["Personalized Message"] = message
     # Safe-mode LinkedIn helper (also mirrored as Sheets HYPERLINK in crm_sync)

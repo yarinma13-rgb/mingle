@@ -253,7 +253,16 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
 
 def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
     use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
-    result = _openai_score(lead) if use_openai else _heuristic_score(lead)
+    if use_openai:
+        try:
+            result = _openai_score(lead)
+        except Exception as exc:
+            # Quota / network / auth failures should not kill the whole pipeline.
+            print(f"[scorer] OpenAI unavailable ({exc.__class__.__name__}); using local heuristic")
+            result = _heuristic_score(lead)
+            result["reasoning"] = f"{result['reasoning']} | openai_fallback"
+    else:
+        result = _heuristic_score(lead)
     result["score"] = int(result["score"])
     result["is_match"] = bool(result.get("is_match")) and result["score"] >= ICP_MIN_SCORE
     return result
