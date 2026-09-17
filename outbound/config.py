@@ -177,12 +177,14 @@ SAMPLE_LEADS = ROOT / "data" / "sample_leads.csv"
 CRM_COLUMNS = [
     "Company",
     "Contact Name",
+    "Contact Name HE",  # Hebrew first/full name for outreach greeting
     "Contact Title",
     "Email",
     "LinkedIn URL",
     "Open Role Found",
     "AI Match Score",
-    "Personalized Message",
+    "Personalized Message",  # email / LinkedIn message (longer)
+    "LinkedIn Note",  # connection request note — max 300 chars
     "Open Profile",  # HYPERLINK formula for safe click-to-send
     "Status",
     "Domain",
@@ -192,6 +194,9 @@ CRM_COLUMNS = [
     "Reasoning",
     "Updated At",
 ]
+
+LINKEDIN_NOTE_MAX_CHARS = 300
+
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY", "")
