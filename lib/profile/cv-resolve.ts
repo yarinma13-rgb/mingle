@@ -1,11 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { TALENT_CV_BUCKET, TALENT_CV_OBJECT } from "@/lib/profile/cv";
 import { ensureProductStorageBuckets } from "@/lib/storage/product-buckets";
 
 /**
  * Prefer the profile column; if empty, recover a PDF left in storage and
  * backfill cv_path so companies always get a button when a file exists.
+ *
+ * Uses the service-role client only (no next/headers) so this can safely
+ * run from modules that are also imported by Client Components.
  */
 export async function resolveTalentCvForViewer(
   talentUserId: string,
@@ -43,19 +45,14 @@ export async function resolveTalentCvForViewer(
   const fileName = pdf.name === TALENT_CV_OBJECT ? "CV.pdf" : pdf.name;
 
   // Best-effort backfill so Discover cards pick it up next load.
-  try {
-    const supabase = await createClient();
-    await supabase.from("talent_profiles").upsert(
-      {
-        user_id: talentUserId,
-        cv_path: path,
-        cv_file_name: fileName,
-      },
-      { onConflict: "user_id" },
-    );
-  } catch {
-    // Ignore backfill failures — still return the recovered path for this view.
-  }
+  await admin.from("talent_profiles").upsert(
+    {
+      user_id: talentUserId,
+      cv_path: path,
+      cv_file_name: fileName,
+    },
+    { onConflict: "user_id" },
+  );
 
   return { cvPath: path, cvFileName: fileName };
 }
