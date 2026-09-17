@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DemoChrome } from "@/components/demo/DemoChrome";
 import { DemoCaptions } from "@/components/demo/DemoCaptions";
@@ -39,6 +46,20 @@ const NAV_TO_SCENE: Record<string, DemoSceneId> = {
   Settings: "introduce",
 };
 
+function subscribeReducedMotion(onStoreChange: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
+
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+}
+
 function activeCaptionLines(
   sceneIndex: number,
   elapsedInSceneMs: number,
@@ -60,16 +81,18 @@ export function ProductDemoExperience({
   initialAutoplay?: boolean;
 }) {
   const { setTheme } = useTheme();
+  const reducedMotion = usePrefersReducedMotion();
   const [sceneIndex, setSceneIndex] = useState(0);
-  const [playing, setPlaying] = useState(initialAutoplay);
+  const [wantPlaying, setWantPlaying] = useState(initialAutoplay);
+  const playing = wantPlaying && !reducedMotion;
   const [elapsedInScene, setElapsedInScene] = useState(0);
   const [showScript, setShowScript] = useState(false);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const [veil, setVeil] = useState(false);
-  const sceneStartedAt = useRef(performance.now());
+  const sceneStartedAt = useRef(0);
   const timerRef = useRef<number | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const wasPlayingRef = useRef(false);
 
   const scene = DEMO_SCENES[sceneIndex];
   const isLast = sceneIndex >= DEMO_SCENES.length - 1;
@@ -88,7 +111,7 @@ export function ProductDemoExperience({
 
   const next = useCallback(() => {
     if (isLast) {
-      setPlaying(false);
+      setWantPlaying(false);
       return;
     }
     goTo(sceneIndex + 1);
@@ -96,46 +119,40 @@ export function ProductDemoExperience({
 
   const prev = useCallback(() => {
     goTo(sceneIndex - 1);
-    setPlaying(false);
+    setWantPlaying(false);
   }, [goTo, sceneIndex]);
 
   const replay = useCallback(() => {
     sceneStartedAt.current = performance.now();
     setElapsedInScene(0);
     setSceneIndex(0);
-    setPlaying(true);
+    setWantPlaying(true);
     setTheme("light");
     setVeil(false);
   }, [setTheme]);
 
   const togglePlay = useCallback(() => {
-    setPlaying((prev) => {
+    setWantPlaying((prev) => {
       if (prev) return false;
       sceneStartedAt.current = performance.now();
       return true;
     });
   }, []);
 
-  const wasPlayingRef = useRef(playing);
   useEffect(() => {
     if (playing && !wasPlayingRef.current) {
-      setElapsedInScene(0);
       sceneStartedAt.current = performance.now();
+      const id = window.setTimeout(() => setElapsedInScene(0), 0);
+      wasPlayingRef.current = playing;
+      return () => window.clearTimeout(id);
     }
     wasPlayingRef.current = playing;
   }, [playing]);
 
+  // Keep scene clock aligned without synchronous setState in the effect body.
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(media.matches);
-    if (media.matches) setPlaying(false);
-    const onChange = () => {
-      setReducedMotion(media.matches);
-      if (media.matches) setPlaying(false);
-    };
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, []);
+    sceneStartedAt.current = performance.now();
+  }, [sceneIndex]);
 
   // Hide the OS pointer for the whole viewport while recording/autoplay —
   // only the guided demo cursor should be visible.
@@ -180,11 +197,6 @@ export function ProductDemoExperience({
   }, []);
 
   useEffect(() => {
-    sceneStartedAt.current = performance.now();
-    setElapsedInScene(0);
-  }, [sceneIndex]);
-
-  useEffect(() => {
     if (!playing) {
       if (timerRef.current != null) {
         window.clearTimeout(timerRef.current);
@@ -193,19 +205,25 @@ export function ProductDemoExperience({
       return;
     }
 
+    if (sceneStartedAt.current === 0) {
+      sceneStartedAt.current = performance.now();
+    }
+
     const tick = () => {
       const elapsed = performance.now() - sceneStartedAt.current;
       setElapsedInScene(elapsed);
       const remaining = scene.durationMs - elapsed;
       if (remaining <= 0) {
         if (sceneIndex >= DEMO_SCENES.length - 1) {
-          setPlaying(false);
+          setWantPlaying(false);
           setElapsedInScene(scene.durationMs);
           return;
         }
         // Soft veil advance for autoplay continuity
         setVeil(true);
         window.setTimeout(() => {
+          sceneStartedAt.current = performance.now();
+          setElapsedInScene(0);
           setSceneIndex((i) => i + 1);
           window.setTimeout(() => setVeil(false), 180);
         }, 140);
@@ -240,7 +258,7 @@ export function ProductDemoExperience({
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         next();
-        setPlaying(false);
+        setWantPlaying(false);
       } else if (event.key === "ArrowLeft") {
         event.preventDefault();
         prev();
@@ -267,7 +285,7 @@ export function ProductDemoExperience({
     const index = DEMO_SCENES.findIndex((item) => item.id === "profile");
     if (index >= 0) {
       goTo(index);
-      setPlaying(false);
+      setWantPlaying(false);
     }
   };
 
@@ -355,7 +373,7 @@ export function ProductDemoExperience({
                 );
                 if (index >= 0) {
                   goTo(index);
-                  setPlaying(false);
+                  setWantPlaying(false);
                 }
               }}
             >
@@ -422,7 +440,7 @@ export function ProductDemoExperience({
               type="button"
               onClick={() => {
                 next();
-                setPlaying(false);
+                setWantPlaying(false);
               }}
               disabled={isLast}
               className="mingle-btn-secondary text-[11px] disabled:opacity-40"
@@ -451,7 +469,7 @@ export function ProductDemoExperience({
                   aria-label={`Scene ${index + 1}: ${item.id}`}
                   onClick={() => {
                     goTo(index);
-                    setPlaying(false);
+                    setWantPlaying(false);
                   }}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     index === sceneIndex

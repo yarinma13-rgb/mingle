@@ -90,10 +90,10 @@ export function DemoGuidedCursor({
   const [visible, setVisible] = useState(false);
   const [clicking, setClicking] = useState(false);
 
+  const inactive = !enabled || reducedMotion;
+
   useEffect(() => {
-    if (!enabled || reducedMotion || !beat || !rootRef.current) {
-      setVisible(false);
-      setRing(null);
+    if (inactive || !beat || !rootRef.current) {
       lastKeyRef.current = "";
       return;
     }
@@ -137,9 +137,9 @@ export function DemoGuidedCursor({
       cancelled = true;
       for (const timer of timers) window.clearTimeout(timer);
     };
-  }, [beat, enabled, reducedMotion, rootRef, key]);
+  }, [beat, inactive, rootRef, key]);
 
-  if (!enabled || reducedMotion) return null;
+  if (inactive || !visible) return null;
 
   const typing = beat?.action === "type";
 

@@ -34,14 +34,13 @@ export function DemoCamera({
     [sceneId, elapsedMs],
   );
   const key = beatKey(beat);
+  const inactive = !enabled || reducedMotion;
   const [scale, setScale] = useState(1);
   const [origin, setOrigin] = useState("50% 42%");
   const lastKeyRef = useRef("");
 
   useEffect(() => {
-    if (!enabled || reducedMotion) {
-      setScale(1);
-      setOrigin("50% 42%");
+    if (inactive) {
       lastKeyRef.current = "";
       return;
     }
@@ -88,15 +87,18 @@ export function DemoCamera({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [enabled, reducedMotion, rootRef, beat, key]);
+  }, [inactive, rootRef, beat, key]);
+
+  const displayScale = inactive ? 1 : scale;
+  const displayOrigin = inactive ? "50% 42%" : origin;
 
   return (
     <motion.div
       className="demo-camera relative flex min-h-0 flex-1 flex-col"
-      animate={{ scale: enabled && !reducedMotion ? scale : 1 }}
+      animate={{ scale: displayScale }}
       transition={reducedMotion ? { duration: 0 } : demoCameraTransition}
       style={{
-        transformOrigin: origin,
+        transformOrigin: displayOrigin,
         backfaceVisibility: "hidden",
       }}
     >
