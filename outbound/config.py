@@ -162,6 +162,10 @@ ICP_SIZE_BUCKETS = ("1-10", "11-50", "51-200", "1-50", "50-200", "under 200", "â
 ICP_MIN_SCORE = int(os.getenv("ICP_MIN_SCORE", "85"))
 OPENAI_MODEL = "gpt-4o-mini"
 DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() in {"1", "true", "yes"}
+# Outreach copy language: "he" (default) or "en"
+COPY_LANGUAGE = os.getenv("COPY_LANGUAGE", "he").strip().lower()
+if COPY_LANGUAGE not in {"he", "en"}:
+    COPY_LANGUAGE = "he"
 
 # ---------------------------------------------------------------------------
 # Paths / CRM columns
