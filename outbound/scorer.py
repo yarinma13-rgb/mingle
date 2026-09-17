@@ -256,19 +256,22 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
 
 def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
     use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
+    local = _heuristic_score(lead)
+
     if use_openai:
         try:
             result = _openai_score(lead)
         except Exception as exc:
-            # Quota / network / auth failures should not kill the whole pipeline.
             print(f"[scorer] OpenAI unavailable ({exc.__class__.__name__}); using local heuristic")
-            result = _heuristic_score(lead)
+            result = dict(local)
             result["reasoning"] = f"{result['reasoning']} | openai_fallback"
     else:
-        result = _heuristic_score(lead)
+        result = dict(local)
 
-    # Hard gate: never approve without a resolved ICP persona title.
     title = (lead.get("Contact Title") or lead.get("Persona Title") or "").strip().lower()
+    headcount = parse_employee_count(str(lead.get("Company Size") or ""))
+
+    # Deterministic hard gates always win over the LLM.
     if not title:
         result = {
             "is_match": False,
@@ -278,26 +281,39 @@ def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
                 "Founder/CEO without HR before approve"
             ).strip("; "),
         }
-    elif not (_is_hr_title(title) or _is_founder_title(title)):
-        result = {
-            "is_match": False,
-            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
-            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤200 or Founder without HR",
-        }
-    elif _is_founder_title(title) and _has_hr_or_recruiter(lead):
-        result = {
-            "is_match": False,
-            "score": min(int(result.get("score", 0)), 40),
-            "reasoning": "Founder/CEO blocked — HR function or recruiter already present",
-        }
-    else:
-        headcount = parse_employee_count(str(lead.get("Company Size") or ""))
-        if _is_hr_title(title) and headcount is not None and headcount > MAX_EMPLOYEES:
+    elif _is_hr_title(title):
+        if headcount is not None and headcount > MAX_EMPLOYEES:
             result = {
                 "is_match": False,
                 "score": min(int(result.get("score", 0)), 40),
                 "reasoning": f"HR persona but company size ~{headcount} exceeds ≤{MAX_EMPLOYEES}",
             }
+        else:
+            # Contact IS the HR person — that is path A, not a disqualifier.
+            result = {
+                "is_match": True,
+                "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
+                "reasoning": local.get("reasoning") or "HR/People persona at company ≤200",
+            }
+    elif _is_founder_title(title):
+        if _has_hr_or_recruiter(lead):
+            result = {
+                "is_match": False,
+                "score": min(int(result.get("score", 0)), 40),
+                "reasoning": "Founder/CEO blocked — HR function or recruiter already present",
+            }
+        else:
+            result = {
+                "is_match": True,
+                "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
+                "reasoning": local.get("reasoning") or "Founder/CEO with no HR/recruiter",
+            }
+    else:
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤200 or Founder without HR",
+        }
 
     result["score"] = int(result["score"])
     result["is_match"] = bool(result.get("is_match")) and result["score"] >= ICP_MIN_SCORE
