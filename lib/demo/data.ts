@@ -190,6 +190,7 @@ export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
     },
   ],
   technicalSignal: null,
+  salaryGapPercent: null,
 };
 
 export const DEMO_EMMA_SECTIONS: ProfileDetailSection[] = [
