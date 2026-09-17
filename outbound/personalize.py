@@ -2,14 +2,17 @@
 Phase 3 — Hyper-personalization engine ("mingle" angle).
 
 Produces TWO Hebrew assets per lead:
-1) Personalized Message — email / LinkedIn DM (full copy)
+1) Personalized Message — email / LinkedIn DM (full copy, founder-approved tone)
 2) LinkedIn Note — connection-request note, hard-capped at 300 chars
 
-Default language: Hebrew (COPY_LANGUAGE=he).
+By default Hebrew copy uses the locked templates (not free-form AI),
+because connection notes + ICP messaging must stay on-brief.
+Set USE_AI_COPY=true only if you explicitly want OpenAI variations.
 """
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Any
 
@@ -19,10 +22,9 @@ from config import (
     LINKEDIN_NOTE_MAX_CHARS,
     OPENAI_API_KEY,
     OPENAI_MODEL,
-    PRODUCT_NAME,
 )
 
-MAX_WORDS = 90
+USE_AI_COPY = os.getenv("USE_AI_COPY", "false").lower() in {"1", "true", "yes"}
 
 # Common Latin → Hebrew first names for Israeli outreach greetings
 HEBREW_FIRST_NAMES = {
@@ -33,7 +35,6 @@ HEBREW_FIRST_NAMES = {
     "lior": "ליאור",
     "yael": "יעל",
     "noa": "נועה",
-    "noah": "נוח",
     "gal": "גל",
     "tal": "טל",
     "ron": "רון",
@@ -61,8 +62,6 @@ HEBREW_FIRST_NAMES = {
     "eitan": "איתן",
     "asaf": "אסף",
     "assaf": "אסף",
-    "barak": "ברק",
-    "chen": "חן",
     "guy": "גיא",
     "ido": "עידו",
     "yuval": "יובל",
@@ -98,41 +97,6 @@ def hebrew_first_name(lead: dict[str, Any]) -> str:
     return HEBREW_FIRST_NAMES.get(raw.lower(), raw)
 
 
-def _word_count(text: str) -> int:
-    return len(re.findall(r"\b\w+\b", text, flags=re.UNICODE))
-
-
-def _copy_system(kind: str) -> str:
-    if COPY_LANGUAGE == "en":
-        limit = (
-            f"Hard limit: {LINKEDIN_NOTE_MAX_CHARS} characters including spaces."
-            if kind == "note"
-            else f"Under {MAX_WORDS} words."
-        )
-        return f"""You write short B2B outreach for {PRODUCT_NAME}.
-{limit}
-Active voice, soft CTA, mention the open role.
-Return ONLY the message body."""
-
-    if kind == "note":
-        return f"""אתה כותב הערת חיבור (LinkedIn connection note) בעברית עבור {PRODUCT_NAME}.
-כללים קשיחים:
-- לכל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים כולל רווחים וסימני פיסוק
-- פנייה בשם פרטי בעברית
-- להזכיר את התפקיד והחברה
-- CTA רך קצר
-החזר רק את הטקסט, בלי מרכאות."""
-
-    return f"""אתה כותב הודעת מייל/הודעת LinkedIn מלאה בעברית עבור {PRODUCT_NAME}.
-סגנון רצוי:
-- פנייה בשם פרטי בעברית
-- משפט על כך שהם מגייסים לתפקיד הספציפי
-- שאלה על כמה זמן לוקח להגיע מ־CVs ל־3–5 מועמדים ששווה לדבר איתם
-- mingle עושה את זה ב־60 שניות עם דירוג Role / Human / Motivation ו־Match Report
-- CTA: רוצה שאשלח Match Report של 60 שניות על המשרה?
-החזר רק את גוף ההודעה."""
-
-
 def _template_email(lead: dict[str, Any]) -> str:
     company = (lead.get("Company") or "").strip() or "החברה שלכם"
     role = (lead.get("Open Role Found") or "").strip() or "התפקיד הפתוח"
@@ -150,6 +114,7 @@ def _template_email(lead: dict[str, Any]) -> str:
         )
 
     greeting = f"היי {name}," if name else "היי,"
+    # Founder-approved Hebrew structure
     return (
         f"{greeting}\n\n"
         f"ראיתי שאתם מגייסים {role} ב־{company}.\n\n"
@@ -161,7 +126,7 @@ def _template_email(lead: dict[str, Any]) -> str:
 
 
 def _template_linkedin_note(lead: dict[str, Any]) -> str:
-    """Must stay ≤ LINKEDIN_NOTE_MAX_CHARS for LinkedIn connection requests."""
+    """Connection request note — must stay ≤ 300 chars."""
     company = (lead.get("Company") or "").strip() or "החברה"
     role = (lead.get("Open Role Found") or "").strip() or "התפקיד"
     name = hebrew_first_name(lead)
@@ -169,94 +134,76 @@ def _template_linkedin_note(lead: dict[str, Any]) -> str:
     if COPY_LANGUAGE == "en":
         greeting = f"Hi {name}," if name else "Hi,"
         candidates = [
-            f"{greeting} Saw you're hiring a {role} at {company}. mingle shortlists worth-talking-to candidates in 60s with a Match Report. Worth connecting?",
-            f"{greeting} Hiring {role} at {company}? mingle ranks a shortlist in 60s (Role/Human/Motivation). Open to connect?",
-            f"{greeting} Re: {role} at {company} — mingle builds a 60s Match Report shortlist. Connect?",
+            f"{greeting} Saw you're hiring a {role} at {company}. mingle shortlists 3–5 worth-talking-to candidates in 60s with a Match Report. Worth connecting?",
+            f"{greeting} Hiring {role} at {company}? mingle ranks a shortlist in 60s. Open to connect?",
+            f"{greeting} Re {role} @ {company} — 60s Match Report shortlist via mingle. Connect?",
         ]
     else:
         greeting = f"היי {name}," if name else "היי,"
         candidates = [
-            f"{greeting} ראיתי שאתם מגייסים {role} ב־{company}. mingle מדרגת 3–5 מועמדים רלוונטיים תוך 60 שניות עם Match Report. שווה להתחבר?",
+            f"{greeting} ראיתי שאתם מגייסים {role} ב־{company}. mingle מדרגת 3–5 מועמדים ששווה לדבר איתם תוך 60 שניות עם Match Report. שווה להתחבר?",
             f"{greeting} מגייסים {role} ב־{company}? mingle בונה שורטליסט ב־60 שניות עם Match Report. פתוח/ה להתחבר?",
-            f"{greeting} לגבי {role} ב־{company} — mingle מדרגת מועמדים ב־60 שניות. נתחבר?",
+            f"{greeting} לגבי גיוס {role} ב־{company} — mingle מדרגת מועמדים ב־60 שניות. נתחבר?",
         ]
 
     for text in candidates:
         if len(text) <= LINKEDIN_NOTE_MAX_CHARS:
             return text
-
-    # Last-resort hard trim (should rarely hit)
-    base = candidates[-1]
-    return base[: LINKEDIN_NOTE_MAX_CHARS - 1] + "…"
+    return candidates[-1][: LINKEDIN_NOTE_MAX_CHARS - 1] + "…"
 
 
-def _openai_copy(lead: dict[str, Any], kind: str) -> str:
+def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
+    """Optional slight variation — kept tightly constrained to the approved seed."""
     from openai import OpenAI
 
     client = OpenAI(api_key=OPENAI_API_KEY)
-    name_he = hebrew_first_name(lead)
-    if COPY_LANGUAGE == "en":
-        user = (
-            f"Kind: {kind}\n"
-            f"Company: {lead.get('Company')}\n"
-            f"Contact first name: {name_he}\n"
-            f"Open role: {lead.get('Open Role Found')}\n"
-            "Write the message."
-        )
-    else:
-        user = (
-            f"סוג: {'הערת חיבור LinkedIn עד 300 תווים' if kind == 'note' else 'הודעת מייל מלאה'}\n"
-            f"חברה: {lead.get('Company')}\n"
-            f"שם פרטי בעברית לפתיחה: {name_he}\n"
-            f"משרה פתוחה: {lead.get('Open Role Found')}\n"
-            "כתוב את ההודעה בסגנון שסופק בכללי המערכת."
-        )
+    limit = (
+        f"לכל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
+        if kind == "note"
+        else "שמור על אותו מבנה ורעיון."
+    )
     resp = client.chat.completions.create(
         model=OPENAI_MODEL,
-        temperature=0.6,
+        temperature=0.4,
         messages=[
-            {"role": "system", "content": _copy_system(kind)},
-            {"role": "user", "content": user},
+            {
+                "role": "system",
+                "content": (
+                    "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
+                    "אל תשנה את המסר, אל תוסיף באזזוורדים, אל תוסיף חתימה/[שמך], "
+                    f"ואל תהפוך את זה להודעת מחפש עבודה. {limit} "
+                    "החזר רק את הטקסט הסופי."
+                ),
+            },
+            {"role": "user", "content": seed},
         ],
     )
     text = (resp.choices[0].message.content or "").strip().strip('"').strip("'")
-    if kind == "note":
-        if not text or len(text) > LINKEDIN_NOTE_MAX_CHARS:
-            return _template_linkedin_note(lead)
-        return text
-    if not text or _word_count(text) > MAX_WORDS:
-        return _template_email(lead)
-    return text
+    if kind == "note" and (not text or len(text) > LINKEDIN_NOTE_MAX_CHARS):
+        return seed
+    return text or seed
 
 
 def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
-    use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
     out = dict(lead)
     out["Contact Name HE"] = hebrew_first_name(out)
 
-    if use_openai:
-        try:
-            email_msg = _openai_copy(out, "email")
-        except Exception as exc:
-            print(f"[personalize] OpenAI email fallback ({exc.__class__.__name__})")
-            email_msg = _template_email(out)
-        try:
-            note_msg = _openai_copy(out, "note")
-        except Exception as exc:
-            print(f"[personalize] OpenAI note fallback ({exc.__class__.__name__})")
-            note_msg = _template_linkedin_note(out)
-    else:
-        email_msg = _template_email(out)
-        note_msg = _template_linkedin_note(out)
+    email_msg = _template_email(out)
+    note_msg = _template_linkedin_note(out)
 
-    # Hard safety for LinkedIn connection note limit
+    if USE_AI_COPY and OPENAI_API_KEY and not DEMO_MODE:
+        try:
+            email_msg = _openai_variation(out, "email", email_msg)
+            note_msg = _openai_variation(out, "note", note_msg)
+        except Exception as exc:
+            print(f"[personalize] AI variation skipped ({exc.__class__.__name__}); using locked templates")
+
     if len(note_msg) > LINKEDIN_NOTE_MAX_CHARS:
         note_msg = _template_linkedin_note(out)
 
     out["Personalized Message"] = email_msg
     out["LinkedIn Note"] = note_msg
-    li = (out.get("LinkedIn URL") or "").strip()
-    out["Open Profile"] = li if li else ""
+    out["Open Profile"] = (out.get("LinkedIn URL") or "").strip()
     if out.get("Status") in {"scored", "enriched", "new", "ready", ""}:
         out["Status"] = "ready"
     return out
@@ -276,13 +223,13 @@ def main() -> None:
 
     ready = personalize_many(leads)
     upsert_leads(ready)
-    print(f"Personalized {len(ready)} leads (lang={COPY_LANGUAGE}).")
-    for row in ready[:3]:
+    print(f"Personalized {len(ready)} leads (lang={COPY_LANGUAGE}, ai_copy={USE_AI_COPY}).")
+    for row in ready[:2]:
         print("-" * 60)
-        print(f"{row['Company']} | {row['Open Role Found']} | name_he={row.get('Contact Name HE')}")
+        print(f"{row['Company']} | name_he={row.get('Contact Name HE')}")
         print("EMAIL:")
         print(row["Personalized Message"])
-        print(f"NOTE ({len(row['LinkedIn Note'])} chars):")
+        print(f"NOTE ({len(row['LinkedIn Note'])}/{LINKEDIN_NOTE_MAX_CHARS}):")
         print(row["LinkedIn Note"])
 
 
