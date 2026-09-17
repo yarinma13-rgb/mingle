@@ -32,9 +32,9 @@ import {
 } from "@/lib/matching/score-tone";
 
 const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
-  High: "text-mingle-success",
-  Medium: "text-mingle-cta",
-  Low: "text-mingle-text-secondary",
+  High: "text-mingle-accent-purple",
+  Medium: "text-mingle-accent-blue",
+  Low: "text-mingle-accent-pink",
 };
 
 const BULLET_ICON: Record<
@@ -86,8 +86,8 @@ function SignalChip({
   const Icon = BULLET_ICON[bullet.key];
   const shell =
     tone === "fit"
-      ? "border-mingle-success/25 bg-mingle-success/10"
-      : "border-mingle-error/20 bg-mingle-error/10";
+      ? "border-mingle-success/30 bg-mingle-success/10"
+      : "border-mingle-error/30 bg-mingle-error/10";
   const labelTone =
     tone === "fit" ? "text-mingle-success" : "text-mingle-error";
   return (
@@ -97,7 +97,7 @@ function SignalChip({
       <div className="flex items-center gap-1.5">
         <IconBadge
           icon={Icon}
-          accent={tone === "fit" ? "success" : "waiting"}
+          accent={tone === "fit" ? "success" : "pink"}
           size={20}
           iconSize={10}
         />
@@ -180,9 +180,9 @@ export function MatchReportBody({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
             Overall Match
           </p>
           <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
@@ -202,7 +202,9 @@ export function MatchReportBody({
 
       {report.technicalSignal ? (
         <p className="text-[11px] leading-snug text-mingle-text">
-          <span className="font-semibold">Verified technical signal:</span>{" "}
+          <span className="font-semibold text-mingle-accent-blue">
+            Verified technical signal:
+          </span>{" "}
           <span className="text-mingle-text-secondary">
             {report.technicalSignal}
           </span>

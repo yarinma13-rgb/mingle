@@ -46,6 +46,7 @@ import {
   shortReflectionSchema,
   type CompanyBasicInfoValues,
 } from "@/lib/validation/company-profile";
+import { uploadCompanyLogoAction } from "@/lib/company-profile/logo-action";
 import type { Database } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 5;
@@ -272,40 +273,23 @@ export function CompanyProfileWizard() {
     setLogoError(null);
     setUploadingLogo(true);
     try {
-      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-      const path = `${userId}/${Date.now()}-${safeName}`;
-      const { error: uploadError } = await supabase.storage
-        .from("logos")
-        .upload(path, file, {
-          upsert: true,
-          contentType: file.type || "image/png",
-          cacheControl: "3600",
-        });
-      if (uploadError) throw uploadError;
-      const { data: publicUrl } = supabase.storage
-        .from("logos")
-        .getPublicUrl(path);
-      const logoUrl = `${publicUrl.publicUrl}?v=${Date.now()}`;
-      await saveCompanyProfilePatch(supabase, userId, {
-        logo: publicUrl.publicUrl,
-      });
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadCompanyLogoAction(formData);
+      if (!result.ok) {
+        setLogoError(result.error);
+        return;
+      }
+      const logoUrl = `${result.logoUrl}?v=${Date.now()}`;
       const nextProfile = { ...profile, logo: logoUrl };
       await saveProfileCompletion(
         supabase,
         userId,
         companyProfileCompletion(nextProfile),
       );
-      setProfile({ ...nextProfile, logo: publicUrl.publicUrl });
-    } catch (error) {
-      const text =
-        error && typeof error === "object" && "message" in error
-          ? String((error as { message: string }).message)
-          : "";
-      setLogoError(
-        /bucket|not found|policy|permission|row-level/i.test(text)
-          ? "Logo upload isn't set up yet — you can skip this for now and add it later."
-          : "Couldn't upload that logo. Try a JPEG or PNG under 5 MB.",
-      );
+      setProfile({ ...nextProfile, logo: result.logoUrl });
+    } catch {
+      setLogoError("Couldn't upload that logo. Try a JPEG or PNG under 5 MB.");
     } finally {
       setUploadingLogo(false);
       e.target.value = "";

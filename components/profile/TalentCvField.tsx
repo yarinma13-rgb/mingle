@@ -6,11 +6,13 @@ import type { Database } from "@/lib/supabase/types";
 import {
   isTalentCvUnavailable,
   removeTalentCv,
-  signedTalentCvUrl,
   TALENT_CV_COPY,
   TALENT_CV_MAX_BYTES,
-  uploadTalentCv,
 } from "@/lib/profile/cv";
+import {
+  signedTalentCvUrlAction,
+  uploadTalentCvAction,
+} from "@/lib/profile/cv-action";
 
 type TalentCvFieldProps = {
   supabase: SupabaseClient<Database>;
@@ -43,12 +45,16 @@ export function TalentCvField({
     setBusy(true);
     setMessage(null);
     try {
-      const saved = await uploadTalentCv(supabase, userId, file);
-      onChanged({ cvPath: saved.path, cvFileName: saved.fileName });
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadTalentCvAction(formData);
+      if (!result.ok) {
+        setMessage(result.error);
+        return;
+      }
+      onChanged({ cvPath: result.path, cvFileName: result.fileName });
     } catch (error) {
-      if (error instanceof Error && error.message === TALENT_CV_COPY.invalidFile) {
-        setMessage(TALENT_CV_COPY.invalidFile);
-      } else if (isTalentCvUnavailable(error)) {
+      if (isTalentCvUnavailable(error)) {
         setMessage(TALENT_CV_COPY.notReady);
       } else {
         setMessage(TALENT_CV_COPY.uploadFailed);
@@ -81,8 +87,12 @@ export function TalentCvField({
     setBusy(true);
     setMessage(null);
     try {
-      const url = await signedTalentCvUrl(supabase, cvPath);
-      window.open(url, "_blank", "noopener,noreferrer");
+      const result = await signedTalentCvUrlAction(cvPath);
+      if (!result.ok) {
+        setMessage(result.error);
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
     } catch {
       setMessage(TALENT_CV_COPY.openFailed);
     } finally {

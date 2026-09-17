@@ -21,6 +21,7 @@ import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
 
@@ -116,6 +117,11 @@ export default async function ProfileViewPage({
     ]);
     if (!talentRow) notFound();
     const talent = toTalentProfile(talentRow);
+    const resolvedCv = await resolveTalentCvForViewer(
+      userId,
+      talent.cvPath,
+      talent.cvFileName,
+    );
 
     const sections: ProfileDetailSection[] = [
       {
@@ -198,8 +204,8 @@ export default async function ProfileViewPage({
           targetUserId={userId}
           initialConnectionStatus={connectionStatus}
           initiallySaved={initiallySaved}
-          cvPath={talent.cvPath}
-          cvFileName={talent.cvFileName}
+          cvPath={resolvedCv.cvPath}
+          cvFileName={resolvedCv.cvFileName}
           showCv
           recommendations={recommendations}
           canRequestRecommendation={isSelf}
