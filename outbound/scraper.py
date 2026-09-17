@@ -33,15 +33,35 @@ SESSION.headers.update(
     }
 )
 
+JUNK_DOMAINS = {
+    "remotive.com",
+    "remotive.io",
+    "arbeitnow.com",
+    "linkedin.com",
+    "indeed.com",
+    "glassdoor.com",
+}
+
 
 def _domain_from_url(url: str) -> str:
     if not url:
         return ""
     try:
         host = urlparse(url).netloc.lower()
-        return host[4:] if host.startswith("www.") else host
+        host = host[4:] if host.startswith("www.") else host
+        if host in JUNK_DOMAINS or any(host.endswith("." + j) for j in JUNK_DOMAINS):
+            return ""
+        return host
     except Exception:
         return ""
+
+
+def _best_company_domain(job: dict) -> str:
+    for key in ("company_website", "company_url", "website", "url"):
+        domain = _domain_from_url(job.get(key) or "")
+        if domain:
+            return domain
+    return ""
 
 
 def _role_is_trigger(title: str) -> bool:
@@ -82,13 +102,13 @@ def fetch_remotive(limit: int = 40) -> list[dict[str, str]]:
         company = (job.get("company_name") or "").strip()
         if not company:
             continue
-        site = job.get("company_website") or job.get("url") or ""
+        site = _best_company_domain(job)
         leads.append(
             empty_lead(
                 {
                     "Company": company,
                     "Open Role Found": title,
-                    "Domain": _domain_from_url(site),
+                    "Domain": site,
                     "Company Size": "",
                     "Source": "remotive",
                     "Status": "new",
@@ -120,14 +140,14 @@ def fetch_arbeitnow(limit: int = 40) -> list[dict[str, str]]:
         company = (job.get("company_name") or "").strip()
         if not company:
             continue
-        site = job.get("url") or ""
+        site = _best_company_domain(job)
         tags = " ".join(job.get("tags") or [])
         leads.append(
             empty_lead(
                 {
                     "Company": company,
                     "Open Role Found": title,
-                    "Domain": _domain_from_url(site),
+                    "Domain": site,
                     "Company Size": "",
                     "Source": "arbeitnow",
                     "Status": "new",
