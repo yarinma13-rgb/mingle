@@ -221,9 +221,12 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
     }
     user_prompt = (
         "Analyze the lead against mingle.careers ICP.\n"
-        f"Approve ONLY if: (HR/People/Talent AND size ≤{MAX_EMPLOYEES}) "
+        f"Approve ONLY if persona title is present AND: "
+        f"(HR/People/Talent AND size ≤{MAX_EMPLOYEES}) "
         "OR (Founder/CEO AND no HR function AND no recruiter), "
         "AND the company is currently hiring for a relevant role.\n"
+        "If Persona Title is missing/empty → is_match=false and score below 85.\n"
+        "Do NOT invent that the contact is a founder just because title is unknown.\n"
         f"Lead data:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
         "Return a strict JSON object:\n"
         "{\n"
@@ -263,6 +266,39 @@ def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
             result["reasoning"] = f"{result['reasoning']} | openai_fallback"
     else:
         result = _heuristic_score(lead)
+
+    # Hard gate: never approve without a resolved ICP persona title.
+    title = (lead.get("Contact Title") or lead.get("Persona Title") or "").strip().lower()
+    if not title:
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": (
+                f"{result.get('reasoning', '')}; blocked — resolve HR (≤200) or "
+                "Founder/CEO without HR before approve"
+            ).strip("; "),
+        }
+    elif not (_is_hr_title(title) or _is_founder_title(title)):
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤200 or Founder without HR",
+        }
+    elif _is_founder_title(title) and _has_hr_or_recruiter(lead):
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), 40),
+            "reasoning": "Founder/CEO blocked — HR function or recruiter already present",
+        }
+    else:
+        headcount = parse_employee_count(str(lead.get("Company Size") or ""))
+        if _is_hr_title(title) and headcount is not None and headcount > MAX_EMPLOYEES:
+            result = {
+                "is_match": False,
+                "score": min(int(result.get("score", 0)), 40),
+                "reasoning": f"HR persona but company size ~{headcount} exceeds ≤{MAX_EMPLOYEES}",
+            }
+
     result["score"] = int(result["score"])
     result["is_match"] = bool(result.get("is_match")) and result["score"] >= ICP_MIN_SCORE
     return result
