@@ -28,6 +28,7 @@ import {
   isDiscoverDomainExempt,
   talentDomainSignature,
 } from "@/lib/discovery/domain-affinity";
+import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -314,6 +315,20 @@ export async function loadDiscoveryPage(
       const resolved = card.photo ? photoUrls.get(card.photo) : null;
       if (resolved) card.photo = resolved;
     }
+    await Promise.all(
+      cards.map(async (card) => {
+        if (card.cvPath) return;
+        const recovered = await resolveTalentCvForViewer(
+          card.userId,
+          card.cvPath,
+          card.cvFileName,
+        );
+        if (recovered.cvPath) {
+          card.cvPath = recovered.cvPath;
+          card.cvFileName = recovered.cvFileName;
+        }
+      }),
+    );
     return {
       cards: rankAll
         ? cards

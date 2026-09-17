@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { signedTalentCvUrl, TALENT_CV_COPY } from "@/lib/profile/cv";
+import { TALENT_CV_COPY } from "@/lib/profile/cv";
+import { signedTalentCvUrlAction } from "@/lib/profile/cv-action";
 
 /**
  * Compact read-only CV opener for company-facing surfaces
@@ -29,9 +29,12 @@ export function OpenTalentCvButton({
     setBusy(true);
     setError(null);
     try {
-      const supabase = createClient();
-      const url = await signedTalentCvUrl(supabase, cvPath);
-      window.open(url, "_blank", "noopener,noreferrer");
+      const result = await signedTalentCvUrlAction(cvPath);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
     } catch {
       setError(TALENT_CV_COPY.openFailed);
     } finally {
