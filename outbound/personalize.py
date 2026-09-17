@@ -14,7 +14,12 @@ from __future__ import annotations
 
 import os
 import re
+from pathlib import Path
 from typing import Any
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent / ".env", override=True)
 
 from config import (
     COPY_LANGUAGE,
