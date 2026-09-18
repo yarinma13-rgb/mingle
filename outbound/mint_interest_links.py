@@ -57,29 +57,20 @@ def sign_interest_payload(
 
 
 def follow_up_message(lead: dict) -> str:
-    """
-    Do not use "I saw you clicked" copy — feels creepy.
-    Reuse the same founder-approved outreach message (without forcing a new angle).
-    """
-    existing = (lead.get("Personalized Message") or "").strip()
-    if existing:
-        # Strip trailing interest URL if present so follow-up stays clean prose
-        link = (lead.get("Interest Link") or "").strip()
-        if link and existing.endswith(link):
-            return existing[: -len(link)].rstrip()
-        return existing
-
-    # Fallback: same locked template as personalize.py
+    """Always the founder-approved template — never 'saw you clicked', never tracking URLs."""
     from personalize import _template_email
 
     return _template_email(lead)
 
+
 def with_link_in_email(message: str, link: str) -> str:
     if not link:
         return message
-    if link in message:
-        return message
-    return f"{message.rstrip()} {link}"
+    # Ensure at most one interest link at the end
+    import re
+
+    cleaned = re.sub(r"\s*https?://\S*/r/\S+", "", message).rstrip()
+    return f"{cleaned} {link}"
 
 
 def mint_ready_leads() -> list[dict]:
@@ -94,6 +85,9 @@ def mint_ready_leads() -> list[dict]:
     updated: list[dict] = []
     minted = 0
 
+    from personalize import _template_email
+    from urllib.parse import quote
+
     for row in rows:
         out = dict(row)
         if out.get("Status", "").lower() not in {"ready", "interested", "sent_1", "clicked"}:
@@ -107,15 +101,12 @@ def mint_ready_leads() -> list[dict]:
             open_role=out.get("Open Role Found") or "",
             secret=secret,
         )
-        # encodeURIComponent-equivalent for path segment safety
-        from urllib.parse import quote
-
         link = f"{app_url}/r/{quote(token, safe='')}"
         out["Interest Link"] = link
-        msg = out.get("Personalized Message") or ""
-        out["Personalized Message"] = with_link_in_email(msg, link)
-        # Keep LinkedIn Note under 300 — do not append long URL there.
-        out["Follow-up Message"] = follow_up_message(out)
+        # Fresh founder copy every mint; link only on Personalized Message
+        base = _template_email(out)
+        out["Follow-up Message"] = base
+        out["Personalized Message"] = with_link_in_email(base, link)
         minted += 1
         updated.append(out)
 
