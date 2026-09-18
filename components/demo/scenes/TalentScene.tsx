@@ -67,11 +67,11 @@ export function TalentScene() {
             <div className="mt-1 flex gap-2">
               <div
                 data-demo-target={index === 0 ? "talent-interested" : undefined}
-                className="flex-1 rounded-full bg-mingle-cta py-2.5 text-center text-xs font-semibold text-white"
+                className="mingle-btn-primary flex-1 !min-h-10 text-center text-xs"
               >
                 Interested
               </div>
-              <div className="flex-1 rounded-full border border-mingle-border bg-mingle-white py-2.5 text-center text-xs font-semibold text-mingle-text">
+              <div className="mingle-btn-secondary flex-1 !min-h-10 text-center text-xs">
                 Pass
               </div>
             </div>

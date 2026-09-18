@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 /**
  * Circular match gauge — pink → purple → blue brand gradient ring.
  * Percentage draws attention; pair with WhyItWorks for trust.
@@ -15,12 +19,13 @@ export function MatchScoreRing({
   /** Small label under the percentage when showLabel is true. */
   caption?: string | null;
 }) {
+  const uid = useId().replace(/:/g, "");
   const value = Math.max(0, Math.min(100, Math.round(score)));
   const stroke = size >= 88 ? 8 : size >= 64 ? 7 : 5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
-  const gradId = `match-ring-${size}-${value}`;
+  const gradId = `match-ring-${uid}`;
   const track = showLabel
     ? "rgba(28,27,46,0.08)"
     : "rgba(255,255,255,0.28)";
@@ -28,7 +33,13 @@ export function MatchScoreRing({
     ? "bg-mingle-white shadow-mingle"
     : "bg-black/20 shadow-sm backdrop-blur-sm";
   const pctSize =
-    size >= 96 ? "text-2xl" : size >= 80 ? "text-xl" : size >= 64 ? "text-sm" : "text-[11px]";
+    size >= 96
+      ? "text-2xl"
+      : size >= 80
+        ? "text-xl"
+        : size >= 64
+          ? "text-sm"
+          : "text-[11px]";
 
   return (
     <div
@@ -36,7 +47,12 @@ export function MatchScoreRing({
       style={{ width: size, height: size }}
       aria-label={`Match score ${value}%`}
     >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden
+      >
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#EA1E63" />
