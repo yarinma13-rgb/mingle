@@ -456,7 +456,7 @@ export function AuthForm({
           type="button"
           disabled={isSubmitting || (mode === "signup" && !path)}
           onClick={() => void continueWithGoogle()}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+          className="mingle-btn-secondary inline-flex w-full items-center justify-center gap-2 text-sm disabled:opacity-60"
         >
           <GoogleMark />
           {t.auth.continueGoogle}
