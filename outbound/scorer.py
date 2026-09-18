@@ -272,29 +272,40 @@ def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
     headcount = parse_employee_count(str(lead.get("Company Size") or ""))
 
     # Deterministic hard gates always win over the LLM.
+    # Size gate first: ICP is companies ≤ MAX_EMPLOYEES only.
+    if headcount is not None and headcount > MAX_EMPLOYEES:
+        return {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), 35),
+            "reasoning": f"company size ~{headcount} exceeds ≤{MAX_EMPLOYEES} ICP ceiling",
+        }
+
+    if headcount is None:
+        # Do not approve without a confirmed ≤200 size signal.
+        return {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": (
+                f"{result.get('reasoning', '')}; blocked — confirm company size ≤{MAX_EMPLOYEES}"
+            ).strip("; "),
+        }
+
     if not title:
         result = {
             "is_match": False,
             "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
             "reasoning": (
-                f"{result.get('reasoning', '')}; blocked — resolve HR (≤200) or "
+                f"{result.get('reasoning', '')}; blocked — resolve HR (≤{MAX_EMPLOYEES}) or "
                 "Founder/CEO without HR before approve"
             ).strip("; "),
         }
     elif _is_hr_title(title):
-        if headcount is not None and headcount > MAX_EMPLOYEES:
-            result = {
-                "is_match": False,
-                "score": min(int(result.get("score", 0)), 40),
-                "reasoning": f"HR persona but company size ~{headcount} exceeds ≤{MAX_EMPLOYEES}",
-            }
-        else:
-            # Contact IS the HR person — that is path A, not a disqualifier.
-            result = {
-                "is_match": True,
-                "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
-                "reasoning": local.get("reasoning") or "HR/People persona at company ≤200",
-            }
+        # Contact IS the HR person — that is path A, not a disqualifier.
+        result = {
+            "is_match": True,
+            "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
+            "reasoning": local.get("reasoning") or f"HR/People persona at company ≤{MAX_EMPLOYEES}",
+        }
     elif _is_founder_title(title):
         if _has_hr_or_recruiter(lead):
             result = {
@@ -306,13 +317,14 @@ def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
             result = {
                 "is_match": True,
                 "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
-                "reasoning": local.get("reasoning") or "Founder/CEO with no HR/recruiter",
+                "reasoning": local.get("reasoning")
+                or f"Founder/CEO with no HR/recruiter, size ≤{MAX_EMPLOYEES}",
             }
     else:
         result = {
             "is_match": False,
             "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
-            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤200 or Founder without HR",
+            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤{MAX_EMPLOYEES} or Founder without HR",
         }
 
     result["score"] = int(result["score"])

@@ -141,18 +141,25 @@ def run(args: argparse.Namespace) -> None:
         if r.get("Status", "").lower() in {"new", "enriched", "needs_contact", "scored", "ready"}
     ]
     approved, dropped = score_and_gate(candidates, min_score=args.min_score)
-    # Keep unresolved contacts visible instead of burying them only as dropped
     needs = []
     still_dropped = []
     for row in dropped:
-        if not (row.get("Contact Title") or "").strip():
-            row = dict(row)
+        row = dict(row)
+        has_title = bool((row.get("Contact Title") or "").strip())
+        from scorer import parse_employee_count
+
+        size = parse_employee_count(str(row.get("Company Size") or ""))
+        if size is not None and size > config.MAX_EMPLOYEES:
+            row["Status"] = "dropped"
+            still_dropped.append(row)
+        elif not has_title or size is None:
             row["Status"] = "needs_contact"
             needs.append(row)
         else:
             still_dropped.append(row)
     upsert_leads(approved + still_dropped + needs)
     print(f"  approved={len(approved)} dropped={len(still_dropped)} needs_contact={len(needs)}")
+    print(f"  size rule: only companies with confirmed ≤{config.MAX_EMPLOYEES} employees can become ready")
 
     # --- Phase 3: personalize ---
     print("\n[5/6] Personalizing approved leads…")
