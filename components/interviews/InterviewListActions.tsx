@@ -35,7 +35,7 @@ export function InterviewListActions({
     <div className="mt-3 flex flex-wrap items-center gap-2">
       <Link
         href={`/conversations/${interview.connectionId}`}
-        className="rounded-full bg-mingle-bg px-3 py-1.5 text-xs font-semibold text-mingle-text"
+        className="mingle-btn-primary px-3 py-1.5 text-xs"
       >
         Open chat
       </Link>
@@ -43,7 +43,7 @@ export function InterviewListActions({
         type="button"
         disabled={busy}
         onClick={() => setOpen(true)}
-        className="rounded-full bg-mingle-surface px-3 py-1.5 text-xs font-semibold text-mingle-text disabled:opacity-60"
+        className="mingle-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
       >
         Reschedule
       </button>
@@ -66,21 +66,21 @@ export function InterviewListActions({
             router.refresh();
           })();
         }}
-        className="rounded-full bg-mingle-surface px-3 py-1.5 text-xs font-semibold text-mingle-text-secondary hover:text-mingle-pink disabled:opacity-60"
+        className="rounded-[var(--mingle-radius)] border border-transparent px-3 py-1.5 text-xs font-semibold text-mingle-text-secondary transition-colors hover:border-mingle-border hover:text-mingle-pink disabled:opacity-60"
       >
         Cancel
       </button>
       {open ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]"
           onClick={() => setOpen(false)}
         >
           <div
             role="dialog"
-            className="w-full max-w-sm rounded-2xl border border-mingle-border bg-mingle-white p-6"
+            className="mingle-card w-full max-w-sm p-6"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 className="font-display text-lg font-bold text-mingle-text">
+            <h2 className="font-display text-lg font-bold tracking-tight text-mingle-text">
               Reschedule interview
             </h2>
             <label className="mt-4 block text-sm font-medium text-mingle-text">
@@ -89,7 +89,7 @@ export function InterviewListActions({
                 type="datetime-local"
                 value={when}
                 onChange={(event) => setWhen(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               />
             </label>
             <label className="mt-4 block text-sm font-medium text-mingle-text">
@@ -97,7 +97,7 @@ export function InterviewListActions({
               <select
                 value={duration}
                 onChange={(event) => setDuration(Number(event.target.value))}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               >
                 <option value={15}>15 minutes</option>
                 <option value={30}>30 minutes</option>
@@ -109,7 +109,7 @@ export function InterviewListActions({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full bg-mingle-bg px-4 py-2 text-sm font-semibold text-mingle-text-secondary"
+                className="mingle-btn-secondary px-4 py-2 text-sm"
               >
                 Close
               </button>
@@ -135,7 +135,7 @@ export function InterviewListActions({
                     router.refresh();
                   })();
                 }}
-                className="rounded-full bg-mingle-cta px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                className="mingle-btn-primary px-4 py-2 text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : "Save"}
               </button>
