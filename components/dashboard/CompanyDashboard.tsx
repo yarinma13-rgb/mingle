@@ -75,7 +75,7 @@ export function CompanyDashboard({
     <div className="flex flex-col gap-8">
       <PilotTips />
 
-      <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
+      <div className="mingle-banner rounded-[var(--mingle-radius-card)] border border-mingle-border p-7">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Suggested next step
         </h2>
@@ -147,7 +147,7 @@ export function CompanyDashboard({
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
+        <div className="mingle-card mingle-card-interactive p-7">
             <div className="flex items-center gap-3">
               <IconBadge icon={PeopleIcon} accent="blue" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -173,7 +173,7 @@ export function CompanyDashboard({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7 transition-shadow hover:shadow-mingle">
+          <div className="mingle-card mingle-card-interactive p-7">
             <div className="flex items-center gap-3">
               <IconBadge icon={CalendarIcon} accent="waiting" size={32} iconSize={15} />
               <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
@@ -187,7 +187,7 @@ export function CompanyDashboard({
           </div>
       </div>
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-7">
+      <div className="mingle-card p-7">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
             Candidates
@@ -266,7 +266,7 @@ export function CompanyDashboard({
                 <Link
                   key={candidate.userId}
                   href={`/profile/view/${candidate.userId}`}
-                  className="flex flex-col gap-2 rounded-2xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:-translate-y-0.5 hover:border-mingle-blue/35 hover:bg-mingle-white hover:shadow-mingle"
+                  className="mingle-card-interactive flex flex-col gap-2 rounded-[var(--mingle-radius-card)] border border-mingle-border bg-mingle-bg p-5 hover:border-mingle-accent-purple/30 hover:bg-mingle-white hover:shadow-mingle"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">

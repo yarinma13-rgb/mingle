@@ -164,12 +164,12 @@ export function ConversationScreen({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-mingle">
-      <div className="flex items-center gap-3 border-b border-mingle-border p-4">
+    <div className="mingle-card flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="flex items-center gap-3 border-b border-mingle-border/80 bg-mingle-surface/80 px-4 py-3.5 backdrop-blur-sm">
         <Link
           href="/conversations"
           aria-label="Back to conversations"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-mingle-text-secondary transition-colors hover:text-mingle-text"
+          className="mingle-icon-btn h-8 w-8 rounded-full"
         >
           <BackArrowIcon />
         </Link>
@@ -181,7 +181,7 @@ export function ConversationScreen({
             size="md"
           />
           <div className="min-w-0">
-            <p className="truncate font-display text-sm font-semibold text-mingle-text">
+            <p className="truncate font-display text-sm font-semibold tracking-tight text-mingle-text">
               {otherName}
             </p>
             <p className="truncate text-xs text-mingle-text-secondary">{otherSubtitle}</p>
@@ -234,22 +234,22 @@ export function ConversationScreen({
                 return (
                 <div key={message.id}>
                   {showDayLabel && (
-                    <p className="my-3 text-center text-[11px] font-medium uppercase tracking-wide text-mingle-text-secondary">
-                      {dayLabel}
+                    <p className="my-3 text-center text-[11px] font-medium tracking-wide text-mingle-text-muted">
+                      <span className="rounded-full bg-mingle-bg px-2.5 py-1">
+                        {dayLabel}
+                      </span>
                     </p>
                   )}
                   <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                     <div
                       className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                        isOwn
-                          ? "bg-mingle-cta text-white"
-                          : "bg-mingle-bg text-mingle-text"
+                        isOwn ? "mingle-bubble-own" : "mingle-bubble-other"
                       }`}
                     >
                       <p dir="auto" className="whitespace-pre-wrap">{message.body}</p>
                       <p
                         className={`mt-1 text-[10px] ${
-                          isOwn ? "text-white/60" : "text-mingle-text-secondary"
+                          isOwn ? "text-white/65" : "text-mingle-text-secondary"
                         }`}
                       >
                         {formatTime(message.created_at)}
@@ -265,7 +265,7 @@ export function ConversationScreen({
         )}
       </div>
 
-      <div className="border-t border-mingle-border p-3">
+      <div className="border-t border-mingle-border/80 bg-mingle-surface/90 p-3 backdrop-blur-sm">
         {sendError && (
           <p className="mb-2 text-center text-xs text-mingle-pink">{sendError}</p>
         )}
@@ -283,16 +283,16 @@ export function ConversationScreen({
             placeholder="Write a message"
             maxLength={4000}
             dir="auto"
-            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
+            className="mingle-input flex-1 rounded-full px-4 py-2.5 text-sm"
           />
           <button
             type="button"
             onClick={handleSend}
             disabled={!draft.trim() || sending}
             aria-label="Send"
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
               draft.trim() && !sending
-                ? "bg-mingle-cta text-white"
+                ? "mingle-connection-fill text-white shadow-[0_6px_16px_rgba(123,47,247,0.22)]"
                 : "cursor-not-allowed bg-mingle-bg text-mingle-text-secondary"
             }`}
           >
