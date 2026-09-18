@@ -195,9 +195,9 @@ export function DashboardShell({
                   className="group flex w-full flex-col items-center gap-1.5 py-2"
                 >
                   <span
-                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-[10px] transition-colors ${
                       active
-                        ? "bg-mingle-nav-active-bg"
+                        ? "bg-mingle-nav-active-bg ring-1 ring-mingle-accent-purple/20"
                         : "bg-transparent group-hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
@@ -206,10 +206,17 @@ export function DashboardShell({
                       size={18}
                       className={
                         active
-                          ? "relative text-mingle-nav-active"
+                          ? "relative text-mingle-accent-purple"
                           : "relative text-mingle-nav-idle group-hover:text-mingle-nav-active"
                       }
                     />
+                    {active ? (
+                      <span
+                        aria-hidden
+                        className="absolute -bottom-0.5 h-0.5 w-4 rounded-full bg-[image:var(--mingle-connection-gradient)]"
+                        style={{ background: "var(--mingle-connection-gradient)" }}
+                      />
+                    ) : null}
                   </span>
                   <span
                     className={`max-w-[5.25rem] px-0.5 text-center text-[10px] font-medium leading-snug ${

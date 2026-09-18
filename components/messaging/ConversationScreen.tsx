@@ -164,12 +164,12 @@ export function ConversationScreen({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-mingle-border bg-mingle-surface shadow-mingle">
-      <div className="flex items-center gap-3 border-b border-mingle-border p-4">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[20px] border border-mingle-border bg-mingle-surface shadow-mingle">
+      <div className="flex items-center gap-3 border-b border-mingle-border px-4 py-3.5">
         <Link
           href="/conversations"
           aria-label="Back to conversations"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-mingle-text-secondary transition-colors hover:text-mingle-text"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-mingle-text-secondary transition-colors hover:bg-mingle-nav-hover-bg hover:text-mingle-text"
         >
           <BackArrowIcon />
         </Link>
@@ -181,15 +181,15 @@ export function ConversationScreen({
             size="md"
           />
           <div className="min-w-0">
-            <p className="truncate font-display text-sm font-semibold text-mingle-text">
+            <p className="truncate font-display text-[15px] font-bold text-mingle-text">
               {otherName}
             </p>
-            <p className="truncate text-xs text-mingle-text-secondary">{otherSubtitle}</p>
+            <p className="truncate text-[13px] text-mingle-text-secondary">{otherSubtitle}</p>
           </div>
         </Link>
         <div className="ml-auto flex min-w-0 shrink-0 items-center gap-3">
           {whyConnected ? (
-            <p className="hidden max-w-[10rem] truncate text-xs text-mingle-text-secondary xl:block">
+            <p className="hidden max-w-[14rem] truncate rounded-[10px] bg-[color:var(--mingle-light-purple)] px-2.5 py-1 text-[11px] font-semibold text-mingle-text xl:block">
               {whyConnected}
             </p>
           ) : null}
@@ -240,10 +240,10 @@ export function ConversationScreen({
                   )}
                   <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                      className={`max-w-[75%] rounded-[16px] px-4 py-2.5 text-sm ${
                         isOwn
-                          ? "bg-mingle-cta text-white"
-                          : "bg-mingle-bg text-mingle-text"
+                          ? "mingle-connection-fill text-white"
+                          : "bg-[color:var(--mingle-light-blue)]/60 text-mingle-text"
                       }`}
                     >
                       <p dir="auto" className="whitespace-pre-wrap">{message.body}</p>
@@ -283,16 +283,16 @@ export function ConversationScreen({
             placeholder="Write a message"
             maxLength={4000}
             dir="auto"
-            className="flex-1 rounded-full border border-mingle-border bg-mingle-bg px-4 py-2.5 text-sm text-mingle-text placeholder:text-mingle-text-secondary focus:border-mingle-blue focus:outline-none"
+            className="mingle-input flex-1 !min-h-[44px] !rounded-[12px]"
           />
           <button
             type="button"
             onClick={handleSend}
             disabled={!draft.trim() || sending}
             aria-label="Send"
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] transition-colors ${
               draft.trim() && !sending
-                ? "bg-mingle-cta text-white"
+                ? "mingle-connection-fill text-white"
                 : "cursor-not-allowed bg-mingle-bg text-mingle-text-secondary"
             }`}
           >

@@ -4,23 +4,28 @@ export function MingleChip({
   className = "",
 }: {
   children: React.ReactNode;
-  tone?: "purple" | "pink" | "green" | "amber" | "slate";
+  tone?: "purple" | "pink" | "blue" | "green" | "amber" | "slate" | "matched" | "gap";
   className?: string;
 }) {
+  const toneClass =
+    tone === "pink"
+      ? "mingle-chip-pink"
+      : tone === "blue"
+        ? "mingle-chip-blue"
+        : tone === "matched"
+          ? "mingle-chip-matched"
+          : tone === "gap"
+            ? "mingle-chip-gap"
+            : tone === "green"
+              ? "mingle-chip-matched"
+              : tone === "amber"
+                ? "mingle-chip-gap"
+                : tone === "slate"
+                  ? "mingle-chip-gap"
+                  : "";
+
   return (
-    <span
-      className={`mingle-chip ${
-        tone === "pink"
-          ? "mingle-chip-pink"
-          : tone === "green"
-            ? "border-mingle-success/30 bg-mingle-success/15 text-mingle-success"
-            : tone === "amber"
-              ? "border-mingle-warning/40 bg-mingle-warning/20 text-mingle-text"
-              : tone === "slate"
-                ? "border-mingle-border bg-mingle-lavender text-mingle-text-secondary"
-                : ""
-      } ${className}`}
-    >
+    <span className={`mingle-chip ${toneClass} ${className}`.trim()}>
       {children}
     </span>
   );

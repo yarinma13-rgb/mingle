@@ -52,19 +52,19 @@ export function EmptyState({
   variant?: EmptyVariant;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-mingle-border/70 bg-mingle-lavender/80 px-8 py-12 text-center transition-shadow duration-200">
+    <div className="flex flex-col items-center rounded-[20px] border border-mingle-border bg-mingle-surface px-8 py-14 text-center shadow-mingle">
       <div
         aria-hidden
-        className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-mingle-accent-purple/12 text-mingle-accent-purple"
+        className="mb-5 flex h-14 w-14 items-center justify-center rounded-[16px] bg-[color:var(--mingle-light-purple)] text-mingle-accent-purple"
       >
         <EmptyGlyph variant={variant} />
       </div>
-      <h3 className="font-display text-base font-semibold text-mingle-text">
+      <h3 className="font-display text-xl font-bold text-mingle-text">
         {title}
       </h3>
-      <p className="mt-2 max-w-sm text-sm text-mingle-text-secondary">{body}</p>
+      <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-mingle-text-secondary">{body}</p>
       {actionHref && actionLabel ? (
-        <Link href={actionHref} className="mingle-btn-primary mt-5 text-xs">
+        <Link href={actionHref} className="mingle-btn-primary mt-6 text-sm">
           {actionLabel}
         </Link>
       ) : null}
