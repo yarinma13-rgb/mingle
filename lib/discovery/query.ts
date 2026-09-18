@@ -22,6 +22,13 @@ import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { talentDisplayHeadline, talentDisplayMeta } from "@/lib/profile-detail/display";
 import { talentSearchStatusLabel } from "@/lib/profile/search-status";
+import {
+  companyHiringSignature,
+  domainsCompatible,
+  isDiscoverDomainExempt,
+  talentDomainSignature,
+} from "@/lib/discovery/domain-affinity";
+import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -179,6 +186,49 @@ export async function loadDiscoveryPage(
       }
     }
 
+    // Domain affinity: companies only see talent in domains they hire for
+    // (or closely related). Exempt internal test company accounts.
+    if (
+      ownInput &&
+      !isDiscoverDomainExempt({
+        userId: viewer.id,
+        companyName: ownInput.profile.companyName,
+      })
+    ) {
+      const { data: openRoles } = await supabase
+        .from("roles")
+        .select("title, department")
+        .eq("company_id", viewer.id)
+        .eq("status", "open");
+      const hiringSig = companyHiringSignature({
+        industry: ownInput.profile.industry,
+        lookingFor: ownInput.profile.lookingFor,
+        roleTitles: [
+          ...(openRoles ?? []).map((role) => role.title),
+          scope.roleTitle,
+          ownInput.roleTitle,
+        ],
+        roleDepartments: [
+          ...(openRoles ?? []).map((role) => role.department),
+          scope.roleDepartment,
+          ownInput.roleDepartment,
+        ],
+      });
+      if (hiringSig.size > 0 && !hiringSig.has(-1)) {
+        activeRows = activeRows.filter((row) => {
+          const profile = toTalentProfile(row);
+          const talentSig = talentDomainSignature({
+            industry: profile.industry,
+            currentRole: profile.currentRole,
+            targetRole: profile.targetRole,
+            headline: profile.headline,
+            skills: profile.skills,
+          });
+          return domainsCompatible(hiringSig, talentSig);
+        });
+      }
+    }
+
     const cards: DiscoveryCard[] = activeRows.map((row) => {
       const profile = toTalentProfile(row);
       const pref = prefsByUser.get(row.user_id);
@@ -246,6 +296,7 @@ export async function loadDiscoveryPage(
         skills: profile.skills,
         cvPath: profile.cvPath,
         cvFileName: profile.cvFileName,
+        kind: "person" as const,
       };
     });
     cards.sort((a, b) => {
@@ -264,6 +315,20 @@ export async function loadDiscoveryPage(
       const resolved = card.photo ? photoUrls.get(card.photo) : null;
       if (resolved) card.photo = resolved;
     }
+    await Promise.all(
+      cards.map(async (card) => {
+        if (card.cvPath) return;
+        const recovered = await resolveTalentCvForViewer(
+          card.userId,
+          card.cvPath,
+          card.cvFileName,
+        );
+        if (recovered.cvPath) {
+          card.cvPath = recovered.cvPath;
+          card.cvFileName = recovered.cvFileName;
+        }
+      }),
+    );
     return {
       cards: rankAll
         ? cards
@@ -405,6 +470,30 @@ export async function loadDiscoveryPage(
     }
   }
 
+  // Domain affinity: talent only sees companies/roles in their search domain.
+  if (ownInput) {
+    const talentSig = talentDomainSignature({
+      industry: ownInput.profile.industry,
+      currentRole: ownInput.profile.currentRole,
+      targetRole: ownInput.profile.targetRole,
+      headline: ownInput.profile.headline,
+      skills: ownInput.profile.skills,
+    });
+    if (talentSig.size > 0 && !talentSig.has(-1)) {
+      companyRowsForCards = companyRowsForCards.filter((row) => {
+        const profile = toCompanyProfile(row);
+        const openRole = roleByCompany.get(row.user_id);
+        const companySig = companyHiringSignature({
+          industry: profile.industry,
+          lookingFor: profile.lookingFor,
+          roleTitles: [openRole?.title],
+          roleDepartments: [openRole?.department],
+        });
+        return domainsCompatible(talentSig, companySig);
+      });
+    }
+  }
+
   const cards: DiscoveryCard[] = companyRowsForCards.map((row) => {
     const profile = toCompanyProfile(row);
     const pref = prefsByUser.get(row.user_id);
@@ -474,28 +563,18 @@ export async function loadDiscoveryPage(
     return b.score - a.score;
   });
 
-  // Attach salary / role title from the open role already used for skills scoring.
+  // Attach role title / about from the open role. Salary amounts stay private —
+  // they only affect match % via applySalaryNudge, never Discover UI.
   for (const card of cards) {
     const role = roleByCompany.get(card.userId);
     if (!role) continue;
     card.roleTitle = role.title;
     card.subtitle = role.title;
+    card.salaryLabel = null;
     if (role.work_model) {
       const base = card.locationLabel?.split(",")[0]?.trim() || card.locationLabel;
       card.locationLabel = [base, role.work_model].filter(Boolean).join(", ");
       card.meta = card.locationLabel ?? card.meta;
-    }
-    if (role.salary_min != null || role.salary_max != null) {
-      const min =
-        role.salary_min != null
-          ? role.salary_min.toLocaleString("en-US")
-          : null;
-      const max =
-        role.salary_max != null
-          ? role.salary_max.toLocaleString("en-US")
-          : null;
-      card.salaryLabel =
-        min && max ? `${min} - ${max}` : min ? `${min}+` : `up to ${max}`;
     }
     const roleAbout = (role.job_presentation || role.description || "").trim();
     if (roleAbout) card.about = roleAbout.slice(0, 160);

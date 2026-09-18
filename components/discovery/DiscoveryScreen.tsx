@@ -35,7 +35,10 @@ import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
 import { scoreChipClass } from "@/lib/matching/score-tone";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
-import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
+import {
+  CandidateProfileCvActions,
+  OpenTalentCvButton,
+} from "@/components/profile/OpenTalentCvButton";
 import { Avatar } from "@/components/Avatar";
 
 export type DiscoveryCard = {
@@ -134,10 +137,15 @@ function DiscoveryCardView({
       if (shouldAdvance) advanceAfterInterest();
       return;
     }
+    // Optimistic: advance immediately so the deck never feels stuck.
+    setFeedback("interested");
+    if (shouldAdvance) advanceAfterInterest();
     setSaving(true);
     try {
-      await saveProfile(supabase, viewerId, card.userId);
-      await recordMatchFeedback(supabase, viewerId, card.userId, "interested");
+      await Promise.all([
+        saveProfile(supabase, viewerId, card.userId),
+        recordMatchFeedback(supabase, viewerId, card.userId, "interested"),
+      ]);
       track(AnalyticsEvent.matchInterested, {
         target_user_id: card.userId,
         source: "discover",
@@ -146,10 +154,8 @@ function DiscoveryCardView({
         target_user_id: card.userId,
         saved: true,
       });
-      setFeedback("interested");
       toast("Marked interested.");
       void notifyPushMatch(card.userId);
-      if (shouldAdvance) advanceAfterInterest();
     } catch {
       toast("Couldn't save that. Try again in a moment.", "error");
     } finally {
@@ -275,10 +281,10 @@ function DiscoveryCardView({
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2.5 px-5 pb-5 pt-16 text-white">
             <div>
               <p className="font-display text-[1.65rem] font-bold leading-tight tracking-tight">
-                {card.roleTitle || card.subtitle}
+                {card.name}
               </p>
               <p className="mt-0.5 text-base font-medium text-white/90">
-                {card.name}
+                {card.roleTitle || card.subtitle}
               </p>
             </div>
 
@@ -289,14 +295,6 @@ function DiscoveryCardView({
                     📍
                   </span>
                   {card.locationLabel}
-                </p>
-              ) : null}
-              {card.salaryLabel ? (
-                <p className="flex items-center gap-1.5">
-                  <span aria-hidden className="opacity-80">
-                    ₪
-                  </span>
-                  {card.salaryLabel}
                 </p>
               ) : null}
             </div>
@@ -344,7 +342,7 @@ function DiscoveryCardView({
               }
             />
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-5 pb-5 pt-24 text-white">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-5 pb-5 pt-24 text-white">
             <div className="flex items-end justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-display text-2xl font-semibold tracking-tight">
@@ -364,14 +362,28 @@ function DiscoveryCardView({
                 </span>
               </div>
             </div>
+            <div className="mt-3">
+              <CandidateProfileCvActions
+                userId={card.userId}
+                cvPath={card.cvPath}
+                cvFileName={card.cvFileName}
+                variant="onDark"
+                onViewProfile={() =>
+                  track(AnalyticsEvent.matchViewed, {
+                    target_user_id: card.userId,
+                    source: "discover_card",
+                  })
+                }
+              />
+            </div>
           </div>
         </div>
       )}
 
       {!isCompanyCard ? (
         <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
-            Why this match
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-success">
+            Why this is a potential match
           </p>
           <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
             {card.report.why[0]?.finding ?? card.report.whatMattersMost}
@@ -380,29 +392,6 @@ function DiscoveryCardView({
       ) : null}
 
       <div className="shrink-0 bg-mingle-white px-4 pb-4 pt-3">
-        {!isCompanyCard ? (
-          <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
-            <Link
-              href={`/profile/view/${card.userId}`}
-              onClick={() =>
-                track(AnalyticsEvent.matchViewed, {
-                  target_user_id: card.userId,
-                  source: "discover_card",
-                })
-              }
-              className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-            >
-              View profile
-            </Link>
-            {card.cvPath ? (
-              <OpenTalentCvButton
-                cvPath={card.cvPath}
-                cvFileName={card.cvFileName}
-                label="Open CV"
-              />
-            ) : null}
-          </div>
-        ) : null}
         <DiscoverSwipeActions
           busy={saving}
           interestedDone={feedback === "interested"}
@@ -532,9 +521,13 @@ export function DiscoveryScreen({
                 <OpenTalentCvButton
                   cvPath={card.cvPath}
                   cvFileName={card.cvFileName}
-                  label="Open CV"
+                  label={card.cvFileName?.trim() || "Open CV"}
                 />
-              ) : null}
+              ) : (
+                <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+                  No CV
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => void restore(card.userId)}
@@ -580,25 +573,17 @@ export function DiscoveryScreen({
               >
                 {card.score}% · {card.report.strength}
               </span>
-              <Link
-                href={`/profile/view/${card.userId}`}
-                onClick={() =>
+              <CandidateProfileCvActions
+                userId={card.userId}
+                cvPath={card.cvPath}
+                cvFileName={card.cvFileName}
+                onViewProfile={() =>
                   track(AnalyticsEvent.matchViewed, {
                     target_user_id: card.userId,
                     source: "discover_browse",
                   })
                 }
-                className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-              >
-                View profile
-              </Link>
-              {card.cvPath ? (
-                <OpenTalentCvButton
-                  cvPath={card.cvPath}
-                  cvFileName={card.cvFileName}
-                  label="Open CV"
-                />
-              ) : null}
+              />
             </article>
           ))}
         </div>
@@ -661,12 +646,16 @@ export function DiscoveryScreen({
                     cvFileName={cards[0].cvFileName}
                     label={
                       cards[0].cvFileName?.trim()
-                        ? `Open CV · ${cards[0].cvFileName}`
+                        ? cards[0].cvFileName.trim()
                         : "Open CV"
                     }
                     className="w-full rounded-full border border-mingle-border bg-mingle-white px-4 py-2.5 text-center font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
                   />
                 </div>
+              ) : cards[0].kind !== "company" ? (
+                <p className="mt-3 text-xs text-mingle-text-secondary">
+                  No CV uploaded for this candidate.
+                </p>
               ) : null}
               <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
                 <MatchReportBody report={cards[0].report} />
