@@ -84,7 +84,12 @@ export async function GET(req: Request) {
 
 /** Optional: record visit/signup after landing (client or auth callback can call). */
 export async function PUT(req: Request) {
-  let body: { token?: string; eventType?: "visit" | "signup" };
+  let body: {
+    token?: string;
+    eventType?: "visit" | "signup";
+    userType?: "talent" | "company";
+    userId?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -96,14 +101,38 @@ export async function PUT(req: Request) {
   if (!payload) {
     return NextResponse.json({ error: "Invalid token" }, { status: 400 });
   }
+
+  const userType =
+    body.userType === "talent" || body.userType === "company"
+      ? body.userType
+      : null;
+
   const result = await logInterestEvent({
     token,
     eventType,
     payload,
     userAgent: req.headers.get("user-agent"),
+    meta: {
+      user_type: userType,
+      user_id: body.userId || null,
+      audience:
+        userType === "talent"
+          ? "candidate"
+          : userType === "company"
+            ? "company_side"
+            : "unknown",
+    },
   });
   if (!result.ok) {
     return NextResponse.json(result, { status: 500 });
   }
-  return NextResponse.json(result);
+  return NextResponse.json({
+    ...result,
+    audience:
+      userType === "talent"
+        ? "candidate"
+        : userType === "company"
+          ? "company_side"
+          : "unknown",
+  });
 }

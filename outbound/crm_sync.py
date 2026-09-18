@@ -111,6 +111,7 @@ def export_yamm_csv(path: Path | None = None) -> Path:
         "LinkedIn Note",
         "LinkedIn URL",
         "Clicked At",
+        "Audience",
         "Status",
     ]
     ready = [

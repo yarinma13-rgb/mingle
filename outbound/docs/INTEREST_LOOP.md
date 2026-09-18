@@ -75,6 +75,27 @@ OUTBOUND_FOLLOWUP_ON_CLICK=false
 
 חשוב: ב־`mint_interest_links.py` חייב להיות `Email` מלא בליד, אחרת אין למי לשלוח.
 
+## זיהוי אחרי הרשמה: מייסד/HR מול מועמד
+אחרי קליק, אם האדם נרשם ל־mingle:
+1. בוחר **Company** → `Audience=company_side` (HR / Founder צד חברה)
+2. בוחר **Talent** → `Audience=candidate` (מועמד)
+
+זה נרשם ב־`outbound_interest_events` (event=`signup` + meta.user_type)  
+ומסונכרן ל־CRM ע״י:
+
+```bash
+python sync_interest_clicks.py --api https://your-domain
+```
+
+| Audience | משמעות | Status ב־CRM |
+|---|---|---|
+| `company_side` | צד חברה (ICP) | `interested` |
+| `candidate` | מועמד | `audience_talent` |
+| `unknown` | לחץ אבל עדיין לא נרשם / בלי path | נשאר לפי הקליק |
+
+ההודעה לצד חברה נשארת ההודעה שאישרת.  
+מועמדים **לא** נחשבים ICP לאוטריץ׳ B2B — מסומנים בנפרד להמשך nurture ייעודי.
+
 ## אבטחה
 - הטוקן חתום ב־HMAC (180 יום)
 - טבלת האירועים: service role בלבד (RLS בלי policies ל־anon)

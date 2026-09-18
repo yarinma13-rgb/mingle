@@ -188,6 +188,7 @@ CRM_COLUMNS = [
     "Interest Link",  # unique /r/[token] attribution URL
     "Follow-up Message",  # sent after click/interest
     "Clicked At",
+    "Audience",  # candidate | company_side | unknown (after signup path)
     "Open Profile",  # HYPERLINK formula for safe click-to-send
     "Status",
     "Domain",
