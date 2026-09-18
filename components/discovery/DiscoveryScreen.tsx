@@ -213,7 +213,7 @@ function DiscoveryCardView({
       dragElastic={0.18}
       onDragEnd={isMobile && swipeEnabled ? handleDragEnd : undefined}
       whileDrag={{ cursor: "grabbing" }}
-      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_16px_40px_rgba(45,27,78,0.12)] ${
+      className={`relative mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-[20px] border border-mingle-border bg-mingle-white shadow-mingle transition-shadow hover:shadow-[0_12px_36px_rgba(28,27,46,0.08)] ${
         isMobile
           ? "touch-none cursor-grab"
           : "touch-pan-y"
@@ -381,11 +381,11 @@ function DiscoveryCardView({
       )}
 
       {!isCompanyCard ? (
-        <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-success">
-            Why this is a potential match
+        <div className="shrink-0 border-b border-mingle-border px-4 py-3.5 lg:hidden">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+            Why it works
           </p>
-          <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
+          <p className="mt-1.5 line-clamp-2 text-[13.5px] leading-snug text-mingle-text">
             {card.report.why[0]?.finding ?? card.report.whatMattersMost}
           </p>
         </div>
@@ -624,17 +624,17 @@ export function DiscoveryScreen({
                 <DiscoverySkeletonCard label="Still waiting for more matches…" />
               </div>
             ) : null}
-            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-3xl border border-mingle-border bg-mingle-surface-elevated p-5 shadow-mingle transition-shadow duration-200 lg:flex">
+            <aside className="hidden min-h-[min(720px,85vh)] flex-col rounded-[20px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle transition-shadow duration-200 lg:flex">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
                 Match report
               </p>
               <div className="mt-3 flex items-center gap-3">
                 <MatchScoreRing score={cards[0].score} size={88} showLabel />
                 <div className="min-w-0">
-                  <p className="font-display text-sm font-semibold text-mingle-text">
+                  <p className="font-display text-[15px] font-bold tracking-tight text-mingle-text">
                     {cards[0].name}
                   </p>
-                  <p className="text-xs text-mingle-text-secondary">
+                  <p className="mt-0.5 text-[12.5px] text-mingle-text-secondary">
                     {cards[0].report.strength}
                   </p>
                 </div>
@@ -649,7 +649,7 @@ export function DiscoveryScreen({
                         ? cards[0].cvFileName.trim()
                         : "Open CV"
                     }
-                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-4 py-2.5 text-center font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                    className="mingle-btn-secondary w-full truncate px-4 py-2.5 text-center text-xs disabled:opacity-60"
                   />
                 </div>
               ) : cards[0].kind !== "company" ? (

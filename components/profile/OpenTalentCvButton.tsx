@@ -83,14 +83,14 @@ export function CandidateProfileCvActions({
 }) {
   const light = variant === "light";
   const viewClass = light
-    ? "rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
-    : "rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white shadow-sm";
+    ? "mingle-btn-primary px-4 py-2 text-xs shadow-none"
+    : "rounded-[12px] bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white shadow-sm";
   const cvClass = light
-    ? "inline-flex max-w-[11rem] items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
-    : "inline-flex max-w-[11rem] items-center justify-center truncate rounded-full border border-white/55 bg-white/15 px-4 py-2 font-display text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25 disabled:opacity-60";
+    ? "mingle-btn-secondary inline-flex max-w-[11rem] items-center justify-center truncate px-4 py-2 text-xs disabled:opacity-60"
+    : "inline-flex max-w-[11rem] items-center justify-center truncate rounded-[12px] border border-white/55 bg-white/15 px-4 py-2 font-display text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25 disabled:opacity-60";
   const missingClass = light
-    ? "rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary"
-    : "rounded-full border border-dashed border-white/40 px-4 py-2 font-display text-xs font-semibold text-white/75";
+    ? "rounded-[12px] border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary"
+    : "rounded-[12px] border border-dashed border-white/40 px-4 py-2 font-display text-xs font-semibold text-white/75";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
