@@ -1,6 +1,6 @@
+import { Figtree, Rubik } from "next/font/google";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Poppins, Rubik } from "next/font/google";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
@@ -10,9 +10,9 @@ import { AppLocaleProvider } from "@/components/i18n/AppLocaleProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
 
-/* Poppins aligns app typography with monday.com; Rubik covers Hebrew. */
-const poppins = Poppins({
-  variable: "--font-poppins",
+/* Figtree is monday.com's product/brand face — same calm SaaS cadence. */
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -26,7 +26,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "mingle | Worth Talking To",
+  title: "mingle | Beyond the match.",
   description:
     "mingle is the career relationship platform that connects talent and companies before a hiring decision is made.",
   manifest: "/manifest.webmanifest",
@@ -50,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       suppressHydrationWarning
       data-theme="light"
-      className={`${poppins.variable} ${rubik.variable} h-full antialiased`}
+      className={`${figtree.variable} ${rubik.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />

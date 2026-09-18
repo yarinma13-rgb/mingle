@@ -54,8 +54,8 @@ export function scoreBandLabel(score: number): string {
     case "high":
       return "Strong fit";
     case "mid":
-      return "Worth a look";
+      return "Worth talking to";
     case "low":
-      return "Low fit";
+      return "Explore carefully";
   }
 }
