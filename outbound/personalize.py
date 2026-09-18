@@ -152,7 +152,7 @@ def _template_linkedin_note(lead: dict[str, Any]) -> str:
             ),
             (
                 f"{greeting} לגבי {role} — "
-                "mingle מזהה התאמה מעבר ל־CV. תרצי לראות דוגמה קצרה?"
+                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצרה?"
             ),
         ]
 
@@ -213,6 +213,10 @@ def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
 
     out["Personalized Message"] = email_msg
     out["LinkedIn Note"] = note_msg
+    # Preserve existing interest link + append to email body when present
+    interest = (out.get("Interest Link") or "").strip()
+    if interest and interest not in out["Personalized Message"]:
+        out["Personalized Message"] = f"{out['Personalized Message'].rstrip()} {interest}"
     out["Open Profile"] = (out.get("LinkedIn URL") or "").strip()
     if out.get("Status") in {"scored", "enriched", "new", "ready", ""}:
         out["Status"] = "ready"

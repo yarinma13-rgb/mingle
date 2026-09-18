@@ -185,6 +185,9 @@ CRM_COLUMNS = [
     "AI Match Score",
     "Personalized Message",  # email / LinkedIn message (longer)
     "LinkedIn Note",  # connection request note — max 300 chars
+    "Interest Link",  # unique /r/[token] attribution URL
+    "Follow-up Message",  # sent after click/interest
+    "Clicked At",
     "Open Profile",  # HYPERLINK formula for safe click-to-send
     "Status",
     "Domain",
@@ -196,6 +199,8 @@ CRM_COLUMNS = [
 ]
 
 LINKEDIN_NOTE_MAX_CHARS = 300
+APP_URL = os.getenv("NEXT_PUBLIC_APP_URL", "http://localhost:3000").rstrip("/")
+OUTBOUND_LINK_SECRET = os.getenv("OUTBOUND_LINK_SECRET", "") or os.getenv("CRON_SECRET", "")
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

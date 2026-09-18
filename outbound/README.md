@@ -74,6 +74,7 @@ python crm_sync.py --sheets --ready-only
 
 ## Docs
 
+- [`docs/INTEREST_LOOP.md`](docs/INTEREST_LOOP.md) — unique links, click tracking, follow-up (push only after opt-in)
 - [`docs/PHANTOMBUSTER_PLAYBOOK.md`](docs/PHANTOMBUSTER_PLAYBOOK.md) — free daily minutes → Head of Talent / Founder LinkedIn URLs
 - [`docs/YAMM_MAIL_METEOR.md`](docs/YAMM_MAIL_METEOR.md) — ≤50 tailored emails/day via Gmail free add-ons
 

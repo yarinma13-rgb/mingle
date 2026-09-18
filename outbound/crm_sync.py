@@ -106,8 +106,12 @@ def export_yamm_csv(path: Path | None = None) -> Path:
         "Company",
         "Open Role Found",
         "Personalized Message",
+        "Follow-up Message",
+        "Interest Link",
         "LinkedIn Note",
         "LinkedIn URL",
+        "Clicked At",
+        "Status",
     ]
     ready = [
         r
