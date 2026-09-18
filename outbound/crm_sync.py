@@ -102,10 +102,17 @@ def export_yamm_csv(path: Path | None = None) -> Path:
     yamm_cols = [
         "Email",
         "Contact Name",
+        "Contact Name HE",
         "Company",
         "Open Role Found",
         "Personalized Message",
+        "Follow-up Message",
+        "Interest Link",
+        "LinkedIn Note",
         "LinkedIn URL",
+        "Clicked At",
+        "Audience",
+        "Status",
     ]
     ready = [
         r

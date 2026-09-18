@@ -221,9 +221,12 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
     }
     user_prompt = (
         "Analyze the lead against mingle.careers ICP.\n"
-        f"Approve ONLY if: (HR/People/Talent AND size ≤{MAX_EMPLOYEES}) "
+        f"Approve ONLY if persona title is present AND: "
+        f"(HR/People/Talent AND size ≤{MAX_EMPLOYEES}) "
         "OR (Founder/CEO AND no HR function AND no recruiter), "
         "AND the company is currently hiring for a relevant role.\n"
+        "If Persona Title is missing/empty → is_match=false and score below 85.\n"
+        "Do NOT invent that the contact is a founder just because title is unknown.\n"
         f"Lead data:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
         "Return a strict JSON object:\n"
         "{\n"
@@ -253,7 +256,77 @@ def _openai_score(lead: dict[str, Any]) -> dict[str, Any]:
 
 def score_lead(lead: dict[str, Any]) -> dict[str, Any]:
     use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
-    result = _openai_score(lead) if use_openai else _heuristic_score(lead)
+    local = _heuristic_score(lead)
+
+    if use_openai:
+        try:
+            result = _openai_score(lead)
+        except Exception as exc:
+            print(f"[scorer] OpenAI unavailable ({exc.__class__.__name__}); using local heuristic")
+            result = dict(local)
+            result["reasoning"] = f"{result['reasoning']} | openai_fallback"
+    else:
+        result = dict(local)
+
+    title = (lead.get("Contact Title") or lead.get("Persona Title") or "").strip().lower()
+    headcount = parse_employee_count(str(lead.get("Company Size") or ""))
+
+    # Deterministic hard gates always win over the LLM.
+    # Size gate first: ICP is companies ≤ MAX_EMPLOYEES only.
+    if headcount is not None and headcount > MAX_EMPLOYEES:
+        return {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), 35),
+            "reasoning": f"company size ~{headcount} exceeds ≤{MAX_EMPLOYEES} ICP ceiling",
+        }
+
+    if headcount is None:
+        # Do not approve without a confirmed ≤200 size signal.
+        return {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": (
+                f"{result.get('reasoning', '')}; blocked — confirm company size ≤{MAX_EMPLOYEES}"
+            ).strip("; "),
+        }
+
+    if not title:
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": (
+                f"{result.get('reasoning', '')}; blocked — resolve HR (≤{MAX_EMPLOYEES}) or "
+                "Founder/CEO without HR before approve"
+            ).strip("; "),
+        }
+    elif _is_hr_title(title):
+        # Contact IS the HR person — that is path A, not a disqualifier.
+        result = {
+            "is_match": True,
+            "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
+            "reasoning": local.get("reasoning") or f"HR/People persona at company ≤{MAX_EMPLOYEES}",
+        }
+    elif _is_founder_title(title):
+        if _has_hr_or_recruiter(lead):
+            result = {
+                "is_match": False,
+                "score": min(int(result.get("score", 0)), 40),
+                "reasoning": "Founder/CEO blocked — HR function or recruiter already present",
+            }
+        else:
+            result = {
+                "is_match": True,
+                "score": max(int(local.get("score", 0)), ICP_MIN_SCORE),
+                "reasoning": local.get("reasoning")
+                or f"Founder/CEO with no HR/recruiter, size ≤{MAX_EMPLOYEES}",
+            }
+    else:
+        result = {
+            "is_match": False,
+            "score": min(int(result.get("score", 0)), ICP_MIN_SCORE - 1),
+            "reasoning": f"non-ICP title '{title[:48]}' — need HR≤{MAX_EMPLOYEES} or Founder without HR",
+        }
+
     result["score"] = int(result["score"])
     result["is_match"] = bool(result.get("is_match")) and result["score"] >= ICP_MIN_SCORE
     return result

@@ -162,6 +162,10 @@ ICP_SIZE_BUCKETS = ("1-10", "11-50", "51-200", "1-50", "50-200", "under 200", "â
 ICP_MIN_SCORE = int(os.getenv("ICP_MIN_SCORE", "85"))
 OPENAI_MODEL = "gpt-4o-mini"
 DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() in {"1", "true", "yes"}
+# Outreach copy language: "he" (default) or "en"
+COPY_LANGUAGE = os.getenv("COPY_LANGUAGE", "he").strip().lower()
+if COPY_LANGUAGE not in {"he", "en"}:
+    COPY_LANGUAGE = "he"
 
 # ---------------------------------------------------------------------------
 # Paths / CRM columns
@@ -173,12 +177,18 @@ SAMPLE_LEADS = ROOT / "data" / "sample_leads.csv"
 CRM_COLUMNS = [
     "Company",
     "Contact Name",
+    "Contact Name HE",  # Hebrew first/full name for outreach greeting
     "Contact Title",
     "Email",
     "LinkedIn URL",
     "Open Role Found",
     "AI Match Score",
-    "Personalized Message",
+    "Personalized Message",  # email / LinkedIn message (longer)
+    "LinkedIn Note",  # connection request note â€” max 300 chars
+    "Interest Link",  # unique /r/[token] attribution URL
+    "Follow-up Message",  # sent after click/interest
+    "Clicked At",
+    "Audience",  # candidate | company_side | unknown (after signup path)
     "Open Profile",  # HYPERLINK formula for safe click-to-send
     "Status",
     "Domain",
@@ -188,6 +198,11 @@ CRM_COLUMNS = [
     "Reasoning",
     "Updated At",
 ]
+
+LINKEDIN_NOTE_MAX_CHARS = 300
+APP_URL = os.getenv("NEXT_PUBLIC_APP_URL", "http://localhost:3000").rstrip("/")
+OUTBOUND_LINK_SECRET = os.getenv("OUTBOUND_LINK_SECRET", "") or os.getenv("CRON_SECRET", "")
+
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY", "")

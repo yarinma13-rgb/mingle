@@ -1,92 +1,224 @@
 """
 Phase 3 — Hyper-personalization engine ("mingle" angle).
 
-Rules: under 75 words, active voice, no corporate buzzwords, soft CTA.
-Generates LinkedIn/email-ready copy mentioning the specific open role.
+Produces TWO Hebrew assets per lead:
+1) Personalized Message — email / LinkedIn DM (full copy, founder-approved tone)
+2) LinkedIn Note — connection-request note, hard-capped at 300 chars
+
+By default Hebrew copy uses the locked templates (not free-form AI),
+because connection notes + ICP messaging must stay on-brief.
+Set USE_AI_COPY=true only if you explicitly want OpenAI variations.
 """
 
 from __future__ import annotations
 
+import os
 import re
+from pathlib import Path
 from typing import Any
 
-from config import DEMO_MODE, OPENAI_API_KEY, OPENAI_MODEL, PRODUCT_NAME
+from dotenv import load_dotenv
 
-MAX_WORDS = 75
+load_dotenv(Path(__file__).resolve().parent / ".env", override=True)
 
-COPY_SYSTEM = f"""You write short B2B outreach for {PRODUCT_NAME}.
-Rules:
-- Under {MAX_WORDS} words
-- Active voice
-- No generic corporate buzzwords (no synergies, leverage, disrupt, revolutionary)
-- Soft interest-based CTA
-- Mention the specific open role
-Return ONLY the message body text, no subject line, no quotes."""
+from config import (
+    COPY_LANGUAGE,
+    DEMO_MODE,
+    LINKEDIN_NOTE_MAX_CHARS,
+    OPENAI_API_KEY,
+    OPENAI_MODEL,
+)
+
+USE_AI_COPY = os.getenv("USE_AI_COPY", "false").lower() in {"1", "true", "yes"}
+
+# Common Latin → Hebrew first names for Israeli outreach greetings
+HEBREW_FIRST_NAMES = {
+    "maya": "מאיה",
+    "tom": "תום",
+    "dana": "דנה",
+    "ori": "אורי",
+    "lior": "ליאור",
+    "yael": "יעל",
+    "noa": "נועה",
+    "gal": "גל",
+    "tal": "טל",
+    "ron": "רון",
+    "roni": "רוני",
+    "amit": "עמית",
+    "amir": "אמיר",
+    "omer": "עומר",
+    "yonatan": "יונתן",
+    "jonathan": "יונתן",
+    "michael": "מיכאל",
+    "michal": "מיכל",
+    "sarah": "שרה",
+    "sara": "שרה",
+    "david": "דוד",
+    "daniel": "דניאל",
+    "dani": "דני",
+    "shira": "שירה",
+    "tamar": "תמר",
+    "hila": "הילה",
+    "inbal": "ענבל",
+    "adir": "אדיר",
+    "eden": "עדן",
+    "itay": "איתי",
+    "itai": "איתי",
+    "eitan": "איתן",
+    "asaf": "אסף",
+    "assaf": "אסף",
+    "guy": "גיא",
+    "ido": "עידו",
+    "yuval": "יובל",
+    "ziv": "זיו",
+    "alex": "אלכס",
+    "sam": "סם",
+    "nina": "נינה",
+}
 
 
-def _word_count(text: str) -> int:
-    return len(re.findall(r"\b\w+\b", text))
+def _has_hebrew(text: str) -> bool:
+    return bool(re.search(r"[\u0590-\u05FF]", text or ""))
 
 
-def _template_message(lead: dict[str, Any]) -> str:
-    company = (lead.get("Company") or "your team").strip()
-    role = (lead.get("Open Role Found") or "your open role").strip()
-    name = (lead.get("Contact Name") or "").strip()
-    greeting = f"Hi {name.split()[0]}," if name else "Hi,"
+def _first_token(full_name: str) -> str:
+    full_name = (full_name or "").strip()
+    if not full_name:
+        return ""
+    return full_name.split()[0]
 
-    msg = (
-        f"{greeting} Saw you're looking for a {role} at {company}. "
-        "Most tools just throw another CV pile at you. mingle ranks a shortlist "
-        "in 60 seconds based on Role, Human, and Motivation fit, showing you "
-        "exactly why they match and the honest risks. "
-        "Open to seeing a 60-second Match Report for this role?"
+
+def hebrew_first_name(lead: dict[str, Any]) -> str:
+    """Prefer Contact Name HE; else map Latin first name; else keep as-is."""
+    explicit = (lead.get("Contact Name HE") or "").strip()
+    if explicit:
+        return _first_token(explicit)
+
+    raw = _first_token(lead.get("Contact Name") or "")
+    if not raw:
+        return ""
+    if _has_hebrew(raw):
+        return raw
+    return HEBREW_FIRST_NAMES.get(raw.lower(), raw)
+
+
+def _template_email(lead: dict[str, Any]) -> str:
+    """Full message — same founder-approved soft angle as the LinkedIn note."""
+    role = (lead.get("Open Role Found") or "").strip() or "התפקיד הפתוח"
+    name = hebrew_first_name(lead)
+
+    if COPY_LANGUAGE == "en":
+        greeting = f"Hi {name}," if name else "Hi,"
+        return (
+            f"{greeting} Saw you're hiring a {role}. "
+            "At mingle we have a slightly different way to spot role fit — beyond CV and experience. "
+            "Thought this open role could be a great example to see it in action. Want a look?"
+        )
+
+    greeting = f"היי {name}," if name else "היי,"
+    return (
+        f"{greeting} ראיתי שאתם מגייסים {role}. "
+        "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
+        "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
+        "רוצה לראות?"
     )
-    # Hard trim if somehow over budget
-    words = msg.split()
-    if len(words) > MAX_WORDS:
-        msg = " ".join(words[: MAX_WORDS - 1]) + "?"
-    return msg
 
 
-def _openai_message(lead: dict[str, Any]) -> str:
+def _template_linkedin_note(lead: dict[str, Any]) -> str:
+    """Connection request note — must stay ≤ 300 chars. Same copy as email when it fits."""
+    role = (lead.get("Open Role Found") or "").strip() or "התפקיד"
+    name = hebrew_first_name(lead)
+
+    if COPY_LANGUAGE == "en":
+        greeting = f"Hi {name}," if name else "Hi,"
+        candidates = [
+            f"{greeting} Saw you're hiring a {role}. mingle spots fit beyond CV/experience — worth a quick look?",
+            f"{greeting} Hiring {role}? We identify fit beyond the CV. Want to see an example?",
+            f"{greeting} Re {role}: mingle finds fit beyond CV. Open to a peek?",
+        ]
+    else:
+        greeting = f"היי {name}," if name else "היי,"
+        candidates = [
+            (
+                f"{greeting} ראיתי שאתם מגייסים {role}. "
+                "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
+                "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
+                "רוצה לראות?"
+            ),
+            (
+                f"{greeting} מגייסים {role}? "
+                "ב־mingle יש דרך אחרת לזהות התאמה מעבר ל־CV ולניסיון. "
+                "המשרה הזו יכולה להיות דוגמה טובה. רוצה לראות?"
+            ),
+            (
+                f"{greeting} לגבי {role} — "
+                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצרה?"
+            ),
+        ]
+
+    for text in candidates:
+        if len(text) <= LINKEDIN_NOTE_MAX_CHARS:
+            return text
+    return candidates[-1][: LINKEDIN_NOTE_MAX_CHARS - 1] + "…"
+
+
+def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
+    """Optional slight variation — kept tightly constrained to the approved seed."""
     from openai import OpenAI
 
     client = OpenAI(api_key=OPENAI_API_KEY)
-    user = (
-        f"Company: {lead.get('Company')}\n"
-        f"Contact: {lead.get('Contact Name')}\n"
-        f"Title: {lead.get('Contact Title') or lead.get('Persona Title')}\n"
-        f"Open role: {lead.get('Open Role Found')}\n"
-        f"Hook pattern: Saw you're looking for a [role] at [Company].\n"
-        "Value: Most tools just throw another CV pile at you. mingle ranks a "
-        "shortlist in 60 seconds based on Role, Human, and Motivation fit, "
-        "showing exactly why they match and the honest risks.\n"
-        "CTA: Worth a quick look? / Open to seeing a 60-second Match Report for this role?\n"
-        "Write one message."
+    limit = (
+        f"לכל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
+        if kind == "note"
+        else "שמור על אותו מבנה ורעיון."
     )
     resp = client.chat.completions.create(
         model=OPENAI_MODEL,
-        temperature=0.7,
+        temperature=0.4,
         messages=[
-            {"role": "system", "content": COPY_SYSTEM},
-            {"role": "user", "content": user},
+            {
+                "role": "system",
+                "content": (
+                    "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
+                    "אל תשנה את המסר, אל תוסיף באזזוורדים, אל תוסיף חתימה/[שמך], "
+                    f"ואל תהפוך את זה להודעת מחפש עבודה. {limit} "
+                    "החזר רק את הטקסט הסופי."
+                ),
+            },
+            {"role": "user", "content": seed},
         ],
     )
-    text = (resp.choices[0].message.content or "").strip()
-    if _word_count(text) > MAX_WORDS or not text:
-        return _template_message(lead)
-    return text
+    text = (resp.choices[0].message.content or "").strip().strip('"').strip("'")
+    if kind == "note" and (not text or len(text) > LINKEDIN_NOTE_MAX_CHARS):
+        return seed
+    return text or seed
 
 
 def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
-    use_openai = bool(OPENAI_API_KEY) and not DEMO_MODE
-    message = _openai_message(lead) if use_openai else _template_message(lead)
     out = dict(lead)
-    out["Personalized Message"] = message
-    # Safe-mode LinkedIn helper (also mirrored as Sheets HYPERLINK in crm_sync)
-    li = (out.get("LinkedIn URL") or "").strip()
-    out["Open Profile"] = li if li else ""
-    if out.get("Status") in {"scored", "enriched", "new", ""}:
+    out["Contact Name HE"] = hebrew_first_name(out)
+
+    email_msg = _template_email(out)
+    note_msg = _template_linkedin_note(out)
+
+    if USE_AI_COPY and OPENAI_API_KEY and not DEMO_MODE:
+        try:
+            email_msg = _openai_variation(out, "email", email_msg)
+            note_msg = _openai_variation(out, "note", note_msg)
+        except Exception as exc:
+            print(f"[personalize] AI variation skipped ({exc.__class__.__name__}); using locked templates")
+
+    if len(note_msg) > LINKEDIN_NOTE_MAX_CHARS:
+        note_msg = _template_linkedin_note(out)
+
+    out["Personalized Message"] = email_msg
+    out["LinkedIn Note"] = note_msg
+    # Preserve existing interest link + append to email body when present
+    interest = (out.get("Interest Link") or "").strip()
+    if interest and interest not in out["Personalized Message"]:
+        out["Personalized Message"] = f"{out['Personalized Message'].rstrip()} {interest}"
+    out["Open Profile"] = (out.get("LinkedIn URL") or "").strip()
+    if out.get("Status") in {"scored", "enriched", "new", "ready", ""}:
         out["Status"] = "ready"
     return out
 
@@ -98,19 +230,21 @@ def personalize_many(leads: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def main() -> None:
     from lead_store import filter_by_status, read_leads, upsert_leads
 
-    leads = filter_by_status(read_leads(), {"scored"})
+    leads = filter_by_status(read_leads(), {"scored", "ready"})
     if not leads:
-        print("No scored leads. Run scorer.py first.")
+        print("No scored/ready leads. Run scorer.py first.")
         return
 
     ready = personalize_many(leads)
     upsert_leads(ready)
-    print(f"Personalized {len(ready)} leads.")
-    for row in ready[:3]:
+    print(f"Personalized {len(ready)} leads (lang={COPY_LANGUAGE}, ai_copy={USE_AI_COPY}).")
+    for row in ready[:2]:
         print("-" * 60)
-        print(f"{row['Company']} | {row['Open Role Found']}")
+        print(f"{row['Company']} | name_he={row.get('Contact Name HE')}")
+        print("EMAIL:")
         print(row["Personalized Message"])
-        print(f"words={_word_count(row['Personalized Message'])}")
+        print(f"NOTE ({len(row['LinkedIn Note'])}/{LINKEDIN_NOTE_MAX_CHARS}):")
+        print(row["LinkedIn Note"])
 
 
 if __name__ == "__main__":

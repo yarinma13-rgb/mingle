@@ -17,6 +17,7 @@ import {
 } from "@/lib/auth/work-email";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
+import { reportInterestAttribution } from "@/lib/outbound-interest/client";
 import type { UserType } from "@/lib/supabase/types";
 import {
   LocaleGlobeButton,
@@ -91,6 +92,13 @@ export function AuthForm({
     startTransition(() => {
       router.push(next);
       router.refresh();
+    });
+
+    // Fire after navigation kickoff — never block auth UX.
+    void reportInterestAttribution({
+      eventType: "signup",
+      userType: resolvedPath,
+      userId,
     });
   };
 
