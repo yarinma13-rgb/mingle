@@ -133,7 +133,7 @@ function ResultCard({
               target_user_id: card.userId,
             })
           }
-          className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          className="mingle-btn-primary !min-h-10 !px-4 !py-2 text-xs"
         >
           View profile
         </Link>
@@ -142,10 +142,10 @@ function ResultCard({
             cvPath={card.cvPath}
             cvFileName={card.cvFileName}
             label={card.cvFileName?.trim() ? card.cvFileName.trim() : "Open CV"}
-            className="inline-flex max-w-[11rem] items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-white px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+            className="mingle-btn-secondary !min-h-10 max-w-[11rem] truncate !px-4 !py-2 text-xs"
           />
         ) : (
-          <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+          <span className="rounded-[12px] border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
             No CV
           </span>
         )}

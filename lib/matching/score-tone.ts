@@ -1,7 +1,7 @@
 /**
  * Semantic match-score bands for fit strength chips.
- * Brand palette (purple / pink / blue) for scores; green/red stay reserved
- * for explicit fit vs risk copy in Match Report sections.
+ * Brand palette for scores; soft warm neutrals for potential gaps
+ * (never aggressive rejection red).
  *
  * Bands: 0–34 low · 35–69 mid · 70–100 high
  */
@@ -15,7 +15,7 @@ export function scoreBand(score: number): ScoreBand {
   return "low";
 }
 
-/** Axis / overall bars — brand purple → blue → pink, not traffic-light. */
+/** Axis / overall bars — brand connection colors, not traffic-light. */
 export function scoreBarClass(score: number): string {
   switch (scoreBand(score)) {
     case "high":
@@ -34,28 +34,28 @@ export function scoreTextClass(score: number): string {
     case "mid":
       return "text-mingle-accent-blue";
     case "low":
-      return "text-mingle-accent-pink";
+      return "text-mingle-text-secondary";
   }
 }
 
 export function scoreChipClass(score: number): string {
   switch (scoreBand(score)) {
     case "high":
-      return "border-mingle-accent-purple/35 bg-mingle-accent-purple/12 text-mingle-accent-purple";
+      return "border-mingle-accent-purple/25 bg-[color:var(--mingle-light-purple)] text-mingle-text";
     case "mid":
-      return "border-mingle-accent-blue/35 bg-mingle-accent-blue/12 text-mingle-accent-blue";
+      return "border-mingle-accent-blue/25 bg-[color:var(--mingle-light-blue)] text-mingle-text";
     case "low":
-      return "border-mingle-accent-pink/35 bg-mingle-accent-pink/12 text-mingle-accent-pink";
+      return "border-mingle-border bg-[color:var(--mingle-gap-bg)] text-mingle-text-secondary";
   }
 }
 
 export function scoreBandLabel(score: number): string {
   switch (scoreBand(score)) {
     case "high":
-      return "Strong fit";
+      return "Strong match";
     case "mid":
-      return "Worth a look";
+      return "Worth exploring";
     case "low":
-      return "Low fit";
+      return "Early signal";
   }
 }

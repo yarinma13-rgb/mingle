@@ -19,6 +19,7 @@ import {
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import {
@@ -32,10 +33,6 @@ import { RequestRecommendation } from "@/components/recommendations/RequestRecom
 import type { SubmittedRecommendation } from "@/lib/recommendations/persistence";
 import type { ConnectionStatus } from "@/lib/supabase/types";
 import type { Gender } from "@/lib/profile/avatar";
-import {
-  scoreChipClass,
-  scoreTextClass,
-} from "@/lib/matching/score-tone";
 
 const MingleMomentOverlay = dynamic(
   () =>
@@ -266,11 +263,11 @@ export function ProfileDetailShell({
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="flex w-full max-w-4xl flex-col gap-5"
       >
-        <div className="sticky top-0 z-20 -mx-1 flex items-center gap-3 rounded-2xl border border-mingle-border/80 bg-mingle-surface/95 px-3 py-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-mingle-surface/85">
+        <div className="sticky top-0 z-20 -mx-1 flex items-center gap-3 rounded-[16px] border border-mingle-border bg-mingle-surface/95 px-3 py-2.5 shadow-mingle backdrop-blur supports-[backdrop-filter]:bg-mingle-surface/85">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-sm font-medium text-mingle-text-secondary transition-colors hover:text-mingle-text"
+            className="mingle-btn-tertiary !min-h-0 gap-1.5 !px-1 !py-1 text-sm"
           >
             <BackArrowIcon />
             Back
@@ -284,39 +281,51 @@ export function ProfileDetailShell({
             </p>
           </div>
           {matchReport ? (
-            <span
-              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(matchReport.overall)}`}
-            >
-              <span className={scoreTextClass(matchReport.overall)}>
-                {matchReport.overall}%
-              </span>
-            </span>
+            <MatchScoreRing
+              score={matchReport.overall}
+              size={52}
+              showLabel
+              caption={null}
+            />
           ) : null}
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start">
           <aside className="flex flex-col gap-4 lg:sticky lg:top-16">
-            <div className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+            <div className="rounded-[20px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
               <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
                 {eyebrow}
               </p>
               <div className="mt-4 flex flex-col items-center gap-3 text-center">
-                <Avatar
-                  photo={photo}
-                  initials={initial}
-                  gender={gender}
-                  size="hero"
-                  shape={avatarShape}
-                />
+                {avatarShape === "soft" ? (
+                  <div className="mingle-logo-tile !h-[72px] !w-[72px] !rounded-[14px]">
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" className="!p-2" />
+                    ) : (
+                      <span className="font-display text-2xl font-bold text-mingle-text">
+                        {initial}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <Avatar
+                    photo={photo}
+                    initials={initial}
+                    gender={gender}
+                    size="hero"
+                    shape={avatarShape}
+                  />
+                )}
                 <div>
-                  <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-2xl">
+                  <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-mingle-text sm:text-[30px]">
                     {name}
                   </h1>
-                  <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
+                  <p className="mt-1.5 text-[15px] font-medium leading-relaxed text-mingle-text">
                     {subtitle}
                   </p>
                   {meta ? (
-                    <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
+                    <p className="mt-1 text-[13px] font-medium text-mingle-text-secondary">
                       {meta}
                     </p>
                   ) : null}
@@ -330,10 +339,10 @@ export function ProfileDetailShell({
                       cvPath={cvPath}
                       cvFileName={cvFileName}
                       label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                      className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
+                      className="mingle-btn-secondary !min-h-10 max-w-full truncate !px-5 !py-2.5 text-xs"
                     />
                   ) : (
-                    <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+                    <span className="rounded-[12px] border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
                       No CV uploaded
                     </span>
                   )}
@@ -354,24 +363,35 @@ export function ProfileDetailShell({
                           ? `/conversations/${mingleConnectionId}`
                           : "/conversations"
                       }
-                      className="rounded-full bg-mingle-success/15 px-6 py-3 text-center font-display text-sm font-semibold text-mingle-success transition-colors hover:bg-mingle-success/25"
+                      className="mingle-btn-secondary w-full text-center text-sm"
                     >
-                      ✓ Connected · Open chat
+                      Continue conversation →
                     </Link>
                   ) : (
                     <motion.button
                       type="button"
                       onClick={handleConnect}
                       disabled={connectDisabled}
-                      whileHover={connectDisabled ? undefined : { scale: 1.02 }}
-                      whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-                      className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
+                      whileHover={connectDisabled ? undefined : { scale: 1.01 }}
+                      whileTap={connectDisabled ? undefined : { scale: 0.99 }}
+                      className={`w-full text-center ${
                         connectDisabled
-                          ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
-                          : "bg-mingle-cta text-white"
+                          ? "mingle-btn-secondary cursor-not-allowed opacity-60"
+                          : "mingle-btn-primary"
                       }`}
                     >
-                      {connecting ? "Sending…" : connectLabel}
+                      {connecting
+                        ? "Sending…"
+                        : connectDisabled
+                          ? connectLabel
+                          : (
+                              <>
+                                {connectLabel}
+                                <span className="mingle-btn-arrow" aria-hidden>
+                                  →
+                                </span>
+                              </>
+                            )}
                     </motion.button>
                   )}
                   <button
@@ -379,13 +399,13 @@ export function ProfileDetailShell({
                     onClick={handleSave}
                     disabled={saving}
                     aria-pressed={saved}
-                    className={`rounded-full border px-6 py-3 text-center font-display text-sm font-semibold transition-colors disabled:opacity-60 ${
+                    className={`w-full text-center ${
                       saved
-                        ? "border-mingle-purple/40 bg-mingle-purple/15 text-mingle-purple"
-                        : "border-mingle-border bg-mingle-white text-mingle-text hover:bg-mingle-lavender"
+                        ? "mingle-btn-secondary border-mingle-purple/30 bg-[color:var(--mingle-light-purple)] text-mingle-text"
+                        : "mingle-btn-secondary"
                     }`}
                   >
-                    {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
+                    {saving ? "Saving…" : saved ? "Saved" : "Save for later"}
                   </button>
                 </div>
               ) : null}
@@ -395,7 +415,7 @@ export function ProfileDetailShell({
                     cvPath={cvPath}
                     cvFileName={cvFileName}
                     label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                    className="mingle-btn-secondary w-full text-center text-sm"
                   />
                 </div>
               ) : null}
@@ -432,17 +452,19 @@ export function ProfileDetailShell({
                 </div>
               </ProfileSection>
             ) : whyMatch ? (
-              <ProfileSection title="Why this could be a match">
+              <ProfileSection title="Why it works">
                 <ul className="flex flex-col gap-2">
                   {whyMatch.map((reason) => (
                     <li
                       key={reason}
-                      className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
+                      className="flex gap-2 text-sm leading-relaxed text-mingle-text"
                     >
                       <span
                         aria-hidden
-                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-pink"
-                      />
+                        className="mt-0.5 shrink-0 font-bold text-mingle-accent-purple"
+                      >
+                        ✓
+                      </span>
                       {reason}
                     </li>
                   ))}

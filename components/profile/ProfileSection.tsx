@@ -117,7 +117,7 @@ export function ProfileSection({
 }) {
   return (
     <section
-      className={`profile-section flex flex-col gap-3 rounded-2xl border border-mingle-border p-5 transition-shadow duration-200 sm:p-6 ${
+      className={`profile-section flex flex-col gap-3 rounded-[18px] border border-mingle-border p-5 transition-shadow duration-200 sm:p-6 ${
         elevated
           ? "bg-mingle-surface-elevated shadow-mingle"
           : "bg-mingle-surface"
@@ -126,12 +126,12 @@ export function ProfileSection({
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-mingle-lavender text-mingle-accent-purple"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[color:var(--mingle-light-purple)] text-mingle-accent-purple"
             aria-hidden
           >
             <SectionGlyph title={title} />
           </span>
-          <h2 className="font-display text-sm font-semibold tracking-tight text-mingle-text">
+          <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
             {title}
           </h2>
         </div>
@@ -139,7 +139,7 @@ export function ProfileSection({
           <button
             type="button"
             onClick={onEdit}
-            className="text-xs font-semibold text-mingle-blue transition-colors hover:text-mingle-cta"
+            className="mingle-btn-tertiary !min-h-0 !px-1 !py-1 text-xs"
           >
             Edit
           </button>

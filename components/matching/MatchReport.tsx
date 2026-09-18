@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { MatchFactorKey } from "@/lib/matching/engine";
 import type {
   MatchAudience,
   MatchBullet,
@@ -12,18 +11,7 @@ import {
   type MatchFeedbackAction,
   type NotFitReason,
 } from "@/lib/matching/feedback";
-import { IconBadge } from "@/components/dashboard/IconBadge";
-import {
-  BriefcaseIcon,
-  ClockIcon,
-  ColumnsIcon,
-  CompassIcon,
-  GridIcon,
-  GearIcon,
-  PeopleIcon,
-  TargetIcon,
-  ShieldCheckIcon,
-} from "@/components/dashboard/icons";
+import { ShieldCheckIcon } from "@/components/dashboard/icons";
 import {
   scoreBandLabel,
   scoreBarClass,
@@ -35,20 +23,6 @@ const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
   High: "text-mingle-accent-purple",
   Medium: "text-mingle-accent-blue",
   Low: "text-mingle-accent-pink",
-};
-
-const BULLET_ICON: Record<
-  MatchFactorKey,
-  React.ComponentType<{ className?: string; size?: number }>
-> = {
-  careerGoals: TargetIcon,
-  motivations: PeopleIcon,
-  workStyle: ColumnsIcon,
-  industry: GridIcon,
-  experience: ClockIcon,
-  skills: GearIcon,
-  location: CompassIcon,
-  companyStage: BriefcaseIcon,
 };
 
 const MISMATCH_PREVIEW = 4;
@@ -83,29 +57,44 @@ function SignalChip({
   bullet: MatchBullet;
   tone: "fit" | "risk";
 }) {
-  const Icon = BULLET_ICON[bullet.key];
   const shell =
     tone === "fit"
-      ? "border-mingle-success/30 bg-mingle-success/10"
-      : "border-mingle-error/30 bg-mingle-error/10";
-  const labelTone =
-    tone === "fit" ? "text-mingle-success" : "text-mingle-error";
+      ? "border-transparent bg-[color:var(--mingle-light-purple)]/80"
+      : "border-transparent bg-[color:var(--mingle-gap-bg)]";
+  const mark =
+    tone === "fit" ? (
+      <span
+        aria-hidden
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-mingle-white text-[11px] font-bold text-mingle-accent-purple shadow-sm"
+      >
+        ✓
+      </span>
+    ) : (
+      <span
+        aria-hidden
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-mingle-white text-[12px] font-semibold text-[color:var(--mingle-gap-accent)] shadow-sm"
+      >
+        ○
+      </span>
+    );
   return (
     <div
-      className={`flex min-w-0 flex-col gap-1 rounded-2xl border px-3 py-2.5 ${shell}`}
+      className={`flex min-w-0 flex-col gap-1.5 rounded-[16px] border px-3.5 py-3 ${shell}`}
     >
-      <div className="flex items-center gap-1.5">
-        <IconBadge
-          icon={Icon}
-          accent={tone === "fit" ? "success" : "pink"}
-          size={20}
-          iconSize={10}
-        />
-        <p className={`text-[11px] font-semibold ${labelTone}`}>
+      <div className="flex items-center gap-2">
+        {mark}
+        <p className="text-[13px] font-semibold text-mingle-text">
+          {tone === "risk" ? (
+            <span className="mr-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[color:var(--mingle-gap-accent)]">
+              Potential gap
+            </span>
+          ) : null}
           {bullet.label}
         </p>
       </div>
-      <p className="text-[12px] leading-snug text-mingle-text">{bullet.finding}</p>
+      <p className="pl-7 text-[13px] leading-snug text-mingle-text-secondary">
+        {bullet.finding}
+      </p>
     </div>
   );
 }
@@ -156,16 +145,16 @@ export function MatchReportBody({
   report: MatchReport;
   compact?: boolean;
 }) {
-  const whyTitle = "Why this is a potential match";
-  const mismatchTitle = "What to examine / risks";
+  const whyTitle = "Good match";
+  const mismatchTitle = "Potential gaps";
   const riskItems =
     report.salaryGapPercent != null &&
     !report.mismatch.some((b) => b.label === "Salary")
       ? [
           {
             key: "experience" as const,
-            label: "Salary",
-            finding: `Salary gap of about ${report.salaryGapPercent}%`,
+            label: "Compensation expectations",
+            finding: `About ${report.salaryGapPercent}% difference between sides`,
           },
           ...report.mismatch,
         ]
@@ -173,26 +162,28 @@ export function MatchReportBody({
           b.label === "Salary" && report.salaryGapPercent != null
             ? {
                 ...b,
-                finding: `Salary gap of about ${report.salaryGapPercent}%`,
+                label: "Compensation expectations",
+                finding: `About ${report.salaryGapPercent}% difference between sides`,
               }
             : b,
         );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
+    <div className="flex flex-col gap-5">
+      <div className="flex items-start justify-between gap-3 rounded-[18px] border border-mingle-border bg-gradient-to-br from-[color:var(--mingle-light-pink)] via-[color:var(--mingle-light-purple)] to-[color:var(--mingle-light-blue)] px-4 py-3.5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
-            Overall Match
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+            Match score
           </p>
-          <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>
-              {report.overall}%
-            </span>
+          <p className="mt-0.5 font-display text-2xl font-bold tracking-tight text-mingle-text">
+            {report.overall}%
+          </p>
+          <p className="mt-0.5 text-xs text-mingle-text-secondary">
+            Why these two sides fit
           </p>
         </div>
         <span
-          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
+          className={`shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
         >
           {scoreBandLabel(report.overall)}
         </span>
@@ -201,7 +192,7 @@ export function MatchReportBody({
       {!compact ? <FitBars axes={report.axes} /> : null}
 
       {report.technicalSignal ? (
-        <p className="text-[11px] leading-snug text-mingle-text">
+        <p className="text-[12px] leading-snug text-mingle-text">
           <span className="font-semibold text-mingle-accent-blue">
             Verified technical signal:
           </span>{" "}
@@ -219,7 +210,7 @@ export function MatchReportBody({
       </p>
 
       <section>
-        <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
+        <h3 className="font-display text-[15px] font-semibold tracking-tight text-mingle-text">
           {whyTitle}
         </h3>
         <ChipGrid
@@ -232,9 +223,12 @@ export function MatchReportBody({
 
       {riskItems.length > 0 ? (
         <section>
-          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-error">
+          <h3 className="font-display text-[15px] font-semibold tracking-tight text-mingle-text">
             {mismatchTitle}
           </h3>
+          <p className="mt-0.5 text-[12px] text-mingle-text-secondary">
+            Transparent signals to explore — not rejection.
+          </p>
           <ChipGrid
             items={riskItems}
             tone="risk"
@@ -245,7 +239,7 @@ export function MatchReportBody({
       ) : null}
 
       {!compact ? (
-        <p className="text-sm italic text-mingle-text-secondary">
+        <p className="text-sm leading-relaxed text-mingle-text-secondary">
           {report.whatMattersMost}
         </p>
       ) : null}
@@ -290,7 +284,7 @@ export function MatchFeedbackActions({
                 setPicking(false);
                 onNotFit(reason);
               }}
-              className="rounded-full bg-mingle-lavender px-3 py-1.5 font-display text-[11px] font-semibold text-mingle-text disabled:opacity-60"
+              className="rounded-[12px] bg-mingle-lavender px-3 py-1.5 font-display text-[11px] font-semibold text-mingle-text disabled:opacity-60"
             >
               {reason}
             </button>
@@ -314,10 +308,10 @@ export function MatchFeedbackActions({
           type="button"
           disabled={busy || interestedDone}
           onClick={onInterested}
-          className={`rounded-full px-4 py-2 font-display text-xs font-semibold disabled:opacity-60 ${
+          className={`rounded-[12px] px-4 py-2.5 font-display text-xs font-semibold disabled:opacity-60 ${
             interestedDone
-              ? "bg-mingle-blue/15 text-mingle-blue"
-              : "bg-mingle-lavender text-mingle-text hover:bg-mingle-lavender/80"
+              ? "bg-[color:var(--mingle-light-purple)] text-mingle-text"
+              : "mingle-btn-secondary !min-h-0 !px-4 !py-2.5 text-xs"
           }`}
         >
           {interestedDone ? "Interested" : "Interested"}
@@ -327,10 +321,8 @@ export function MatchFeedbackActions({
         type="button"
         disabled={busy || notFitDone}
         onClick={() => setPicking(true)}
-        className={`rounded-full px-4 py-2 font-display text-xs font-semibold disabled:opacity-60 ${
-          notFitDone
-            ? "text-mingle-text-secondary"
-            : "text-mingle-text-secondary hover:text-mingle-text"
+        className={`mingle-btn-tertiary !min-h-0 px-2 py-2 text-xs disabled:opacity-60 ${
+          notFitDone ? "text-mingle-text-secondary" : ""
         }`}
       >
         {notFitDone ? notFitLabel : notFitLabel}
