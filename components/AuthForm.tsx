@@ -433,7 +433,7 @@ export function AuthForm({
         <button
           type="submit"
           disabled={isSubmitting || (mode === "signup" && !path)}
-          className="mt-1 rounded-full bg-mingle-accent-blue px-6 py-3.5 text-sm font-normal text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+          className="mingle-btn-primary mt-1 w-full text-sm disabled:opacity-60"
         >
           {isSubmitting
             ? mode === "signup"
