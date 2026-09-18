@@ -14,7 +14,7 @@ function admin() {
 
 export async function logInterestEvent(input: {
   token: string;
-  eventType: "click" | "visit" | "signup";
+  eventType: "click" | "visit" | "signup" | "followup_sent";
   payload: InterestPayload;
   destination?: string;
   userAgent?: string | null;
@@ -37,6 +37,21 @@ export async function logInterestEvent(input: {
 
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/** True if a follow-up email was already sent for this token. */
+export async function hasFollowUpBeenSent(token: string): Promise<boolean> {
+  const client = admin();
+  if (!client) return false;
+  const fp = fingerprintToken(token);
+  const { data, error } = await client
+    .from("outbound_interest_events")
+    .select("id")
+    .eq("token_fingerprint", fp)
+    .eq("event_type", "followup_sent")
+    .limit(1);
+  if (error) return false;
+  return (data?.length ?? 0) > 0;
 }
 
 export async function listRecentInterestEvents(limit = 50): Promise<{
