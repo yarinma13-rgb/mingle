@@ -68,17 +68,17 @@ export function MobileBottomNav({
             role="dialog"
             aria-label="More"
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[85vh] w-full overflow-y-auto rounded-t-2xl border-t border-mingle-border bg-mingle-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+            className="max-h-[85vh] w-full overflow-y-auto rounded-t-[1.25rem] border-t border-mingle-border bg-mingle-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(28,27,46,0.12)]"
           >
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-display text-sm font-semibold text-mingle-text">
+              <span className="font-display text-sm font-semibold tracking-tight text-mingle-text">
                 More
               </span>
               <button
                 type="button"
                 aria-label="Close"
                 onClick={() => setMoreOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-mingle-text-secondary"
+                className="mingle-icon-btn h-8 w-8 rounded-full"
               >
                 <XIcon size={16} />
               </button>
@@ -88,7 +88,7 @@ export function MobileBottomNav({
               href={profileHref}
               prefetch
               onClick={() => setMoreOpen(false)}
-              className="mb-4 flex items-center gap-3 rounded-2xl border border-mingle-border bg-mingle-bg px-3.5 py-3"
+              className="mb-4 flex items-center gap-3 rounded-[var(--mingle-radius-card)] border border-mingle-border bg-mingle-bg px-3.5 py-3 transition-colors hover:bg-mingle-lavender/60"
             >
               <Avatar
                 photo={userPhoto}
@@ -120,10 +120,10 @@ export function MobileBottomNav({
                     href={item.href}
                     prefetch
                     onClick={() => setMoreOpen(false)}
-                    className={`flex items-start gap-3 rounded-[10px] px-3.5 py-3 ${
+                    className={`flex items-start gap-3 rounded-[var(--mingle-radius)] px-3.5 py-3 transition-colors ${
                       isNavHrefActive(pathname, item.href)
-                        ? "bg-mingle-lavender text-mingle-accent-blue"
-                        : "text-mingle-text-secondary"
+                        ? "bg-mingle-nav-active-bg text-mingle-accent-purple"
+                        : "text-mingle-text-secondary hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
                     <Icon size={18} className="mt-0.5 shrink-0" />
@@ -179,7 +179,7 @@ export function MobileBottomNav({
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 items-stretch gap-x-0.5 border-t border-mingle-border bg-mingle-surface px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 items-stretch gap-x-0.5 border-t border-mingle-border/80 bg-mingle-surface/95 px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 backdrop-blur-md md:hidden"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
@@ -191,8 +191,8 @@ export function MobileBottomNav({
               href={item.href}
               prefetch
               aria-label={item.label}
-              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
-                active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
+              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight transition-colors ${
+                active ? "text-mingle-accent-purple" : "text-mingle-text-secondary"
               }`}
             >
               <span className="relative flex h-5 w-5 items-center justify-center">
@@ -200,18 +200,30 @@ export function MobileBottomNav({
                 <Icon size={20} className="relative" />
               </span>
               <span className="max-w-full truncate">{tabLabel}</span>
+              {active ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-mingle-accent-purple/80"
+                />
+              ) : null}
             </Link>
           );
         })}
         <button
           type="button"
           onClick={() => setMoreOpen(true)}
-          className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
-            moreActive ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
+          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight transition-colors ${
+            moreActive ? "text-mingle-accent-purple" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />
           <span>More</span>
+          {moreActive ? (
+            <span
+              aria-hidden
+              className="absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-mingle-accent-purple/80"
+            />
+          ) : null}
         </button>
       </nav>
     </>

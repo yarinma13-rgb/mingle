@@ -93,16 +93,16 @@ export function RelationshipContextPanel({
   cvFileName?: string | null;
 }) {
   return (
-    <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+    <div className="mingle-card flex w-full flex-col gap-5 p-5">
       <div className="flex items-center gap-3">
         <span
-          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+          className="rounded-full px-3 py-1 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(123,47,247,0.2)]"
           style={{ background: "var(--mingle-connection-gradient)" }}
         >
           {score}% match
         </span>
         <div>
-          <p className="font-display text-sm font-semibold text-mingle-text">
+          <p className="font-display text-sm font-semibold tracking-tight text-mingle-text">
             Why this fit
           </p>
           <p className="text-xs text-mingle-text-secondary">Shared signals, not a score alone</p>
@@ -110,7 +110,7 @@ export function RelationshipContextPanel({
       </div>
 
       {cvPath || otherUserId ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg px-3 py-3">
+        <div className="flex flex-col gap-2 rounded-[var(--mingle-radius)] border border-mingle-border bg-mingle-bg px-3 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
             Candidate materials
           </p>
@@ -119,13 +119,13 @@ export function RelationshipContextPanel({
               cvPath={cvPath}
               cvFileName={cvFileName}
               label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
-              className="w-full rounded-full border border-mingle-border bg-mingle-white px-4 py-2 text-center font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+              className="mingle-btn-secondary w-full px-4 py-2 text-center text-xs"
             />
           ) : null}
           {otherUserId ? (
             <Link
               href={`/profile/view/${otherUserId}`}
-              className="w-full rounded-full bg-mingle-cta px-4 py-2 text-center font-display text-xs font-semibold text-white"
+              className="mingle-btn-primary w-full px-4 py-2 text-center text-xs"
             >
               View full profile
             </Link>
@@ -133,7 +133,7 @@ export function RelationshipContextPanel({
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-mingle-border bg-mingle-bg px-3 py-3">
+      <div className="rounded-[var(--mingle-radius)] border border-mingle-border bg-mingle-bg px-3 py-3">
         <MingleChip>{STAGE_LABEL[stage]}</MingleChip>
         <p className="mt-2 text-xs text-mingle-text-secondary">{STAGE_HINT[stage]}</p>
       </div>

@@ -355,6 +355,70 @@ button:disabled {
   box-shadow: var(--mingle-shadow);
 }
 
+.mingle-input {
+  border-radius: var(--mingle-radius);
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+  color: var(--mingle-text);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.mingle-input::placeholder {
+  color: var(--mingle-text-muted);
+}
+
+.mingle-input:hover:not(:disabled):not(:focus) {
+  border-color: color-mix(in srgb, var(--mingle-accent-purple) 18%, var(--mingle-border));
+}
+
+.mingle-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--mingle-accent-blue) 55%, var(--mingle-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mingle-accent-blue) 14%, transparent);
+}
+
+.mingle-bubble-own {
+  background: var(--mingle-connection-gradient);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(123, 47, 247, 0.16);
+}
+
+.mingle-bubble-other {
+  background: var(--mingle-bg);
+  color: var(--mingle-text);
+  border: 1px solid var(--mingle-border);
+}
+
+.mingle-icon-btn {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+  color: var(--mingle-text-secondary);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mingle-icon-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--mingle-accent-purple) 28%, var(--mingle-border));
+  color: var(--mingle-text);
+  background: var(--mingle-bg);
+}
+
+.mingle-icon-btn:disabled {
+  opacity: 0.6;
+}
+
 .profile-section {
   transition:
     box-shadow 0.2s ease,
@@ -383,6 +447,19 @@ button:disabled {
 [data-theme="dark"] .mingle-btn-secondary:hover:not(:disabled) {
   background: var(--mingle-lavender);
   box-shadow: var(--mingle-shadow);
+}
+
+[data-theme="dark"] .mingle-input {
+  background: var(--mingle-surface);
+}
+
+[data-theme="dark"] .mingle-icon-btn {
+  background: var(--mingle-surface);
+}
+
+[data-theme="dark"] .mingle-bubble-other {
+  background: var(--mingle-lavender);
+  border-color: var(--mingle-border);
 }
 
 [data-theme="dark"] .mingle-banner {

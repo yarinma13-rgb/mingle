@@ -63,7 +63,7 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-7 shadow-mingle">
+    <div className="mingle-card mingle-card-interactive p-7">
       <div className="flex items-center gap-3">
         <IconBadge icon={ColumnsIcon} accent="purple" size={32} iconSize={15} />
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">

@@ -35,7 +35,7 @@ export function IconBadge({
 }: IconBadgeProps) {
   return (
     <div
-      className={`flex shrink-0 items-center justify-center leading-none rounded-xl text-white ${FILLS[accent]}`}
+      className={`flex shrink-0 items-center justify-center leading-none rounded-xl text-white shadow-[0_4px_10px_rgba(28,27,46,0.12)] ${FILLS[accent]}`}
       style={{ width: size, height: size }}
     >
       <Icon size={iconSize} className="block text-white" />
