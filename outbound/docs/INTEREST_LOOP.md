@@ -57,7 +57,9 @@ python sync_interest_clicks.py --api https://your-domain
 אחרי סנכרון:
 - `Status=interested`
 - `Clicked At` מלא
-- `Follow-up Message` מוכן לשליחה ידנית / YAMM
+- `Follow-up Message` = **אותה הודעה שאישרת** (לא "ראיתי שנכנסת")
+
+הקישור הייחודי משמש רק למדידה פנימית — לא לטקסט מטריד.
 
 ## פוש
 פוש בדפדפן **לא** נשלח אוטומטית רק בגלל לחיצה.  

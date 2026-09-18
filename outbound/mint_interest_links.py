@@ -27,7 +27,6 @@ sys.path.insert(0, str(ROOT))
 
 from config import APP_URL, CRM_COLUMNS, LEADS_LOG, OUTBOUND_LINK_SECRET  # noqa: E402
 from lead_store import read_leads, upsert_leads  # noqa: E402
-from personalize import hebrew_first_name  # noqa: E402
 
 
 def _b64url(data: bytes) -> str:
@@ -58,19 +57,22 @@ def sign_interest_payload(
 
 
 def follow_up_message(lead: dict) -> str:
-    name = hebrew_first_name(lead) or ""
-    role = (lead.get("Open Role Found") or "המשרה").strip()
-    link = (lead.get("Interest Link") or "").strip()
-    greeting = f"היי {name}," if name else "היי,"
-    base = (
-        f"{greeting} ראיתי שנכנסת להציץ על איך mingle מזהה התאמה ל־{role}. "
-        "אם תרצה, אשלח לך Match Report קצר על המשרה — בלי ערמת CVs. "
-        "רוצה שאפתח אחד?"
-    )
-    if link:
-        return base
-    return base
+    """
+    Do not use "I saw you clicked" copy — feels creepy.
+    Reuse the same founder-approved outreach message (without forcing a new angle).
+    """
+    existing = (lead.get("Personalized Message") or "").strip()
+    if existing:
+        # Strip trailing interest URL if present so follow-up stays clean prose
+        link = (lead.get("Interest Link") or "").strip()
+        if link and existing.endswith(link):
+            return existing[: -len(link)].rstrip()
+        return existing
 
+    # Fallback: same locked template as personalize.py
+    from personalize import _template_email
+
+    return _template_email(lead)
 
 def with_link_in_email(message: str, link: str) -> str:
     if not link:
