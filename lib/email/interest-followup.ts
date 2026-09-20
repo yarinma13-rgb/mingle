@@ -49,12 +49,16 @@ export async function sendInterestFollowUpEmail(input: {
   const to = input.to.trim();
   if (!to || !to.includes("@")) return { ok: false, error: "missing email" };
 
-  const body = buildInterestFollowUpBody(input.payload, input.link);
+    const body = buildInterestFollowUpBody(input.payload, input.link);
   const subject = "רעיון קצר בקשר לגיוס אצלכם";
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://app.mingle.careers";
+  const imageUrl = `${appUrl.replace(/\/$/, "")}/brand/email-visual.png`;
 
   const html = `<!doctype html><html lang="he" dir="rtl"><body style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#252238;padding:24px;direction:rtl;text-align:right;">
 <p style="white-space:pre-wrap;margin:0;">${escapeHtml(body)}</p>
-<p style="color:#77738a;font-size:12px;margin-top:28px;">mingle.careers</p>
+<img src="${imageUrl}" width="280" height="128" alt="mingle — Why this match: skills, culture, and career direction" style="display:block;margin:20px 0;border-radius:10px;max-width:100%;height:auto;" />
+<p style="color:#77738a;font-size:12px;margin-top:8px;">mingle.careers</p>
 </body></html>`;
 
   try {
