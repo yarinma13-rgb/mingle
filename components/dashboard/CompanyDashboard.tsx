@@ -9,6 +9,7 @@ import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
 import { PilotTips } from "@/components/pilot/PilotTips";
+import { Button } from "@/components/ui/Button";
 import {
   GaugeIcon,
   PeopleIcon,
@@ -85,16 +86,13 @@ export function CompanyDashboard({
             : "Open Discover and start conversations with people who fit."}
         </p>
         {profileCompletion < 100 ? (
-          <Link
-            href="/company-profile/build"
-            className="mingle-btn-primary mt-4 inline-block text-xs"
-          >
+          <Button href="/company-profile/build" size="sm" className="mt-4">
             Finish company profile
-          </Link>
+          </Button>
         ) : (
-          <Link href="/discover" className="mingle-btn-primary mt-4 inline-block text-xs">
+          <Button href="/discover" size="sm" className="mt-4">
             Open Discover
-          </Link>
+          </Button>
         )}
       </div>
 

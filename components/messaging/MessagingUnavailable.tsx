@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { MessagingFailureKind } from "@/lib/messaging/errors";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 
 const COPY: Record<
   MessagingFailureKind,
@@ -54,10 +56,10 @@ export function MessagingUnavailable({
   }, [kind, router]);
 
   return (
-    <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-10 text-center">
+    <Card className="p-10 text-center">
       <div
         aria-hidden
-        className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mingle-lavender text-mingle-blue"
+        className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mingle-lavender text-mingle-accent-purple"
       >
         <svg
           width="22"
@@ -72,7 +74,7 @@ export function MessagingUnavailable({
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </div>
-      <h3 className="font-display text-base font-semibold text-mingle-text">
+      <h3 className="font-display text-base font-semibold tracking-tight text-mingle-text">
         {copy.title}
       </h3>
       <p className="mx-auto mt-2 max-w-sm text-sm text-mingle-text-secondary">
@@ -80,8 +82,9 @@ export function MessagingUnavailable({
         {connectionId && kind === "unknown" ? " Use Try again below." : null}
       </p>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-        <button
+        <Button
           type="button"
+          size="sm"
           disabled={pending}
           onClick={() => {
             setAttempts((n) => n + 1);
@@ -89,18 +92,13 @@ export function MessagingUnavailable({
               router.refresh();
             });
           }}
-          className="mingle-btn-primary text-xs disabled:opacity-60"
         >
-          {pending
-            ? "Retrying…"
-            : attempts > 0
-              ? "Try again"
-              : "Try again"}
-        </button>
-        <a href="/connections" className="mingle-btn-secondary text-xs">
+          {pending ? "Retrying…" : "Try again"}
+        </Button>
+        <Button href="/connections" variant="secondary" size="sm">
           Back to Connections
-        </a>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

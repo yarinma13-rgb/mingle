@@ -181,9 +181,9 @@ export function CompanyBoardScreen({
                   event.preventDefault();
                   handleDrop(column.id);
                 }}
-                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-all duration-300 ease-out ${
+                className={`flex w-64 shrink-0 flex-col rounded-[var(--mingle-radius-card)] border bg-mingle-surface p-3 shadow-mingle transition-all duration-300 ease-out ${
                   isOver
-                    ? "scale-[1.015] border-mingle-cta bg-mingle-lavender/40 shadow-[0_14px_32px_rgba(0,115,234,0.16)]"
+                    ? "scale-[1.015] border-mingle-accent-purple/40 bg-mingle-lavender/40 shadow-[0_14px_32px_rgba(123,47,247,0.14)]"
                     : "border-mingle-border"
                 }`}
               >
@@ -215,9 +215,9 @@ export function CompanyBoardScreen({
                           setDraggingId(null);
                           setOverStage(null);
                         }}
-                        className={`rounded-xl border border-mingle-border bg-mingle-surface-elevated p-3 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-mingle ${
+                        className={`mingle-card-interactive rounded-[var(--mingle-radius)] border border-mingle-border bg-mingle-surface-elevated p-3 shadow-sm ${
                           draggingId === card.connectionId
-                            ? "cursor-grabbing scale-[1.02] opacity-70 shadow-[0_12px_28px_rgba(0,115,234,0.14)]"
+                            ? "cursor-grabbing scale-[1.02] opacity-70 shadow-[0_12px_28px_rgba(123,47,247,0.14)]"
                             : "cursor-grab"
                         } ${busyId === card.connectionId ? "pointer-events-none opacity-70" : ""}`}
                       >

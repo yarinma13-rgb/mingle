@@ -35,9 +35,9 @@ export function MatchScoreRing({
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#EA1E63" />
-            <stop offset="48%" stopColor="#7B2FF7" />
-            <stop offset="100%" stopColor="#3E6BE0" />
+            <stop offset="0%" stopColor="var(--mingle-pink)" />
+            <stop offset="48%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-blue)" />
           </linearGradient>
         </defs>
         <circle
@@ -59,6 +59,8 @@ export function MatchScoreRing({
           strokeDasharray={c}
           strokeDashoffset={offset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          className="motion-safe:animate-[mingle-ring-fade_0.55s_ease-out]"
+          style={{ transformOrigin: "center" }}
         />
       </svg>
       <span

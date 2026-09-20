@@ -309,6 +309,39 @@ button:disabled {
   transform: translateY(-1px);
 }
 
+.mingle-btn-tertiary {
+  border-radius: var(--mingle-radius);
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  min-height: 40px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--mingle-accent-purple);
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.mingle-btn-tertiary:hover:not(:disabled) {
+  color: var(--mingle-accent-blue);
+}
+
+.mingle-btn-tertiary:disabled {
+  opacity: 0.45;
+}
+
+.mingle-btn-sm {
+  min-height: 36px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+.mingle-btn-lg {
+  min-height: 48px;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.975rem;
+}
+
 .mingle-chip {
   display: inline-flex;
   align-items: center;
@@ -560,12 +593,18 @@ button:disabled {
   animation: mingle-moment-in 0.28s ease-out;
 }
 
-@keyframes mingle-moment-in {
+@keyframes mingle-ring-fade {
   from {
-    opacity: 0;
+    opacity: 0.2;
   }
   to {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-\[mingle-ring-fade_0\.55s_ease-out\] {
+    animation: none !important;
   }
 }
 

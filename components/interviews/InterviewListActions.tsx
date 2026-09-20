@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
 import {
   cancelInterviewAction,
   rescheduleInterviewAction,
 } from "@/lib/interviews/manage-actions";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 import { useToast } from "@/components/toast/ToastProvider";
+import { Button } from "@/components/ui/Button";
+import { Input, Select } from "@/components/ui/Input";
 
 function toLocalInput(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -33,22 +34,25 @@ export function InterviewListActions({
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
-      <Link
+      <Button
         href={`/conversations/${interview.connectionId}`}
-        className="mingle-btn-primary px-3 py-1.5 text-xs"
+        size="sm"
       >
         Open chat
-      </Link>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="secondary"
+        size="sm"
         disabled={busy}
         onClick={() => setOpen(true)}
-        className="mingle-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
       >
         Reschedule
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="tertiary"
+        size="sm"
         disabled={busy}
         onClick={() => {
           void (async () => {
@@ -66,10 +70,10 @@ export function InterviewListActions({
             router.refresh();
           })();
         }}
-        className="rounded-[var(--mingle-radius)] border border-transparent px-3 py-1.5 text-xs font-semibold text-mingle-text-secondary transition-colors hover:border-mingle-border hover:text-mingle-pink disabled:opacity-60"
+        className="text-mingle-text-secondary hover:text-mingle-pink"
       >
         Cancel
-      </button>
+      </Button>
       {open ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]"
@@ -85,36 +89,38 @@ export function InterviewListActions({
             </h2>
             <label className="mt-4 block text-sm font-medium text-mingle-text">
               New date and time
-              <input
+              <Input
                 type="datetime-local"
                 value={when}
                 onChange={(event) => setWhen(event.target.value)}
-                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
+                className="mt-1"
               />
             </label>
             <label className="mt-4 block text-sm font-medium text-mingle-text">
               Duration
-              <select
+              <Select
                 value={duration}
                 onChange={(event) => setDuration(Number(event.target.value))}
-                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
+                className="mt-1"
               >
                 <option value={15}>15 minutes</option>
                 <option value={30}>30 minutes</option>
                 <option value={45}>45 minutes</option>
                 <option value={60}>60 minutes</option>
-              </select>
+              </Select>
             </label>
             <div className="mt-6 flex justify-end gap-2">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => setOpen(false)}
-                className="mingle-btn-secondary px-4 py-2 text-sm"
               >
                 Close
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="sm"
                 disabled={busy || !when}
                 onClick={() => {
                   void (async () => {
@@ -135,10 +141,9 @@ export function InterviewListActions({
                     router.refresh();
                   })();
                 }}
-                className="mingle-btn-primary px-4 py-2 text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : "Save"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

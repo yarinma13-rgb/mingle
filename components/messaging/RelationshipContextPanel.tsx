@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { MingleChip } from "@/components/MingleChip";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import type { MatchFactor } from "@/lib/matching/engine";
 import type { RelationshipStage } from "@/lib/supabase/types";
 import type { RelationshipEventRow } from "@/lib/relationship/persistence";
@@ -93,7 +94,7 @@ export function RelationshipContextPanel({
   cvFileName?: string | null;
 }) {
   return (
-    <div className="mingle-card flex w-full flex-col gap-5 p-5">
+    <Card className="flex w-full flex-col gap-5 p-5">
       <div className="flex items-center gap-3">
         <span
           className="rounded-full px-3 py-1 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(123,47,247,0.2)]"
@@ -123,12 +124,9 @@ export function RelationshipContextPanel({
             />
           ) : null}
           {otherUserId ? (
-            <Link
-              href={`/profile/view/${otherUserId}`}
-              className="mingle-btn-primary w-full px-4 py-2 text-center text-xs"
-            >
+            <Button href={`/profile/view/${otherUserId}`} size="sm" block>
               View full profile
-            </Link>
+            </Button>
           ) : null}
         </div>
       ) : null}
@@ -205,12 +203,9 @@ export function RelationshipContextPanel({
         </div>
       )}
 
-      <Link
-        href={STAGE_HREF[stage](connectionId)}
-        className="mingle-btn-primary text-center text-xs"
-      >
+      <Button href={STAGE_HREF[stage](connectionId)} size="sm" block>
         {STAGE_CTA[stage]}
-      </Link>
-    </div>
+      </Button>
+    </Card>
   );
 }

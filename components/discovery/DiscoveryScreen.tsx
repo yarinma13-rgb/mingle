@@ -463,22 +463,20 @@ export function DiscoveryScreen({
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface">
-        <EmptyState
-          variant="discover"
-          title={title}
-          body={
-            emptyBody ??
-            (initialCards.length === 0
-              ? isPassed
-                ? "Nobody passed yet. Skipped profiles will show up here."
-                : "Nobody to discover yet. Check back once more people join mingle."
-              : "That is everyone for now. Check back later for more.")
-          }
-          actionHref={isPassed ? "/discover" : "/dashboard"}
-          actionLabel={isPassed ? "Back to Discover" : "Back to dashboard"}
-        />
-      </div>
+      <EmptyState
+        variant="discover"
+        title={title}
+        body={
+          emptyBody ??
+          (initialCards.length === 0
+            ? isPassed
+              ? "Nobody passed yet. Skipped profiles will show up here."
+              : "No matches yet. We're looking for people who fit what you're looking for."
+            : "That is everyone for now. Check back later for more.")
+        }
+        actionHref={isPassed ? "/discover" : "/dashboard"}
+        actionLabel={isPassed ? "Back to Discover" : "Back to dashboard"}
+      />
     );
   }
 

@@ -15,6 +15,7 @@ import {
 import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
 import { TalentMatchOverview } from "@/components/dashboard/TalentMatchOverview";
 import { PilotTips } from "@/components/pilot/PilotTips";
+import { Button } from "@/components/ui/Button";
 
 function timeAgo(iso: string): string {
   const days = Math.max(
@@ -115,17 +116,17 @@ export function TalentDashboard({
                 : "Explore companies below and start a conversation when one feels right."}
           </p>
           {profileCompletion < 100 ? (
-            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/profile/build" size="sm" className="mt-4">
               Finish my profile
-            </Link>
+            </Button>
           ) : missingPhoto ? (
-            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/profile/build" size="sm" className="mt-4">
               Add a photo
-            </Link>
+            </Button>
           ) : (
-            <Link href="/discover" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/discover" size="sm" className="mt-4">
               Open Discover
-            </Link>
+            </Button>
           )}
         </div>
       </div>
