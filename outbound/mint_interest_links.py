@@ -57,20 +57,11 @@ def sign_interest_payload(
 
 
 def follow_up_message(lead: dict) -> str:
-    """Always the founder-approved template — never 'saw you clicked', never tracking URLs."""
+    """Founder-approved template — never 'saw you clicked'. Uses the lead's
+    existing Interest Link if already minted, otherwise renders without one."""
     from personalize import _template_email
 
-    return _template_email(lead)
-
-
-def with_link_in_email(message: str, link: str) -> str:
-    if not link:
-        return message
-    # Ensure at most one interest link at the end
-    import re
-
-    cleaned = re.sub(r"\s*https?://\S*/r/\S+", "", message).rstrip()
-    return f"{cleaned} {link}"
+    return _template_email(lead, link=(lead.get("Interest Link") or "").strip())
 
 
 def mint_ready_leads() -> list[dict]:
@@ -103,10 +94,10 @@ def mint_ready_leads() -> list[dict]:
         )
         link = f"{app_url}/r/{quote(token, safe='')}"
         out["Interest Link"] = link
-        # Fresh founder copy every mint; link only on Personalized Message
-        base = _template_email(out)
-        out["Follow-up Message"] = base
-        out["Personalized Message"] = with_link_in_email(base, link)
+        # Fresh founder copy every mint, with the per-lead link embedded inline
+        msg = _template_email(out, link=link)
+        out["Follow-up Message"] = msg
+        out["Personalized Message"] = msg
         minted += 1
         updated.append(out)
 
