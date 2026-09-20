@@ -102,8 +102,11 @@ def hebrew_first_name(lead: dict[str, Any]) -> str:
     return HEBREW_FIRST_NAMES.get(raw.lower(), raw)
 
 
-def _template_email(lead: dict[str, Any]) -> str:
-    """Full message — same founder-approved soft angle as the LinkedIn note."""
+def _template_email(lead: dict[str, Any], link: str = "") -> str:
+    """Full message — founder-approved copy (updated 2026-09-20), with the
+    per-lead tracked interest link embedded inline where the founder placed it.
+    English branch intentionally left on the older copy — no English text was
+    approved for this revision."""
     role = (lead.get("Open Role Found") or "").strip() or "התפקיד הפתוח"
     name = hebrew_first_name(lead)
 
@@ -115,12 +118,15 @@ def _template_email(lead: dict[str, Any]) -> str:
             "Thought this open role could be a great example to see it in action. Want a look?"
         )
 
-    greeting = f"היי {name}," if name else "היי,"
+    link_line = f"{link}\n" if link else ""
     return (
-        f"{greeting} ראיתי שאתם מגייסים {role}. "
-        "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
-        "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
-        "רוצה לראות?"
+        "היי, נעים מאוד!\n"
+        "שמנו לב שיש לכם מגוון משרות פתוחות, ורצינו להציע לכם לפרסם אותן ב-mingle.\n"
+        "mingle עוזרת לחברות לחסוך זמן ועלויות בתהליכי גיוס, באמצעות התאמה שמתבססת גם על ניסיון מקצועי וגם על "
+        "interpersonal skills, סביבת עבודה, כיוון קריירה ועוד.\n"
+        "נשמח להראות לך בדמו קצר איך זה עובד, ואיך המשרות שלכם יכולות להגיע לטאלנטים שמתאימים להן באמת:\n"
+        f"{link_line}"
+        "נשמח להתחבר ולבחון יחד את האפשרות לצרף אתכם להשקה הראשונית של mingle במסגרת קיט ההטבות שלנו."
     )
 
 
@@ -152,8 +158,7 @@ def _template_linkedin_note(lead: dict[str, Any]) -> str:
             ),
             (
                 f"{greeting} לגבי {role} — "
-                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצרה?"
-            ),
+                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצר אות��?Rlu+7",
         ]
 
     for text in candidates:
@@ -168,7 +173,7 @@ def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     limit = (
-        f"לכל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
+        f"כלל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
         if kind == "note"
         else "שמור על אותו מבנה ורעיון."
     )
@@ -179,7 +184,7 @@ def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
+                    "גרוך קלות את רצקסט הבסיס בעברית ל־mingle.careers. "
                     "אל תשנה את המסר, אל תוסיף באזזוורדים, אל תוסיף חתימה/[שמך], "
                     f"ואל תהפוך את זה להודעת מחפש עבודה. {limit} "
                     "החזר רק את הטקסט הסופי."
@@ -198,7 +203,8 @@ def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
     out = dict(lead)
     out["Contact Name HE"] = hebrew_first_name(out)
 
-    email_msg = _template_email(out)
+    existing_link = (out.get("Interest Link") or "").strip()
+    email_msg = _template_email(out, link=existing_link)
     note_msg = _template_linkedin_note(out)
 
     if USE_AI_COPY and OPENAI_API_KEY and not DEMO_MODE:
@@ -213,10 +219,6 @@ def personalize_lead(lead: dict[str, Any]) -> dict[str, Any]:
 
     out["Personalized Message"] = email_msg
     out["LinkedIn Note"] = note_msg
-    # Preserve existing interest link + append to email body when present
-    interest = (out.get("Interest Link") or "").strip()
-    if interest and interest not in out["Personalized Message"]:
-        out["Personalized Message"] = f"{out['Personalized Message'].rstrip()} {interest}"
     out["Open Profile"] = (out.get("LinkedIn URL") or "").strip()
     if out.get("Status") in {"scored", "enriched", "new", "ready", ""}:
         out["Status"] = "ready"
