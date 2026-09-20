@@ -40,6 +40,18 @@ function pctChange(current: number, prior: number): string {
   return `${sign}${delta.toFixed(0)}%`;
 }
 
+/**
+ * PostHog's `*.i.posthog.com` hosts are for event ingestion (capture) only.
+ * The REST/HogQL Query API lives on the app host without the `i.` — e.g.
+ * `eu.i.posthog.com` (capture) vs `eu.posthog.com` (API). Reusing the
+ * capture host for query calls silently 404s, which is why this report
+ * showed all zeros despite real production data (found 2026-09-20, see
+ * docs/growth-reports/2026-09-15.md #1).
+ */
+function posthogApiHost(captureHost: string): string {
+  return captureHost.replace(/^(https?:\/\/)([a-z-]+)\.i\.posthog\.com/i, "$1$2.posthog.com");
+}
+
 async function hogqlCount(
   projectId: string,
   apiKey: string,
@@ -47,7 +59,8 @@ async function hogqlCount(
   event: string,
   days: number,
 ): Promise<number> {
-  const url = `${host.replace(/\/$/, "")}/api/projects/${projectId}/query/`;
+  const apiHost = posthogApiHost(host);
+  const url = `${apiHost.replace(/\/$/, "")}/api/projects/${projectId}/query/`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -61,7 +74,12 @@ async function hogqlCount(
       },
     }),
   });
-  if (!res.ok) return 0;
+  if (!res.ok) {
+    console.error(
+      `[insights-report] PostHog query failed for event "${event}": ${res.status} ${res.statusText} (${url})`,
+    );
+    return 0;
+  }
   const json = (await res.json()) as { results?: Array<[number]> };
   return Number(json.results?.[0]?.[0] ?? 0);
 }
