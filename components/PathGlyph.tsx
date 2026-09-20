@@ -21,9 +21,9 @@ export function TalentPathArt({ className = "" }: { className?: string }) {
       <svg viewBox="0 0 88 72" width="88" height="72" aria-hidden>
         <defs>
           <linearGradient id={`${gid}-a`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#EA1E63" />
-            <stop offset="55%" stopColor="#7B2FF7" />
-            <stop offset="100%" stopColor="#3E6BE0" />
+            <stop offset="0%" stopColor="var(--mingle-pink)" />
+            <stop offset="55%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-blue)" />
           </linearGradient>
           <linearGradient id={`${gid}-b`} x1="0" y1="1" x2="1" y2="0">
             <stop offset="0%" stopColor="#FF7AB2" />
@@ -121,8 +121,8 @@ export function CompanyPathArt({ className = "" }: { className?: string }) {
       <svg viewBox="0 0 88 72" width="88" height="72" aria-hidden>
         <defs>
           <linearGradient id={`${gid}-c`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7B2FF7" />
-            <stop offset="100%" stopColor="#3E6BE0" />
+            <stop offset="0%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-blue)" />
           </linearGradient>
           <linearGradient id={`${gid}-ring`} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#22C55E" />

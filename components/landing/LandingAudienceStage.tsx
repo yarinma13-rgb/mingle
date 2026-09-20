@@ -110,9 +110,9 @@ const CONFETTI_COLORS = [
   "#5B8DEF",
   "#22C55E",
   "#C84BDB",
-  "#7B2FF7",
-  "#3E6BE0",
-  "#EA1E63",
+  "var(--mingle-purple)",
+  "var(--mingle-blue)",
+  "var(--mingle-pink)",
 ];
 
 function subscribeReducedMotion(onStoreChange: () => void) {
@@ -306,7 +306,7 @@ function CompaniesStage({ he }: { he: boolean }) {
   const columns = [
     {
       title: he ? "התאמות חזקות" : "Strong Matches",
-      accent: "#7b2ff7",
+      accent: "var(--mingle-purple)",
       person: PEOPLE[0],
       badge: "green" as const,
     },
@@ -318,7 +318,7 @@ function CompaniesStage({ he }: { he: boolean }) {
     },
     {
       title: he ? "הדדי" : "Mutual",
-      accent: "#ea1e63",
+      accent: "var(--mingle-pink)",
       person: PEOPLE[2],
       badge: "pink" as const,
     },
@@ -459,14 +459,14 @@ function FoundersStage({ he }: { he: boolean }) {
       label: he ? "זמן שנחסך" : "Time saved",
       value: "18h",
       sub: he ? "לשבוע גיוס" : "/ hiring week",
-      color: "#7b2ff7",
+      color: "var(--mingle-purple)",
       pct: 78,
     },
     {
       label: he ? "כסף שנשמר" : "Money protected",
       value: "$12k",
       sub: he ? "ממוצע למשרה" : "avg per role",
-      color: "#3e6be0",
+      color: "var(--mingle-blue)",
       pct: 72,
     },
     {
