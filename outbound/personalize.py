@@ -158,7 +158,7 @@ def _template_linkedin_note(lead: dict[str, Any]) -> str:
             ),
             (
                 f"{greeting} לגבי {role} — "
-                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצר אות��?Rlu+7",
+                                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצרה?"
         ]
 
     for text in candidates:
@@ -173,7 +173,7 @@ def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     limit = (
-        f"כלל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
+                f"לכל היותר {LINKEDIN_NOTE_MAX_CHARS} תווים."
         if kind == "note"
         else "שמור על אותו מבנה ורעיון."
     )
@@ -184,7 +184,7 @@ def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "גרוך קלות את רצקסט הבסיס בעברית ל־mingle.careers. "
+                                        "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
                     "אל תשנה את המסר, אל תוסיף באזזוורדים, אל תוסיף חתימה/[שמך], "
                     f"ואל תהפוך את זה להודעת מחפש עבודה. {limit} "
                     "החזר רק את הטקסט הסופי."
