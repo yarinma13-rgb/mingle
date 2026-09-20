@@ -46,7 +46,12 @@ export async function GET(req: Request, { params }: Params) {
     if (email) {
       const already = await hasFollowUpBeenSent(token);
       if (!already) {
-        const sent = await sendInterestFollowUpEmail({ to: email, payload });
+        const linkBack = `${appUrl.replace(/\/$/, "")}/r/${encodeURIComponent(token)}`;
+        const sent = await sendInterestFollowUpEmail({
+          to: email,
+          payload,
+          link: linkBack,
+        });
         if (sent.ok && !sent.skipped) {
           await logInterestEvent({
             token,
