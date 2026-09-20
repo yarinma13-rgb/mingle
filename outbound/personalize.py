@@ -131,40 +131,31 @@ def _template_email(lead: dict[str, Any], link: str = "") -> str:
 
 
 def _template_linkedin_note(lead: dict[str, Any]) -> str:
-    """Connection request note — must stay ≤ 300 chars. Same copy as email when it fits."""
-    role = (lead.get("Open Role Found") or "").strip() or "התפקיד"
+    """Connection request note — must stay ≤ 300 chars.
+    Hebrew: founder-approved fixed copy (updated 2026-09-20), no link —
+    a signed /r/[token] link is far too long for LinkedIn's 300-char limit;
+    the tracked link only goes out via email/Personalized Message.
+    English: role-based candidates, unchanged (no English text approved yet)."""
     name = hebrew_first_name(lead)
 
     if COPY_LANGUAGE == "en":
+        role = (lead.get("Open Role Found") or "").strip() or "role"
         greeting = f"Hi {name}," if name else "Hi,"
         candidates = [
             f"{greeting} Saw you're hiring a {role}. mingle spots fit beyond CV/experience — worth a quick look?",
             f"{greeting} Hiring {role}? We identify fit beyond the CV. Want to see an example?",
             f"{greeting} Re {role}: mingle finds fit beyond CV. Open to a peek?",
         ]
-    else:
-        greeting = f"היי {name}," if name else "היי,"
-        candidates = [
-            (
-                f"{greeting} ראיתי שאתם מגייסים {role}. "
-                "יש לנו ב־mingle דרך קצת אחרת לזהות התאמה לתפקיד, מעבר ל־CV ולניסיון המקצועי. "
-                "חשבתי שהמשרה הזו יכולה להיות אחלה דוגמה לראות את זה בפועל. "
-                "רוצה לראות?"
-            ),
-            (
-                f"{greeting} מגייסים {role}? "
-                "ב־mingle יש דרך אחרת לזהות התאמה מעבר ל־CV ולניסיון. "
-                "המשרה הזו יכולה להיות דוגמה טובה. רוצה לראות?"
-            ),
-            (
-                f"{greeting} לגבי {role} — "
-                                "mingle מזהה התאמה מעבר ל־CV. רוצה לראות דוגמה קצרה?"
-        ]
+        for text in candidates:
+            if len(text) <= LINKEDIN_NOTE_MAX_CHARS:
+                return text
+        return candidates[-1][: LINKEDIN_NOTE_MAX_CHARS - 1] + "…"
 
-    for text in candidates:
-        if len(text) <= LINKEDIN_NOTE_MAX_CHARS:
-            return text
-    return candidates[-1][: LINKEDIN_NOTE_MAX_CHARS - 1] + "…"
+    return (
+        "היי, נעים מאוד! שמנו לב שיש לכם משרות פתוחות ורצינו להציע לפרסם אותן ב-mingle. "
+        "ההתאמה אצלנו מתבססת על ניסיון, interpersonal skills, סביבת עבודה וכיוון קריירה. "
+        "נשמח להראות לך בדמו קצר."
+    )
 
 
 def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
@@ -184,7 +175,7 @@ def _openai_variation(lead: dict[str, Any], kind: str, seed: str) -> str:
             {
                 "role": "system",
                 "content": (
-                                        "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
+                                                            "ערוך קלות את טקסט הבסיס בעברית ל־mingle.careers. "
                     "אל תשנה את המסר, אל תוסיף באזזוורדים, אל תוסיף חתימה/[שמך], "
                     f"ואל תהפוך את זה להודעת מחפש עבודה. {limit} "
                     "החזר רק את הטקסט הסופי."
