@@ -33,7 +33,7 @@ const STEPS = [
 ] as const;
 
 const URL_HINT =
-  "Supports AllJobs, Drushim, and JobMaster links. LinkedIn is not supported.";
+      "Supports AllJobs, Drushim, JobMaster, and LinkedIn job links.";
 
 function JobProcessing({ doneCount }: { doneCount: number }) {
   return (
