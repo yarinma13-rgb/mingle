@@ -65,7 +65,7 @@ export function NotificationBell({ userId }: { userId: string }) {
         type="button"
         aria-label="Notifications"
         onClick={toggleOpen}
-        className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-accent-blue transition-colors hover:text-mingle-accent-purple"
+        className="mingle-icon-btn relative text-mingle-accent-purple"
       >
         <BellIcon size={16} />
         {items.length > 0 && (
@@ -77,10 +77,10 @@ export function NotificationBell({ userId }: { userId: string }) {
 
       {open && (
         <div
-          className="absolute right-0 top-11 z-50 w-80 max-w-[85vw] overflow-hidden rounded-2xl border border-mingle-border bg-mingle-white shadow-mingle"
+          className="mingle-card absolute right-0 top-11 z-50 w-80 max-w-[85vw] overflow-hidden"
         >
           <div className="border-b border-mingle-border px-4 py-3">
-            <p className="font-display text-sm font-semibold text-mingle-text">
+            <p className="font-display text-sm font-semibold tracking-tight text-mingle-text">
               Notifications
             </p>
           </div>
@@ -108,7 +108,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                     }}
                     className="flex w-full cursor-pointer items-start gap-3 border-b border-mingle-border px-4 py-3 text-left last:border-0 hover:bg-mingle-bg"
                   >
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mingle-blue/15 text-mingle-blue">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mingle-accent-purple/12 text-mingle-accent-purple">
                       <Icon size={14} />
                     </span>
                     <span className="min-w-0 flex-1">

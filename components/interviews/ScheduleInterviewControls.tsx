@@ -252,7 +252,7 @@ export function ScheduleInterviewControls({
                       type="datetime-local"
                       value={value || fallback}
                       onChange={(event) => setter(event.target.value)}
-                      className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                      className="mingle-input mt-1 w-full px-3 py-2 text-sm"
                     />
                   </label>
                 ))}
@@ -264,7 +264,7 @@ export function ScheduleInterviewControls({
                   type="datetime-local"
                   value={when}
                   onChange={(event) => setWhen(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                  className="mingle-input mt-1 w-full px-3 py-2 text-sm"
                 />
               </label>
             )}
@@ -273,7 +273,7 @@ export function ScheduleInterviewControls({
               <select
                 value={duration}
                 onChange={(event) => setDuration(Number(event.target.value))}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               >
                 <option value={15}>15 minutes</option>
                 <option value={30}>30 minutes</option>
@@ -303,7 +303,7 @@ export function ScheduleInterviewControls({
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 rows={3}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               />
             </label>
             {error ? <p className="mt-3 text-sm text-mingle-pink">{error}</p> : null}
@@ -321,7 +321,7 @@ export function ScheduleInterviewControls({
                 onClick={() =>
                   void (mode === "propose" ? submitPropose() : submitDirect())
                 }
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                className="mingle-btn-primary text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : mode === "propose" ? "Send slots" : "Book now"}
               </button>
@@ -381,7 +381,7 @@ export function AcceptInterviewSlots({
                   router.refresh();
                 })();
               }}
-              className="rounded-full bg-mingle-cta px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+              className="mingle-btn-primary text-xs disabled:opacity-60"
             >
               {busyId === slot.id ? "Booking…" : "Accept"}
             </button>
@@ -510,7 +510,7 @@ export function UpcomingInterviewBanner({
                 type="datetime-local"
                 value={when}
                 onChange={(event) => setWhen(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               />
             </label>
             <label className="mt-4 block text-sm font-medium text-mingle-text">
@@ -518,7 +518,7 @@ export function UpcomingInterviewBanner({
               <select
                 value={duration}
                 onChange={(event) => setDuration(Number(event.target.value))}
-                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm outline-none focus:border-mingle-pink"
+                className="mingle-input mt-1 w-full px-3 py-2 text-sm"
               >
                 <option value={15}>15 minutes</option>
                 <option value={30}>30 minutes</option>
@@ -555,7 +555,7 @@ export function UpcomingInterviewBanner({
                 type="button"
                 disabled={busy || !when}
                 onClick={() => void onReschedule()}
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                className="mingle-btn-primary text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : "Save new time"}
               </button>
@@ -625,7 +625,7 @@ export function GoogleCalendarConnectCard() {
         ) : status.configured ? (
           <a
             href="/api/auth/google-calendar?returnTo=/settings"
-            className="rounded-full bg-mingle-cta px-4 py-2 text-xs font-semibold text-white"
+            className="mingle-btn-primary text-xs"
           >
             Connect Google Calendar
           </a>

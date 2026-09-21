@@ -23,6 +23,7 @@ import {
   LocaleGlobeButton,
   useAppLocale,
 } from "@/components/i18n/AppLocaleProvider";
+import { Button } from "@/components/ui/Button";
 
 type AuthMode = "signup" | "signin";
 
@@ -438,10 +439,11 @@ export function AuthForm({
           </p>
         ) : null}
 
-        <button
+        <Button
           type="submit"
           disabled={isSubmitting || (mode === "signup" && !path)}
-          className="mt-1 rounded-full bg-mingle-accent-blue px-6 py-3.5 text-sm font-normal text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+          block
+          className="mt-1 text-sm"
         >
           {isSubmitting
             ? mode === "signup"
@@ -450,7 +452,7 @@ export function AuthForm({
             : mode === "signup"
               ? t.auth.continue
               : t.auth.signIn}
-        </button>
+        </Button>
 
         <div className="relative my-1 flex items-center gap-3">
           <div className="h-px flex-1 bg-mingle-border" />
@@ -460,15 +462,17 @@ export function AuthForm({
           <div className="h-px flex-1 bg-mingle-border" />
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="secondary"
           disabled={isSubmitting || (mode === "signup" && !path)}
           onClick={() => void continueWithGoogle()}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+          block
+          className="gap-2 text-sm"
         >
           <GoogleMark />
           {t.auth.continueGoogle}
-        </button>
+        </Button>
       </form>
 
       <p className="mt-5 text-xs leading-relaxed text-mingle-text-secondary">

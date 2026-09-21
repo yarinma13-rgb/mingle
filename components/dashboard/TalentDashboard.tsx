@@ -15,6 +15,7 @@ import {
 import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
 import { TalentMatchOverview } from "@/components/dashboard/TalentMatchOverview";
 import { PilotTips } from "@/components/pilot/PilotTips";
+import { Button } from "@/components/ui/Button";
 
 function timeAgo(iso: string): string {
   const days = Math.max(
@@ -103,7 +104,7 @@ export function TalentDashboard({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
         <ProfileCompletionRing percent={profileCompletion} />
-        <div className="mingle-banner rounded-2xl border border-mingle-border p-7">
+        <div className="mingle-banner rounded-[var(--mingle-radius-card)] border border-mingle-border p-7">
           <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
             Suggested next step
           </h2>
@@ -115,17 +116,17 @@ export function TalentDashboard({
                 : "Explore companies below and start a conversation when one feels right."}
           </p>
           {profileCompletion < 100 ? (
-            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/profile/build" size="sm" className="mt-4">
               Finish my profile
-            </Link>
+            </Button>
           ) : missingPhoto ? (
-            <Link href="/profile/build" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/profile/build" size="sm" className="mt-4">
               Add a photo
-            </Link>
+            </Button>
           ) : (
-            <Link href="/discover" className="mingle-btn-primary mt-4 inline-block text-xs">
+            <Button href="/discover" size="sm" className="mt-4">
               Open Discover
-            </Link>
+            </Button>
           )}
         </div>
       </div>
@@ -141,7 +142,7 @@ export function TalentDashboard({
 
       {dna ? <CandidateDnaPanel dna={dna} /> : null}
 
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface-elevated p-7 shadow-mingle">
+      <div className="mingle-card bg-mingle-surface-elevated p-7">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Recommended companies
         </h2>
@@ -206,7 +207,7 @@ export function TalentDashboard({
                 <Link
                   key={company.userId}
                   href={`/profile/view/${company.userId}`}
-                  className="group flex flex-col gap-2.5 rounded-2xl border border-mingle-border bg-mingle-bg p-5 transition-all hover:-translate-y-0.5 hover:border-mingle-blue/35 hover:bg-mingle-white hover:shadow-mingle"
+                  className="mingle-card-interactive group flex flex-col gap-2.5 rounded-[var(--mingle-radius-card)] border border-mingle-border bg-mingle-bg p-5 hover:border-mingle-accent-purple/30 hover:bg-mingle-white hover:shadow-mingle"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-display text-sm font-semibold tracking-tight text-mingle-text transition-colors group-hover:text-mingle-cta">

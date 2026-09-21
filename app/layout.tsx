@@ -10,7 +10,7 @@ import { AppLocaleProvider } from "@/components/i18n/AppLocaleProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
 
-/* Poppins aligns app typography with monday.com; Rubik covers Hebrew. */
+/* Poppins is monday.com's product face (Vibe); Rubik covers Hebrew. */
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
@@ -26,7 +26,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "mingle | Worth Talking To",
+  title: "mingle | Beyond the match.",
   description:
     "mingle is the career relationship platform that connects talent and companies before a hiring decision is made.",
   manifest: "/manifest.webmanifest",

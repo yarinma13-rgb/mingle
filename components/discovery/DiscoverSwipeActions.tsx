@@ -100,7 +100,7 @@ export function DiscoverSwipeActions({
           aria-label="Message"
           className="group flex flex-col items-center gap-1.5"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-black/10 bg-white text-[#3E6BE0] shadow-[0_6px_18px_rgba(28,27,46,0.1)] transition-transform group-hover:scale-105 group-active:scale-95">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-black/10 bg-white text-mingle-blue shadow-[0_6px_18px_rgba(28,27,46,0.1)] transition-transform group-hover:scale-105 group-active:scale-95">
             <svg
               viewBox="0 0 24 24"
               className="h-5 w-5"

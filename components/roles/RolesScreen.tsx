@@ -194,7 +194,7 @@ export function RolesScreen({
           {visible.map((role) => (
             <article
               key={role.id}
-              className="flex flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle"
+              className="mingle-card mingle-card-interactive flex flex-col gap-4 p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">

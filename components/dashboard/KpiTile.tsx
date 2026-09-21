@@ -67,7 +67,7 @@ export function KpiTile({
     <Link
       href={href}
       prefetch
-      className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-all duration-200 hover:-translate-y-0.5 hover:border-mingle-blue/30 hover:shadow-[0_12px_28px_rgba(0,115,234,0.12)]"
+      className="mingle-card mingle-card-interactive flex min-w-0 cursor-pointer flex-col gap-3 bg-mingle-white p-5 hover:border-mingle-accent-purple/25 hover:shadow-[0_12px_28px_rgba(123,47,247,0.1)]"
     >
       <IconBadge icon={icon} accent={accent} size={40} iconSize={19} />
       <div>

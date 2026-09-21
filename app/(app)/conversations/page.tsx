@@ -90,17 +90,18 @@ export default async function ConversationsListPage() {
   return (
     <>
       <DashboardHeading>Conversations</DashboardHeading>
-      <div className="rounded-2xl border border-mingle-border bg-mingle-surface p-6">
+      <div className="mingle-card p-6">
         {rows.length === 0 ? (
           <EmptyState
             title="No conversations yet"
             body="Once you and someone else connect, you can start a conversation here."
             actionHref="/discover"
             actionLabel="Find someone to talk to"
+            variant="inbox"
           />
         ) : (
           <>
-            <h2 className="font-display text-sm font-semibold text-mingle-text">
+            <h2 className="font-display text-sm font-semibold tracking-tight text-mingle-text">
               Conversations
             </h2>
             <div className="mt-4 flex flex-col gap-2">
@@ -109,7 +110,7 @@ export default async function ConversationsListPage() {
                   key={row.connectionId}
                   href={`/conversations/${row.connectionId}`}
                   prefetch
-                  className="flex items-center gap-3 rounded-xl border border-mingle-border bg-mingle-bg p-4 transition-colors hover:border-mingle-blue/50"
+                  className="mingle-card-interactive flex items-center gap-3 rounded-[var(--mingle-radius)] border border-mingle-border bg-mingle-bg p-4 hover:border-mingle-accent-purple/30 hover:bg-mingle-white"
                 >
                   <Avatar
                     photo={row.photo}
@@ -119,10 +120,10 @@ export default async function ConversationsListPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-display text-sm font-semibold text-mingle-text">
+                      <p className="truncate font-display text-sm font-semibold tracking-tight text-mingle-text">
                         {row.name}
                       </p>
-                      <span className="shrink-0 text-xs text-mingle-text-secondary">
+                      <span className="shrink-0 text-xs text-mingle-text-muted">
                         {row.timestamp}
                       </span>
                     </div>
@@ -137,7 +138,10 @@ export default async function ConversationsListPage() {
                     </p>
                   </div>
                   {row.unreadCount > 0 && (
-                    <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-mingle-cta px-1.5 text-[11px] font-semibold text-white">
+                    <span
+                      className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white"
+                      style={{ background: "var(--mingle-connection-gradient)" }}
+                    >
                       {row.unreadCount}
                     </span>
                   )}

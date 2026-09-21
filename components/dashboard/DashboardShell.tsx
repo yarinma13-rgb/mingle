@@ -195,9 +195,9 @@ export function DashboardShell({
                   className="group flex w-full flex-col items-center gap-1.5 py-2"
                 >
                   <span
-                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-150 ${
                       active
-                        ? "bg-mingle-nav-active-bg"
+                        ? "bg-mingle-nav-active-bg shadow-[0_4px_12px_rgba(123,47,247,0.12)]"
                         : "bg-transparent group-hover:bg-mingle-nav-hover-bg"
                     }`}
                   >
@@ -206,13 +206,13 @@ export function DashboardShell({
                       size={18}
                       className={
                         active
-                          ? "relative text-mingle-nav-active"
+                          ? "relative text-mingle-accent-purple"
                           : "relative text-mingle-nav-idle group-hover:text-mingle-nav-active"
                       }
                     />
                   </span>
                   <span
-                    className={`max-w-[5.25rem] px-0.5 text-center text-[10px] font-medium leading-snug ${
+                    className={`max-w-[5.25rem] px-0.5 text-center text-[10px] font-medium leading-snug tracking-tight ${
                       active
                         ? "text-mingle-nav-active"
                         : "text-mingle-nav-idle"
@@ -238,7 +238,7 @@ export function DashboardShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="relative z-30 flex min-h-[4.25rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/70 bg-transparent px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:min-h-[4.75rem] sm:gap-6 sm:px-6 sm:pb-0 sm:pt-[env(safe-area-inset-top)]">
+        <header className="relative z-30 flex min-h-[4.25rem] w-full shrink-0 items-center gap-3 overflow-visible border-b border-mingle-border/60 bg-mingle-surface/70 px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md sm:min-h-[4.75rem] sm:gap-6 sm:px-6 sm:pb-0 sm:pt-[env(safe-area-inset-top)]">
           <div className="shrink-0 md:hidden">
             <MingleLogo variant="mark" size={34} priority />
           </div>
@@ -251,13 +251,13 @@ export function DashboardShell({
             <div className="relative w-full max-w-md">
               <SearchIcon
                 size={16}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mingle-accent-blue"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mingle-accent-purple"
               />
               <button
                 type="button"
                 onClick={openPalette}
                 disabled={!paletteEnabled}
-                className="w-full rounded-[10px] border border-mingle-border bg-mingle-white py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text focus:border-mingle-blue focus:outline-none disabled:opacity-60"
+                className="mingle-input w-full py-2.5 pl-10 pr-4 text-left text-sm text-mingle-text-secondary hover:text-mingle-text disabled:opacity-60"
               >
                 {searchPlaceholder || resolvedSearchPlaceholder}
               </button>
@@ -270,7 +270,7 @@ export function DashboardShell({
               aria-label="Search"
               onClick={openPalette}
               disabled={!paletteEnabled}
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:text-mingle-text disabled:opacity-60 md:hidden"
+              className="mingle-icon-btn md:hidden"
             >
               <SearchIcon size={16} />
             </button>
@@ -282,7 +282,7 @@ export function DashboardShell({
               prefetch
               aria-label={t.shell.help}
               title={t.shell.help}
-              className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-mingle-border bg-mingle-white text-mingle-text-secondary transition-colors hover:border-mingle-blue hover:text-mingle-text"
+              className="mingle-icon-btn relative"
             >
               <NavPendingIndicator />
               <HelpIcon size={16} className="relative" />

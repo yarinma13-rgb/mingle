@@ -18,9 +18,9 @@
   --ld-grey-soft: #f4f1fa;
   --ld-white: #ffffff;
   --ld-line: color-mix(in srgb, var(--ld-brand-purple) 12%, transparent);
-  --ld-display: var(--font-landing-poppins), var(--font-figtree), ui-sans-serif,
+  --ld-display: var(--font-landing-poppins), var(--font-poppins), ui-sans-serif,
     system-ui, sans-serif;
-  --ld-body: var(--font-landing-poppins), var(--font-figtree), ui-sans-serif,
+  --ld-body: var(--font-landing-poppins), var(--font-poppins), ui-sans-serif,
     system-ui, sans-serif;
   --ld-max: 1140px;
   --ld-pad: clamp(1.1rem, 4vw, 1.75rem);

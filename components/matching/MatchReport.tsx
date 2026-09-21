@@ -12,7 +12,6 @@ import {
   type MatchFeedbackAction,
   type NotFitReason,
 } from "@/lib/matching/feedback";
-import { IconBadge } from "@/components/dashboard/IconBadge";
 import {
   BriefcaseIcon,
   ClockIcon,
@@ -27,9 +26,9 @@ import {
 import {
   scoreBandLabel,
   scoreBarClass,
-  scoreChipClass,
   scoreTextClass,
 } from "@/lib/matching/score-tone";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 
 const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
   High: "text-mingle-accent-purple",
@@ -86,26 +85,31 @@ function SignalChip({
   const Icon = BULLET_ICON[bullet.key];
   const shell =
     tone === "fit"
-      ? "border-mingle-success/30 bg-mingle-success/10"
-      : "border-mingle-error/30 bg-mingle-error/10";
-  const labelTone =
-    tone === "fit" ? "text-mingle-success" : "text-mingle-error";
+      ? "border-transparent bg-[color-mix(in_srgb,var(--mingle-light-pink)_50%,var(--mingle-light-purple))]"
+      : "border-[color-mix(in_srgb,var(--mingle-gap)_22%,transparent)] bg-[var(--mingle-gap-bg)]";
   return (
     <div
-      className={`flex min-w-0 flex-col gap-1 rounded-2xl border px-3 py-2.5 ${shell}`}
+      className={`flex min-w-0 flex-col gap-1 rounded-[14px] border px-3 py-2.5 ${shell}`}
     >
       <div className="flex items-center gap-1.5">
-        <IconBadge
-          icon={Icon}
-          accent={tone === "fit" ? "success" : "pink"}
-          size={20}
-          iconSize={10}
-        />
-        <p className={`text-[11px] font-semibold ${labelTone}`}>
+        <span
+          aria-hidden
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[11px] font-bold text-white ${
+            tone === "fit"
+              ? "bg-mingle-accent-purple"
+              : "bg-[var(--mingle-gap)]"
+          }`}
+        >
+          {tone === "fit" ? "✓" : "○"}
+        </span>
+        <p className="text-[12px] font-semibold text-mingle-text">
           {bullet.label}
         </p>
+        <Icon className="ml-auto hidden h-3.5 w-3.5 text-mingle-text-muted sm:block" size={14} />
       </div>
-      <p className="text-[12px] leading-snug text-mingle-text">{bullet.finding}</p>
+      <p className="text-[12.5px] leading-snug text-mingle-text-secondary">
+        {bullet.finding}
+      </p>
     </div>
   );
 }
@@ -156,16 +160,16 @@ export function MatchReportBody({
   report: MatchReport;
   compact?: boolean;
 }) {
-  const whyTitle = "Why this is a potential match";
-  const mismatchTitle = "What to examine / risks";
+  const whyTitle = "Why it works";
+  const mismatchTitle = "Potential gaps";
   const riskItems =
     report.salaryGapPercent != null &&
     !report.mismatch.some((b) => b.label === "Salary")
       ? [
           {
             key: "experience" as const,
-            label: "Salary",
-            finding: `Salary gap of about ${report.salaryGapPercent}%`,
+            label: "Compensation",
+            finding: `About ${report.salaryGapPercent}% gap between expectation and role range`,
           },
           ...report.mismatch,
         ]
@@ -173,35 +177,36 @@ export function MatchReportBody({
           b.label === "Salary" && report.salaryGapPercent != null
             ? {
                 ...b,
-                finding: `Salary gap of about ${report.salaryGapPercent}%`,
+                label: "Compensation",
+                finding: `About ${report.salaryGapPercent}% gap between expectation and role range`,
               }
             : b,
         );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
-            Overall Match
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-4 rounded-[18px] border border-mingle-border bg-mingle-surface px-4 py-3.5 shadow-mingle">
+        <MatchScoreRing score={report.overall} size={88} showLabel />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mingle-text-secondary">
+            Match
           </p>
-          <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>
-              {report.overall}%
-            </span>
+          <p className="mt-0.5 font-display text-lg font-bold tracking-tight text-mingle-text">
+            {scoreBandLabel(report.overall)}
+          </p>
+          <p
+            className={`mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
+          >
+            <ShieldCheckIcon size={14} className="shrink-0" />
+            <span>Confidence: {report.confidence}</span>
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
-        >
-          {scoreBandLabel(report.overall)}
-        </span>
       </div>
 
       {!compact ? <FitBars axes={report.axes} /> : null}
 
       {report.technicalSignal ? (
-        <p className="text-[11px] leading-snug text-mingle-text">
+        <p className="text-[12px] leading-snug text-mingle-text">
           <span className="font-semibold text-mingle-accent-blue">
             Verified technical signal:
           </span>{" "}
@@ -211,30 +216,26 @@ export function MatchReportBody({
         </p>
       ) : null}
 
-      <p
-        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
-      >
-        <ShieldCheckIcon size={14} className="shrink-0" />
-        <span>Confidence: {report.confidence}</span>
-      </p>
-
       <section>
-        <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
+        <h3 className="font-display text-[15px] font-semibold tracking-tight text-mingle-text">
           {whyTitle}
         </h3>
         <ChipGrid
           items={report.why}
           tone="fit"
           previewCount={compact ? 2 : 4}
-          empty="Nothing strongly aligned yet."
+          empty="Nothing strongly aligned yet — dig into the conversation."
         />
       </section>
 
       {riskItems.length > 0 ? (
         <section>
-          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-error">
+          <h3 className="font-display text-[15px] font-semibold tracking-tight text-mingle-text">
             {mismatchTitle}
           </h3>
+          <p className="mt-0.5 text-[12px] text-mingle-text-secondary">
+            Transparent signals to explore — not automatic rejection.
+          </p>
           <ChipGrid
             items={riskItems}
             tone="risk"
@@ -245,7 +246,7 @@ export function MatchReportBody({
       ) : null}
 
       {!compact ? (
-        <p className="text-sm italic text-mingle-text-secondary">
+        <p className="text-[13px] italic leading-relaxed text-mingle-text-secondary">
           {report.whatMattersMost}
         </p>
       ) : null}

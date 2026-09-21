@@ -1,6 +1,6 @@
 /**
- * Radial match gauge — uses brand semantic score colors only
- * (success / warning / error from mingle tokens).
+ * Radial match gauge — pink → purple → blue brand gradient.
+ * Communicates fit strength without traffic-light semantics.
  */
 export function MatchScoreRing({
   score,
@@ -17,19 +17,14 @@ export function MatchScoreRing({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
-  const color =
-    value >= 70
-      ? "var(--mingle-success)"
-      : value >= 35
-        ? "var(--mingle-warning)"
-        : "var(--mingle-error)";
+  const gradId = `match-ring-${size}-${value}`;
   const track = showLabel
-    ? "var(--mingle-border)"
-    : "rgba(255,255,255,0.25)";
+    ? "rgba(28,27,46,0.08)"
+    : "rgba(255,255,255,0.28)";
   const labelColor = showLabel ? "text-mingle-text" : "text-white";
   const shell = showLabel
-    ? "bg-mingle-surface-elevated shadow-mingle"
-    : "bg-black/25 shadow-sm backdrop-blur";
+    ? "bg-mingle-surface shadow-mingle"
+    : "bg-black/20 shadow-sm backdrop-blur";
 
   return (
     <div
@@ -38,6 +33,13 @@ export function MatchScoreRing({
       aria-label={`Match score ${value}%`}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="var(--mingle-pink)" />
+            <stop offset="48%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-blue)" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -51,17 +53,19 @@ export function MatchScoreRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={color}
+          stroke={`url(#${gradId})`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={offset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          className="motion-safe:animate-[mingle-ring-fade_0.55s_ease-out]"
+          style={{ transformOrigin: "center" }}
         />
       </svg>
       <span
-        className={`absolute inset-0 flex items-center justify-center font-display font-bold ${labelColor} ${
-          size >= 64 ? "text-sm" : "text-[11px]"
+        className={`absolute inset-0 flex flex-col items-center justify-center font-display font-bold leading-none ${labelColor} ${
+          size >= 88 ? "text-lg" : size >= 64 ? "text-sm" : "text-[11px]"
         }`}
       >
         {value}%

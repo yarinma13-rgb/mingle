@@ -2,21 +2,28 @@ export type ThemeName = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "mingle-theme";
 
+/** Final brand primary palette (web + mobile, 20.9 decision). */
 export const brand = {
-  pink: "#F65F7C",
-  pinkDeep: "#D83A52",
-  blue: "#0073EA",
-  purple: "#9D5CF2",
-  cta: "#0073EA",
+  pink: "#EA1E63",
+  pinkDeep: "#D01856",
+  blue: "#3E6BE0",
+  purple: "#7B2FF7",
+  cta: "#3E6BE0",
   accentPink: "#EA1E63",
   accentMagenta: "#C42A9B",
   accentPurple: "#7B2FF7",
   accentViolet: "#5548E8",
   accentBlue: "#3E6BE0",
   success: "#00CA72",
-  warning: "#FFCC00",
-  error: "#D83A52",
+  warning: "#E8A54B",
+  error: "#D01856",
   connection: ["#EA1E63", "#7B2FF7", "#3E6BE0"] as const,
+  lightPink: "#FDEAF1",
+  lightPurple: "#F1E8FE",
+  lightBlue: "#E9EFFE",
+  productBg: "#F4F1FA",
+  text: "#1C1B2E",
+  textSecondary: "#65647E",
 } as const;
 
 export type ThemeColors = {
@@ -37,19 +44,19 @@ export type ThemeColors = {
 
 export const themes: Record<ThemeName, ThemeColors> = {
   light: {
-    background: "#F7F8FC",
-    productBg: "#EEF4FB",
-    lavender: "#EEF4FB",
+    background: "#FFFFFF",
+    productBg: "#F4F1FA",
+    lavender: "#F1E8FE",
     surface: "#FFFFFF",
     surfaceElevated: "#FFFFFF",
-    text: "#252238",
-    textSecondary: "#77738A",
-    textMuted: "#A5A1B3",
-    border: "#D9E4F2",
-    navActiveBg: "#ECEFF5",
-    navActive: "#323338",
-    navIdle: "#676879",
-    navDivider: "#E6E9EF",
+    text: "#1C1B2E",
+    textSecondary: "#65647E",
+    textMuted: "#8B8AA3",
+    border: "rgba(28,27,46,0.08)",
+    navActiveBg: "#F1E8FE",
+    navActive: "#1C1B2E",
+    navIdle: "#65647E",
+    navDivider: "rgba(28,27,46,0.08)",
   },
   dark: {
     background: "#0F1420",
@@ -73,4 +80,3 @@ export function scoreTone(score: number): string {
   if (score >= 45) return brand.warning;
   return brand.error;
 }
-
