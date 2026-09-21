@@ -1,21 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  /* Official palette — sampled from the 2026 brand mark. Replaces
-     #E2378D / #7362E2 / #4D42DB. Source of truth for color is this file. */
-  --mingle-pink: #f65f7c;
+    /* Official palette (updated 2026-09-21, handoff-dev-agent-ui-redesign.md
+     Phase 0) — pink/purple/blue promoted from the accent tier below to
+     primary. Source of truth for color is this file. */
+  --mingle-pink: #ea1e63;
   --mingle-pink-deep: #d83a52;
-  --mingle-blue: #0073ea;
-  /* Midpoint of the mark's pink→blue overlap (violet, not a flat fill
-     in the asset). Use for chips/text. The blend itself is the
-     connection gradient — match / mingle moments only. */
-  --mingle-purple: #9d5cf2;
-  --mingle-indigo: #0073ea;
-  --mingle-cta: #0073ea;
+  --mingle-blue: #3e6be0;
+  --mingle-purple: #7b2ff7;
+  --mingle-indigo: #3e6be0;
+  --mingle-cta: #3e6be0;
   /* Saturated accents for icons and small highlights only — not
      backgrounds, not replacements for the brand tokens above. */
   --mingle-accent-pink: #ea1e63;
-  --mingle-accent-magenta: #c42a9b;
+--mingle-accent-magenta: #c42a9b;
   --mingle-accent-purple: #7b2ff7;
   --mingle-accent-violet: #5548e8;
   --mingle-accent-blue: #3e6be0;
