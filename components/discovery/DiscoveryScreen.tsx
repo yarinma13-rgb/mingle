@@ -224,14 +224,14 @@ function DiscoveryCardView({
           <motion.span
             aria-hidden
             style={{ opacity: interestOpacity }}
-            className="pointer-events-none absolute right-4 top-4 z-30 -rotate-6 rounded-full bg-[#7B2FF7] px-3 py-1 text-xs font-bold text-white shadow-sm"
+            className="pointer-events-none absolute right-4 top-4 z-30 -rotate-6 rounded-full bg-mingle-purple px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Interested
           </motion.span>
           <motion.span
             aria-hidden
             style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute left-4 top-4 z-30 rotate-6 rounded-full bg-[#EA1E63] px-3 py-1 text-xs font-bold text-white shadow-sm"
+            className="pointer-events-none absolute left-4 top-4 z-30 rotate-6 rounded-full bg-mingle-pink px-3 py-1 text-xs font-bold text-white shadow-sm"
           >
             Skip
           </motion.span>
