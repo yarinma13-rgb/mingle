@@ -248,20 +248,30 @@ button:disabled {
 }
 
 .mingle-btn-primary {
-  border-radius: 9999px;
-  background: var(--mingle-blue);
-  padding: 0.7rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--mingle-connection-gradient);
+  padding: 0 1.5rem;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
-  transition: background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
 
 .mingle-btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 88%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(123, 47, 247, 0.25);
 }
 
 .mingle-btn-primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 78%, black);
+  transform: translateY(0);
+  filter: brightness(0.94);
 }
 
 .mingle-btn-primary:disabled {
@@ -269,12 +279,17 @@ button:disabled {
 }
 
 .mingle-btn-secondary {
-  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
   border: 1px solid var(--mingle-border);
   background: var(--mingle-white);
-  padding: 0.7rem 1.5rem;
+  padding: 0 1.5rem;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--mingle-blue);
+  color: var(--mingle-text);
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -282,9 +297,32 @@ button:disabled {
 }
 
 .mingle-btn-secondary:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--mingle-blue) 35%, var(--mingle-border));
+  border-color: color-mix(in srgb, var(--mingle-purple) 35%, var(--mingle-border));
   background: var(--mingle-lavender);
-  box-shadow: 0 4px 16px rgba(0, 115, 234, 0.08);
+  box-shadow: 0 4px 16px rgba(123, 47, 247, 0.08);
+}
+
+.mingle-btn-tertiary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  padding: 0 0.75rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mingle-blue);
+  transition: background-color 0.15s ease;
+}
+
+.mingle-btn-tertiary:hover:not(:disabled) {
+  background: var(--mingle-lavender);
+}
+
+.mingle-btn-tertiary:disabled {
+  opacity: 0.45;
 }
 
 .mingle-chip {
@@ -328,15 +366,6 @@ button:disabled {
   color: #ff8eab;
 }
 
-[data-theme="dark"] .mingle-btn-secondary {
-  background: var(--mingle-surface);
-  color: #8eb4ff;
-}
-
-[data-theme="dark"] .mingle-btn-secondary:hover:not(:disabled) {
-  background: var(--mingle-lavender);
-  box-shadow: var(--mingle-shadow);
-}
 
 [data-theme="dark"] .mingle-banner {
   background: linear-gradient(180deg, var(--mingle-product-bg), var(--mingle-lavender));
@@ -465,9 +494,6 @@ button:disabled {
 }
 [data-theme="dark"] .border-mingle-border {
   border-color: var(--mingle-border);
-}
-[data-theme="dark"] .mingle-btn-secondary {
-  color: var(--mingle-text);
 }
 
 /* Product demo (/demo) — full-bleed product surface for recording */
