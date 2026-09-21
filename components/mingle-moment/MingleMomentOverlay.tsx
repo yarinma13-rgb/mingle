@@ -7,10 +7,10 @@ import { MingleLogo } from "@/components/MingleLogo";
 // component and pose assets are kept, just not rendered here for now.
 
 const CONFETTI_COLORS = [
-  "#F65F7C",
+  "#EA1E63",
   "#D83A52",
-  "#9D5CF2",
-  "#0073EA",
+  "#7B2FF7",
+  "#3E6BE0",
 ];
 const CONFETTI_COUNT = 28;
 
