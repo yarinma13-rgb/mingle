@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { DEMO_EMMA } from "@/lib/demo/data";
 
-const CONFETTI_COLORS = ["#F65F7C", "#D83A52", "#9D5CF2", "#0073EA"];
+const CONFETTI_COLORS = ["#EA1E63", "#D83A52", "#7B2FF7", "#3E6BE0"];
 const CONFETTI_COUNT = 28;
 
 type ConfettiSpec = {
