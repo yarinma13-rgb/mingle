@@ -210,7 +210,7 @@ export function growthReportToEmailHtml(report: GrowthReport): string {
   return `<!doctype html>
 <html><body style="font-family:Inter,Arial,sans-serif;background:#f7f8fc;padding:24px;color:#252238;">
 <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:16px;padding:28px;border:1px solid #d9e4f2;">
-<p style="margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#0073ea;font-weight:700;">mingle growth</p>
+<p style="margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#3e6be0;font-weight:700;">mingle growth</p>
 <h1 style="margin:0 0 16px;font-size:20px;">Biweekly learning report</h1>
 <pre style="white-space:pre-wrap;font-family:Inter,Arial,sans-serif;font-size:13px;line-height:1.55;margin:0;">${escaped}</pre>
 </div></body></html>`;
