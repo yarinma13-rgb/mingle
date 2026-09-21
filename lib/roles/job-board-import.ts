@@ -11,7 +11,7 @@ import {
   stripTags,
 } from "@/lib/roles/html-text";
 
-export type JobBoardHost = "alljobs" | "drushim" | "jobmaster";
+export type JobBoardHost = "alljobs" | "drushim" | "jobmaster" | "linkedin";
 
 export type ParsedJobBoardJd = {
   host: JobBoardHost;
@@ -25,7 +25,6 @@ export type ParsedJobBoardJd = {
 export type JobBoardImportErrorCode =
   | "invalid_url"
   | "unsupported_host"
-  | "linkedin"
   | "fetch_failed"
   | "blocked"
   | "empty"
@@ -48,6 +47,7 @@ const ALLOWED_SUFFIXES = [
   "alljobs.co.il",
   "drushim.co.il",
   "jobmaster.co.il",
+  "linkedin.com",
 ] as const;
 
 const FETCH_TIMEOUT_MS = 12_000;
@@ -60,10 +60,10 @@ function hostMatches(hostname: string, suffix: string): boolean {
 
 export function resolveJobBoardHost(url: URL): JobBoardHost | null {
   const hostname = url.hostname.toLowerCase();
-  if (hostname.includes("linkedin.")) return null;
   if (hostMatches(hostname, "alljobs.co.il")) return "alljobs";
   if (hostMatches(hostname, "drushim.co.il")) return "drushim";
   if (hostMatches(hostname, "jobmaster.co.il")) return "jobmaster";
+  if (hostMatches(hostname, "linkedin.com")) return "linkedin";
   return null;
 }
 
@@ -89,13 +89,6 @@ export function assertImportableJobBoardUrl(raw: string): {
     );
   }
   const url = new URL(trimmed);
-  const hostname = url.hostname.toLowerCase();
-  if (hostname.includes("linkedin.")) {
-    throw new JobBoardImportError(
-      "linkedin",
-      `LinkedIn job links are not supported. ${MANUAL_PASTE_HINT}`,
-    );
-  }
   const host = resolveJobBoardHost(url);
   if (!host) {
     const allowed = ALLOWED_SUFFIXES.join(", ");
@@ -114,6 +107,8 @@ function looksBlocked(html: string): boolean {
     sample.includes("attention required") ||
     sample.includes("cf-browser-verification") ||
     sample.includes("checking your browser") ||
+    sample.includes("/authwall") ||
+    sample.includes("join linkedin") ||
     (sample.includes("captcha") && sample.includes("challenge"))
   );
 }
@@ -374,6 +369,49 @@ function parseJobMaster(html: string, sourceUrl: string): ParsedJobBoardJd {
   };
 }
 
+function parseLinkedIn(html: string, sourceUrl: string): ParsedJobBoardJd {
+  const ld = extractJsonLdJobPosting(html);
+
+  let title = ld?.title ?? "";
+  let description = ld?.description ?? "";
+
+  if (!title) {
+    title =
+      cleanTitle(metaContent(html, "og:title")) ||
+      cleanTitle(documentTitle(html)) ||
+      firstHeading(html);
+  }
+  if (!description) {
+    description =
+      stripTags(
+        elementById(html, "job-details") ||
+          firstMatchHtml(
+            html,
+            /class=["'][^"']*show-more-less-html__markup[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+          ),
+        ) ||
+      metaContent(html, "og:description") ||
+      metaContent(html, "description");
+  }
+
+  const rawText = joinSections(title, description, "");
+  if (!rawText) {
+    throw new JobBoardImportError(
+      "empty",
+      `We could not read that LinkedIn listing — it may require signing in to view. ${MANUAL_PASTE_HINT}`,
+    );
+  }
+
+  return {
+    host: "linkedin",
+    title: cleanTitle(title),
+    description,
+    requirements: "",
+    rawText,
+    sourceUrl,
+  };
+}
+
 export function parseJobBoardHtml(
   html: string,
   sourceUrl: string,
@@ -387,6 +425,8 @@ export function parseJobBoardHtml(
       return parseDrushim(normalized, sourceUrl);
     case "jobmaster":
       return parseJobMaster(normalized, sourceUrl);
+    case "linkedin":
+      return parseLinkedIn(normalized, sourceUrl);
     default: {
       const _exhaustive: never = host;
       return _exhaustive;
