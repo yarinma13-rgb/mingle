@@ -1,6 +1,10 @@
+import { useId } from "react";
+
 /**
- * Radial match gauge — uses brand semantic score colors only
- * (success / warning / error from mingle tokens).
+ * Radial match gauge — brand pink → purple → blue gradient stroke,
+ * same connection-gradient used everywhere else. Fit strength is
+ * communicated by the "Why this match" copy underneath, not by
+ * traffic-lighting the ring itself (see score-tone.ts).
  */
 export function MatchScoreRing({
   score,
@@ -12,17 +16,12 @@ export function MatchScoreRing({
   /** When true, render for light surfaces (Discover desktop aside / list). */
   showLabel?: boolean;
 }) {
+  const gid = useId().replace(/:/g, "");
   const value = Math.max(0, Math.min(100, Math.round(score)));
   const stroke = size >= 64 ? 7 : 5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
-  const color =
-    value >= 70
-      ? "var(--mingle-success)"
-      : value >= 35
-        ? "var(--mingle-warning)"
-        : "var(--mingle-error)";
   const track = showLabel
     ? "var(--mingle-border)"
     : "rgba(255,255,255,0.25)";
@@ -38,6 +37,13 @@ export function MatchScoreRing({
       aria-label={`Match score ${value}%`}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+        <defs>
+          <linearGradient id={`${gid}-ring`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--mingle-pink)" />
+            <stop offset="48%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-blue)" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -51,7 +57,7 @@ export function MatchScoreRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={color}
+          stroke={`url(#${gid}-ring)`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
