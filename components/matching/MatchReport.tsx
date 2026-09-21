@@ -84,20 +84,20 @@ function SignalChip({
   tone: "fit" | "risk";
 }) {
   const Icon = BULLET_ICON[bullet.key];
-  const shell =
+    const shell =
     tone === "fit"
       ? "border-mingle-success/30 bg-mingle-success/10"
-      : "border-mingle-error/30 bg-mingle-error/10";
+      : "border-mingle-warning/40 bg-mingle-warning/10";
   const labelTone =
-    tone === "fit" ? "text-mingle-success" : "text-mingle-error";
-  return (
+    tone === "fit" ? "text-mingle-success" : "text-mingle-text";
+    return (
     <div
       className={`flex min-w-0 flex-col gap-1 rounded-2xl border px-3 py-2.5 ${shell}`}
     >
       <div className="flex items-center gap-1.5">
         <IconBadge
           icon={Icon}
-          accent={tone === "fit" ? "success" : "pink"}
+          accent={tone === "fit" ? "success" : "waiting"}
           size={20}
           iconSize={10}
         />
@@ -232,7 +232,7 @@ export function MatchReportBody({
 
       {riskItems.length > 0 ? (
         <section>
-          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-error">
+          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-text-secondary">
             {mismatchTitle}
           </h3>
           <ChipGrid
