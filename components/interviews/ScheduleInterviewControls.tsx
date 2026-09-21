@@ -321,7 +321,7 @@ export function ScheduleInterviewControls({
                 onClick={() =>
                   void (mode === "propose" ? submitPropose() : submitDirect())
                 }
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                className="mingle-btn-primary !min-h-10 text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : mode === "propose" ? "Send slots" : "Book now"}
               </button>
@@ -381,7 +381,7 @@ export function AcceptInterviewSlots({
                   router.refresh();
                 })();
               }}
-              className="rounded-full bg-mingle-cta px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+              className="mingle-btn-primary !min-h-8 !px-3 !py-1.5 text-xs disabled:opacity-60"
             >
               {busyId === slot.id ? "Booking…" : "Accept"}
             </button>
@@ -555,7 +555,7 @@ export function UpcomingInterviewBanner({
                 type="button"
                 disabled={busy || !when}
                 onClick={() => void onReschedule()}
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                className="mingle-btn-primary !min-h-10 text-sm disabled:opacity-60"
               >
                 {busy ? "Saving…" : "Save new time"}
               </button>
@@ -625,7 +625,7 @@ export function GoogleCalendarConnectCard() {
         ) : status.configured ? (
           <a
             href="/api/auth/google-calendar?returnTo=/settings"
-            className="rounded-full bg-mingle-cta px-4 py-2 text-xs font-semibold text-white"
+            className="mingle-btn-primary !min-h-9 !px-4 !py-2 text-xs"
           >
             Connect Google Calendar
           </a>

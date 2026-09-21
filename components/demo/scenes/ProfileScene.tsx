@@ -58,7 +58,7 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
             </p>
           </div>
           <span
-            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
+            className={`rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
           >
             <span className={scoreTextClass(report.overall)}>
               {report.overall}% relevance
@@ -68,11 +68,14 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
         <div className="mt-5 flex flex-col gap-2">
           <div
             data-demo-target="profile-connect"
-            className="rounded-full bg-mingle-cta px-6 py-3 text-center font-display text-sm font-semibold text-white"
+            className="mingle-btn-primary w-full text-center text-sm"
           >
             Start a connection
+            <span className="mingle-btn-arrow" aria-hidden>
+              →
+            </span>
           </div>
-          <div className="rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text">
+          <div className="mingle-btn-secondary w-full text-center text-sm">
             Save for later
           </div>
         </div>

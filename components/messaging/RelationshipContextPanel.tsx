@@ -56,13 +56,17 @@ function timeAgo(iso: string): string {
 
 function FactorLine({ factor, tone }: { factor: MatchFactor; tone: "aligned" | "explore" }) {
   return (
-    <li className="flex gap-2 text-xs text-mingle-text-secondary">
+    <li className="flex gap-2 text-[13px] text-mingle-text-secondary">
       <span
         aria-hidden
-        className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${
-          tone === "aligned" ? "bg-mingle-accent-purple" : "bg-mingle-accent-pink"
+        className={`mt-0.5 shrink-0 font-bold ${
+          tone === "aligned"
+            ? "text-mingle-accent-purple"
+            : "text-[color:var(--mingle-gap-accent)]"
         }`}
-      />
+      >
+        {tone === "aligned" ? "✓" : "○"}
+      </span>
       <span>
         <span className="font-medium text-mingle-text">{factor.label}.</span>{" "}
         {factor.detail}
@@ -93,19 +97,21 @@ export function RelationshipContextPanel({
   cvFileName?: string | null;
 }) {
   return (
-    <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+    <div className="flex w-full flex-col gap-5 rounded-[20px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
       <div className="flex items-center gap-3">
         <span
-          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+          className="rounded-[10px] px-3 py-1.5 text-xs font-semibold text-white"
           style={{ background: "var(--mingle-connection-gradient)" }}
         >
-          {score}% match
+          {score}% Match
         </span>
         <div>
-          <p className="font-display text-sm font-semibold text-mingle-text">
-            Why this fit
+          <p className="font-display text-[15px] font-semibold text-mingle-text">
+            Why it works
           </p>
-          <p className="text-xs text-mingle-text-secondary">Shared signals, not a score alone</p>
+          <p className="text-xs text-mingle-text-secondary">
+            Shared signals — not a score alone
+          </p>
         </div>
       </div>
 

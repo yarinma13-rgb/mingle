@@ -1,23 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Official palette — sampled from the 2026 brand mark. Replaces
-     #E2378D / #7362E2 / #4D42DB. Source of truth for color is this file. */
-  --mingle-pink: #f65f7c;
-  --mingle-pink-deep: #d83a52;
-  --mingle-blue: #0073ea;
-  /* Midpoint of the mark's pink→blue overlap (violet, not a flat fill
-     in the asset). Use for chips/text. The blend itself is the
-     connection gradient — match / mingle moments only. */
-  --mingle-purple: #9d5cf2;
-  --mingle-indigo: #0073ea;
-  --mingle-cta: #0073ea;
-  /* Saturated accents for icons and small highlights only — not
-     backgrounds, not replacements for the brand tokens above. */
+  /* mingle brand palette — premium SaaS product tokens. */
+  --mingle-pink: #ea1e63;
+  --mingle-pink-deep: #c91854;
+  --mingle-blue: #3e6be0;
+  --mingle-purple: #7b2ff7;
+  --mingle-indigo: #3e6be0;
+  --mingle-cta: #7b2ff7;
   --mingle-accent-pink: #ea1e63;
   --mingle-accent-magenta: #c42a9b;
   --mingle-accent-purple: #7b2ff7;
-  --mingle-accent-violet: #5548e8;
+  --mingle-accent-violet: #6a3de8;
   --mingle-accent-blue: #3e6be0;
   --mingle-connection-gradient: linear-gradient(
     135deg,
@@ -25,55 +19,61 @@
     #7b2ff7 48%,
     #3e6be0 100%
   );
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-light-pink: #fdeaf1;
+  --mingle-light-purple: #f1e8fe;
+  --mingle-light-blue: #e9effe;
+  --mingle-gap-bg: #faf6f2;
+  --mingle-gap-accent: #c47a5a;
+  --mingle-background: #f4f1fa;
+  --mingle-bg: #f4f1fa;
+  --mingle-lavender: #f1e8fe;
+  --mingle-product-bg: #f4f1fa;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-success: #00ca72;
-  --mingle-warning: #ffcc00;
-  --mingle-error: #d83a52;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
-  --mingle-radius-sm: 6px;
-  --mingle-radius: 10px;
-  --mingle-radius-card: 16px;
-  --mingle-radius-lg: 20px;
-  --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
-  --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
-  --mingle-nav-idle: #676879;
-  --mingle-nav-divider: #e6e9ef;
-  --font-display: var(--font-poppins);
-  --font-sans: var(--font-poppins);
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-success: #2f9d6a;
+  --mingle-warning: #d4a017;
+  --mingle-error: #c47a5a;
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
+  --mingle-shadow-hover: 0 12px 36px rgba(28, 27, 46, 0.09);
+  --mingle-radius-sm: 8px;
+  --mingle-radius: 12px;
+  --mingle-radius-card: 18px;
+  --mingle-radius-lg: 22px;
+  --mingle-mascot-backdrop: #f4f1fa;
+  --mingle-nav-active-bg: #f1e8fe;
+  --mingle-nav-hover-bg: #f8f6fc;
+  --mingle-nav-active: #1c1b2e;
+  --mingle-nav-idle: #65647e;
+  --mingle-nav-divider: rgba(28, 27, 46, 0.08);
+  --font-display: var(--font-figtree);
+  --font-sans: var(--font-figtree);
   --font-hebrew: var(--font-rubik);
 }
 
 [data-theme="light"] {
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-background: #f4f1fa;
+  --mingle-bg: #f4f1fa;
+  --mingle-lavender: #f1e8fe;
+  --mingle-product-bg: #f4f1fa;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
-  --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
-  --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
-  --mingle-nav-idle: #676879;
-  --mingle-nav-divider: #e6e9ef;
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
+  --mingle-mascot-backdrop: #f4f1fa;
+  --mingle-nav-active-bg: #f1e8fe;
+  --mingle-nav-hover-bg: #f8f6fc;
+  --mingle-nav-active: #1c1b2e;
+  --mingle-nav-idle: #65647e;
+  --mingle-nav-divider: rgba(28, 27, 46, 0.08);
 }
 
 /* Original dark product surface (#0F1420 family), mapped onto the
@@ -133,8 +133,8 @@
   --color-mingle-nav-idle: var(--mingle-nav-idle);
   --color-mingle-nav-divider: var(--mingle-nav-divider);
 
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-hebrew: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-mingle: var(--mingle-shadow);
@@ -173,9 +173,8 @@ html {
   pointer-events: none;
   background-color: var(--mingle-background);
   background-image:
-    radial-gradient(ellipse 85% 60% at 0% 0%, #fdeaf1 0%, transparent 52%),
-    radial-gradient(ellipse 75% 55% at 100% 0%, #e9effe 0%, transparent 50%),
-    radial-gradient(ellipse 65% 50% at 90% 100%, #f1e8fe 0%, transparent 48%),
+    radial-gradient(ellipse 80% 55% at 0% 0%, #fdeaf1 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 0%, #e9effe 0%, transparent 52%),
     linear-gradient(180deg, #ffffff 0%, #f4f1fa 100%);
 }
 
@@ -196,8 +195,17 @@ html[data-theme="dark"] .mingle-app-canvas::before {
 
 body {
   color: var(--mingle-text);
-  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
+  font-feature-settings: "ss01" on, "cv11" on;
+  letter-spacing: -0.011em;
+}
+
+.font-display,
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
 }
 
 @media (max-width: 767px) {
@@ -247,58 +255,109 @@ button:disabled {
 }
 .mingle-card-interactive:hover {
   transform: translateY(-2px);
+  box-shadow: var(--mingle-shadow-hover);
 }
 
 .mingle-btn-primary {
-  border-radius: 9999px;
-  background: var(--mingle-blue);
-  padding: 0.7rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  border-radius: var(--mingle-radius);
+  background: var(--mingle-connection-gradient);
+  padding: 0.7rem 1.35rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #ffffff;
-  transition: background-color 0.15s ease;
+  box-shadow: 0 6px 20px rgba(123, 47, 247, 0.18);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
 
 .mingle-btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 88%, black);
+  filter: brightness(1.03);
+  box-shadow: 0 8px 24px rgba(123, 47, 247, 0.24);
+  transform: translateY(-1px);
+}
+
+.mingle-btn-primary:hover:not(:disabled) .mingle-btn-arrow {
+  transform: translateX(3px);
 }
 
 .mingle-btn-primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 78%, black);
+  filter: brightness(0.97);
+  transform: translateY(0);
 }
 
 .mingle-btn-primary:disabled {
   opacity: 0.45;
+  box-shadow: none;
+}
+
+.mingle-btn-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
 }
 
 .mingle-btn-secondary {
-  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  border-radius: var(--mingle-radius);
   border: 1px solid var(--mingle-border);
   background: var(--mingle-white);
-  padding: 0.7rem 1.5rem;
+  padding: 0.7rem 1.35rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--mingle-blue);
+  color: var(--mingle-text);
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .mingle-btn-secondary:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--mingle-blue) 35%, var(--mingle-border));
-  background: var(--mingle-lavender);
-  box-shadow: 0 4px 16px rgba(0, 115, 234, 0.08);
+  border-color: rgba(28, 27, 46, 0.14);
+  background: #faf9fc;
+  box-shadow: var(--mingle-shadow);
+  transform: translateY(-1px);
+}
+
+.mingle-btn-tertiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 40px;
+  border-radius: var(--mingle-radius);
+  background: transparent;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mingle-text);
+  transition: color 0.15s ease;
+}
+
+.mingle-btn-tertiary:hover:not(:disabled) {
+  color: var(--mingle-accent-purple);
 }
 
 .mingle-chip {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background: var(--mingle-lavender);
-  padding: 0.25rem 0.7rem;
-  font-size: 11px;
+  background: var(--mingle-light-purple);
+  padding: 0.4rem 0.85rem;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--mingle-blue);
+  color: var(--mingle-text);
+  border: none;
   transition:
     background-color 0.15s ease,
     color 0.15s ease,
@@ -306,8 +365,71 @@ button:disabled {
 }
 
 .mingle-chip-pink {
-  background: color-mix(in srgb, var(--mingle-pink) 14%, var(--mingle-lavender));
-  color: var(--mingle-pink-deep);
+  background: var(--mingle-light-pink);
+  color: var(--mingle-text);
+}
+
+.mingle-chip-blue {
+  background: var(--mingle-light-blue);
+  color: var(--mingle-text);
+}
+
+.mingle-chip-matched {
+  background: color-mix(in srgb, var(--mingle-light-pink) 55%, var(--mingle-light-purple));
+  color: var(--mingle-text);
+}
+
+.mingle-chip-gap {
+  background: var(--mingle-gap-bg);
+  color: var(--mingle-text-secondary);
+}
+
+.mingle-input,
+input.mingle-input,
+textarea.mingle-input,
+select.mingle-input {
+  width: 100%;
+  min-height: 48px;
+  border-radius: var(--mingle-radius);
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--mingle-text);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mingle-input::placeholder {
+  color: var(--mingle-text-secondary);
+}
+
+.mingle-input:focus {
+  border-color: color-mix(in srgb, var(--mingle-accent-blue) 45%, var(--mingle-border));
+  box-shadow: 0 0 0 3px rgba(62, 107, 224, 0.12);
+}
+
+.mingle-logo-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+}
+
+.mingle-logo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
 }
 
 .profile-section {
@@ -317,12 +439,12 @@ button:disabled {
 }
 
 .profile-section:hover {
-  box-shadow: 0 10px 28px rgba(45, 27, 78, 0.06);
+  box-shadow: var(--mingle-shadow);
 }
 
 [data-theme="dark"] .mingle-chip {
-  background: color-mix(in srgb, var(--mingle-accent-blue) 22%, var(--mingle-surface));
-  color: #9db7ff;
+  background: color-mix(in srgb, var(--mingle-accent-purple) 22%, var(--mingle-surface));
+  color: #d4c4ff;
 }
 
 [data-theme="dark"] .mingle-chip-pink {
@@ -330,9 +452,14 @@ button:disabled {
   color: #ff8eab;
 }
 
+[data-theme="dark"] .mingle-chip-blue {
+  background: color-mix(in srgb, var(--mingle-accent-blue) 22%, var(--mingle-surface));
+  color: #9db7ff;
+}
+
 [data-theme="dark"] .mingle-btn-secondary {
   background: var(--mingle-surface);
-  color: #8eb4ff;
+  color: var(--mingle-text);
 }
 
 [data-theme="dark"] .mingle-btn-secondary:hover:not(:disabled) {
