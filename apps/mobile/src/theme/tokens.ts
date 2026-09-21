@@ -3,11 +3,14 @@ export type ThemeName = "light" | "dark";
 export const THEME_STORAGE_KEY = "mingle-theme";
 
 export const brand = {
-  pink: "#F65F7C",
+    // Updated 2026-09-21, handoff-dev-agent-ui-redesign.md Phase 0 — pink/
+  // purple/blue promoted from the accent tier below to primary, mirroring
+  // app/globals.css.
+  pink: "#EA1E63",
   pinkDeep: "#D83A52",
-  blue: "#0073EA",
-  purple: "#9D5CF2",
-  cta: "#0073EA",
+  blue: "#3E6BE0",
+  purple: "#7B2FF7",
+  cta: "#3E6BE0",
   accentPink: "#EA1E63",
   accentMagenta: "#C42A9B",
   accentPurple: "#7B2FF7",
