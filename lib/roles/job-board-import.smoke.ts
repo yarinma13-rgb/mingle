@@ -60,14 +60,25 @@ function run() {
   expect(draft.sourceUrl.includes("jobmaster"), "sourceUrl stored");
   expect(draft.sourceJd.length > 20, "sourceJd stored");
 
-  try {
-    assertImportableJobBoardUrl("https://www.linkedin.com/jobs/view/123");
-    throw new Error("linkedin should be rejected");
-  } catch (caught) {
-    expect(
-      caught instanceof JobBoardImportError && caught.code === "linkedin",
-      "linkedin error code",
+  const linkedin = parseJobBoardHtml(
+    load("linkedin-sample.html"),
+    "https://www.linkedin.com/jobs/view/123",
+    "linkedin",
+  );
+  expect(
+    linkedin.title.includes("Senior Backend Engineer"),
+    `linkedin title: ${linkedin.title}`,
+  );
+  expect(
+    /Node\.js|PostgreSQL/i.test(linkedin.rawText),
+    "linkedin rawText should include description",
+  );
+
+  {
+    const resolved = assertImportableJobBoardUrl(
+      "https://www.linkedin.com/jobs/view/123",
     );
+    expect(resolved.host === "linkedin", "linkedin host resolved");
   }
 
   try {
