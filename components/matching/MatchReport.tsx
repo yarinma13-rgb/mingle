@@ -157,7 +157,7 @@ export function MatchReportBody({
   compact?: boolean;
 }) {
   const whyTitle = "Why this is a potential match";
-  const mismatchTitle = "What to examine / risks";
+  const mismatchTitle = "Potential gaps";
   const riskItems =
     report.salaryGapPercent != null &&
     !report.mismatch.some((b) => b.label === "Salary")
