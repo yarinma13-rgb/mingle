@@ -5,6 +5,10 @@ import { MingleChip } from "@/components/MingleChip";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
 import { CompanyPipelineDonut } from "@/components/dashboard/CompanyPipelineDonut";
+import {
+  UpcomingInterviewsCard,
+  type UpcomingInterviewRow,
+} from "@/components/dashboard/UpcomingInterviewsCard";
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
@@ -58,11 +62,15 @@ export function CompanyDashboard({
   candidates,
   accountLabel,
   funnel,
+  activeRolesCount,
+  upcomingInterviews,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
   accountLabel: string;
   funnel: CompanyFunnel;
+  activeRolesCount: number;
+  upcomingInterviews: UpcomingInterviewRow[];
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -106,6 +114,14 @@ export function CompanyDashboard({
           accent="pink"
           href="/company-profile/build"
           sparkline={sparkFrom(profileCompletion)}
+        />
+        <KpiTile
+          icon={BriefcaseIcon}
+          label="Active roles"
+          value={String(activeRolesCount)}
+          accent="magenta"
+          href="/roles"
+          sparkline={sparkFrom(activeRolesCount)}
         />
         <KpiTile
           icon={PeopleIcon}
@@ -180,10 +196,7 @@ export function CompanyDashboard({
                 Upcoming interviews
               </h2>
             </div>
-            <p className="mt-3 text-xs text-mingle-text-secondary">
-              No interviews scheduled yet. This fills up once you start
-              connecting with candidates.
-            </p>
+            <UpcomingInterviewsCard interviews={upcomingInterviews} />
           </div>
       </div>
 
@@ -211,7 +224,7 @@ export function CompanyDashboard({
             {/* Table on tablet and up; a table forces a fixed min-width
                 that would otherwise force the whole page to scroll
                 sideways on a phone, so mobile gets a stacked card list
-                of the same data instead. */}
+                of the same data instead. *}
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[640px] border-collapse text-left text-sm">
                 <thead>
@@ -286,7 +299,7 @@ export function CompanyDashboard({
                   </div>
                   <p className="text-xs text-mingle-text-secondary">
                     {candidate.headline || "—"}
-                  </p>
+                </p>
                   <p className="text-xs text-mingle-text-secondary">
                     {[candidate.location, timeAgo(candidate.updatedAt)]
                       .filter(Boolean)
