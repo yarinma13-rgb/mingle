@@ -380,16 +380,14 @@ function DiscoveryCardView({
         </div>
       )}
 
-      {!isCompanyCard ? (
-        <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-success">
-            Why this is a potential match
-          </p>
-          <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
-            {card.report.why[0]?.finding ?? card.report.whatMattersMost}
-          </p>
-        </div>
-      ) : null}
+            <div className="shrink-0 border-b border-mingle-border px-4 py-3 lg:hidden">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-success">
+          Why this is a potential match
+        </p>
+        <p className="mt-1 line-clamp-2 text-sm leading-snug text-mingle-text">
+          {card.report.why[0]?.finding ?? card.report.whatMattersMost}
+        </p>
+      </div>
 
       <div className="shrink-0 bg-mingle-white px-4 pb-4 pt-3">
         <DiscoverSwipeActions
@@ -415,6 +413,7 @@ export function DiscoveryScreen({
   viewerId,
   mode = "feed",
   emptyBody,
+  profileHref,
 }: {
   title: string;
   subtitle: string;
@@ -426,6 +425,7 @@ export function DiscoveryScreen({
   viewerId: string;
   mode?: "feed" | "passed" | "browse";
   emptyBody?: string;
+  profileHref?: string;
 }) {
   const toast = useToast();
   const router = useRouter();
@@ -461,22 +461,37 @@ export function DiscoveryScreen({
     }
   };
 
-  if (cards.length === 0) {
+    if (cards.length === 0) {
+    const trulyEmpty = !isPassed && initialCards.length === 0 && !emptyBody;
     return (
       <div className="rounded-2xl border border-mingle-border bg-mingle-surface">
         <EmptyState
           variant="discover"
-          title={title}
+          title={trulyEmpty ? "No matches yet" : title}
           body={
-            emptyBody ??
-            (initialCards.length === 0
-              ? isPassed
-                ? "Nobody passed yet. Skipped profiles will show up here."
-                : "Nobody to discover yet. Check back once more people join mingle."
-              : "That is everyone for now. Check back later for more.")
+            trulyEmpty
+              ? "We're looking for people who fit what you're looking for."
+              : (emptyBody ??
+                (initialCards.length === 0
+                  ? isPassed
+                    ? "Nobody passed yet. Skipped profiles will show up here."
+                    : "Nobody to discover yet. Check back once more people join mingle."
+                  : "That is everyone for now. Check back later for more."))
           }
-          actionHref={isPassed ? "/discover" : "/dashboard"}
-          actionLabel={isPassed ? "Back to Discover" : "Back to dashboard"}
+          actionHref={
+            trulyEmpty && profileHref
+              ? profileHref
+              : isPassed
+                ? "/discover"
+                : "/dashboard"
+          }
+          actionLabel={
+            trulyEmpty && profileHref
+              ? "Adjust preferences"
+              : isPassed
+                ? "Back to Discover"
+                : "Back to dashboard"
+          }
         />
       </div>
     );
