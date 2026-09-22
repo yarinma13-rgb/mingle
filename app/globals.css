@@ -43,9 +43,9 @@
   --mingle-radius-card: 16px;
   --mingle-radius-lg: 20px;
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
+      --mingle-nav-active-bg: var(--mingle-lavender);
   --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
+      --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
   --font-display: var(--font-poppins);
@@ -67,9 +67,9 @@
   --mingle-border: #d9e4f2;
   --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
+      --mingle-nav-active-bg: var(--mingle-lavender);
   --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
+      --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
 }
@@ -92,9 +92,9 @@
   --mingle-border: rgba(255, 255, 255, 0.16);
   --mingle-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   --mingle-mascot-backdrop: #01041e;
-  --mingle-nav-active-bg: rgba(255, 255, 255, 0.1);
+      --mingle-nav-active-bg: rgba(123, 47, 247, 0.18);
   --mingle-nav-hover-bg: rgba(255, 255, 255, 0.06);
-  --mingle-nav-active: #f3f5f9;
+      --mingle-nav-active: #c4b5fd;
   --mingle-nav-idle: #9aa3b5;
   --mingle-nav-divider: rgba(255, 255, 255, 0.1);
 }
