@@ -148,7 +148,12 @@ export function DashboardShell({
                   ? { ...item, label: t.shell.roles }
                   : item.href === "/team"
                     ? { ...item, label: t.shell.team }
-                    : item,
+                                        : item.href === "/interviews"
+                      ? { ...item, label: t.shell.interviews }
+                      : item.href === "/company-profile/build" ||
+                          item.href === "/profile/build"
+                        ? { ...item, label: t.shell.myProfile }
+                        : item,
     );
   const navItems = useMemo(
     () => localizeNav(isCompany ? COMPANY_NAV : TALENT_NAV),
