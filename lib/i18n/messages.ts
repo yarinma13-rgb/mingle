@@ -55,6 +55,8 @@ export type AppMessages = {
     board: string;
     roles: string;
     team: string;
+    interviews: string;
+    myProfile: string;
   };
   settings: {
     title: string;
@@ -159,11 +161,13 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
       recruiter: "Recruiter",
       talent: "Talent",
       discover: "Discover",
-      conversations: "Conversations",
+      conversations: "Messages",
       connections: "Connections",
       board: "Board",
       roles: "Roles",
       team: "Team",
+      interviews: "Calendar",
+      myProfile: "My profile",
     },
     settings: {
       title: "Settings",
@@ -274,11 +278,13 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
       recruiter: "מגייסים",
       talent: "טאלנט",
       discover: "גילוי",
-      conversations: "שיחות",
+      conversations: "הודעות",
       connections: "קשרים",
       board: "לוח",
       roles: "תפקידים",
       team: "צוות",
+      interviews: "יומן",
+      myProfile: "הפרופיל שלי",
     },
     settings: {
       title: "הגדרות",
