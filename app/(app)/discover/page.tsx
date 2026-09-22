@@ -155,6 +155,11 @@ export default async function DiscoverPage({
                 ? "Nothing matches these filters. Try a broader search."
                 : undefined
           }
+          profileHref={
+              userRow.user_type === "company"
+                ? "/company-profile/build"
+                : "/profile/build"
+          }
         />
         {viewPassed ? null : (
           <DiscoveryPagination
