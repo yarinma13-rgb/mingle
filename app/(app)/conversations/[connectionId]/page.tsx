@@ -104,6 +104,7 @@ export default async function ConversationPage({
               otherPhoto={ctx.otherDisplay.photo}
               otherGender={ctx.otherDisplay.gender}
               whyConnected={whyConnected}
+              matchScore={ctx.matchScore}
               initialMessages={messages}
               connectionId={ctx.connection.id}
               canScheduleInterview={canScheduleInterview}
