@@ -21,6 +21,7 @@ import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
@@ -86,11 +87,15 @@ export default async function ProfileViewPage({
   if (!targetUser) notFound();
 
   const isSelf = viewer.id === userId;
+  const companyViewerId =
+    viewerUser.user_type === "company"
+      ? await resolveCompanyWorkspaceId(supabase, viewer.id)
+      : viewer.id;
 
   const [connectionStatus, savedIds, matchBundle] = await Promise.all([
     isSelf
       ? Promise.resolve(null)
-      : loadConnectionStatusWith(supabase, viewer.id, userId),
+      : loadConnectionStatusWith(supabase, companyViewerId, userId),
     isSelf
       ? Promise.resolve([] as string[])
       : loadSavedUserIds(supabase, viewer.id),
@@ -98,7 +103,7 @@ export default async function ProfileViewPage({
       ? Promise.resolve({ report: null, feedback: null })
       : loadViewerMatchReport(
           supabase,
-          viewer.id,
+          companyViewerId,
           viewerUser.user_type,
           userId,
           targetUser.user_type,
@@ -200,7 +205,7 @@ export default async function ProfileViewPage({
           matchReport={matchBundle.report}
           initialFeedback={matchBundle.feedback}
           whatToExplore={filterTalentExplorePrompts(talent)}
-          viewerId={viewer.id}
+          viewerId={companyViewerId}
           targetUserId={userId}
           initialConnectionStatus={connectionStatus}
           initiallySaved={initiallySaved}
@@ -263,7 +268,7 @@ export default async function ProfileViewPage({
         matchReport={matchBundle.report}
         initialFeedback={matchBundle.feedback}
         whatToExplore={filterCompanyExplorePrompts(company)}
-        viewerId={viewer.id}
+        viewerId={companyViewerId}
         targetUserId={userId}
         initialConnectionStatus={connectionStatus}
         initiallySaved={initiallySaved}
