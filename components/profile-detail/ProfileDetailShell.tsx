@@ -294,13 +294,13 @@ export function ProfileDetailShell({
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] lg:items-start">
           <aside className="flex flex-col gap-4 lg:sticky lg:top-16">
-            <div className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
-              <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
+            <div className="rounded-[22px] border border-mingle-border bg-mingle-surface p-6 shadow-mingle">
+              <p className="text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-mingle-text-secondary">
                 {eyebrow}
               </p>
-              <div className="mt-4 flex flex-col items-center gap-3 text-center">
+              <div className="mt-5 flex flex-col items-center gap-3 text-center">
                 <Avatar
                   photo={photo}
                   initials={initial}
@@ -309,118 +309,104 @@ export function ProfileDetailShell({
                   shape={avatarShape}
                 />
                 <div>
-                  <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-2xl">
+                  <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-[1.35rem]">
                     {name}
                   </h1>
-                  <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
-                    {subtitle}
-                  </p>
+                  {subtitle ? (
+                    <p className="mt-1.5 text-sm font-medium text-mingle-text-secondary">
+                      {subtitle}
+                    </p>
+                  ) : null}
                   {meta ? (
-                    <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
+                    <p className="mt-0.5 text-xs text-mingle-text-secondary">
                       {meta}
                     </p>
                   ) : null}
                 </div>
               </div>
 
-              {showCv ? (
-                <div className="mt-4 flex justify-center">
-                  {cvPath ? (
+              <div className="mt-5 flex flex-col gap-2.5">
+                {showCv ? (
+                  cvPath ? (
                     <OpenTalentCvButton
                       cvPath={cvPath}
                       cvFileName={cvFileName}
                       label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                      className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
+                      className="mingle-btn-cv w-full truncate"
                     />
                   ) : (
-                    <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+                    <span className="mingle-btn-cv w-full cursor-default opacity-70">
                       No CV uploaded
                     </span>
-                  )}
-                </div>
-              ) : null}
+                  )
+                ) : null}
 
-              {!isSelf ? (
-                <div className="mt-5 flex flex-col gap-2">
-                  {connectError ? (
-                    <p className="text-center text-sm text-mingle-pink">
-                      {connectError}
-                    </p>
-                  ) : null}
-                  {connectionState?.status === "accepted" ? (
-                    <Link
-                      href={
-                        mingleConnectionId
-                          ? `/conversations/${mingleConnectionId}`
-                          : "/conversations"
-                      }
-                      className="rounded-full bg-mingle-success/15 px-6 py-3 text-center font-display text-sm font-semibold text-mingle-success transition-colors hover:bg-mingle-success/25"
-                    >
-                      ✓ Connected · Open chat
-                    </Link>
-                  ) : (
-                    <motion.button
+                {!isSelf ? (
+                  <>
+                    {connectError ? (
+                      <p className="text-center text-sm text-mingle-pink">
+                        {connectError}
+                      </p>
+                    ) : null}
+                    {connectionState?.status === "accepted" ? (
+                      <Link
+                        href={
+                          mingleConnectionId
+                            ? `/conversations/${mingleConnectionId}`
+                            : "/conversations"
+                        }
+                        className="mingle-btn-primary w-full rounded-full"
+                      >
+                        Start conversation
+                      </Link>
+                    ) : (
+                      <motion.button
+                        type="button"
+                        onClick={handleConnect}
+                        disabled={connectDisabled}
+                        whileHover={connectDisabled ? undefined : { scale: 1.01 }}
+                        whileTap={connectDisabled ? undefined : { scale: 0.99 }}
+                        className={`mingle-btn-primary w-full rounded-full ${
+                          connectDisabled ? "cursor-not-allowed opacity-60" : ""
+                        }`}
+                      >
+                        {connecting ? "Sending…" : connectLabel}
+                      </motion.button>
+                    )}
+                    {connectionState?.status === "accepted" ? null : (
+                      <button
+                        type="button"
+                        onClick={handleConnect}
+                        disabled={connectDisabled}
+                        className="mingle-btn-gradient-border w-full disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Start conversation
+                      </button>
+                    )}
+                    <button
                       type="button"
-                      onClick={handleConnect}
-                      disabled={connectDisabled}
-                      whileHover={connectDisabled ? undefined : { scale: 1.02 }}
-                      whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-                      className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
-                        connectDisabled
-                          ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
-                          : "bg-mingle-cta text-white"
+                      onClick={handleSave}
+                      disabled={saving}
+                      aria-pressed={saved}
+                      className={`mingle-btn-secondary w-full rounded-full disabled:opacity-60 ${
+                        saved
+                          ? "border-mingle-purple/35 bg-mingle-light-purple text-mingle-purple"
+                          : ""
                       }`}
                     >
-                      {connecting ? "Sending…" : connectLabel}
-                    </motion.button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    aria-pressed={saved}
-                    className={`rounded-full border px-6 py-3 text-center font-display text-sm font-semibold transition-colors disabled:opacity-60 ${
-                      saved
-                        ? "border-mingle-purple/40 bg-mingle-purple/15 text-mingle-purple"
-                        : "border-mingle-border bg-mingle-white text-mingle-text hover:bg-mingle-lavender"
-                    }`}
-                  >
-                    {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
-                  </button>
-                </div>
-              ) : null}
-              {isSelf && showCv && cvPath ? (
-                <div className="mt-5">
-                  <OpenTalentCvButton
-                    cvPath={cvPath}
-                    cvFileName={cvFileName}
-                    label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
-                  />
-                </div>
-              ) : null}
+                      {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
+                    </button>
+                  </>
+                ) : null}
+              </div>
             </div>
           </aside>
 
           <div className="flex flex-col gap-4">
-            {cvPath ? (
-              <ProfileSection title="CV">
-                <TalentCvField
-                  supabase={supabase}
-                  userId={targetUserId}
-                  cvPath={cvPath}
-                  cvFileName={cvFileName ?? "CV.pdf"}
-                  editable={false}
-                  showLabel={false}
-                  onChanged={() => {}}
-                />
-              </ProfileSection>
-            ) : null}
-
             {matchReport ? (
-              <ProfileSection title="Match Report">
+              <div className="rounded-[22px] border border-mingle-border bg-mingle-surface p-6 shadow-mingle">
                 <MatchReportBody report={matchReport} />
-                <div className="mt-3 flex flex-col gap-3">
+                <div className="mt-5 flex flex-col gap-3 border-t border-mingle-border pt-4">
                   <MatchFeedbackActions
                     audience={matchReport.audience}
                     action={feedback}
@@ -430,10 +416,13 @@ export function ProfileDetailShell({
                   />
                   <AskMingleButton report={matchReport} />
                 </div>
-              </ProfileSection>
+              </div>
             ) : whyMatch ? (
-              <ProfileSection title="Why this could be a match">
-                <ul className="flex flex-col gap-2">
+              <div className="rounded-[22px] border border-mingle-border bg-mingle-surface p-6 shadow-mingle">
+                <h3 className="font-display text-base font-semibold tracking-tight text-mingle-text">
+                  Why this could be a match
+                </h3>
+                <ul className="mt-3 flex flex-col gap-2">
                   {whyMatch.map((reason) => (
                     <li
                       key={reason}
@@ -447,6 +436,20 @@ export function ProfileDetailShell({
                     </li>
                   ))}
                 </ul>
+              </div>
+            ) : null}
+
+            {cvPath ? (
+              <ProfileSection title="CV">
+                <TalentCvField
+                  supabase={supabase}
+                  userId={targetUserId}
+                  cvPath={cvPath}
+                  cvFileName={cvFileName ?? "CV.pdf"}
+                  editable={false}
+                  showLabel={false}
+                  onChanged={() => {}}
+                />
               </ProfileSection>
             ) : null}
 

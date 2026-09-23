@@ -30,14 +30,19 @@
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
+  --mingle-light-pink: #fdeaf1;
+  --mingle-light-purple: #f1e8fe;
+  --mingle-light-blue: #e9effe;
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8aa3;
+  --mingle-border: rgba(28, 27, 46, 0.08);
   --mingle-success: #00ca72;
-  --mingle-warning: #ffcc00;
+  --mingle-warning: #e8a54b;
   --mingle-error: #d83a52;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
+  --mingle-gap: #c97b63;
+  --mingle-gap-bg: #fbf1ec;
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
   --mingle-radius-sm: 6px;
   --mingle-radius: 10px;
   --mingle-radius-card: 16px;
@@ -107,6 +112,9 @@
   --color-mingle-lavender: var(--mingle-lavender);
   --color-mingle-surface: var(--mingle-surface);
   --color-mingle-white: var(--mingle-white);
+  --color-mingle-light-pink: var(--mingle-light-pink);
+  --color-mingle-light-purple: var(--mingle-light-purple);
+  --color-mingle-light-blue: var(--mingle-light-blue);
   --color-mingle-pink: var(--mingle-pink);
   --color-mingle-pink-deep: var(--mingle-pink-deep);
   --color-mingle-blue: var(--mingle-blue);
@@ -125,6 +133,7 @@
   --color-mingle-success: var(--mingle-success);
   --color-mingle-warning: var(--mingle-warning);
   --color-mingle-error: var(--mingle-error);
+  --color-mingle-gap: var(--mingle-gap);
   --color-mingle-nav-active-bg: var(--mingle-nav-active-bg);
   --color-mingle-nav-hover-bg: var(--mingle-nav-hover-bg);
   --color-mingle-nav-active: var(--mingle-nav-active);
@@ -355,6 +364,63 @@ button:disabled {
 
 .mingle-btn-tertiary:disabled {
   opacity: 0.45;
+}
+
+/* Outline CTA with brand gradient border — Start conversation etc. */
+.mingle-btn-gradient-border {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mingle-text);
+  background:
+    linear-gradient(var(--mingle-white), var(--mingle-white)) padding-box,
+    var(--mingle-connection-gradient) border-box;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mingle-btn-gradient-border:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(123, 47, 247, 0.12);
+}
+
+.mingle-btn-cv {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  max-width: 100%;
+  border-radius: 9999px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-bg);
+  padding: 0 1.25rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mingle-blue);
+  transition: background-color 0.15s ease;
+}
+
+.mingle-btn-cv:hover:not(:disabled) {
+  background: var(--mingle-light-blue);
+}
+
+.mingle-chip-matched {
+  background: color-mix(in srgb, var(--mingle-light-pink) 55%, var(--mingle-light-purple));
+  border-color: color-mix(in srgb, var(--mingle-purple) 18%, transparent);
+  color: var(--mingle-text);
+}
+
+.mingle-chip-gap {
+  background: var(--mingle-gap-bg);
+  border-color: color-mix(in srgb, var(--mingle-gap) 22%, transparent);
+  color: var(--mingle-text);
 }
 
 .mingle-chip {

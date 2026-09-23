@@ -52,10 +52,10 @@ export function scoreChipClass(score: number): string {
 export function scoreBandLabel(score: number): string {
   switch (scoreBand(score)) {
     case "high":
-      return "Strong fit";
+      return "Worth talking to";
     case "mid":
       return "Worth a look";
     case "low":
-      return "Low fit";
+      return "Explore carefully";
   }
 }

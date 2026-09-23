@@ -12,9 +12,9 @@ const BAND_COLORS = {
 } as const;
 
 const BAND_LABELS = {
-  high: "Strong fit",
+  high: "Worth talking to",
   mid: "Worth a look",
-  low: "Low fit",
+  low: "Explore carefully",
 } as const;
 
 function polar(cx: number, cy: number, r: number, angle: number) {
