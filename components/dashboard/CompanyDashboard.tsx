@@ -224,7 +224,7 @@ export function CompanyDashboard({
             {/* Table on tablet and up; a table forces a fixed min-width
                 that would otherwise force the whole page to scroll
                 sideways on a phone, so mobile gets a stacked card list
-                of the same data instead. *}
+                of the same data instead. */}
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[640px] border-collapse text-left text-sm">
                 <thead>
