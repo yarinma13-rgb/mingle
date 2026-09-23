@@ -11,6 +11,7 @@ import {
 } from "@/lib/connections/persistence";
 import { loadDisplayInfoForUsers, type ConnectionDisplayInfo } from "@/lib/connections/enrich";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { loadTimelinesForConnections, latestStage } from "@/lib/relationship/persistence";
 
 function toDisplayRows(
@@ -30,18 +31,22 @@ function toDisplayRows(
 
 export default async function ConnectionsPage() {
   const { supabase, user, userRow } = await requireAppUser();
+  const companyId =
+    userRow.user_type === "company"
+      ? await resolveCompanyWorkspaceId(supabase, user.id)
+      : user.id;
 
   const [incomingRows, outgoingRows, acceptedRows] = await Promise.all([
-    loadIncomingPending(supabase, user.id),
-    loadOutgoingPending(supabase, user.id),
-    loadAcceptedConnections(supabase, user.id),
+    loadIncomingPending(supabase, companyId),
+    loadOutgoingPending(supabase, companyId),
+    loadAcceptedConnections(supabase, companyId),
   ]);
 
   const otherIds = new Set<string>();
   incomingRows.forEach((row) => otherIds.add(row.requester_id));
   outgoingRows.forEach((row) => otherIds.add(row.recipient_id));
   acceptedRows.forEach((row) =>
-    otherIds.add(row.requester_id === user.id ? row.recipient_id : row.requester_id),
+    otherIds.add(row.requester_id === companyId ? row.recipient_id : row.requester_id),
   );
 
   const [info, timelines] = await Promise.all([
@@ -58,7 +63,7 @@ export default async function ConnectionsPage() {
   const outgoing = toDisplayRows(outgoingRows, (row) => row.recipient_id, info);
   const accepted = toDisplayRows(
     acceptedRows,
-    (row) => (row.requester_id === user.id ? row.recipient_id : row.requester_id),
+    (row) => (row.requester_id === companyId ? row.recipient_id : row.requester_id),
     info,
   ).map((row) => ({
     ...row,
