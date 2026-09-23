@@ -10,6 +10,7 @@ import {
   latestStage,
   type RelationshipEventRow,
 } from "@/lib/relationship/persistence";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 
 type ConnectionRow = Database["public"]["Tables"]["connections"]["Row"];
 
@@ -39,6 +40,10 @@ export async function loadRelationshipPageContext(
     connectionId,
     user.id,
   );
+  const companyWorkspaceId =
+    userType === "company"
+      ? await resolveCompanyWorkspaceId(supabase, user.id)
+      : user.id;
 
   const [info, otherUserResult, timelineInitial] = await Promise.all([
     loadDisplayInfoForUsers(supabase, [otherUserId]),
@@ -68,7 +73,7 @@ export async function loadRelationshipPageContext(
 
   if (otherUserRow && otherUserRow.user_type !== userType) {
     const talentId = userType === "talent" ? user.id : otherUserId;
-    const companyId = userType === "company" ? user.id : otherUserId;
+    const companyId = userType === "company" ? companyWorkspaceId : otherUserId;
     const [talentInput, companyInput, talentCvRow] = await Promise.all([
       loadTalentMatchInput(supabase, talentId),
       loadCompanyMatchInput(supabase, companyId),
