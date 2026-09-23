@@ -145,7 +145,7 @@ export const DEMO_FUNNEL: CompanyFunnel = {
 
 export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
   overall: 92,
-  strength: "Strong fit",
+  strength: "Worth talking to",
   confidence: "High",
   audience: "company",
   whatMattersMost:
