@@ -11,6 +11,10 @@ import {
 } from "@/lib/matching/context";
 import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
 import { loadTalentDashboardStats } from "@/lib/dashboard/talent-stats";
+import { loadCompanyInterviews } from "@/lib/interviews/persistence";
+import { loadCompanyRoles } from "@/lib/roles/persistence";
+import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
+import type { UpcomingInterviewRow } from "@/components/dashboard/UpcomingInterviewsCard";
 import { requireAppUser, requireShellUser } from "@/lib/dashboard/require-shell-user";
 import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
@@ -43,6 +47,51 @@ export default async function DashboardPage() {
       loadCompanyMatchInput(supabase, user.id),
     ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
+
+    const [interviews, roles] = await Promise.all([
+      loadCompanyInterviews(supabase, user.id),
+      loadCompanyRoles(supabase, user.id),
+    ]);
+    const activeRolesCount = roles.filter((role) => role.status === "open").length;
+
+    const now = Date.now();
+    const upcomingRaw = interviews
+      .filter(
+        (interview) =>
+          interview.status === "scheduled" &&
+          new Date(interview.scheduledAt).getTime() >= now,
+      )
+      .slice(0, 3);
+
+    let upcomingInterviews: UpcomingInterviewRow[] = [];
+    if (upcomingRaw.length > 0) {
+      const { data: connRows } = await supabase
+        .from("connections")
+        .select("id, requester_id, recipient_id")
+        .in(
+          "id",
+          upcomingRaw.map((interview) => interview.connectionId),
+        );
+      const connById = new Map((connRows ?? []).map((row) => [row.id, row]));
+      const otherIds = (connRows ?? []).map((row) =>
+        row.requester_id === user.id ? row.recipient_id : row.requester_id,
+      );
+      const info = await loadDisplayInfoForUsers(supabase, otherIds);
+      upcomingInterviews = upcomingRaw.map((interview) => {
+        const conn = connById.get(interview.connectionId);
+        const otherId = conn
+          ? conn.requester_id === user.id
+            ? conn.recipient_id
+            : conn.requester_id
+          : null;
+        const display = otherId ? info.get(otherId) : null;
+        return {
+          id: interview.id,
+          otherName: display?.name ?? "Candidate",
+          scheduledAt: interview.scheduledAt,
+        };
+      });
+    }
 
     const scored = await Promise.all(
       (talentRows ?? []).map(async (row) => {
@@ -89,6 +138,8 @@ export default async function DashboardPage() {
           candidates={candidates}
           accountLabel={shellAvatar.userName}
           funnel={funnel}
+          activeRolesCount={activeRolesCount}
+          upcomingInterviews={upcomingInterviews}
         />
       </>
     );
