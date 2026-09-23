@@ -22,6 +22,7 @@ import {
   formatRediscoveryLabel,
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
+import { saveCandidateNoteAction } from "@/lib/notes/actions";
 
 export type BoardCandidate = {
   connectionId: string;
@@ -33,6 +34,7 @@ export type BoardCandidate = {
   gender: Gender | null;
   timeline: RelationshipEventRow[];
   rediscovery?: (RediscoveryBadge & { roleTitle?: string }) | null;
+  note?: { notes: string; tags: string[] } | null;
 };
 
 const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
@@ -68,6 +70,9 @@ export function CompanyBoardScreen({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<RelationshipStage | null>(null);
   const [pending, setPending] = useState<PendingRegression | null>(null);
+  const [noteEditorFor, setNoteEditorFor] = useState<BoardCandidate | null>(null);
+  const [noteDraft, setNoteDraft] = useState({ notes: "", tags: "" });
+  const [savingNote, setSavingNote] = useState(false);
 
   const grouped = useMemo(() => {
     const buckets = new Map<RelationshipStage, BoardCandidate[]>();
@@ -138,6 +143,49 @@ export function CompanyBoardScreen({
     const { card, target } = pending;
     setPending(null);
     void moveCard(card, target, true);
+  };
+
+  const openNoteEditor = (card: BoardCandidate) => {
+    setNoteEditorFor(card);
+    setNoteDraft({
+      notes: card.note?.notes ?? "",
+      tags: (card.note?.tags ?? []).join(", "),
+    });
+  };
+
+  const saveNote = async () => {
+    if (!noteEditorFor) return;
+    setSavingNote(true);
+    const tags = noteDraft.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .slice(0, 10);
+    try {
+      const result = await saveCandidateNoteAction({
+        connectionId: noteEditorFor.connectionId,
+        notes: noteDraft.notes.trim(),
+        tags,
+      });
+      if (!result.ok) {
+        toast(result.error, "error");
+        return;
+      }
+      const connectionId = noteEditorFor.connectionId;
+      const notes = noteDraft.notes.trim();
+      setCandidates((prev) =>
+        prev.map((card) =>
+          card.connectionId === connectionId
+            ? { ...card, note: notes || tags.length ? { notes, tags } : null }
+            : card,
+        ),
+      );
+      setNoteEditorFor(null);
+    } catch {
+      toast("Couldn't save that note. Try again in a moment.", "error");
+    } finally {
+      setSavingNote(false);
+    }
   };
 
   if (candidates.length === 0) {
@@ -228,7 +276,6 @@ export function CompanyBoardScreen({
                             <span className="h-1 w-1 rounded-full bg-current" />
                             <span className="h-1 w-1 rounded-full bg-current" />
                             <span className="h-1 w-1 rounded-full bg-current" />
-                            <span className="h-1 w-1 rounded-full bg-current" />
                           </span>
                           <span className="text-[10px] font-semibold uppercase tracking-wide">
                             Drag
@@ -264,6 +311,29 @@ export function CompanyBoardScreen({
                             ) : null}
                           </div>
                         </Link>
+                        {card.note?.tags.length ? (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {card.note.tags.map((tag) => (
+                              <MingleChip key={tag} tone="slate" className="text-[10px]">
+                                {tag}
+                              </MingleChip>
+                            ))}
+                          </div>
+                        ) : null}
+                        {card.note?.notes ? (
+                          <p className="mt-2 line-clamp-2 text-[11px] leading-snug text-mingle-text-secondary">
+                            {card.note.notes}
+                          </p>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => openNoteEditor(card)}
+                          className="mt-2 text-[10px] font-semibold text-mingle-cta hover:underline"
+                        >
+                          {card.note?.notes || card.note?.tags.length
+                            ? "Edit note"
+                            : "+ Add note"}
+                        </button>
                         <div className="mt-3 flex items-center gap-2">
                           <label className="sr-only" htmlFor={`stage-${card.connectionId}`}>
                             Move {card.name}
@@ -296,7 +366,7 @@ export function CompanyBoardScreen({
                         </div>
                       </article>
                     ))
-                  )}
+                  }}
                 </div>
               </section>
             );
@@ -342,6 +412,73 @@ export function CompanyBoardScreen({
                 className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-white"
               >
                 Move to {STAGE_LABEL[pending.target]}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {noteEditorFor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setNoteEditorFor(null)}
+        >
+          <div
+            role="dialog"
+            aria-labelledby="board-note-title"
+            className="w-full max-w-sm rounded-2xl border border-mingle-border bg-mingle-surface p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2
+              id="board-note-title"
+              className="font-display text-lg font-bold text-mingle-text"
+          >
+              Note for {noteEditorFor.name}
+            </h2>
+            <p className="mt-1 text-xs text-mingle-text-secondary">
+              Visible to your whole team.
+            </p>
+            <label className="mt-4 block text-xs font-semibold text-mingle-text-secondary">
+              Note
+              <textarea
+                value={noteDraft.notes}
+                onChange={(event) =>
+                  setNoteDraft((prev) => ({ ...prev, notes: event.target.value }))
+                }
+                rows={4}
+                maxLength={2000}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm text-mingle-text"
+                placeholder="Strong culture fit, needs visa sponsorship…"
+              />
+            </label>
+            <label className="mt-3 block text-xs font-semibold text-mingle-text-secondary">
+              Tags (comma separated)
+              <input
+                value={noteDraft.tags}
+                onChange={(event) =>
+                  setNoteDraft((prev) => ({ ...prev, tags: event.target.value }))
+                }
+                maxLength={300}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm text-mingle-text"
+                placeholder="strong fit, visa sponsorship"
+              />
+            </label>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setNoteEditorFor(null)}
+                disabled={savingNote}
+                className="rounded-full bg-mingle-bg px-5 py-2.5 font-display text-sm font-semibold text-mingle-text-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void saveNote()}
+                disabled={savingNote}
+                className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {savingNote ? "Saving…" : "Save note"}
               </button>
             </div>
           </div>
