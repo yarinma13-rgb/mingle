@@ -11,6 +11,7 @@ import { loadUpcomingInterviewForConnection } from "@/lib/interviews/persistence
 import { loadPendingProposalForConnection } from "@/lib/interviews/proposals";
 import { loadCalendarConnection } from "@/lib/calendar/persistence";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 
 export default async function ConversationPage({
   params,
@@ -73,13 +74,18 @@ export default async function ConversationPage({
   }
   const stage = latestStage(timeline);
 
+  const companyId =
+    ctx.userType === "company"
+      ? await resolveCompanyWorkspaceId(supabase, user.id)
+      : user.id;
+
   const whyConnected = ctx.alignedFactors[0]?.detail ?? "You connected on mingle.";
   const [upcomingInterview, pendingProposal, calendarConnection] =
     await Promise.all([
       loadUpcomingInterviewForConnection(supabase, ctx.connection.id),
       loadPendingProposalForConnection(supabase, ctx.connection.id),
       ctx.userType === "company"
-        ? loadCalendarConnection(supabase, user.id)
+        ? loadCalendarConnection(supabase, companyId)
         : Promise.resolve(null),
     ]);
   const canScheduleInterview =
@@ -108,7 +114,7 @@ export default async function ConversationPage({
               initialMessages={messages}
               connectionId={ctx.connection.id}
               canScheduleInterview={canScheduleInterview}
-              companyId={user.id}
+              companyId={companyId}
               upcomingInterview={upcomingInterview}
               pendingProposal={pendingProposal}
               calendarConnected={Boolean(calendarConnection)}
