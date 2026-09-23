@@ -5,6 +5,7 @@ import {
   isMissingInterviewsTable,
   scheduleInterview,
 } from "@/lib/interviews/persistence";
+import { isActiveCompanyMember } from "@/lib/team/persistence";
 import type { InterviewLocationType } from "@/lib/supabase/types";
 import { z } from "zod";
 
@@ -24,7 +25,7 @@ export async function scheduleInterviewAction(input: {
   durationMinutes: number;
   locationType: InterviewLocationType;
   notes: string;
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+}): Promise<{ ok: true } | { ok: false; error: string }> { 
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
@@ -64,8 +65,8 @@ export async function scheduleInterviewAction(input: {
   ) {
     return { ok: false, error: "That conversation is not on this workspace." };
   }
-  if (user.id !== parsed.data.companyId) {
-    return { ok: false, error: "Schedule from the company account for now." };
+  if (!(await isActiveCompanyMember(supabase, user.id, parsed.data.companyId))) {
+    return { ok: false, error: "Schedule from your company workspace." };
   }
 
   try {
