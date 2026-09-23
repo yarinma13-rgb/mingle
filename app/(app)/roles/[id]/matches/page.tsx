@@ -4,6 +4,7 @@ import {
   DiscoveryFiltersForm,
 } from "@/components/discovery/DiscoveryFilters";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { parseDiscoveryFilters } from "@/lib/discovery/filters";
 import { loadDiscoveryPage } from "@/lib/discovery/query";
 import { loadPassedUserIds } from "@/lib/matching/passed";
@@ -26,8 +27,9 @@ export default async function RoleMatchesPage({
   const { supabase, user } = await requireAppUser({
     userType: "company",
   });
+  const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
 
-  const role = await loadCompanyRole(supabase, id, user.id);
+  const role = await loadCompanyRole(supabase, id, companyId);
   if (!role) notFound();
 
   const filters = parseDiscoveryFilters(query);
@@ -44,7 +46,7 @@ export default async function RoleMatchesPage({
   ]);
 
   await ensureRediscoveryForRole(supabase, {
-    companyId: user.id,
+    companyId,
     roleId: role.id,
     roleTitle: role.title,
   });
@@ -54,7 +56,7 @@ export default async function RoleMatchesPage({
 
   const ranked = await loadDiscoveryPage(
     supabase,
-    { id: user.id, userType: "company" },
+    { id: companyId, userType: "company" },
     filters,
     styleOptions,
     {
@@ -75,11 +77,11 @@ export default async function RoleMatchesPage({
   const { data: companyRow } = await supabase
     .from("company_profiles")
     .select("company_name")
-    .eq("user_id", user.id)
+    .eq("user_id", companyId)
     .maybeSingle();
   await queueRoleMatches(supabase, {
     roleId: role.id,
-    companyId: user.id,
+    companyId,
     jobTitle: role.title,
     companyName: companyRow?.company_name ?? "",
     cards,
