@@ -19,6 +19,7 @@ import {
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
+import { MatchLearningForms } from "@/components/matching/MatchLearningForms";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import {
@@ -429,6 +430,9 @@ export function ProfileDetailShell({
                     onNotFit={(reason) => void handleNotFit(reason)}
                   />
                   <AskMingleButton report={matchReport} />
+                  {matchReport.audience === "company" && !isSelf ? (
+                    <MatchLearningForms talentId={targetUserId} />
+                  ) : null}
                 </div>
               </ProfileSection>
             ) : whyMatch ? (

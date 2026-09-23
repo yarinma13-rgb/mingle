@@ -269,6 +269,9 @@ export function AuthForm({
       options: {
         // path query is read by /auth/callback → ensureUserProfile (user_type).
         // Callback also rejects personal emails on the company track.
+        // NOTE: Google's "Continue to …" host comes from NEXT_PUBLIC_SUPABASE_URL
+        // (Supabase Auth), not this redirectTo. Use a custom domain — see
+        // docs/AUTH_GOOGLE_BRANDING.md — so users do not see *.supabase.co.
         redirectTo: `${origin}/auth/callback?path=${pathForRedirect}`,
         queryParams: { access_type: "offline", prompt: "select_account" },
       },

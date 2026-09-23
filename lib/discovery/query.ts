@@ -8,6 +8,7 @@ import {
   type CompanyMatchInput,
 } from "@/lib/matching/engine";
 import { buildMatchReport, emptyMatchReport } from "@/lib/matching/report";
+import { persistMatchLearning } from "@/lib/matching/outcome-learning";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DISCOVERY_PAGE_SIZE,
@@ -258,6 +259,17 @@ export async function loadDiscoveryPage(
       const report = companyForMatch
         ? buildMatchReport(result, talentInput, companyForMatch, "company")
         : emptyMatchReport("company", result.score);
+      if (companyForMatch && result.factors.length > 0) {
+        void persistMatchLearning({
+          supabase,
+          companyId: viewer.id,
+          talentId: row.user_id,
+          roleId: null,
+          audience: "company",
+          report,
+          result,
+        });
+      }
       const km = origin
         ? distanceKmBetween(origin, {
             latitude: row.latitude ?? null,

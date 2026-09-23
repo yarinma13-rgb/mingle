@@ -15,6 +15,7 @@ import { loadSavedUserIds } from "@/lib/matching/saved";
 import { loadTalentMatchInput, loadCompanyMatchInput } from "@/lib/matching/context";
 import { computeMatch } from "@/lib/matching/engine";
 import { buildMatchReport, type MatchReport } from "@/lib/matching/report";
+import { persistMatchLearning } from "@/lib/matching/outcome-learning";
 import { loadMatchFeedbackAction, type MatchFeedbackAction } from "@/lib/matching/feedback";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
@@ -52,8 +53,20 @@ async function loadViewerMatchReport(
   if (!talent || !company) return { report: null, feedback };
   const result = computeMatch(talent, company);
   const audience = viewerType === "talent" ? "talent" : "company";
+  const report = buildMatchReport(result, talent, company, audience);
+  const companyId = viewerType === "company" ? viewerId : targetId;
+  const talentId = viewerType === "talent" ? viewerId : targetId;
+  // Best-effort learning snapshot — never blocks the profile view.
+  void persistMatchLearning({
+    supabase,
+    companyId,
+    talentId,
+    audience,
+    report,
+    result,
+  });
   return {
-    report: buildMatchReport(result, talent, company, audience),
+    report,
     feedback,
   };
 }

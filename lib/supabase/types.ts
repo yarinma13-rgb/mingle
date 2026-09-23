@@ -443,16 +443,28 @@ export interface Database {
           features_json: Record<string, unknown>;
           model_version: string | null;
           created_at: string;
+          company_id: string | null;
+          talent_id: string | null;
+          role_id: string | null;
+          audience: string | null;
         };
         Insert: {
           match_id?: string | null;
           features_json?: Record<string, unknown>;
           model_version?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          role_id?: string | null;
+          audience?: string | null;
         };
         Update: {
           match_id?: string | null;
           features_json?: Record<string, unknown>;
           model_version?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          role_id?: string | null;
+          audience?: string | null;
         };
         Relationships: [];
       };
@@ -469,6 +481,8 @@ export interface Database {
           contribution: number | null;
           confidence: string | null;
           created_at: string;
+          company_id: string | null;
+          talent_id: string | null;
         };
         Insert: {
           match_id?: string | null;
@@ -480,6 +494,8 @@ export interface Database {
           company_value?: string | null;
           contribution?: number | null;
           confidence?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
         };
         Update: {
           match_id?: string | null;
@@ -491,6 +507,8 @@ export interface Database {
           company_value?: string | null;
           contribution?: number | null;
           confidence?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
         };
         Relationships: [];
       };
@@ -506,6 +524,9 @@ export interface Database {
           recommendation: string | null;
           notes: string | null;
           created_at: string;
+          company_id: string | null;
+          talent_id: string | null;
+          interview_id: string | null;
         };
         Insert: {
           match_id?: string | null;
@@ -516,6 +537,9 @@ export interface Database {
           motivation_fit?: number | null;
           recommendation?: string | null;
           notes?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          interview_id?: string | null;
         };
         Update: {
           match_id?: string | null;
@@ -526,6 +550,9 @@ export interface Database {
           motivation_fit?: number | null;
           recommendation?: string | null;
           notes?: string | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          interview_id?: string | null;
         };
         Relationships: [];
       };
@@ -542,6 +569,9 @@ export interface Database {
           satisfaction_score: number | null;
           created_at: string;
           updated_at: string;
+          company_id: string | null;
+          talent_id: string | null;
+          role_id: string | null;
         };
         Insert: {
           match_id?: string | null;
@@ -552,6 +582,9 @@ export interface Database {
           day_90_feedback?: string | null;
           retained?: boolean | null;
           satisfaction_score?: number | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          role_id?: string | null;
         };
         Update: {
           match_id?: string | null;
@@ -562,6 +595,9 @@ export interface Database {
           day_90_feedback?: string | null;
           retained?: boolean | null;
           satisfaction_score?: number | null;
+          company_id?: string | null;
+          talent_id?: string | null;
+          role_id?: string | null;
         };
         Relationships: [];
       };

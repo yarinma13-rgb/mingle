@@ -30,6 +30,7 @@ import {
   scoreChipClass,
   scoreTextClass,
 } from "@/lib/matching/score-tone";
+import { MatchNarrationPanel } from "@/components/matching/MatchNarrationPanel";
 
 const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
   High: "text-mingle-accent-purple",
@@ -345,6 +346,8 @@ export function MatchReportBody({
           </p>
         </section>
       ) : null}
+
+      {!compact ? <MatchNarrationPanel report={report} /> : null}
 
       {!compact ? (
         <p className="text-sm italic text-mingle-text-secondary">
