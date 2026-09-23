@@ -54,12 +54,13 @@ export default async function DashboardPage() {
     ]);
     const activeRolesCount = roles.filter((role) => role.status === "open").length;
 
-    const now = Date.now();
+    // Snapshot once for the upcoming filter (server page, not a client render loop).
+    const nowMs = new Date().getTime();
     const upcomingRaw = interviews
       .filter(
         (interview) =>
           interview.status === "scheduled" &&
-          new Date(interview.scheduledAt).getTime() >= now,
+          new Date(interview.scheduledAt).getTime() >= nowMs,
       )
       .slice(0, 3);
 
