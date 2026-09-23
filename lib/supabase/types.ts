@@ -339,6 +339,31 @@ export interface Database {
         };
         Relationships: [];
       };
+      candidate_notes: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          notes: string;
+          tags: string[];
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          connection_id: string;
+          company_id: string;
+          notes?: string;
+          tags?: string[];
+          updated_by?: string | null;
+        };
+        Update: {
+          notes?: string;
+          tags?: string[];
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       match_reviews: {
         Row: {
           id: string;
