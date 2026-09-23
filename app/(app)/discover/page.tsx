@@ -19,11 +19,16 @@ import { loadAcceptedConnections } from "@/lib/connections/persistence";
 import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { COMPANY_QUESTIONS } from "@/lib/company-profile/questions";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 
 export default async function DiscoverPage({
   searchParams,
 }: PageProps<"/discover">) {
   const { supabase, user, userRow } = await requireAppUser();
+  const companyId =
+    userRow.user_type === "company"
+      ? await resolveCompanyWorkspaceId(supabase, user.id)
+      : user.id;
   const params = await searchParams;
   const viewRaw = Array.isArray(params.view) ? params.view[0] : params.view;
   const viewPassed = viewRaw === "passed";
@@ -44,17 +49,17 @@ export default async function DiscoverPage({
       loadSavedUserIds(supabase, user.id),
       loadPassedUserIds(supabase, user.id),
       loadMatchFeedbackMap(supabase, user.id),
-      loadAcceptedConnections(supabase, user.id),
+      loadAcceptedConnections(supabase, companyId),
     ]);
   const acceptedConnectionByUser: Record<string, string> = {};
   for (const row of acceptedConnections) {
     const otherId =
-      row.requester_id === user.id ? row.recipient_id : row.requester_id;
+      row.requester_id === companyId ? row.recipient_id : row.requester_id;
     acceptedConnectionByUser[otherId] = row.id;
   }
   const { cards, total, pageSize } = await loadDiscoveryPage(
     supabase,
-    { id: user.id, userType: userRow.user_type },
+    { id: companyId, userType: userRow.user_type },
     filters,
     styleOptions,
     viewPassed
@@ -156,9 +161,9 @@ export default async function DiscoverPage({
                 : undefined
           }
           profileHref={
-              userRow.user_type === "company"
-                ? "/company-profile/build"
-                : "/profile/build"
+            userRow.user_type === "company"
+              ? "/company-profile/build"
+              : "/profile/build"
           }
         />
         {viewPassed ? null : (
