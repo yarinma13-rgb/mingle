@@ -147,9 +147,20 @@ export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
   overall: 92,
   strength: "Strong fit",
   confidence: "High",
+  confidenceReason:
+    "Core role, human, and motivation signals are sufficiently populated.",
   audience: "company",
   whatMattersMost:
     "Role skills, shared values around craft and ownership, and aligned career goals.",
+  mutualSummary:
+    "Mutual alignment looks strong across role, human, and motivation fit.",
+  discoveryTier: "strong",
+  recommendedNextStep: "Hiring Manager Interview",
+  nextStepReason:
+    "Strong, well-evidenced mutual fit — ready for hiring-manager depth.",
+  whatToValidate: [
+    "Confirm work-model and location expectations (remote / hybrid / office).",
+  ],
   axes: [
     { id: "role", label: "Role Fit", score: 94 },
     { id: "company", label: "Human Fit", score: 90 },
@@ -160,26 +171,31 @@ export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
       key: "skills",
       label: "Skills",
       finding: "Product design, Figma, research and systems overlap strongly with the role.",
+      evidence: "fact",
     },
     {
       key: "motivations",
       label: "Values",
       finding: "Craft, clarity and ownership match what Northstar prioritizes.",
+      evidence: "fact",
     },
     {
       key: "careerGoals",
       label: "Career goals",
       finding: "Looking to lead design on a real product — aligned with this senior seat.",
+      evidence: "fact",
     },
     {
       key: "workStyle",
       label: "Work style",
       finding: "Async-first collaboration fits a distributed Series B team.",
+      evidence: "fact",
     },
     {
       key: "experience",
       label: "Experience",
       finding: "Seven years in B2B SaaS with end-to-end product ownership.",
+      evidence: "fact",
     },
   ],
   mismatch: [
@@ -187,6 +203,16 @@ export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
       key: "location",
       label: "Location",
       finding: "Berlin-based; role is hybrid London with strong remote flexibility.",
+      evidence: "fact",
+    },
+  ],
+  risks: [
+    {
+      key: "location",
+      label: "Location",
+      finding: "Berlin-based; role is hybrid London with strong remote flexibility.",
+      gapKind: "preference",
+      evidence: "fact",
     },
   ],
   technicalSignal: null,

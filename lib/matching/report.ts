@@ -1,9 +1,19 @@
-import { profileCompletion } from "@/lib/profile/persistence";
-import { companyProfileCompletion } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
 import { scoreBandLabel } from "@/lib/matching/score-tone";
 import { technicalSignalFinding } from "@/lib/github/meta";
 import { salaryGapPercent } from "@/lib/roles/salary-alignment";
+import {
+  buildIntelligenceExtras,
+  computeMatchConfidence,
+  evidenceForFactor,
+  type DiscoveryTier,
+  type EvidenceKind,
+  type GapKind,
+  type MatchAudience as IntelAudience,
+  type MatchConfidence,
+  type MatchRisk,
+  type RecommendedNextStep,
+} from "@/lib/matching/intelligence";
 import type {
   MatchFactor,
   MatchFactorKey,
@@ -12,8 +22,8 @@ import type {
   CompanyMatchInput,
 } from "@/lib/matching/engine";
 
-export type MatchAudience = "company" | "talent";
-export type MatchConfidence = "High" | "Medium" | "Low";
+export type MatchAudience = IntelAudience;
+export type { MatchConfidence };
 
 export type MatchAxisId = "role" | "company" | "motivation";
 
@@ -27,6 +37,8 @@ export type MatchBullet = {
   key: MatchFactorKey;
   label: string;
   finding: string;
+  /** Fact vs inference vs unknown — never invent. */
+  evidence?: EvidenceKind;
 };
 
 export type MatchReport = {
@@ -34,8 +46,20 @@ export type MatchReport = {
   strength: string;
   axes: MatchAxisScore[];
   confidence: MatchConfidence;
+  /** Why confidence is High / Medium / Low based on evidence quality. */
+  confidenceReason: string;
   why: MatchBullet[];
+  /** @deprecated Prefer `risks` — kept for existing consumers. */
   mismatch: MatchBullet[];
+  /** Classified WHY NOT / potential risks. */
+  risks: MatchRisk[];
+  /** Actionable validation prompts for the hiring team / talent. */
+  whatToValidate: string[];
+  recommendedNextStep: RecommendedNextStep;
+  nextStepReason: string;
+  /** Mutual Role × Human × Motivation reading. */
+  mutualSummary: string;
+  discoveryTier: DiscoveryTier;
   whatMattersMost: string;
   audience: MatchAudience;
   /**
@@ -50,6 +74,8 @@ export type MatchReport = {
   salaryGapPercent: number | null;
 };
 
+export type { GapKind, EvidenceKind, MatchRisk, RecommendedNextStep, DiscoveryTier };
+
 /** Existing engine factors, grouped onto the three PRD axes.
  *  Overall `matchScore` stays `computeMatch().score` — these groups are
  *  display-only averages, not a new weight table. */
@@ -61,7 +87,7 @@ export const AXIS_FACTOR_KEYS: Record<MatchAxisId, readonly MatchFactorKey[]> = 
 
 const AXIS_LABEL: Record<MatchAxisId, string> = {
   role: "Role Fit",
-  /** Product + landing language: human/culture fit, not “company vs company”. */
+  /** Product + marketing language: human/culture fit, not “company vs company”. */
   company: "Human Fit",
   motivation: "Motivation Fit",
 };
@@ -93,25 +119,12 @@ export function matchStrengthLabel(score: number): string {
   return scoreBandLabel(score);
 }
 
+/** @deprecated Prefer computeMatchConfidence from intelligence.ts */
 export function matchConfidence(
   talent: TalentMatchInput | null,
   company: CompanyMatchInput | null,
 ): MatchConfidence {
-  const talentPct = talent ? profileCompletion(talent.profile) : 0;
-  const companyPct = company ? companyProfileCompletion(company.profile) : 0;
-  const prefBits = [
-    Boolean(talent?.careerGoal),
-    (talent?.companyTypes.length ?? 0) > 0,
-    Boolean(company?.connectingAbout),
-    (company?.culturePriorities.length ?? 0) > 0,
-  ];
-  const prefPct = Math.round(
-    (prefBits.filter(Boolean).length / prefBits.length) * 100,
-  );
-  const completeness = (talentPct + companyPct + prefPct) / 3;
-  if (completeness >= 80) return "High";
-  if (completeness >= 55) return "Medium";
-  return "Low";
+  return computeMatchConfidence([], talent, company).confidence;
 }
 
 function compactWords(text: string, maxWords = 8): string {
@@ -196,6 +209,10 @@ function scanFinding(
         ? compactWords(`${years} years, experience matters here`)
         : compactWords(`${years} years, thinner signal here`);
     case "skills": {
+      // Prefer engine detail when it carries transferable inference language.
+      if (factor.detail.toLowerCase().includes("potentially transferable")) {
+        return compactWords(factor.detail, 14);
+      }
       const required = (company?.roleRequiredSkills ?? []).filter(Boolean);
       const shared = overlapCanonical(
         talent?.profile.skills ?? [],
@@ -231,6 +248,7 @@ function toBullet(
     key: factor.key,
     label: BULLET_LABEL[factor.key],
     finding: scanFinding(factor, talent, company, aligned, audience),
+    evidence: evidenceForFactor(factor),
   };
 }
 
@@ -243,6 +261,7 @@ function whyBullets(
   return factors
     .filter((factor) => factor.verdict === "aligned")
     .sort((a, b) => b.fraction * b.weight - a.fraction * a.weight)
+    .slice(0, 5)
     .map((factor) => toBullet(factor, talent, company, true, audience));
 }
 
@@ -273,11 +292,30 @@ function whatMattersMost(factors: MatchFactor[]): string {
   return `Strongest signal: ${BULLET_LABEL[top.key].toLowerCase()}`;
 }
 
+function emptyIntelligence(audience: MatchAudience) {
+  return {
+    confidence: "Low" as const,
+    confidenceReason:
+      audience === "talent"
+        ? "Not enough profile data yet to assess confidence."
+        : "Not enough profile data yet to assess confidence.",
+    risks: [] as MatchRisk[],
+    whatToValidate: [
+      "Complete both profiles and role requirements before relying on this match.",
+    ],
+    recommendedNextStep: "Not Enough Information" as const,
+    nextStepReason: "Insufficient evidence for a hiring recommendation.",
+    mutualSummary: "Mutual fit cannot be assessed yet.",
+    discoveryTier: "low_confidence" as const,
+  };
+}
+
 export function emptyMatchReport(
   audience: MatchAudience,
   overall = 0,
   technicalSignal: string | null = null,
 ): MatchReport {
+  const intel = emptyIntelligence(audience);
   return {
     overall,
     strength: matchStrengthLabel(overall),
@@ -286,9 +324,16 @@ export function emptyMatchReport(
       label: AXIS_LABEL[id],
       score: 0,
     })),
-    confidence: "Low",
+    confidence: intel.confidence,
+    confidenceReason: intel.confidenceReason,
     why: [],
     mismatch: [],
+    risks: intel.risks,
+    whatToValidate: intel.whatToValidate,
+    recommendedNextStep: intel.recommendedNextStep,
+    nextStepReason: intel.nextStepReason,
+    mutualSummary: intel.mutualSummary,
+    discoveryTier: intel.discoveryTier,
     whatMattersMost:
       audience === "talent"
         ? "Complete both profiles to see why this may fit you."
@@ -327,35 +372,59 @@ export function buildMatchReport(
       salaryGapPercent: gap,
     };
   }
+
+  const axes = (Object.keys(AXIS_LABEL) as MatchAxisId[]).map((id) => ({
+    id,
+    label: AXIS_LABEL[id],
+    score: axisScore(result.factors, AXIS_FACTOR_KEYS[id]),
+  }));
+
+  const intel = buildIntelligenceExtras(
+    result,
+    axes,
+    talent,
+    company,
+    audience,
+    gap,
+  );
+
   const mismatch = mismatchBullets(result.factors, talent, company, audience);
   if (gap != null) {
-    const already = mismatch.some((b) => /salary|compensation|שכר/i.test(b.label + b.finding));
+    const already = mismatch.some((b) =>
+      /salary|compensation|שכר/i.test(b.label + b.finding),
+    );
     if (!already) {
       mismatch.unshift({
         key: "experience",
         label: "Salary",
         finding: `Salary expectations differ by about ${gap}%`,
+        evidence: "fact",
       });
     } else {
       for (const bullet of mismatch) {
         if (/salary|compensation|שכר/i.test(bullet.label + bullet.finding)) {
           bullet.finding = `Salary gap of about ${gap}%`;
           bullet.label = "Salary";
+          bullet.evidence = "fact";
         }
       }
     }
   }
+
   return {
     overall: result.score,
     strength: matchStrengthLabel(result.score),
-    axes: (Object.keys(AXIS_LABEL) as MatchAxisId[]).map((id) => ({
-      id,
-      label: AXIS_LABEL[id],
-      score: axisScore(result.factors, AXIS_FACTOR_KEYS[id]),
-    })),
-    confidence: matchConfidence(talent, company),
+    axes,
+    confidence: intel.confidence,
+    confidenceReason: intel.confidenceReason,
     why: whyBullets(result.factors, talent, company, audience),
     mismatch,
+    risks: intel.risks,
+    whatToValidate: intel.whatToValidate,
+    recommendedNextStep: intel.recommendedNextStep,
+    nextStepReason: intel.nextStepReason,
+    mutualSummary: intel.mutualSummary,
+    discoveryTier: intel.discoveryTier,
     whatMattersMost: whatMattersMost(result.factors),
     audience,
     // Soft signal only — not included in AXIS_FACTOR_KEYS / MATCH_WEIGHTS.

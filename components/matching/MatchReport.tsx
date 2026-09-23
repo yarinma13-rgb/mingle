@@ -149,6 +149,20 @@ function ChipGrid({
   );
 }
 
+const GAP_KIND_LABEL: Record<string, string> = {
+  hard: "Hard gap",
+  development: "Development",
+  preference: "Preference",
+  unknown: "Unknown",
+};
+
+const TIER_LABEL: Record<string, string> = {
+  strong: "Strong match",
+  potential: "Potential match",
+  development: "Development match",
+  low_confidence: "Low-confidence match",
+};
+
 export function MatchReportBody({
   report,
   compact,
@@ -156,27 +170,23 @@ export function MatchReportBody({
   report: MatchReport;
   compact?: boolean;
 }) {
-  const whyTitle = "Why this is a potential match";
-  const mismatchTitle = "Potential gaps";
-  const riskItems =
-    report.salaryGapPercent != null &&
-    !report.mismatch.some((b) => b.label === "Salary")
-      ? [
-          {
-            key: "experience" as const,
-            label: "Salary",
-            finding: `Salary gap of about ${report.salaryGapPercent}%`,
-          },
-          ...report.mismatch,
-        ]
-      : report.mismatch.map((b) =>
-          b.label === "Salary" && report.salaryGapPercent != null
-            ? {
-                ...b,
-                finding: `Salary gap of about ${report.salaryGapPercent}%`,
-              }
-            : b,
-        );
+  const whyTitle = "Why this match";
+  const mismatchTitle = "Why not / potential risks";
+  const risks =
+    report.risks?.length > 0
+      ? report.risks
+      : report.mismatch.map((b) => ({
+          key: b.key,
+          label: b.label,
+          finding: b.finding,
+          gapKind: "preference" as const,
+          evidence: b.evidence ?? ("fact" as const),
+        }));
+
+  const riskPreview = compact ? 2 : MISMATCH_PREVIEW;
+  const [risksOpen, setRisksOpen] = useState(false);
+  const visibleRisks = risksOpen ? risks : risks.slice(0, riskPreview);
+  const hiddenRisks = Math.max(0, risks.length - riskPreview);
 
   return (
     <div className="flex flex-col gap-4">
@@ -190,12 +200,24 @@ export function MatchReportBody({
               {report.overall}%
             </span>
           </p>
+          {report.mutualSummary ? (
+            <p className="mt-1 max-w-[28rem] text-[12px] leading-snug text-mingle-text-secondary">
+              {report.mutualSummary}
+            </p>
+          ) : null}
         </div>
-        <span
-          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
-        >
-          {scoreBandLabel(report.overall)}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span
+            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
+          >
+            {scoreBandLabel(report.overall)}
+          </span>
+          {report.discoveryTier ? (
+            <span className="rounded-full bg-mingle-lavender px-2.5 py-1 text-[10px] font-semibold text-mingle-text-secondary">
+              {TIER_LABEL[report.discoveryTier] ?? report.discoveryTier}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {!compact ? <FitBars axes={report.axes} /> : null}
@@ -211,12 +233,19 @@ export function MatchReportBody({
         </p>
       ) : null}
 
-      <p
-        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
-      >
-        <ShieldCheckIcon size={14} className="shrink-0" />
-        <span>Confidence: {report.confidence}</span>
-      </p>
+      <div>
+        <p
+          className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
+        >
+          <ShieldCheckIcon size={14} className="shrink-0" />
+          <span>Match confidence: {report.confidence}</span>
+        </p>
+        {report.confidenceReason ? (
+          <p className="mt-1 text-[11px] leading-snug text-mingle-text-secondary">
+            {report.confidenceReason}
+          </p>
+        ) : null}
+      </div>
 
       <section>
         <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
@@ -230,17 +259,90 @@ export function MatchReportBody({
         />
       </section>
 
-      {riskItems.length > 0 ? (
+      {risks.length > 0 ? (
         <section>
           <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-text-secondary">
             {mismatchTitle}
           </h3>
-          <ChipGrid
-            items={riskItems}
-            tone="risk"
-            previewCount={compact ? 2 : MISMATCH_PREVIEW}
-            empty=""
-          />
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {visibleRisks.map((risk) => (
+              <div
+                key={`${risk.key}-${risk.label}-${risk.finding}`}
+                className="flex min-w-0 flex-col gap-1 rounded-2xl border border-mingle-warning/40 bg-mingle-warning/10 px-3 py-2.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold text-mingle-text">
+                    {risk.label}
+                  </p>
+                  <span className="shrink-0 rounded-full bg-mingle-surface px-2 py-0.5 text-[10px] font-medium text-mingle-text-secondary">
+                    {GAP_KIND_LABEL[risk.gapKind] ?? risk.gapKind}
+                  </span>
+                </div>
+                <p className="text-[12px] leading-snug text-mingle-text">
+                  {risk.finding}
+                </p>
+                {risk.evidence === "inference" ? (
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-mingle-text-secondary">
+                    Inference — not confirmed fact
+                  </p>
+                ) : risk.evidence === "unknown" ? (
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-mingle-text-secondary">
+                    Insufficient data
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          {hiddenRisks > 0 ? (
+            <button
+              type="button"
+              onClick={() => setRisksOpen((value) => !value)}
+              className="mt-1.5 text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
+            >
+              {risksOpen ? "Show less" : `Show ${hiddenRisks} more`}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
+
+      {!compact && report.whatToValidate?.length > 0 ? (
+        <section>
+          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-text">
+            What to validate
+          </h3>
+          <ul className="mt-2 flex flex-col gap-1.5">
+            {report.whatToValidate.map((item) => (
+              <li
+                key={item}
+                className="flex gap-2 text-[12px] leading-snug text-mingle-text-secondary"
+              >
+                <span
+                  aria-hidden
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-accent-purple"
+                />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {!compact && report.recommendedNextStep ? (
+        <section className="rounded-2xl border border-mingle-border bg-mingle-bg/70 px-3.5 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
+            Recommended next step
+          </p>
+          <p className="mt-1 font-display text-sm font-semibold text-mingle-text">
+            {report.recommendedNextStep}
+          </p>
+          {report.nextStepReason ? (
+            <p className="mt-1 text-[12px] leading-snug text-mingle-text-secondary">
+              {report.nextStepReason}
+            </p>
+          ) : null}
+          <p className="mt-2 text-[10px] text-mingle-text-secondary">
+            AI-supported suggestion — the recruiter retains final judgment.
+          </p>
         </section>
       ) : null}
 
@@ -378,15 +480,18 @@ function answerForPrompt(report: MatchReport, prompt: string): {
   const lower = prompt.toLowerCase();
   if (lower.includes("ask") || lower.includes("conversation") || lower.includes("first")) {
     const tip =
+      report.whatToValidate?.[0] ??
       report.why[0]?.finding ??
       report.whatMattersMost;
     return {
-      summary: "Start from the strongest overlap.",
+      summary: report.whatToValidate?.[0]
+        ? "Start by validating this:"
+        : "Start from the strongest overlap.",
       detail: tip,
     };
   }
   if (lower.includes("mismatch") || lower.includes("not be a fit") || lower.includes("risk")) {
-    const risk = report.mismatch[0];
+    const risk = report.risks?.[0] ?? report.mismatch[0];
     return {
       summary: risk
         ? `Main open risk: ${risk.label}.`
@@ -397,17 +502,19 @@ function answerForPrompt(report: MatchReport, prompt: string): {
   if (lower.includes("confident") || lower.includes("confidence")) {
     return {
       summary: `Confidence is ${report.confidence}.`,
-      detail: report.whatMattersMost,
+      detail: report.confidenceReason || report.whatMattersMost,
     };
   }
-  if (lower.includes("matters most")) {
+  if (lower.includes("matters most") || lower.includes("next step")) {
     return {
-      summary: "What matters most for this match:",
-      detail: report.whatMattersMost,
+      summary: report.recommendedNextStep
+        ? `Recommended next step: ${report.recommendedNextStep}.`
+        : "What matters most for this match:",
+      detail: report.nextStepReason || report.whatMattersMost,
     };
   }
   return {
-    summary: axisLine(report),
+    summary: report.mutualSummary || axisLine(report),
     detail:
       report.why[0]
         ? `${report.why[0].label}: ${report.why[0].finding}`

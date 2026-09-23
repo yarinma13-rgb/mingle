@@ -49,6 +49,8 @@ export async function loadDiscoveryPage(
     roleTitle?: string | null;
     roleDepartment?: string | null;
     roleRequiredSkills?: string[] | null;
+    salaryMin?: number | null;
+    salaryMax?: number | null;
   } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
@@ -246,6 +248,8 @@ export async function loadDiscoveryPage(
               scope.roleDepartment ?? ownInput.roleDepartment ?? null,
             roleRequiredSkills:
               scope.roleRequiredSkills ?? ownInput.roleRequiredSkills ?? null,
+            salaryMin: scope.salaryMin ?? ownInput.salaryMin ?? null,
+            salaryMax: scope.salaryMax ?? ownInput.salaryMax ?? null,
           }
         : null;
       const result = companyForMatch
@@ -505,6 +509,8 @@ export async function loadDiscoveryPage(
       roleTitle: openRole?.title ?? null,
       roleDepartment: openRole?.department ?? null,
       roleRequiredSkills: openRole?.required_skills ?? null,
+      salaryMin: openRole?.salary_min ?? null,
+      salaryMax: openRole?.salary_max ?? null,
     };
     const result = ownInput
       ? computeMatch(ownInput, companyInput)
