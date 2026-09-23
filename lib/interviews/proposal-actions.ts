@@ -19,6 +19,10 @@ import {
 } from "@/lib/interviews/proposals";
 import { notifyPushToUser } from "@/lib/push/actions";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isActiveCompanyMember,
+  resolveCompanyWorkspaceId,
+} from "@/lib/team/persistence";
 import type { InterviewLocationType } from "@/lib/supabase/types";
 import { z } from "zod";
 
@@ -64,10 +68,10 @@ async function ensureCompanyOnConnection(
   if (account?.user_type !== "company") {
     return { ok: false as const, error: "Only the company side can do that." };
   }
-  if (userId !== companyId) {
+  if (!(await isActiveCompanyMember(supabase, userId, companyId))) {
     return {
       ok: false as const,
-      error: "Use the company account for calendar scheduling for now.",
+      error: "Use your company workspace for calendar scheduling.",
     };
   }
   const { data: connection } = await supabase
@@ -309,7 +313,7 @@ export async function acceptInterviewSlotAction(input: {
 
 export async function disconnectGoogleCalendarAction(): Promise<
   { ok: true } | { ok: false; error: string }
-> {
+> { 
   const supabase = await createClient();
   const {
     data: { user },
@@ -324,7 +328,8 @@ export async function disconnectGoogleCalendarAction(): Promise<
     return { ok: false, error: "Only company accounts connect a calendar." };
   }
   try {
-    await deleteCalendarConnection(supabase, user.id);
+    const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
+    await deleteCalendarConnection(supabase, companyId);
     return { ok: true };
   } catch {
     return { ok: false, error: "Couldn't disconnect. Try again." };
@@ -343,7 +348,8 @@ export async function loadCompanyCalendarStatusAction(): Promise<{
   } = await supabase.auth.getUser();
   if (!user) return { configured, connected: false, accountEmail: null };
   try {
-    const connection = await loadCalendarConnection(supabase, user.id);
+    const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
+    const connection = await loadCalendarConnection(supabase, companyId);
     return {
       configured,
       connected: Boolean(connection),
