@@ -14,6 +14,7 @@ import {
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
 import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { loadOpenRoleRediscoveryByCandidate } from "@/lib/matching/rediscovery";
+import { loadNotesForConnections } from "@/lib/notes/persistence";
 
 export default async function BoardPage() {
   const { supabase, user, userRow } = await requireAppUser();
@@ -25,13 +26,17 @@ export default async function BoardPage() {
   const otherIds = acceptedRows.map((row) =>
     row.requester_id === companyId ? row.recipient_id : row.requester_id,
   );
-  const [info, timelines, rediscoveryByUser] = await Promise.all([
+  const [info, timelines, rediscoveryByUser, notesByConnection] = await Promise.all([
     loadDisplayInfoForUsers(supabase, otherIds),
     loadTimelinesForConnections(
       supabase,
       acceptedRows.map((row) => row.id),
     ),
     loadOpenRoleRediscoveryByCandidate(supabase, companyId),
+    loadNotesForConnections(
+      supabase,
+      acceptedRows.map((row) => row.id),
+    ),
   ]);
 
   const candidates: BoardCandidate[] = [];
@@ -61,15 +66,19 @@ export default async function BoardPage() {
     });
   }
 
-  const candidatesWithRediscovery = candidates.map((candidate) => ({
-    ...candidate,
-    rediscovery: rediscoveryByUser[candidate.userId] ?? null,
-  }));
+  const candidatesWithExtras = candidates.map((candidate) => {
+    const note = notesByConnection.get(candidate.connectionId);
+    return {
+      ...candidate,
+      rediscovery: rediscoveryByUser[candidate.userId] ?? null,
+      note: note ? { notes: note.notes, tags: note.tags } : null,
+    };
+  });
 
   return (
     <>
       <DashboardHeading>Board</DashboardHeading>
-      <CompanyBoardScreen actorId={user.id} candidates={candidatesWithRediscovery} />
+      <CompanyBoardScreen actorId={user.id} candidates={candidatesWithExtras} />
     </>
   );
 }
