@@ -276,6 +276,7 @@ export function CompanyBoardScreen({
                             <span className="h-1 w-1 rounded-full bg-current" />
                             <span className="h-1 w-1 rounded-full bg-current" />
                             <span className="h-1 w-1 rounded-full bg-current" />
+                            <span className="h-1 w-1 rounded-full bg-current" />
                           </span>
                           <span className="text-[10px] font-semibold uppercase tracking-wide">
                             Drag
@@ -366,7 +367,7 @@ export function CompanyBoardScreen({
                         </div>
                       </article>
                     ))
-                  }}
+                  )}
                 </div>
               </section>
             );
@@ -432,7 +433,7 @@ export function CompanyBoardScreen({
             <h2
               id="board-note-title"
               className="font-display text-lg font-bold text-mingle-text"
-          >
+            >
               Note for {noteEditorFor.name}
             </h2>
             <p className="mt-1 text-xs text-mingle-text-secondary">
