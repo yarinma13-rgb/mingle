@@ -308,7 +308,9 @@ export function ProductDemoExperience({
         }`}
       >
         <motion.div
-          className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue"
+          className={`pointer-events-none absolute inset-x-0 top-0 z-40 h-[2px] origin-left bg-gradient-to-r from-mingle-accent-pink via-mingle-accent-purple to-mingle-accent-blue ${
+            recordMode ? "opacity-0" : ""
+          }`}
           style={{ scaleX: progress / 100 }}
           transition={{ duration: 0.15, ease: "linear" }}
         />
@@ -392,7 +394,9 @@ export function ProductDemoExperience({
         </div>
 
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-50"
+          className={`pointer-events-none absolute inset-x-0 bottom-0 z-50 ${
+            recordMode ? "hidden" : ""
+          }`}
           onMouseEnter={() => setControlsOpen(true)}
           onMouseLeave={() => setControlsOpen(false)}
         >
