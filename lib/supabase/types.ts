@@ -227,6 +227,7 @@ export interface Database {
           looking_for: string[];
           latitude: number | null;
           longitude: number | null;
+          slug: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -246,6 +247,7 @@ export interface Database {
           looking_for?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          slug?: string | null;
         };
         Update: {
           company_name?: string | null;
@@ -262,6 +264,7 @@ export interface Database {
           looking_for?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          slug?: string | null;
         };
         Relationships: [];
       };
@@ -416,6 +419,20 @@ export interface Database {
           status?: string;
           paid_at?: string | null;
         };
+        Relationships: [];
+      };
+      role_applications: {
+        Row: {
+          id: string;
+          role_id: string;
+          candidate_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id: string;
+          candidate_id: string;
+        };
+        Update: Record<string, never>;
         Relationships: [];
       };
       match_reviews: {
@@ -1063,6 +1080,25 @@ export interface Database {
       claim_role_referral: {
         Args: { p_referral_id: string };
         Returns: undefined;
+      };
+      career_page_by_slug: {
+        Args: { p_slug: string };
+        Returns: {
+          company_name: string;
+          logo: string | null;
+          mission: string | null;
+          industry: string | null;
+          location: string | null;
+          description: string | null;
+          roles: {
+            id: string;
+            title: string;
+            department: string | null;
+            employmentType: string | null;
+            workModel: string | null;
+            requiredSkills: string[];
+          }[];
+        }[];
       };
       list_related_push_subscriptions: {
         Args: { p_user_id: string };
