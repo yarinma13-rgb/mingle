@@ -10,7 +10,7 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
  */
 export function OpeningScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const showQuestion = reducedMotion || elapsedMs >= 5200;
+  const showQuestion = reducedMotion || elapsedMs >= 1600;
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-white px-6">

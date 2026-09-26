@@ -10,10 +10,10 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
  */
 export function ClosingScene({ onReplay }: { onReplay?: () => void }) {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const line1 = reducedMotion || elapsedMs >= 400;
-  const line2 = reducedMotion || elapsedMs >= 2400;
-  const brand = reducedMotion || elapsedMs >= 4600;
-  const cta = reducedMotion || elapsedMs >= 6200;
+  const line1 = reducedMotion || elapsedMs >= 200;
+  const line2 = reducedMotion || elapsedMs >= 900;
+  const brand = reducedMotion || elapsedMs >= 1800;
+  const cta = reducedMotion || elapsedMs >= 2700;
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-white px-6">

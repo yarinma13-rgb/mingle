@@ -4,43 +4,44 @@ export type DemoFocusBeat = {
   atMs: number;
   /** data-demo-target value */
   target: string;
-  /** How long the highlight holds (ms). Default 1600. */
+  /** How long the highlight holds (ms). Default 900. */
   holdMs?: number;
 };
 
 /**
- * Cinematic focus path — soft spotlight on the UI the viewer should notice.
- * Prefer this over camera zoom for the product film.
+ * Cinematic focus path — soft spotlight within each 3.5s slide.
  */
 export const DEMO_FOCUS_SCRIPT: Partial<Record<DemoSceneId, DemoFocusBeat[]>> = {
   problem: [
-    { atMs: 9000, target: "problem-overlay-skills", holdMs: 1800 },
-    { atMs: 14000, target: "problem-overlay-rest", holdMs: 2000 },
+    { atMs: 1700, target: "problem-overlay-skills", holdMs: 800 },
+    { atMs: 2700, target: "problem-overlay-rest", holdMs: 700 },
   ],
   profile: [
-    { atMs: 4500, target: "profile-goals", holdMs: 2000 },
-    { atMs: 9000, target: "profile-work", holdMs: 2000 },
-    { atMs: 14500, target: "profile-motivation", holdMs: 2200 },
+    { atMs: 1400, target: "profile-goals", holdMs: 700 },
+    { atMs: 2100, target: "profile-work", holdMs: 600 },
+    { atMs: 2800, target: "profile-motivation", holdMs: 600 },
   ],
   company: [
-    { atMs: 3500, target: "role-skills", holdMs: 1800 },
-    { atMs: 7500, target: "role-goals", holdMs: 1800 },
-    { atMs: 11500, target: "role-work", holdMs: 1800 },
-    { atMs: 16500, target: "mutual-bridge", holdMs: 2500 },
+    { atMs: 600, target: "role-skills", holdMs: 700 },
+    { atMs: 1400, target: "role-goals", holdMs: 600 },
+    { atMs: 2300, target: "mutual-bridge", holdMs: 1000 },
   ],
   match: [
-    { atMs: 3500, target: "fit-role", holdMs: 1600 },
-    { atMs: 6500, target: "fit-human", holdMs: 1600 },
-    { atMs: 9500, target: "fit-motivation", holdMs: 1600 },
-    { atMs: 15500, target: "mingle-celebration", holdMs: 1800 },
+    { atMs: 800, target: "fit-role", holdMs: 550 },
+    { atMs: 1500, target: "fit-human", holdMs: 550 },
+    { atMs: 2200, target: "fit-motivation", holdMs: 700 },
+  ],
+  mingleMoment: [
+    { atMs: 500, target: "mingle-headline", holdMs: 1400 },
+    { atMs: 2100, target: "mingle-cta", holdMs: 1000 },
   ],
   whyMatch: [
-    { atMs: 4000, target: "why-fits", holdMs: 2800 },
-    { atMs: 14000, target: "what-explore", holdMs: 3200 },
+    { atMs: 500, target: "why-fits", holdMs: 1200 },
+    { atMs: 2000, target: "what-explore", holdMs: 1300 },
   ],
   conversation: [
-    { atMs: 2500, target: "start-conversation", holdMs: 1800 },
-    { atMs: 9000, target: "chat-thread", holdMs: 2200 },
+    { atMs: 300, target: "start-conversation", holdMs: 550 },
+    { atMs: 1100, target: "chat-thread", holdMs: 900 },
   ],
 };
 
@@ -51,7 +52,7 @@ export function activeFocusBeat(
   if (!script?.length) return null;
   let current: DemoFocusBeat | null = null;
   for (const beat of script) {
-    const hold = beat.holdMs ?? 1600;
+    const hold = beat.holdMs ?? 900;
     if (elapsedMs >= beat.atMs && elapsedMs < beat.atMs + hold) {
       current = beat;
     }

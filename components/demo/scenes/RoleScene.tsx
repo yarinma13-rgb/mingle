@@ -12,7 +12,7 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
 export function RoleScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
   const t = (ms: number) => reducedMotion || elapsedMs >= ms;
-  const showBridge = t(15500);
+  const showBridge = t(2200);
 
   return (
     <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-5">
