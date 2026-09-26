@@ -157,7 +157,7 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(4),
     initials: "NK",
     gender: "male",
-    photo: "/landing/avatars/avatar-noah.png",
+    photo: "/landing/avatars/avatar-arjun.png",
   },
   {
     userId: "demo-talent-aya-ben",
@@ -168,7 +168,7 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(5),
     initials: "AB",
     gender: "female",
-    photo: "/landing/avatars/avatar-noa.png",
+    photo: "/landing/avatars/avatar-lin.png",
   },
 ];
 
