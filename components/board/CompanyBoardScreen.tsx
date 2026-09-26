@@ -493,6 +493,30 @@ export function CompanyBoardScreen({
             <p className="mt-1 text-xs text-mingle-text-secondary">
               Visible to your whole team.
             </p>
+            {noteEditorFor.matchReport?.whatToValidate?.length ? (
+              <div className="mt-3 rounded-xl border border-mingle-border bg-mingle-bg/60 p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
+                  From the match report — tap to add
+                </p>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {noteEditorFor.matchReport.whatToValidate.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() =>
+                        setNoteDraft((prev) => ({
+                          ...prev,
+                          notes: prev.notes ? `${prev.notes}\n• ${question}` : `• ${question}`,
+                        }))
+                      }
+                      className="rounded-lg px-1.5 py-1 text-left text-[11px] leading-snug text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
+                    >
+                      + {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <label className="mt-4 block text-xs font-semibold text-mingle-text-secondary">
               Note
               <textarea

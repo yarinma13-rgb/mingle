@@ -19,29 +19,7 @@ import { loadCompanyRoles, type RoleRecord } from "@/lib/roles/persistence";
 import { loadCompanyMatchInput, loadTalentMatchInput } from "@/lib/matching/context";
 import { computeMatch, type CompanyMatchInput } from "@/lib/matching/engine";
 import { buildMatchReport } from "@/lib/matching/report";
-import type { RelationshipEventRow } from "@/lib/relationship/persistence";
-
-/** Best-effort: connections aren't linked to a role by id, only by the
- * free-text role name recorded on the "opportunity" timeline event (see
- * lib/relationship/persistence.ts createOpportunity). Falls back to no
- * role match (still scores against the general company profile) rather
- * than guessing. */
-function findOriginatingRole(
-  timeline: RelationshipEventRow[],
-  roles: RoleRecord[],
-): RoleRecord | null {
-  const opportunityEvent = timeline.find((event) => event.stage === "opportunity");
-  const roleName =
-    typeof opportunityEvent?.metadata === "object" &&
-    opportunityEvent.metadata &&
-    "role" in opportunityEvent.metadata
-      ? String((opportunityEvent.metadata as { role?: unknown }).role ?? "").trim()
-      : "";
-  if (!roleName) return null;
-  return (
-    roles.find((role) => role.title.trim().toLowerCase() === roleName.toLowerCase()) ?? null
-  );
-}
+import { findOriginatingRole } from "@/lib/relationship/originating-role";
 
 export default async function BoardPage() {
   const { supabase, user, userRow } = await requireAppUser();
