@@ -18,6 +18,7 @@ import {
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import { reportInterestAttribution } from "@/lib/outbound-interest/client";
+import { reportReferralAttribution } from "@/lib/referrals/client";
 import type { UserType } from "@/lib/supabase/types";
 import {
   LocaleGlobeButton,
@@ -100,6 +101,9 @@ export function AuthForm({
       userType: resolvedPath,
       userId,
     });
+    if (resolvedPath === "talent") {
+      void reportReferralAttribution();
+    }
   };
 
   const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
