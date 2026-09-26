@@ -27,7 +27,7 @@ create policy "participants can read match explanations" on public.match_explana
     exists (
       select 1 from public.matches m
       where m.id = match_explanations.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );
 
@@ -38,6 +38,6 @@ create policy "participants can write match explanations" on public.match_explan
     exists (
       select 1 from public.matches m
       where m.id = match_explanations.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );

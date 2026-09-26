@@ -2,11 +2,12 @@
 -- which (correctly, for schema-only placeholders) means nobody could read
 -- or write them. Now that 0038-0040 give them a real matches anchor and
 -- Phase 2 actually starts writing match_feature_snapshots/match_evidence,
--- add participant-scoped policies — same "company or candidate on the
--- underlying match" shape as 0039's match_explanations policies.
--- interview_feedback/employment_outcomes get read/write policies too so
--- Phase 5 can wire them later without another migration, even though nothing
--- writes employment_outcomes yet.
+-- add participant-scoped policies (using the is_match_participant /
+-- is_match_company_side helpers from 0038, which already cover active
+-- company_members, not just the workspace owner). interview_feedback/
+-- employment_outcomes get read/write policies too so Phase 5 can wire them
+-- later without another migration, even though nothing writes
+-- employment_outcomes yet.
 
 drop policy if exists "participants can read match feature snapshots" on public.match_feature_snapshots;
 create policy "participants can read match feature snapshots" on public.match_feature_snapshots
@@ -15,7 +16,7 @@ create policy "participants can read match feature snapshots" on public.match_fe
     exists (
       select 1 from public.matches m
       where m.id = match_feature_snapshots.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );
 
@@ -26,7 +27,7 @@ create policy "participants can write match feature snapshots" on public.match_f
     exists (
       select 1 from public.matches m
       where m.id = match_feature_snapshots.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );
 
@@ -37,7 +38,7 @@ create policy "participants can read match evidence" on public.match_evidence
     exists (
       select 1 from public.matches m
       where m.id = match_evidence.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );
 
@@ -48,7 +49,7 @@ create policy "participants can write match evidence" on public.match_evidence
     exists (
       select 1 from public.matches m
       where m.id = match_evidence.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );
 
@@ -60,7 +61,7 @@ create policy "company can read interview feedback" on public.interview_feedback
     exists (
       select 1 from public.matches m
       where m.id = interview_feedback.match_id
-        and auth.uid() = m.company_id
+        and public.is_match_company_side(m.company_id)
     )
   );
 
@@ -71,7 +72,7 @@ create policy "company can write interview feedback" on public.interview_feedbac
     exists (
       select 1 from public.matches m
       where m.id = interview_feedback.match_id
-        and auth.uid() = m.company_id
+        and public.is_match_company_side(m.company_id)
     )
   );
 
@@ -85,6 +86,6 @@ create policy "participants can read employment outcomes" on public.employment_o
     exists (
       select 1 from public.matches m
       where m.id = employment_outcomes.match_id
-        and (auth.uid() = m.company_id or auth.uid() = m.candidate_id)
+        and public.is_match_participant(m.company_id, m.candidate_id)
     )
   );

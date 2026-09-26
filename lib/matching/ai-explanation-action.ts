@@ -15,6 +15,7 @@ import {
   readCachedExplanation,
 } from "@/lib/matching/match-anchor";
 import { loadCompanyRole } from "@/lib/roles/persistence";
+import { isActiveCompanyMember } from "@/lib/team/persistence";
 
 export type FetchAiMatchExplanationResult =
   | { ok: true; explanation: AiMatchExplanation }
@@ -35,11 +36,14 @@ export async function fetchAiMatchExplanation(params: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Sign in to see match intelligence." };
-  if (user.id !== params.companyId && user.id !== params.candidateId) {
+  const isCompanySide =
+    user.id === params.companyId ||
+    (await isActiveCompanyMember(supabase, user.id, params.companyId));
+  if (!isCompanySide && user.id !== params.candidateId) {
     return { ok: false, error: "Not authorized for this match." };
   }
 
-  const audience: MatchAudience = user.id === params.companyId ? "company" : "talent";
+  const audience: MatchAudience = isCompanySide ? "company" : "talent";
   const roleId = params.roleId ?? null;
 
   const [talentInput, companyInputBase] = await Promise.all([
