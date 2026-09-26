@@ -14,8 +14,10 @@ const CONFETTI_COLORS = [
   "#FDEAF1",
   "#F1E8FE",
   "#E8F0FE",
+  "#FFB4C8",
+  "#C9A8FF",
 ];
-const CONFETTI_COUNT = 56;
+const CONFETTI_COUNT = 72;
 
 type ConfettiSpec = {
   id: number;
@@ -29,28 +31,31 @@ type ConfettiSpec = {
   rotBurst: number;
   rotEnd: number;
   kind: "bar" | "square" | "spark";
+  originTop: string;
 };
 
 function generateConfettiSpecs(): ConfettiSpec[] {
   return Array.from({ length: CONFETTI_COUNT }, (_, i) => {
-    const angleDeg = 8 + Math.random() * 164;
+    const wave = Math.floor(i / 24);
+    const angleDeg = 5 + Math.random() * 170;
     const rad = (angleDeg * Math.PI) / 180;
-    const distance = 90 + Math.random() * 160;
+    const distance = 110 + Math.random() * 200;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    const rotBurst = spin * (40 + Math.random() * 90);
+    const rotBurst = spin * (48 + Math.random() * 120);
     const kindRoll = Math.random();
     return {
       id: i,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      size: 5 + Math.random() * 7,
-      delay: 0.01 + Math.random() * 0.22,
-      duration: 2.0 + Math.random() * 0.7,
-      burstX: Math.cos(rad) * distance,
-      burstY: -Math.sin(rad) * distance,
-      fallY: 130 + Math.random() * 120,
+      size: 6 + Math.random() * 9,
+      delay: wave * 0.55 + Math.random() * 0.28,
+      duration: 2.1 + Math.random() * 0.85,
+      burstX: Math.cos(rad) * distance * (0.85 + Math.random() * 0.35),
+      burstY: -Math.sin(rad) * distance * (0.9 + Math.random() * 0.3),
+      fallY: 140 + Math.random() * 160,
       rotBurst,
-      rotEnd: rotBurst + spin * (90 + Math.random() * 110),
-      kind: kindRoll < 0.55 ? "bar" : kindRoll < 0.82 ? "square" : "spark",
+      rotEnd: rotBurst + spin * (100 + Math.random() * 140),
+      kind: kindRoll < 0.5 ? "bar" : kindRoll < 0.78 ? "square" : "spark",
+      originTop: `${32 + (i % 5) * 3}%`,
     };
   });
 }
@@ -77,21 +82,29 @@ export function MingleMomentScene() {
 
   return (
     <div className="mingle-moment-overlay relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6">
-      <div className="pointer-events-none absolute inset-0 z-[1]" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] overflow-visible"
+        aria-hidden
+      >
         {confetti.map((piece) => (
           <span
             key={piece.id}
             className="mingle-confetti-piece"
             style={{
-              width: piece.kind === "spark" ? piece.size * 0.55 : piece.size,
+              top: piece.originTop,
+              width: piece.kind === "spark" ? piece.size * 0.6 : piece.size,
               height:
                 piece.kind === "bar"
-                  ? piece.size * 2.4
+                  ? piece.size * 2.6
                   : piece.kind === "spark"
-                    ? piece.size * 0.55
+                    ? piece.size * 0.6
                     : piece.size,
               borderRadius: piece.kind === "spark" ? "999px" : "2px",
               backgroundColor: piece.color,
+              boxShadow:
+                piece.kind === "spark"
+                  ? `0 0 6px ${piece.color}`
+                  : undefined,
               animationDelay: `${piece.delay}s`,
               animationDuration: `${piece.duration}s`,
               ["--burst-x" as string]: `${piece.burstX}px`,
@@ -113,11 +126,15 @@ export function MingleMomentScene() {
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden
-            className="absolute h-48 w-48 rounded-full bg-mingle-blue/14 blur-3xl"
+            className="absolute h-52 w-52 rounded-full bg-mingle-blue/16 blur-3xl"
           />
           <span
             aria-hidden
-            className="absolute h-32 w-32 rounded-full bg-mingle-accent-pink/10 blur-2xl"
+            className="absolute h-36 w-36 rounded-full bg-mingle-accent-pink/14 blur-2xl"
+          />
+          <span
+            aria-hidden
+            className="absolute h-28 w-28 rounded-full bg-mingle-accent-purple/12 blur-xl"
           />
           <MingleLogo variant="mark" size={96} className="relative" priority />
         </div>
