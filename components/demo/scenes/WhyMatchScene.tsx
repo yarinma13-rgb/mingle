@@ -17,8 +17,8 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
 export function WhyMatchScene() {
   const report = DEMO_EMMA_MATCH_REPORT;
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const showWhy = reducedMotion || elapsedMs >= 400;
-  const showExplore = reducedMotion || elapsedMs >= 1900;
+  const showWhy = reducedMotion || elapsedMs >= 600;
+  const showExplore = reducedMotion || elapsedMs >= 3000;
 
   return (
     <motion.div

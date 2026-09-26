@@ -75,7 +75,7 @@ export function ProfileScene() {
       </aside>
 
       <div className="flex flex-col gap-3">
-        <Layer show={t(200)}>
+        <Layer show={t(300)}>
           <section className="rounded-[18px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
               Experience
@@ -89,7 +89,7 @@ export function ProfileScene() {
           </section>
         </Layer>
 
-        <Layer show={t(700)}>
+        <Layer show={t(1000)}>
           <section className="rounded-[18px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
               Skills
@@ -102,7 +102,7 @@ export function ProfileScene() {
           </section>
         </Layer>
 
-        <Layer show={t(1300)}>
+        <Layer show={t(2000)}>
           <section
             data-demo-target="profile-goals"
             className="rounded-[18px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle"
@@ -120,7 +120,7 @@ export function ProfileScene() {
           </section>
         </Layer>
 
-        <Layer show={t(2000)}>
+        <Layer show={t(3200)}>
           <section
             data-demo-target="profile-work"
             className="rounded-[18px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle"
@@ -144,7 +144,7 @@ export function ProfileScene() {
           </section>
         </Layer>
 
-        <Layer show={t(2700)}>
+        <Layer show={t(4300)}>
           <section
             data-demo-target="profile-motivation"
             className="rounded-[18px] border border-mingle-border bg-gradient-to-br from-[color:var(--mingle-light-pink)] via-[color:var(--mingle-light-purple)] to-[color:var(--mingle-light-blue)] p-5 shadow-mingle"

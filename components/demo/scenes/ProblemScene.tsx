@@ -15,8 +15,8 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
  */
 export function ProblemScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const showSkillsLine = reducedMotion || elapsedMs >= 1600;
-  const showRestLine = reducedMotion || elapsedMs >= 2600;
+  const showSkillsLine = reducedMotion || elapsedMs >= 2200;
+  const showRestLine = reducedMotion || elapsedMs >= 3800;
 
   return (
     <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5">

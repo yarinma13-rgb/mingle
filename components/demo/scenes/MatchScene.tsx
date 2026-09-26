@@ -9,9 +9,9 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
 import { countUp } from "@/lib/demo/typewriter";
 
 const FITS = [
-  { id: "fit-role", label: "Role Fit", score: 92, atMs: 700 },
-  { id: "fit-human", label: "Human Fit", score: 87, atMs: 1400 },
-  { id: "fit-motivation", label: "Motivation Fit", score: 94, atMs: 2100 },
+  { id: "fit-role", label: "Role Fit", score: 92, atMs: 1000 },
+  { id: "fit-human", label: "Human Fit", score: 87, atMs: 2200 },
+  { id: "fit-motivation", label: "Motivation Fit", score: 94, atMs: 3400 },
 ] as const;
 
 /**
@@ -23,8 +23,8 @@ export function MatchScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
   const overall = reducedMotion
     ? report.overall
-    : countUp(report.overall, 200, 900, elapsedMs);
-  const showLine = reducedMotion || elapsedMs >= 2800;
+    : countUp(report.overall, 300, 1200, elapsedMs);
+  const showLine = reducedMotion || elapsedMs >= 4500;
 
   return (
     <motion.div
@@ -61,7 +61,7 @@ export function MatchScene() {
           const visible = reducedMotion || elapsedMs >= fit.atMs;
           const value = reducedMotion
             ? fit.score
-            : countUp(fit.score, fit.atMs, 600, elapsedMs);
+            : countUp(fit.score, fit.atMs, 800, elapsedMs);
           return (
             <motion.div
               key={fit.id}
