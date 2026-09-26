@@ -29,15 +29,18 @@ export function TalentInviteScreen({
   onDone,
   friendsJoined = 0,
   compact = false,
+  previewCode = null,
 }: {
   onDone: () => void;
   friendsJoined?: number;
   /** Dashboard embed — less page chrome. */
   compact?: boolean;
+  /** Skip server code fetch (visual demos / Story-like previews). */
+  previewCode?: string | null;
 }) {
   const toast = useToast();
-  const [code, setCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [code, setCode] = useState<string | null>(previewCode);
+  const [loading, setLoading] = useState(!previewCode);
   const [shareOpen, setShareOpen] = useState(false);
   const [busyChannel, setBusyChannel] = useState<ShareChannel | null>(null);
   const [unavailable, setUnavailable] = useState(false);
@@ -45,6 +48,10 @@ export function TalentInviteScreen({
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   useEffect(() => {
+    if (previewCode) {
+      track(AnalyticsEvent.talentReferralInviteShown, { code: previewCode });
+      return;
+    }
     let cancelled = false;
     (async () => {
       const result = await ensureTalentReferralCodeAction();
@@ -61,7 +68,7 @@ export function TalentInviteScreen({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [previewCode]);
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "https://mingle.careers";
