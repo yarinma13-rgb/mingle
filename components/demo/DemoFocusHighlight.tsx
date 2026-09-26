@@ -87,14 +87,14 @@ export function DemoFocusHighlight({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: demoEase }}
+          transition={{ duration: 0.65, ease: demoEase }}
         >
           {/* Soft veil — keeps UI readable, dims the rest */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse at center, transparent 0%, rgba(28,27,46,0.18) 72%)",
+                "radial-gradient(ellipse at center, transparent 0%, rgba(28,27,46,0.14) 72%)",
             }}
           />
           <motion.div
@@ -109,10 +109,10 @@ export function DemoFocusHighlight({
               background:
                 "linear-gradient(135deg, rgba(253,234,241,0.22), rgba(241,232,254,0.18), rgba(233,239,254,0.22))",
             }}
-            initial={{ opacity: 0, scale: 0.985 }}
+            initial={{ opacity: 0, scale: 0.99 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.99 }}
-            transition={{ duration: 0.4, ease: demoEase }}
+            exit={{ opacity: 0, scale: 0.995 }}
+            transition={{ duration: 0.55, ease: demoEase }}
           />
         </motion.div>
       ) : null}
