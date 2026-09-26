@@ -15,7 +15,7 @@
 import { createHash } from "crypto";
 import { geminiApiKey, geminiGenerateJson } from "@/lib/ai/gemini";
 import type { MatchBullet, MatchReport } from "@/lib/matching/report";
-import type { MatchFactor, MatchResult, TalentMatchInput, CompanyMatchInput } from "@/lib/matching/engine";
+import type { MatchFactor, MatchResult, CompanyMatchInput } from "@/lib/matching/engine";
 import type { MatchRisk, RecommendedNextStep, GapKind, EvidenceKind } from "@/lib/matching/intelligence";
 import { SKILL_TIERS } from "@/lib/matching/skill-requirement-tiers";
 

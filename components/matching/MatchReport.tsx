@@ -181,31 +181,44 @@ export function MatchReportBody({
   const whyTitle = "Why this match";
   const mismatchTitle = "Why not / potential risks";
 
-  const [aiState, setAiState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
-  const [aiExplanation, setAiExplanation] = useState<MatchReport["aiExplanation"]>(null);
+  // Keyed by the exact match being fetched, not just a loading flag — so a
+  // stale in-flight result for a *previous* card (e.g. after a swipe) can
+  // never render against the wrong one, without needing to reset state
+  // synchronously inside the effect (avoids react-hooks/set-state-in-effect;
+  // setState only ever happens inside the async .then()/.catch()).
+  const matchKey = matchIds
+    ? `${matchIds.companyId}:${matchIds.candidateId}:${matchIds.roleId ?? ""}`
+    : null;
+  const [aiResult, setAiResult] = useState<{
+    key: string;
+    explanation: MatchReport["aiExplanation"];
+    error: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!matchIds || compact) return;
+    const key = `${matchIds.companyId}:${matchIds.candidateId}:${matchIds.roleId ?? ""}`;
     let cancelled = false;
-    setAiState("loading");
     fetchAiMatchExplanation(matchIds)
       .then((result) => {
         if (cancelled) return;
-        if (result.ok) {
-          setAiExplanation(result.explanation);
-          setAiState("loaded");
-        } else {
-          setAiState("error");
-        }
+        setAiResult({
+          key,
+          explanation: result.ok ? result.explanation : null,
+          error: !result.ok,
+        });
       })
       .catch(() => {
-        if (!cancelled) setAiState("error");
+        if (!cancelled) setAiResult({ key, explanation: null, error: true });
       });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchIds?.companyId, matchIds?.candidateId, matchIds?.roleId, compact]);
+
+  const aiExplanation = aiResult?.key === matchKey ? aiResult.explanation : null;
+  const aiLoading = Boolean(matchKey) && aiResult?.key !== matchKey;
 
   const effectiveWhy = aiExplanation?.why ?? report.why;
   const risks =
@@ -292,7 +305,7 @@ export function MatchReportBody({
       <section>
         <h3 className="flex items-center gap-1.5 font-display text-sm font-semibold tracking-tight text-mingle-success">
           {whyTitle}
-          {aiState === "loading" ? (
+          {aiLoading ? (
             <span className="text-[10px] font-normal normal-case text-mingle-text-secondary">
               Analyzing…
             </span>
