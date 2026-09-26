@@ -285,7 +285,8 @@ button:disabled {
   justify-content: center;
   height: 44px;
   border-radius: 12px;
-  background: var(--mingle-connection-gradient);
+  /* Solid CTA — keep brand gradient for marks/text, not every action. */
+  background: var(--mingle-cta);
   padding: 0 1.5rem;
   font-size: 15px;
   font-weight: 600;
@@ -293,17 +294,19 @@ button:disabled {
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
+    background-color 0.15s ease,
     filter 0.15s ease;
 }
 
 .mingle-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(123, 47, 247, 0.25);
+  background: color-mix(in srgb, var(--mingle-cta) 88%, #0f172a);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--mingle-cta) 28%, transparent);
 }
 
 .mingle-btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  filter: brightness(0.94);
+  filter: brightness(0.96);
 }
 
 .mingle-btn-primary:disabled {
