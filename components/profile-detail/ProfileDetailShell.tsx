@@ -19,6 +19,8 @@ import {
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
+import { CollaboratorRow } from "@/components/matching/CollaboratorRow";
+import type { MatchCollaboratorRow } from "@/lib/collaborators/persistence";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import {
@@ -95,6 +97,11 @@ type ProfileDetailShellProps = {
   showCv?: boolean;
   recommendations?: SubmittedRecommendation[];
   canRequestRecommendation?: boolean;
+  /** Present only when viewer is a company user and an accepted connection exists. */
+  connectionId?: string | null;
+  companyId?: string;
+  initialCollaborators?: MatchCollaboratorRow[];
+  activeTeamMembers?: { userId: string; email: string }[];
 };
 
 const CONNECT_LABEL: Record<ConnectionStatus, string> = {
@@ -127,6 +134,10 @@ export function ProfileDetailShell({
   showCv = false,
   recommendations = [],
   canRequestRecommendation = false,
+  connectionId = null,
+  companyId,
+  initialCollaborators = [],
+  activeTeamMembers = [],
 }: ProfileDetailShellProps) {
   const router = useRouter();
   const toast = useToast();
@@ -430,6 +441,17 @@ export function ProfileDetailShell({
                   />
                   <AskMingleButton report={matchReport} />
                 </div>
+                {matchReport.audience === "company" && connectionId && companyId ? (
+                  <div className="mt-3">
+                    <CollaboratorRow
+                      connectionId={connectionId}
+                      companyId={companyId}
+                      currentUserId={viewerId}
+                      initialCollaborators={initialCollaborators}
+                      teamMembers={activeTeamMembers}
+                    />
+                  </div>
+                ) : null}
               </ProfileSection>
             ) : whyMatch ? (
               <ProfileSection title="Why this could be a match">
