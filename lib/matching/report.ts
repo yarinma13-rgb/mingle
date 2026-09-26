@@ -72,6 +72,13 @@ export type MatchReport = {
    * Null when aligned / unknown.
    */
   salaryGapPercent: number | null;
+  /**
+   * On-demand AI-reasoning layer (see ai-explanation.ts) — undefined until
+   * explicitly fetched for a single opened match; never populated for a
+   * list/feed. When present it supersedes why/risks/whatToValidate/
+   * recommendedNextStep in the UI without those fields needing to change.
+   */
+  aiExplanation?: import("@/lib/matching/ai-explanation").AiMatchExplanation | null;
 };
 
 export type { GapKind, EvidenceKind, MatchRisk, RecommendedNextStep, DiscoveryTier };

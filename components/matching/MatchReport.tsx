@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { MatchFactorKey } from "@/lib/matching/engine";
 import type {
   MatchAudience,
   MatchBullet,
   MatchReport,
 } from "@/lib/matching/report";
+import { fetchAiMatchExplanation } from "@/lib/matching/ai-explanation-action";
 import {
   NOT_FIT_REASONS,
   type MatchFeedbackAction,
@@ -166,14 +167,50 @@ const TIER_LABEL: Record<string, string> = {
 export function MatchReportBody({
   report,
   compact,
+  matchIds,
 }: {
   report: MatchReport;
   compact?: boolean;
+  /**
+   * Pass only for a single OPENED match (never a list card) to auto-fetch
+   * the deeper AI reasoning layer on mount. Omit to show the fast,
+   * deterministic-only report (e.g. inside a list of many cards).
+   */
+  matchIds?: { companyId: string; candidateId: string; roleId?: string | null };
 }) {
   const whyTitle = "Why this match";
   const mismatchTitle = "Why not / potential risks";
+
+  const [aiState, setAiState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
+  const [aiExplanation, setAiExplanation] = useState<MatchReport["aiExplanation"]>(null);
+
+  useEffect(() => {
+    if (!matchIds || compact) return;
+    let cancelled = false;
+    setAiState("loading");
+    fetchAiMatchExplanation(matchIds)
+      .then((result) => {
+        if (cancelled) return;
+        if (result.ok) {
+          setAiExplanation(result.explanation);
+          setAiState("loaded");
+        } else {
+          setAiState("error");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAiState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchIds?.companyId, matchIds?.candidateId, matchIds?.roleId, compact]);
+
+  const effectiveWhy = aiExplanation?.why ?? report.why;
   const risks =
-    report.risks?.length > 0
+    aiExplanation?.whyNot ??
+    (report.risks?.length > 0
       ? report.risks
       : report.mismatch.map((b) => ({
           key: b.key,
@@ -181,7 +218,12 @@ export function MatchReportBody({
           finding: b.finding,
           gapKind: "preference" as const,
           evidence: b.evidence ?? ("fact" as const),
-        }));
+        })));
+  const effectiveWhatToValidate = aiExplanation?.whatToValidate ?? report.whatToValidate;
+  const effectiveNextStep = aiExplanation?.recommendedNextStep ?? {
+    step: report.recommendedNextStep,
+    reason: report.nextStepReason,
+  };
 
   const riskPreview = compact ? 2 : MISMATCH_PREVIEW;
   const [risksOpen, setRisksOpen] = useState(false);
@@ -248,11 +290,20 @@ export function MatchReportBody({
       </div>
 
       <section>
-        <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
+        <h3 className="flex items-center gap-1.5 font-display text-sm font-semibold tracking-tight text-mingle-success">
           {whyTitle}
+          {aiState === "loading" ? (
+            <span className="text-[10px] font-normal normal-case text-mingle-text-secondary">
+              Analyzing…
+            </span>
+          ) : aiExplanation ? (
+            <span className="rounded-full bg-mingle-accent-purple/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-mingle-accent-purple">
+              AI
+            </span>
+          ) : null}
         </h3>
         <ChipGrid
-          items={report.why}
+          items={effectiveWhy}
           tone="fit"
           previewCount={compact ? 2 : 4}
           empty="Nothing strongly aligned yet."
@@ -305,13 +356,13 @@ export function MatchReportBody({
         </section>
       ) : null}
 
-      {!compact && report.whatToValidate?.length > 0 ? (
+      {!compact && effectiveWhatToValidate?.length > 0 ? (
         <section>
           <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-text">
             What to validate
           </h3>
           <ul className="mt-2 flex flex-col gap-1.5">
-            {report.whatToValidate.map((item) => (
+            {effectiveWhatToValidate.map((item) => (
               <li
                 key={item}
                 className="flex gap-2 text-[12px] leading-snug text-mingle-text-secondary"
@@ -327,17 +378,17 @@ export function MatchReportBody({
         </section>
       ) : null}
 
-      {!compact && report.recommendedNextStep ? (
+      {!compact && effectiveNextStep.step ? (
         <section className="rounded-2xl border border-mingle-border bg-mingle-bg/70 px-3.5 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
             Recommended next step
           </p>
           <p className="mt-1 font-display text-sm font-semibold text-mingle-text">
-            {report.recommendedNextStep}
+            {effectiveNextStep.step}
           </p>
-          {report.nextStepReason ? (
+          {effectiveNextStep.reason ? (
             <p className="mt-1 text-[12px] leading-snug text-mingle-text-secondary">
-              {report.nextStepReason}
+              {effectiveNextStep.reason}
             </p>
           ) : null}
           <p className="mt-2 text-[10px] text-mingle-text-secondary">

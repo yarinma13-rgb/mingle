@@ -573,6 +573,40 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      matches: {
+        Row: {
+          id: string;
+          role_id: string | null;
+          company_id: string;
+          candidate_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id?: string | null;
+          company_id: string;
+          candidate_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      match_explanations: {
+        Row: {
+          id: string;
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
+          created_at: string;
+        };
+        Insert: {
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       model_versions: {
         Row: {
           id: string;
