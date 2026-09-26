@@ -4,12 +4,12 @@ export type DemoSceneId =
   | "profile"
   | "company"
   | "match"
+  | "mingleMoment"
   | "whyMatch"
   | "conversation"
   | "idea"
   | "closing"
   | "introduce"
-  | "mingleMoment"
   | "recommendations"
   | "talent"
   | "board"
@@ -37,20 +37,22 @@ export type DemoSceneConfig = {
   fullBleed?: boolean;
 };
 
+const SLIDE_MS = 3500;
+
 /**
- * Cinematic product film — ~3:00, no captions.
+ * Cinematic product film — tight 3.5s slides, no captions.
  * Talent + Company → Mutual Matching → Understand Why → Better Conversation
  */
 export const DEMO_SCENES: DemoSceneConfig[] = [
   {
     id: "opening",
-    durationMs: 12000,
+    durationMs: SLIDE_MS,
     captions: [],
     fullBleed: true,
   },
   {
     id: "problem",
-    durationMs: 23000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Candidates",
@@ -59,7 +61,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "profile",
-    durationMs: 25000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Candidates",
@@ -68,7 +70,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "company",
-    durationMs: 25000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Roles",
@@ -77,7 +79,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "match",
-    durationMs: 25000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Candidates",
@@ -85,8 +87,14 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
     audience: "company",
   },
   {
+    id: "mingleMoment",
+    durationMs: SLIDE_MS,
+    captions: [],
+    fullBleed: true,
+  },
+  {
     id: "whyMatch",
-    durationMs: 30000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Candidates",
@@ -95,7 +103,7 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "conversation",
-    durationMs: 22000,
+    durationMs: SLIDE_MS,
     captions: [],
     showChrome: true,
     chromeNav: "Conversations",
@@ -104,13 +112,13 @@ export const DEMO_SCENES: DemoSceneConfig[] = [
   },
   {
     id: "idea",
-    durationMs: 10000,
+    durationMs: SLIDE_MS,
     captions: [],
     fullBleed: true,
   },
   {
     id: "closing",
-    durationMs: 8000,
+    durationMs: SLIDE_MS,
     captions: [],
     fullBleed: true,
   },

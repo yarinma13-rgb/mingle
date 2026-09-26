@@ -9,8 +9,8 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
  */
 export function IdeaScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const showRel = reducedMotion || elapsedMs >= 2800;
-  const showBefore = reducedMotion || elapsedMs >= 5200;
+  const showRel = reducedMotion || elapsedMs >= 900;
+  const showBefore = reducedMotion || elapsedMs >= 2000;
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-white px-6">

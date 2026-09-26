@@ -3,7 +3,10 @@
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/Avatar";
 import { MingleChip } from "@/components/MingleChip";
-import { DEMO_CANDIDATES } from "@/lib/demo/data";
+import {
+  DEMO_APPLICANT_CARD_META,
+  DEMO_CANDIDATES,
+} from "@/lib/demo/data";
 import { demoEase } from "@/lib/demo/motion";
 import { useDemoPlayback } from "@/lib/demo/playback-context";
 
@@ -12,8 +15,8 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
  */
 export function ProblemScene() {
   const { elapsedMs, reducedMotion } = useDemoPlayback();
-  const showSkillsLine = reducedMotion || elapsedMs >= 8500;
-  const showRestLine = reducedMotion || elapsedMs >= 13500;
+  const showSkillsLine = reducedMotion || elapsedMs >= 1600;
+  const showRestLine = reducedMotion || elapsedMs >= 2600;
 
   return (
     <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5">
@@ -32,58 +35,55 @@ export function ProblemScene() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {DEMO_CANDIDATES.map((card, index) => (
-          <motion.article
-            key={card.userId}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: reducedMotion ? 0 : 0.12 + index * 0.12,
-              duration: 0.55,
-              ease: demoEase,
-            }}
-            className="rounded-[18px] border border-mingle-border bg-mingle-surface p-4 shadow-mingle"
-          >
-            <div className="flex items-start gap-3">
-              <Avatar
-                photo={card.photo}
-                initials={card.initials}
-                gender={card.gender}
-                size="md"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-[15px] font-bold text-mingle-text">
-                  {card.name}
-                </p>
-                <p className="truncate text-[13px] text-mingle-text-secondary">
-                  {card.headline}
-                </p>
-                <p className="mt-0.5 truncate text-[12px] text-mingle-text-muted">
-                  {card.location}
-                </p>
+        {DEMO_CANDIDATES.map((card, index) => {
+          const meta = DEMO_APPLICANT_CARD_META[card.userId];
+          const skills = meta?.skills ?? ["Product", "Strategy"];
+          const blurb = meta?.blurb ?? card.headline;
+          const tone = meta?.tone ?? (index % 2 === 0 ? "purple" : "blue");
+          return (
+            <motion.article
+              key={card.userId}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: reducedMotion ? 0 : 0.06 + index * 0.07,
+                duration: 0.4,
+                ease: demoEase,
+              }}
+              className="rounded-[18px] border border-mingle-border bg-mingle-surface p-4 shadow-mingle"
+            >
+              <div className="flex items-start gap-3">
+                <Avatar
+                  photo={card.photo}
+                  initials={card.initials}
+                  gender={card.gender}
+                  size="md"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display text-[15px] font-bold text-mingle-text">
+                    {card.name}
+                  </p>
+                  <p className="truncate text-[13px] text-mingle-text-secondary">
+                    {card.headline}
+                  </p>
+                  <p className="mt-0.5 truncate text-[12px] text-mingle-text-muted">
+                    {card.location}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(index === 0
-                ? ["Product strategy", "Analytics", "Roadmapping"]
-                : index === 1
-                  ? ["Figma", "Research", "Systems"]
-                  : ["Stakeholder mgmt", "SQL", "Growth"]
-              ).map((skill) => (
-                <MingleChip key={skill} tone={index % 2 === 0 ? "purple" : "blue"}>
-                  {skill}
-                </MingleChip>
-              ))}
-            </div>
-            <p className="mt-3 line-clamp-2 text-[12px] leading-relaxed text-mingle-text-secondary">
-              {index === 0
-                ? "6 years B2B SaaS · activation ownership · Tel Aviv"
-                : index === 1
-                  ? "7 years product design · Berlin · open to EU remote"
-                  : "Product experience across marketplace and SaaS teams"}
-            </p>
-          </motion.article>
-        ))}
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {skills.map((skill) => (
+                  <MingleChip key={skill} tone={tone}>
+                    {skill}
+                  </MingleChip>
+                ))}
+              </div>
+              <p className="mt-3 line-clamp-2 text-[12px] leading-relaxed text-mingle-text-secondary">
+                {blurb}
+              </p>
+            </motion.article>
+          );
+        })}
       </div>
 
       {/* Editorial overlays — problem thesis */}
@@ -95,7 +95,7 @@ export function ProblemScene() {
             opacity: showSkillsLine ? 1 : 0,
             y: showSkillsLine ? 0 : 8,
           }}
-          transition={{ duration: 0.55, ease: demoEase }}
+          transition={{ duration: 0.4, ease: demoEase }}
           className="rounded-[12px] border border-mingle-border bg-white/95 px-5 py-3 font-display text-base font-semibold text-mingle-text shadow-mingle backdrop-blur sm:text-lg"
         >
           Skills tell part of the story.
@@ -107,7 +107,7 @@ export function ProblemScene() {
             opacity: showRestLine ? 1 : 0,
             y: showRestLine ? 0 : 8,
           }}
-          transition={{ duration: 0.55, ease: demoEase }}
+          transition={{ duration: 0.4, ease: demoEase }}
           className="rounded-[12px] border border-mingle-border bg-white/95 px-5 py-3 font-display text-base font-semibold text-mingle-text-secondary shadow-mingle backdrop-blur sm:text-lg"
         >
           But what about the rest?

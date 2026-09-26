@@ -16,6 +16,7 @@ import { ProblemScene } from "@/components/demo/scenes/ProblemScene";
 import { RoleScene } from "@/components/demo/scenes/RoleScene";
 import { ProfileScene } from "@/components/demo/scenes/ProfileScene";
 import { MatchScene } from "@/components/demo/scenes/MatchScene";
+import { MingleMomentScene } from "@/components/demo/scenes/MingleMomentScene";
 import { WhyMatchScene } from "@/components/demo/scenes/WhyMatchScene";
 import { ConversationScene } from "@/components/demo/scenes/ConversationScene";
 import { IdeaScene } from "@/components/demo/scenes/IdeaScene";
@@ -56,7 +57,7 @@ function usePrefersReducedMotion() {
 }
 
 /**
- * Cinematic product film — ~3:00, no captions.
+ * Cinematic product film — ~35s (3.5s slides), no captions.
  * Smooth rAF clock + soft crossfades (no hard cuts / stutter).
  */
 export function ProductDemoExperience({
@@ -94,8 +95,8 @@ export function ProductDemoExperience({
       setSceneIndex(next);
       setElapsedInScene(0);
       sceneStartedAt.current = performance.now();
-      window.setTimeout(() => setVeil(false), 280);
-    }, 220);
+      window.setTimeout(() => setVeil(false), 180);
+    }, 160);
   }, []);
 
   const next = useCallback(() => {
@@ -276,6 +277,8 @@ export function ProductDemoExperience({
         return <RoleScene />;
       case "match":
         return <MatchScene />;
+      case "mingleMoment":
+        return <MingleMomentScene />;
       case "whyMatch":
         return <WhyMatchScene />;
       case "conversation":
@@ -322,8 +325,8 @@ export function ProductDemoExperience({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-20 bg-white"
-            animate={{ opacity: veil && !reducedMotion ? 0.55 : 0 }}
-            transition={{ duration: 0.4, ease: demoEase }}
+            animate={{ opacity: veil && !reducedMotion ? 0.45 : 0 }}
+            transition={{ duration: 0.28, ease: demoEase }}
           />
 
           <div className="relative flex min-h-0 flex-1 flex-col">
@@ -353,7 +356,7 @@ export function ProductDemoExperience({
                     initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.45, ease: demoEase }}
+                    transition={{ duration: 0.35, ease: demoEase }}
                     className="min-h-0 w-full"
                   >
                     {body}

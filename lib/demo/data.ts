@@ -78,7 +78,7 @@ export const DEMO_DANIEL = {
   initials: "DC",
   headline: "Product Manager",
   location: "Tel Aviv · Open to hybrid EU",
-  photo: "/landing/avatars/avatar-noah.png",
+  photo: "/landing/avatars/avatar-idan.png",
   gender: "male" as const,
   matchScore: 92,
   about:
@@ -168,9 +168,41 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(5),
     initials: "AB",
     gender: "female",
-    photo: "/landing/avatars/avatar-sofia.png",
+    photo: "/landing/avatars/avatar-noa.png",
   },
 ];
+
+/** Unique skills + blurbs for the applicants grid (no duplicates). */
+export const DEMO_APPLICANT_CARD_META: Record<
+  string,
+  { skills: string[]; blurb: string; tone: "purple" | "pink" | "blue" }
+> = {
+  [DEMO_IDS.daniel]: {
+    skills: ["Product strategy", "Analytics", "Roadmapping"],
+    blurb: "6 years B2B SaaS · activation ownership · Tel Aviv",
+    tone: "purple",
+  },
+  [DEMO_IDS.emma]: {
+    skills: ["Figma", "Research", "Design systems"],
+    blurb: "7 years product design · Berlin · open to EU remote",
+    tone: "pink",
+  },
+  "demo-talent-sofia-reyes": {
+    skills: ["Discovery", "OKRs", "B2B SaaS"],
+    blurb: "Led marketplace onboarding for 3 EU markets",
+    tone: "blue",
+  },
+  "demo-talent-noah-kim": {
+    skills: ["Platform PM", "SQL", "Growth loops"],
+    blurb: "Senior PM · shipped activation + retention systems",
+    tone: "purple",
+  },
+  "demo-talent-aya-ben": {
+    skills: ["Stakeholder mgmt", "User interviews", "Prioritization"],
+    blurb: "APM stepping into senior ownership on hybrid teams",
+    tone: "pink",
+  },
+};
 
 export const DEMO_FUNNEL: CompanyFunnel = {
   total: 247,

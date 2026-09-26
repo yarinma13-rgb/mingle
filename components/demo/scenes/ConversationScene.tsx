@@ -20,10 +20,9 @@ import { useDemoPlayback } from "@/lib/demo/playback-context";
 import { isTypingComplete, typeProgress } from "@/lib/demo/typewriter";
 import { demoEase } from "@/lib/demo/motion";
 
-const DRAFT_TEXT =
-  "Looking forward to Thursday — I'll bring a few product examples.";
-const TYPE_START_MS = 11000;
-const SEND_AT_MS = 17000;
+const DRAFT_TEXT = "Looking forward to Thursday.";
+const TYPE_START_MS = 2000;
+const SEND_AT_MS = 3100;
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, {
@@ -38,7 +37,7 @@ function formatTime(iso: string): string {
 export function ConversationScene() {
   const { elapsedMs, reducedMotion, playing } = useDemoPlayback();
   const threadRef = useRef<HTMLDivElement | null>(null);
-  const showChat = reducedMotion || elapsedMs >= 4500;
+  const showChat = reducedMotion || elapsedMs >= 900;
 
   const draft = reducedMotion
     ? elapsedMs >= TYPE_START_MS
