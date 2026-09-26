@@ -6,69 +6,52 @@ export type DemoCursorBeat = {
   atMs: number;
   target: string;
   action?: DemoCursorAction;
+  /** Keep zoom ≤ 1.02 — focus highlight carries attention. */
   zoom?: number;
   typeText?: string;
 };
 
 /**
- * Guided attention path for investor demo v2 — calm, purposeful beats.
+ * Calm guided cursor for the cinematic film — minimal zoom, purposeful clicks.
  */
-export const DEMO_CURSOR_SCRIPT: Partial<Record<DemoSceneId, DemoCursorBeat[]>> = {
-  problem: [
-    { atMs: 500, target: "problem-keywords", action: "move", zoom: 1.02 },
-    { atMs: 2800, target: "problem-human", action: "hover", zoom: 1.04 },
-  ],
-  introduce: [
-    { atMs: 500, target: "role-banner", action: "move", zoom: 1.03 },
-    { atMs: 1800, target: "kpi-matches", action: "move", zoom: 1.04 },
-    { atMs: 3200, target: "candidate-emma", action: "hover", zoom: 1.05 },
-    {
-      atMs: 4500,
-      target: "search-field",
-      action: "type",
-      zoom: 1.04,
-      typeText: "Emma Carter",
-    },
-    { atMs: 6500, target: "view-candidates", action: "click", zoom: 1.03 },
-  ],
-  company: [
-    { atMs: 450, target: "role-title", action: "move", zoom: 1.04 },
-    { atMs: 1800, target: "role-skills", action: "hover", zoom: 1.05 },
-    { atMs: 3800, target: "role-beyond", action: "hover", zoom: 1.04 },
-  ],
-  profile: [
-    { atMs: 500, target: "profile-avatar", action: "move", zoom: 1.04 },
-    { atMs: 2800, target: "profile-values", action: "hover", zoom: 1.05 },
-    { atMs: 5500, target: "profile-goals", action: "hover", zoom: 1.04 },
-    { atMs: 8500, target: "profile-connect", action: "click", zoom: 1.04 },
-  ],
-  match: [
-    { atMs: 400, target: "match-score", action: "move", zoom: 1.06 },
-    { atMs: 2800, target: "match-report", action: "hover", zoom: 1.04 },
-    { atMs: 6000, target: "match-aligned", action: "hover", zoom: 1.04 },
-  ],
-  mingleMoment: [
-    { atMs: 900, target: "mingle-cta", action: "move", zoom: 1.03 },
-    { atMs: 2600, target: "mingle-cta", action: "click", zoom: 1.04 },
-  ],
-  conversation: [
-    { atMs: 500, target: "chat-thread", action: "move", zoom: 1.03 },
-    { atMs: 2200, target: "chat-context", action: "hover", zoom: 1.04 },
-    {
-      atMs: 4500,
-      target: "chat-composer",
-      action: "type",
-      zoom: 1.04,
-      typeText: "Perfect — I'll bring a few product examples for Thursday.",
-    },
-    { atMs: 10000, target: "chat-send", action: "click", zoom: 1.04 },
-  ],
-  recommendations: [
-    { atMs: 500, target: "rec-first", action: "move", zoom: 1.04 },
-    { atMs: 2800, target: "rec-stars", action: "hover", zoom: 1.05 },
-    { atMs: 5200, target: "rec-linkedin", action: "hover", zoom: 1.04 },
-  ],
-};
+export const DEMO_CURSOR_SCRIPT: Partial<Record<DemoSceneId, DemoCursorBeat[]>> =
+  {
+    problem: [
+      { atMs: 1200, target: "problem-overlay-skills", action: "move", zoom: 1.01 },
+    ],
+    profile: [
+      { atMs: 1000, target: "profile-avatar", action: "move", zoom: 1.01 },
+      { atMs: 5000, target: "profile-goals", action: "hover", zoom: 1.01 },
+      { atMs: 15000, target: "profile-motivation", action: "hover", zoom: 1.01 },
+    ],
+    company: [
+      { atMs: 800, target: "role-title", action: "move", zoom: 1.01 },
+      { atMs: 4000, target: "role-skills", action: "hover", zoom: 1.01 },
+      { atMs: 17000, target: "mutual-bridge", action: "move", zoom: 1.01 },
+    ],
+    match: [
+      { atMs: 600, target: "match-score", action: "move", zoom: 1.02 },
+      { atMs: 4000, target: "fit-role", action: "hover", zoom: 1.01 },
+      { atMs: 7000, target: "fit-human", action: "hover", zoom: 1.01 },
+      { atMs: 10000, target: "fit-motivation", action: "hover", zoom: 1.01 },
+    ],
+    whyMatch: [
+      { atMs: 2500, target: "why-fits", action: "move", zoom: 1.01 },
+      { atMs: 13000, target: "what-explore", action: "hover", zoom: 1.01 },
+    ],
+    conversation: [
+      { atMs: 1800, target: "start-conversation", action: "click", zoom: 1.01 },
+      { atMs: 7000, target: "chat-thread", action: "move", zoom: 1.01 },
+      {
+        atMs: 11000,
+        target: "chat-composer",
+        action: "type",
+        zoom: 1.01,
+        typeText: "Looking forward to Thursday — I'll bring a few product examples.",
+      },
+      { atMs: 17000, target: "chat-send", action: "click", zoom: 1.01 },
+    ],
+  };
 
 export function activeCursorBeat(
   script: DemoCursorBeat[] | undefined,
