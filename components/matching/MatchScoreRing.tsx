@@ -66,11 +66,16 @@ export function MatchScoreRing({
         />
       </svg>
       <span
-        className={`absolute inset-0 flex items-center justify-center font-display font-bold ${labelColor} ${
-          size >= 64 ? "text-sm" : "text-[11px]"
-        }`}
+        className={`absolute inset-0 flex flex-col items-center justify-center font-display font-bold leading-none ${labelColor}`}
       >
-        {value}%
+        <span className={size >= 88 ? "text-xl" : size >= 64 ? "text-sm" : "text-[11px]"}>
+          {value}%
+        </span>
+        {showLabel && size >= 72 ? (
+          <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-mingle-text-secondary">
+            Match
+          </span>
+        ) : null}
       </span>
     </div>
   );
