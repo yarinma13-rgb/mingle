@@ -1,9 +1,9 @@
 -- 0024 turned on RLS for the pilot learning tables but added zero policies,
 -- which (correctly, for schema-only placeholders) means nobody could read
--- or write them. Now that 0040-0042 give them a real matches anchor and
+-- or write them. Now that 0042-0044 give them a real matches anchor and
 -- Phase 2 actually starts writing match_feature_snapshots/match_evidence,
 -- add participant-scoped policies (using the is_match_participant /
--- is_match_company_side helpers from 0040, which already cover active
+-- is_match_company_side helpers from 0042, which already cover active
 -- company_members, not just the workspace owner). interview_feedback/
 -- employment_outcomes get read/write policies too so Phase 5 can wire them
 -- later without another migration, even though nothing writes

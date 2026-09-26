@@ -21,7 +21,7 @@ create index if not exists matches_role_idx on public.matches (role_id);
 
 alter table public.matches enable row level security;
 
--- Shared by every match-related RLS policy below (0040-0043): "company
+-- Shared by every match-related RLS policy below (0042-0045): "company
 -- side" includes active company_members, same team-workspace model as
 -- candidate_notes (0036) — a team member acting on the board needs the
 -- same access as the workspace owner, not just auth.uid() = company_id.

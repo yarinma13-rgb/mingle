@@ -1,5 +1,5 @@
 -- Retrofit the pilot learning tables from 0024 to reference the real
--- matches anchor from 0040, now that one exists. Safe: all four tables are
+-- matches anchor from 0042, now that one exists. Safe: all four tables are
 -- confirmed empty/unwritten in application code as of this migration, so
 -- adding a FK to a previously bare `match_id uuid` column cannot violate
 -- any existing row.
