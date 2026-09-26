@@ -1,6 +1,6 @@
 /**
  * Stable "this candidate x this role/company" anchor row (public.matches,
- * migration 0038) plus the cache and feature/evidence writes layered on
+ * migration 0040) plus the cache and feature/evidence writes layered on
  * top of it. Nothing here calls the LLM — see ai-explanation.ts for that;
  * this module is pure persistence around whatever explanation it produces.
  */
