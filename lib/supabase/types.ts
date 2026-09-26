@@ -364,6 +364,34 @@ export interface Database {
         };
         Relationships: [];
       };
+      match_collaborators: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          invited_user_id: string;
+          invited_by: string;
+          tone: string | null;
+          comment: string | null;
+          responded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          connection_id: string;
+          company_id: string;
+          invited_user_id: string;
+          invited_by: string;
+          tone?: string | null;
+          comment?: string | null;
+          responded_at?: string | null;
+        };
+        Update: {
+          tone?: string | null;
+          comment?: string | null;
+          responded_at?: string | null;
+        };
+        Relationships: [];
+      };
       match_reviews: {
         Row: {
           id: string;
