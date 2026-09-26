@@ -24,7 +24,7 @@ import { ClosingScene } from "@/components/demo/scenes/ClosingScene";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { DEMO_SCENES, DEMO_TOTAL_MS, type DemoSceneId } from "@/lib/demo/scenes";
 import { DEMO_VOICEOVER } from "@/lib/demo/data";
-import { demoEase, demoFullBleedVariants } from "@/lib/demo/motion";
+import { demoEaseCinematic, demoFullBleedVariants, demoSceneCrossfade, DEMO_VEIL } from "@/lib/demo/motion";
 import { DemoPlaybackProvider } from "@/lib/demo/playback-context";
 
 const NAV_TO_SCENE: Record<string, DemoSceneId> = {
@@ -95,8 +95,8 @@ export function ProductDemoExperience({
       setSceneIndex(next);
       setElapsedInScene(0);
       sceneStartedAt.current = performance.now();
-      window.setTimeout(() => setVeil(false), 320);
-    }, 280);
+      window.setTimeout(() => setVeil(false), DEMO_VEIL.fadeMs);
+    }, DEMO_VEIL.fadeMs + DEMO_VEIL.holdMs);
   }, []);
 
   const next = useCallback(() => {
@@ -210,8 +210,8 @@ export function ProductDemoExperience({
           window.setTimeout(() => {
             setVeil(false);
             advancingRef.current = false;
-          }, 320);
-        }, 280);
+          }, DEMO_VEIL.fadeMs);
+        }, DEMO_VEIL.fadeMs + DEMO_VEIL.holdMs);
         return;
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -325,8 +325,13 @@ export function ProductDemoExperience({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-20 bg-white"
-            animate={{ opacity: veil && !reducedMotion ? 0.5 : 0 }}
-            transition={{ duration: 0.45, ease: demoEase }}
+            animate={{
+              opacity: veil && !reducedMotion ? DEMO_VEIL.peakOpacity : 0,
+            }}
+            transition={{
+              duration: DEMO_VEIL.fadeMs / 1000,
+              ease: demoEaseCinematic,
+            }}
           />
 
           <div className="relative flex min-h-0 flex-1 flex-col">
@@ -353,10 +358,10 @@ export function ProductDemoExperience({
                 <AnimatePresence mode="sync">
                   <motion.div
                     key={scene.id}
-                    initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.5, ease: demoEase }}
+                    variants={reducedMotion ? undefined : demoSceneCrossfade}
+                    initial={reducedMotion ? false : "initial"}
+                    animate="animate"
+                    exit={reducedMotion ? undefined : "exit"}
                     className="min-h-0 w-full"
                   >
                     {body}
@@ -364,14 +369,14 @@ export function ProductDemoExperience({
                 </AnimatePresence>
               </DemoChrome>
             ) : (
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="sync">
                 <motion.div
                   key={scene.id}
                   variants={reducedMotion ? undefined : demoFullBleedVariants}
                   initial={reducedMotion ? false : "initial"}
                   animate="animate"
                   exit={reducedMotion ? undefined : "exit"}
-                  className="flex min-h-0 flex-1 flex-col overflow-hidden bg-mingle-surface"
+                  className="absolute inset-0 flex min-h-0 flex-1 flex-col overflow-hidden bg-mingle-surface"
                 >
                   {body}
                 </motion.div>
