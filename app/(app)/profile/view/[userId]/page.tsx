@@ -21,7 +21,8 @@ import { CandidateDnaPanel } from "@/components/profile/CandidateDnaPanel";
 import { buildCandidateDna } from "@/lib/matching/dna";
 import { loadSubmittedRecommendations } from "@/lib/recommendations/persistence";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
-import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
+import { resolveCompanyWorkspaceId, loadTeamMembers } from "@/lib/team/persistence";
+import { loadCollaboratorsForConnection } from "@/lib/collaborators/persistence";
 import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, UserType } from "@/lib/supabase/types";
@@ -110,6 +111,25 @@ export default async function ProfileViewPage({
         ),
   ]);
   const initiallySaved = savedIds.includes(userId);
+
+  const collaboratorConnectionId =
+    !isSelf &&
+    viewerUser.user_type === "company" &&
+    connectionStatus?.status === "accepted" &&
+    connectionStatus.id
+      ? connectionStatus.id
+      : null;
+
+  const [initialCollaborators, teamMembers] = collaboratorConnectionId
+    ? await Promise.all([
+        loadCollaboratorsForConnection(supabase, collaboratorConnectionId),
+        loadTeamMembers(supabase, companyViewerId),
+      ])
+    : [[], []];
+
+  const activeTeamMembers = teamMembers
+    .filter((member) => member.status === "active" && member.userId)
+    .map((member) => ({ userId: member.userId as string, email: member.email }));
 
   if (targetUser.user_type === "talent") {
     const [{ data: talentRow }, recommendations] = await Promise.all([
@@ -214,6 +234,10 @@ export default async function ProfileViewPage({
           showCv
           recommendations={recommendations}
           canRequestRecommendation={isSelf}
+          connectionId={collaboratorConnectionId}
+          companyId={companyViewerId}
+          initialCollaborators={initialCollaborators}
+          activeTeamMembers={activeTeamMembers}
         />
       </>
     );
