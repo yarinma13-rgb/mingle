@@ -4,6 +4,7 @@ import { IconBadge } from "@/components/dashboard/IconBadge";
 import { FunnelIcon } from "@/components/dashboard/icons";
 import {
   FUNNEL_STAGES,
+  FUNNEL_STAGE_COLORS,
   type CompanyFunnel,
 } from "@/lib/dashboard/funnel";
 
@@ -38,19 +39,30 @@ export function CompanyPipelineFunnel({ funnel }: { funnel: CompanyFunnel }) {
             {FUNNEL_STAGES.map((stage) => {
               const count = funnel.counts[stage.id];
               const width = Math.round((count / max) * 100);
+              const pct = Math.round((count / funnel.total) * 100);
               return (
-                <div key={stage.id} className="flex items-center gap-3">
-                  <span className="w-32 shrink-0 text-xs text-mingle-text-secondary">
+                <div
+                  key={stage.id}
+                  className="flex items-center gap-3"
+                  title={`${stage.label}: ${count} (${pct}%)`}
+                >
+                  <span className="w-32 shrink-0 truncate text-xs text-mingle-text-secondary">
                     {stage.label}
                   </span>
                   <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-mingle-bg">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-mingle-pink via-mingle-purple to-mingle-blue transition-[width] duration-500 ease-out"
-                      style={{ width: `${width}%` }}
+                      className="h-full rounded-full transition-[width] duration-500 ease-out"
+                      style={{
+                        width: `${width}%`,
+                        background: FUNNEL_STAGE_COLORS[stage.id],
+                      }}
                     />
                   </div>
-                  <span className="w-6 shrink-0 text-right text-xs font-medium text-mingle-text">
-                    {count}
+                  <span className="w-16 shrink-0 text-right text-xs font-medium text-mingle-text">
+                    {count}{" "}
+                    <span className="font-normal text-mingle-text-secondary">
+                      ({pct}%)
+                    </span>
                   </span>
                 </div>
               );
