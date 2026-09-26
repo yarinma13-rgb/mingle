@@ -158,6 +158,19 @@ export async function loadOutgoingPending(
   return data ?? [];
 }
 
+export async function loadConnectionAcceptanceRate(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+): Promise<{ rate: number; sentCount: number }> {
+  const { data, error } = await supabase
+    .from("connections")
+    .select("status")
+    .eq("requester_id", companyId);
+  if (error || !data || data.length === 0) return { rate: 0, sentCount: 0 };
+  const accepted = data.filter((row) => row.status === "accepted").length;
+  return { rate: Math.round((accepted / data.length) * 100), sentCount: data.length };
+}
+
 export async function loadAcceptedConnections(
   supabase: SupabaseClient<Database>,
   userId: string,
