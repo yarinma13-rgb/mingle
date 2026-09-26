@@ -2,11 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/Avatar";
+import { MatchReportBody } from "@/components/matching/MatchReport";
 import {
   ProfileChipRow,
   ProfileSection,
 } from "@/components/profile/ProfileSection";
-import { scoreChipClass, scoreTextClass } from "@/lib/matching/score-tone";
 import {
   DEMO_EMMA,
   DEMO_EMMA_MATCH_REPORT,
@@ -20,25 +20,23 @@ import {
  */
 export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) {
   const report = DEMO_EMMA_MATCH_REPORT;
-  const sections =
-    highlight === "sections"
-      ? DEMO_EMMA_SECTIONS
-      : DEMO_EMMA_SECTIONS; // Full person-behind-the-profile for investor script
+  const sections = DEMO_EMMA_SECTIONS;
+  void highlight;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-      className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] lg:items-start"
+      className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] lg:items-start"
     >
-      <aside className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
-        <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
+      <aside className="rounded-[22px] border border-mingle-border bg-mingle-surface p-6 shadow-mingle">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-mingle-text-secondary">
           Talent profile
         </p>
         <div
           data-demo-target="profile-avatar"
-          className="mt-4 flex flex-col items-center gap-3 text-center"
+          className="mt-5 flex flex-col items-center gap-3 text-center"
         >
           <Avatar
             photo={DEMO_EMMA.photo}
@@ -47,38 +45,42 @@ export function ProfileScene({ highlight }: { highlight?: "sections" | "all" }) 
             size="hero"
           />
           <div>
-            <h2 className="font-display text-xl font-bold tracking-tight text-mingle-text">
+            <h2 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-[1.35rem]">
               {DEMO_EMMA.name}
             </h2>
-            <p className="mt-1.5 text-sm text-mingle-text-secondary">
+            <p className="mt-1.5 text-sm font-medium text-mingle-text-secondary">
               {DEMO_EMMA.headline}
             </p>
-            <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
+            <p className="mt-0.5 text-xs text-mingle-text-secondary">
               {DEMO_EMMA.location}
             </p>
           </div>
-          <span
-            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
-          >
-            <span className={scoreTextClass(report.overall)}>
-              {report.overall}% relevance
-            </span>
-          </span>
         </div>
-        <div className="mt-5 flex flex-col gap-2">
+        <div className="mt-5 flex flex-col gap-2.5">
+          <div className="mingle-btn-cv w-full cursor-default">resume.pdf</div>
           <div
             data-demo-target="profile-connect"
-            className="rounded-full bg-mingle-cta px-6 py-3 text-center font-display text-sm font-semibold text-white"
+            className="mingle-btn-primary w-full rounded-full"
           >
             Start a connection
           </div>
-          <div className="rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text">
+          <div className="mingle-btn-gradient-border w-full">
+            Start conversation
+          </div>
+          <div className="mingle-btn-secondary w-full rounded-full">
             Save for later
           </div>
         </div>
       </aside>
 
       <div className="flex flex-col gap-4">
+        <div
+          data-demo-target="profile-match"
+          className="rounded-[22px] border border-mingle-border bg-mingle-surface p-6 shadow-mingle"
+        >
+          <MatchReportBody report={report} />
+        </div>
+
         {sections.map((section, index) => {
           const chips = section.chips?.filter(Boolean) ?? [];
           const text = section.text?.trim() ?? "";

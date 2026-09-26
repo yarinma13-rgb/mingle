@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { MatchFactorKey } from "@/lib/matching/engine";
 import type {
   MatchAudience,
   MatchBullet,
@@ -12,61 +11,35 @@ import {
   type MatchFeedbackAction,
   type NotFitReason,
 } from "@/lib/matching/feedback";
-import { IconBadge } from "@/components/dashboard/IconBadge";
-import {
-  BriefcaseIcon,
-  ClockIcon,
-  ColumnsIcon,
-  CompassIcon,
-  GridIcon,
-  GearIcon,
-  PeopleIcon,
-  TargetIcon,
-  ShieldCheckIcon,
-} from "@/components/dashboard/icons";
 import {
   scoreBandLabel,
-  scoreBarClass,
-  scoreChipClass,
-  scoreTextClass,
 } from "@/lib/matching/score-tone";
-
-const CONFIDENCE_TONE: Record<MatchReport["confidence"], string> = {
-  High: "text-mingle-accent-purple",
-  Medium: "text-mingle-accent-blue",
-  Low: "text-mingle-accent-pink",
-};
-
-const BULLET_ICON: Record<
-  MatchFactorKey,
-  React.ComponentType<{ className?: string; size?: number }>
-> = {
-  careerGoals: TargetIcon,
-  motivations: PeopleIcon,
-  workStyle: ColumnsIcon,
-  industry: GridIcon,
-  experience: ClockIcon,
-  skills: GearIcon,
-  location: CompassIcon,
-  companyStage: BriefcaseIcon,
-};
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 
 const MISMATCH_PREVIEW = 4;
 
+const AXIS_BAR_CLASS: Record<string, string> = {
+  role: "bg-mingle-purple",
+  company: "bg-mingle-blue",
+  motivation: "bg-mingle-pink",
+};
+
 function FitBars({ axes }: { axes: MatchReport["axes"] }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3.5">
       {axes.map((axis) => (
-        <div key={axis.id} className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[11px] text-mingle-text">
-            <span>{axis.label}</span>
-            <span className={`font-semibold ${scoreTextClass(axis.score)}`}>
+        <div key={axis.id} className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-[13px] text-mingle-text">
+            <span className="font-medium">{axis.label}</span>
+            <span className="font-semibold tabular-nums text-mingle-text-secondary">
               {axis.score}
             </span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-mingle-bg">
+          <div className="h-2 overflow-hidden rounded-full bg-mingle-bg">
             <div
-              className={`h-full rounded-full transition-[width] duration-300 ${scoreBarClass(axis.score)}`}
+              className={`h-full rounded-full transition-[width] duration-500 ease-out ${
+                AXIS_BAR_CLASS[axis.id] ?? "bg-mingle-purple"
+              }`}
               style={{ width: `${Math.max(0, Math.min(100, axis.score))}%` }}
             />
           </div>
@@ -76,41 +49,39 @@ function FitBars({ axes }: { axes: MatchReport["axes"] }) {
   );
 }
 
-function SignalChip({
-  bullet,
+function TagChip({
+  label,
   tone,
+  title,
+  index = 0,
 }: {
-  bullet: MatchBullet;
+  label: string;
   tone: "fit" | "risk";
+  title?: string;
+  index?: number;
 }) {
-  const Icon = BULLET_ICON[bullet.key];
-    const shell =
+  const shell =
     tone === "fit"
-      ? "border-mingle-success/30 bg-mingle-success/10"
-      : "border-mingle-warning/40 bg-mingle-warning/10";
-  const labelTone =
-    tone === "fit" ? "text-mingle-success" : "text-mingle-text";
-    return (
-    <div
-      className={`flex min-w-0 flex-col gap-1 rounded-2xl border px-3 py-2.5 ${shell}`}
+      ? index % 2 === 0
+        ? "bg-mingle-light-pink text-mingle-purple"
+        : "bg-mingle-light-purple text-mingle-purple"
+      : index % 2 === 0
+        ? "bg-[var(--mingle-gap-bg)] text-[var(--mingle-gap)]"
+        : "bg-[#f7f0e8] text-[#b8824a]";
+  return (
+    <span
+      title={title}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${shell}`}
     >
-      <div className="flex items-center gap-1.5">
-        <IconBadge
-          icon={Icon}
-          accent={tone === "fit" ? "success" : "waiting"}
-          size={20}
-          iconSize={10}
-        />
-        <p className={`text-[11px] font-semibold ${labelTone}`}>
-          {bullet.label}
-        </p>
-      </div>
-      <p className="text-[12px] leading-snug text-mingle-text">{bullet.finding}</p>
-    </div>
+      <span aria-hidden className="text-[11px] leading-none">
+        {tone === "fit" ? "✓" : "○"}
+      </span>
+      {label}
+    </span>
   );
 }
 
-function ChipGrid({
+function TagRow({
   items,
   tone,
   previewCount,
@@ -126,26 +97,49 @@ function ChipGrid({
   const visible = open ? items : items.slice(0, previewCount);
 
   if (items.length === 0) {
-    return <p className="mt-2 text-xs text-mingle-text-secondary">{empty}</p>;
+    return empty ? (
+      <p className="mt-2 text-xs text-mingle-text-secondary">{empty}</p>
+    ) : null;
   }
 
   return (
     <>
-      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {visible.map((bullet) => (
-          <SignalChip key={`${bullet.key}-${bullet.label}`} bullet={bullet} tone={tone} />
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {visible.map((bullet, index) => (
+          <TagChip
+            key={`${bullet.key}-${bullet.label}`}
+            label={bullet.label}
+            tone={tone}
+            title={bullet.finding}
+            index={index}
+          />
         ))}
       </div>
       {hidden > 0 ? (
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="mt-1.5 text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
+          className="mt-2 text-[11px] font-medium text-mingle-text-secondary underline decoration-dotted"
         >
           {open ? "Show less" : `Show ${hidden} more`}
         </button>
       ) : null}
     </>
+  );
+}
+
+function SparkleIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M12 2.5 13.6 8.4 19.5 10 13.6 11.6 12 17.5 10.4 11.6 4.5 10 10.4 8.4 12 2.5Z" />
+      <path d="M18.5 14.5 19.3 17.2 22 18 19.3 18.8 18.5 21.5 17.7 18.8 15 18 17.7 17.2 18.5 14.5Z" />
+    </svg>
   );
 }
 
@@ -156,16 +150,14 @@ export function MatchReportBody({
   report: MatchReport;
   compact?: boolean;
 }) {
-  const whyTitle = "Why this is a potential match";
-  const mismatchTitle = "Potential gaps";
   const riskItems =
     report.salaryGapPercent != null &&
     !report.mismatch.some((b) => b.label === "Salary")
       ? [
           {
             key: "experience" as const,
-            label: "Salary",
-            finding: `Salary gap of about ${report.salaryGapPercent}%`,
+            label: "Compensation",
+            finding: `About ${report.salaryGapPercent}% gap between expectation and role range`,
           },
           ...report.mismatch,
         ]
@@ -173,27 +165,34 @@ export function MatchReportBody({
           b.label === "Salary" && report.salaryGapPercent != null
             ? {
                 ...b,
-                finding: `Salary gap of about ${report.salaryGapPercent}%`,
+                label: "Compensation",
+                finding: `About ${report.salaryGapPercent}% gap between expectation and role range`,
               }
             : b,
         );
 
+  const fitPreview = compact ? 2 : 4;
+  const riskPreview = compact ? 2 : MISMATCH_PREVIEW;
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
-            Overall Match
-          </p>
-          <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>
-              {report.overall}%
-            </span>
-          </p>
+    <div className="flex flex-col gap-5">
+      {!compact ? (
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-mingle-light-purple text-mingle-purple">
+            <SparkleIcon size={15} />
+          </span>
+          <h3 className="font-display text-base font-semibold tracking-tight text-mingle-text">
+            Match Report
+          </h3>
         </div>
-        <span
-          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
-        >
+      ) : null}
+
+      <div className="flex items-center gap-4">
+        <MatchScoreRing score={report.overall} size={compact ? 64 : 92} showLabel />
+        <p className="min-w-0 flex-1 font-display text-base font-semibold tracking-tight text-mingle-text">
+          Match
+        </p>
+        <span className="shrink-0 rounded-full bg-mingle-light-purple px-3 py-1.5 text-[11px] font-semibold text-mingle-purple">
           {scoreBandLabel(report.overall)}
         </span>
       </div>
@@ -202,7 +201,7 @@ export function MatchReportBody({
 
       {report.technicalSignal ? (
         <p className="text-[11px] leading-snug text-mingle-text">
-          <span className="font-semibold text-mingle-accent-blue">
+          <span className="font-semibold text-mingle-blue">
             Verified technical signal:
           </span>{" "}
           <span className="text-mingle-text-secondary">
@@ -211,41 +210,34 @@ export function MatchReportBody({
         </p>
       ) : null}
 
-      <p
-        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${CONFIDENCE_TONE[report.confidence]}`}
-      >
-        <ShieldCheckIcon size={14} className="shrink-0" />
-        <span>Confidence: {report.confidence}</span>
-      </p>
-
       <section>
-        <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-success">
-          {whyTitle}
-        </h3>
-        <ChipGrid
+        <h4 className="font-display text-sm font-semibold tracking-tight text-mingle-text">
+          Why it works
+        </h4>
+        <TagRow
           items={report.why}
           tone="fit"
-          previewCount={compact ? 2 : 4}
+          previewCount={fitPreview}
           empty="Nothing strongly aligned yet."
         />
       </section>
 
       {riskItems.length > 0 ? (
         <section>
-          <h3 className="font-display text-sm font-semibold tracking-tight text-mingle-text-secondary">
-            {mismatchTitle}
-          </h3>
-          <ChipGrid
+          <h4 className="font-display text-sm font-semibold tracking-tight text-mingle-text-secondary">
+            Potential gaps
+          </h4>
+          <TagRow
             items={riskItems}
             tone="risk"
-            previewCount={compact ? 2 : MISMATCH_PREVIEW}
+            previewCount={riskPreview}
             empty=""
           />
         </section>
       ) : null}
 
       {!compact ? (
-        <p className="text-sm italic text-mingle-text-secondary">
+        <p className="text-sm leading-relaxed text-mingle-text-secondary">
           {report.whatMattersMost}
         </p>
       ) : null}

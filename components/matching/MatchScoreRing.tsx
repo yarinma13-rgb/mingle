@@ -23,12 +23,10 @@ export function MatchScoreRing({
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
   const track = showLabel
-    ? "var(--mingle-border)"
+    ? "rgba(28,27,46,0.08)"
     : "rgba(255,255,255,0.25)";
   const labelColor = showLabel ? "text-mingle-text" : "text-white";
-  const shell = showLabel
-    ? "bg-mingle-surface-elevated shadow-mingle"
-    : "bg-black/25 shadow-sm backdrop-blur";
+  const shell = showLabel ? "bg-transparent" : "bg-black/25 shadow-sm backdrop-blur";
 
   return (
     <div
@@ -67,7 +65,7 @@ export function MatchScoreRing({
       </svg>
       <span
         className={`absolute inset-0 flex items-center justify-center font-display font-bold ${labelColor} ${
-          size >= 64 ? "text-sm" : "text-[11px]"
+          size >= 88 ? "text-lg" : size >= 64 ? "text-sm" : "text-[11px]"
         }`}
       >
         {value}%
