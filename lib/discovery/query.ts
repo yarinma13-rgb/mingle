@@ -8,6 +8,10 @@ import {
   type CompanyMatchInput,
 } from "@/lib/matching/engine";
 import { buildMatchReport, emptyMatchReport } from "@/lib/matching/report";
+import {
+  parseSkillRequirements,
+  type SkillRequirement,
+} from "@/lib/matching/skill-requirement-tiers";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DISCOVERY_PAGE_SIZE,
@@ -49,6 +53,9 @@ export async function loadDiscoveryPage(
     roleTitle?: string | null;
     roleDepartment?: string | null;
     roleRequiredSkills?: string[] | null;
+    roleSkillRequirements?: SkillRequirement[] | null;
+    salaryMin?: number | null;
+    salaryMax?: number | null;
   } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
@@ -246,6 +253,10 @@ export async function loadDiscoveryPage(
               scope.roleDepartment ?? ownInput.roleDepartment ?? null,
             roleRequiredSkills:
               scope.roleRequiredSkills ?? ownInput.roleRequiredSkills ?? null,
+            roleSkillRequirements:
+              scope.roleSkillRequirements ?? ownInput.roleSkillRequirements ?? null,
+            salaryMin: scope.salaryMin ?? ownInput.salaryMin ?? null,
+            salaryMax: scope.salaryMax ?? ownInput.salaryMax ?? null,
           }
         : null;
       const result = companyForMatch
@@ -443,7 +454,7 @@ export async function loadDiscoveryPage(
     ? await supabase
         .from("roles")
         .select(
-          "company_id, title, department, work_model, salary_min, salary_max, job_presentation, description, required_skills, updated_at",
+          "company_id, title, department, work_model, salary_min, salary_max, job_presentation, description, required_skills, skill_requirements, updated_at",
         )
         .in(
           "company_id",
@@ -462,6 +473,7 @@ export async function loadDiscoveryPage(
     job_presentation: string | null;
     description: string | null;
     required_skills: string[] | null;
+    skill_requirements?: unknown;
   };
   const roleByCompany = new Map<string, OpenRoleRow>();
   for (const role of openRolesForMatch ?? []) {
@@ -505,6 +517,11 @@ export async function loadDiscoveryPage(
       roleTitle: openRole?.title ?? null,
       roleDepartment: openRole?.department ?? null,
       roleRequiredSkills: openRole?.required_skills ?? null,
+      roleSkillRequirements: openRole
+        ? parseSkillRequirements(openRole.skill_requirements)
+        : null,
+      salaryMin: openRole?.salary_min ?? null,
+      salaryMax: openRole?.salary_max ?? null,
     };
     const result = ownInput
       ? computeMatch(ownInput, companyInput)

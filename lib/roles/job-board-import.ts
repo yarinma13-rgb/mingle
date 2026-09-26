@@ -1,5 +1,6 @@
 import { extractRoleFromJd, looksLikeUrl } from "@/lib/roles/extract-jd";
 import type { RoleDraft } from "@/lib/roles/persistence";
+import { heuristicSkillTiers } from "@/lib/matching/skill-requirement-tiers";
 import {
   decodeHtmlEntities,
   documentTitle,
@@ -502,6 +503,10 @@ export function parsedJdToRoleDraft(parsed: ParsedJobBoardJd): RoleDraft {
       if (!merged.includes(skill) && merged.length < 5) merged.push(skill);
     }
     draft.requiredSkills = merged;
+    draft.skillRequirements = heuristicSkillTiers(
+      merged,
+      `${parsed.rawText}\n${parsed.requirements}`,
+    );
   }
   return draft;
 }

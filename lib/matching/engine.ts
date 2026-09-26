@@ -1,6 +1,8 @@
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
+import { skillCoverageWithAdjacency } from "@/lib/matching/skill-adjacency";
+import { tierWeightsBySkill, type SkillRequirement } from "@/lib/matching/skill-requirement-tiers";
 import { applySalaryNudge } from "@/lib/matching/salary-nudge";
 import { applyTargetRoleNudge } from "@/lib/matching/target-role-nudge";
 
@@ -58,6 +60,12 @@ export type CompanyMatchInput = {
   roleDepartment?: string | null;
   /** Required skills from an open role — primary skills signal for Role Fit. */
   roleRequiredSkills?: string[] | null;
+  /**
+   * Optional MUST_HAVE/PREFERRED/TRANSFERABLE/etc tiering for the same
+   * skills (see lib/matching/skill-requirement-tiers.ts). When present,
+   * missing a MUST_HAVE skill costs more than missing a PREFERRED one.
+   */
+  roleSkillRequirements?: SkillRequirement[] | null;
 };
 
 function overlapFraction(a: string[], b: string[]): number {
@@ -191,7 +199,7 @@ function workStyleFactor(
   };
 }
 
-/** Soft industry compare: exact → contains → shared token → miss. */
+/** Soft industry compare: exact → contains → shared token → domain family → miss. */
 function industryOverlapFraction(a: string, b: string): number {
   const left = a.trim().toLowerCase();
   const right = b.trim().toLowerCase();
@@ -205,6 +213,18 @@ function industryOverlapFraction(a: string, b: string): number {
       .filter((token) => token.length > 2);
   const leftTokens = new Set(tokens(left));
   if (tokens(right).some((token) => leftTokens.has(token))) return 0.55;
+
+  // Adjacent domain families — inference only (never treated as equivalence).
+  const FAMILIES = [
+    ["saas", "b2b", "software", "fintech", "insurtech", "marketplace", "tech"],
+    ["health", "healthcare", "healthtech", "medtech", "biotech"],
+    ["ecommerce", "retail", "consumer", "d2c"],
+  ];
+  const inFamily = (value: string, family: string[]) =>
+    family.some((token) => value.includes(token));
+  for (const family of FAMILIES) {
+    if (inFamily(left, family) && inFamily(right, family)) return 0.5;
+  }
   return 0;
 }
 
@@ -223,7 +243,9 @@ function industryFactor(
         ? `Same industry — ${c}.`
         : fraction >= 0.55
           ? `Related industries — ${t} and ${c}.`
-          : `Different industries — ${t || "not set"} vs ${c}.`;
+          : fraction >= 0.45
+            ? `Potentially transferable industry context (inference, not equivalence) — ${t} and ${c}.`
+            : `Different industries — ${t || "not set"} vs ${c}.`;
   return {
     key: "industry",
     label: "Industry",
@@ -345,16 +367,36 @@ function skillsFactor(
     };
   }
 
-  const shared = overlapCanonical(talentSkills, required);
-  const fraction = Math.min(1, shared.length / required.length);
+  const tierWeights = tierWeightsBySkill(company.roleSkillRequirements);
+  const { exact, adjacent, fraction } = skillCoverageWithAdjacency(
+    talentSkills,
+    required,
+    tierWeights.size > 0 ? tierWeights : undefined,
+  );
   const verdict = verdictFromFraction(fraction);
-  const preview = shared.slice(0, 3).join(", ");
-  const detail =
-    shared.length === 0
-      ? `Little overlap with the role's required skills (${required.slice(0, 3).join(", ")}${required.length > 3 ? "…" : ""}).`
-      : verdict === "aligned"
-        ? `Covers ${shared.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}.`
-        : `Partial skill coverage — ${shared.length} of ${required.length} required${preview ? ` (${preview})` : ""}.`;
+  const preview = exact.slice(0, 3).join(", ");
+  const adjacentPreview = adjacent
+    .slice(0, 2)
+    .map((hit) => `${hit.talentSkill} → ${hit.required}`)
+    .join("; ");
+
+  let detail: string;
+  if (exact.length === 0 && adjacent.length === 0) {
+    detail = `Little overlap with the role's required skills (${required.slice(0, 3).join(", ")}${required.length > 3 ? "…" : ""}).`;
+  } else if (exact.length === 0 && adjacent.length > 0) {
+    detail = `Potentially transferable skill overlap (inference, not equivalence): ${adjacentPreview}.`;
+  } else if (adjacent.length > 0) {
+    detail =
+      verdict === "aligned"
+        ? `Covers ${exact.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}. Potentially transferable additions: ${adjacentPreview}.`
+        : `Partial skill coverage — ${exact.length} of ${required.length} required${preview ? ` (${preview})` : ""}. Potentially transferable: ${adjacentPreview}.`;
+  } else {
+    detail =
+      verdict === "aligned"
+        ? `Covers ${exact.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}.`
+        : `Partial skill coverage — ${exact.length} of ${required.length} required${preview ? ` (${preview})` : ""}.`;
+  }
+
   return {
     key: "skills",
     label: "Skills",

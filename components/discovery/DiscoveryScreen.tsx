@@ -801,7 +801,14 @@ export function DiscoveryScreen({
                 </p>
               ) : null}
               <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
-                <MatchReportBody report={cards[0].report} />
+                <MatchReportBody
+                  report={cards[0].report}
+                  matchIds={
+                    cards[0].report.audience === "company"
+                      ? { companyId: viewerId, candidateId: cards[0].userId, roleId: null }
+                      : { companyId: cards[0].userId, candidateId: viewerId, roleId: null }
+                  }
+                />
               </div>
             </aside>
           </div>

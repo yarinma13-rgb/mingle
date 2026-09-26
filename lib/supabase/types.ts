@@ -573,6 +573,40 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      matches: {
+        Row: {
+          id: string;
+          role_id: string | null;
+          company_id: string;
+          candidate_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id?: string | null;
+          company_id: string;
+          candidate_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      match_explanations: {
+        Row: {
+          id: string;
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
+          created_at: string;
+        };
+        Insert: {
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       model_versions: {
         Row: {
           id: string;
@@ -850,6 +884,8 @@ export interface Database {
           employment_type: RoleEmploymentType | null;
           work_model: string | null;
           required_skills: string[];
+          /** SkillRequirement[] (see lib/matching/skill-requirement-tiers.ts) stored as jsonb. */
+          skill_requirements: unknown;
           description: string | null;
           status: RoleStatus;
           salary_min: number | null;
@@ -871,6 +907,7 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;
@@ -889,6 +926,7 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;

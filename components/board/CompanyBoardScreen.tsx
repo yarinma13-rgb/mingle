@@ -23,6 +23,9 @@ import {
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
 import { saveCandidateNoteAction } from "@/lib/notes/actions";
+import { MatchReportBody } from "@/components/matching/MatchReport";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
+import type { MatchReport } from "@/lib/matching/report";
 
 export type BoardCandidate = {
   connectionId: string;
@@ -35,6 +38,16 @@ export type BoardCandidate = {
   timeline: RelationshipEventRow[];
   rediscovery?: (RediscoveryBadge & { roleTitle?: string }) | null;
   note?: { notes: string; tags: string[] } | null;
+  /**
+   * Match Report against the role this connection originated from (best
+   * effort: matched by title from the "opportunity" timeline event, since
+   * connections aren't linked to a role by id — see board/page.tsx). Null
+   * when no originating role could be matched; the candidate simply shows
+   * no score rather than a misleading one.
+   */
+  matchReport?: MatchReport | null;
+  matchRoleTitle?: string | null;
+  matchRoleId?: string | null;
 };
 
 const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
@@ -58,9 +71,12 @@ type PendingRegression = {
 
 export function CompanyBoardScreen({
   actorId,
+  companyId,
   candidates: initialCandidates,
 }: {
   actorId: string;
+  /** Workspace owner id — may differ from actorId for a team member. */
+  companyId: string;
   candidates: BoardCandidate[];
 }) {
   const toast = useToast();
@@ -73,6 +89,7 @@ export function CompanyBoardScreen({
   const [noteEditorFor, setNoteEditorFor] = useState<BoardCandidate | null>(null);
   const [noteDraft, setNoteDraft] = useState({ notes: "", tags: "" });
   const [savingNote, setSavingNote] = useState(false);
+  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
 
   const grouped = useMemo(() => {
     const buckets = new Map<RelationshipStage, BoardCandidate[]>();
@@ -312,6 +329,43 @@ export function CompanyBoardScreen({
                             ) : null}
                           </div>
                         </Link>
+                        {card.matchReport ? (
+                          <div className="mt-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedMatchId((current) =>
+                                  current === card.connectionId ? null : card.connectionId,
+                                )
+                              }
+                              className="flex w-full items-center justify-between gap-2 rounded-lg border border-mingle-border bg-mingle-bg/60 px-2 py-1.5 text-left hover:bg-mingle-lavender"
+                            >
+                              <span className="flex min-w-0 items-center gap-2">
+                                <MatchScoreRing score={card.matchReport.overall} size={26} />
+                                <span className="truncate text-[11px] font-semibold text-mingle-text">
+                                  {card.matchReport.overall}% match
+                                  {card.matchRoleTitle ? ` · ${card.matchRoleTitle}` : ""}
+                                </span>
+                              </span>
+                              <span className="shrink-0 text-[10px] text-mingle-text-secondary">
+                                {expandedMatchId === card.connectionId ? "Hide" : "View"}
+                              </span>
+                            </button>
+                            {expandedMatchId === card.connectionId ? (
+                              <div className="mt-2 rounded-lg border border-mingle-border bg-mingle-white p-2.5">
+                                <MatchReportBody
+                                  report={card.matchReport}
+                                  compact
+                                  matchIds={{
+                                    companyId,
+                                    candidateId: card.userId,
+                                    roleId: card.matchRoleId ?? null,
+                                  }}
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                         {card.note?.tags.length ? (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {card.note.tags.map((tag) => (
@@ -439,6 +493,30 @@ export function CompanyBoardScreen({
             <p className="mt-1 text-xs text-mingle-text-secondary">
               Visible to your whole team.
             </p>
+            {noteEditorFor.matchReport?.whatToValidate?.length ? (
+              <div className="mt-3 rounded-xl border border-mingle-border bg-mingle-bg/60 p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
+                  From the match report — tap to add
+                </p>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {noteEditorFor.matchReport.whatToValidate.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() =>
+                        setNoteDraft((prev) => ({
+                          ...prev,
+                          notes: prev.notes ? `${prev.notes}\n• ${question}` : `• ${question}`,
+                        }))
+                      }
+                      className="rounded-lg px-1.5 py-1 text-left text-[11px] leading-snug text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
+                    >
+                      + {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <label className="mt-4 block text-xs font-semibold text-mingle-text-secondary">
               Note
               <textarea

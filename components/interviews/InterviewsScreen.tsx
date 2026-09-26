@@ -2,6 +2,7 @@
 
 import { EmptyState } from "@/components/EmptyState";
 import { InterviewListActions } from "@/components/interviews/InterviewListActions";
+import { InterviewFeedbackCapture } from "@/components/interviews/InterviewFeedbackCapture";
 import { formatInterviewWhen } from "@/lib/datetime/interview";
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 
@@ -9,10 +10,17 @@ export function InterviewsScreen({
   interviews,
   namesByConnection,
   tableMissing,
+  companyId,
+  candidateIdByConnection = {},
+  roleIdByConnection = {},
 }: {
   interviews: InterviewRecord[];
   namesByConnection: Record<string, string>;
   tableMissing: boolean;
+  /** Needed only to show the post-interview feedback capture. */
+  companyId?: string;
+  candidateIdByConnection?: Record<string, string>;
+  roleIdByConnection?: Record<string, string | null>;
 }) {
   if (tableMissing) {
     return (
@@ -62,6 +70,14 @@ export function InterviewsScreen({
             </p>
           ) : null}
           <InterviewListActions interview={interview} />
+          {interview.status === "completed" && companyId && candidateIdByConnection[interview.connectionId] ? (
+            <InterviewFeedbackCapture
+              connectionId={interview.connectionId}
+              companyId={companyId}
+              candidateId={candidateIdByConnection[interview.connectionId]}
+              roleId={roleIdByConnection[interview.connectionId] ?? null}
+            />
+          ) : null}
         </li>
       ))}
     </ul>
