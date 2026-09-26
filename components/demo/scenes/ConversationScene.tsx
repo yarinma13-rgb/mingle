@@ -21,8 +21,8 @@ import { isTypingComplete, typeProgress } from "@/lib/demo/typewriter";
 import { demoEase } from "@/lib/demo/motion";
 
 const DRAFT_TEXT = "Looking forward to Thursday.";
-const TYPE_START_MS = 2000;
-const SEND_AT_MS = 3100;
+const TYPE_START_MS = 3200;
+const SEND_AT_MS = 4800;
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, {
@@ -37,7 +37,7 @@ function formatTime(iso: string): string {
 export function ConversationScene() {
   const { elapsedMs, reducedMotion, playing } = useDemoPlayback();
   const threadRef = useRef<HTMLDivElement | null>(null);
-  const showChat = reducedMotion || elapsedMs >= 900;
+  const showChat = reducedMotion || elapsedMs >= 1400;
 
   const draft = reducedMotion
     ? elapsedMs >= TYPE_START_MS

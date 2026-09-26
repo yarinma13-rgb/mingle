@@ -65,11 +65,11 @@ export const demoFullBleedVariants = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { duration: 0.55, ease: demoEase },
+    transition: { duration: 0.65, ease: demoEase },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.3, ease: demoEaseSoft },
+    transition: { duration: 0.4, ease: demoEaseSoft },
   },
 };
 

@@ -13,53 +13,53 @@ export type DemoCursorBeat = {
 
 /**
  * Calm guided cursor for the cinematic film — minimal zoom, purposeful clicks.
- * Beats fit inside each 3.5s slide.
+ * Beats fit inside each 5.5s slide.
  */
 export const DEMO_CURSOR_SCRIPT: Partial<Record<DemoSceneId, DemoCursorBeat[]>> =
   {
     problem: [
       {
-        atMs: 900,
+        atMs: 1400,
         target: "problem-overlay-skills",
         action: "move",
         zoom: 1.01,
       },
     ],
     profile: [
-      { atMs: 400, target: "profile-avatar", action: "move", zoom: 1.01 },
-      { atMs: 1500, target: "profile-goals", action: "hover", zoom: 1.01 },
-      { atMs: 2800, target: "profile-motivation", action: "hover", zoom: 1.01 },
+      { atMs: 500, target: "profile-avatar", action: "move", zoom: 1.01 },
+      { atMs: 2200, target: "profile-goals", action: "hover", zoom: 1.01 },
+      { atMs: 4400, target: "profile-motivation", action: "hover", zoom: 1.01 },
     ],
     company: [
-      { atMs: 300, target: "role-title", action: "move", zoom: 1.01 },
-      { atMs: 900, target: "role-skills", action: "hover", zoom: 1.01 },
-      { atMs: 2400, target: "mutual-bridge", action: "move", zoom: 1.01 },
+      { atMs: 400, target: "role-title", action: "move", zoom: 1.01 },
+      { atMs: 1200, target: "role-skills", action: "hover", zoom: 1.01 },
+      { atMs: 3600, target: "mutual-bridge", action: "move", zoom: 1.01 },
     ],
     match: [
-      { atMs: 300, target: "match-score", action: "move", zoom: 1.02 },
-      { atMs: 900, target: "fit-role", action: "hover", zoom: 1.01 },
-      { atMs: 1600, target: "fit-human", action: "hover", zoom: 1.01 },
-      { atMs: 2300, target: "fit-motivation", action: "hover", zoom: 1.01 },
+      { atMs: 400, target: "match-score", action: "move", zoom: 1.02 },
+      { atMs: 1200, target: "fit-role", action: "hover", zoom: 1.01 },
+      { atMs: 2400, target: "fit-human", action: "hover", zoom: 1.01 },
+      { atMs: 3600, target: "fit-motivation", action: "hover", zoom: 1.01 },
     ],
     mingleMoment: [
-      { atMs: 600, target: "mingle-headline", action: "move", zoom: 1.01 },
-      { atMs: 2200, target: "mingle-cta", action: "hover", zoom: 1.01 },
+      { atMs: 800, target: "mingle-headline", action: "move", zoom: 1.01 },
+      { atMs: 3400, target: "mingle-cta", action: "hover", zoom: 1.01 },
     ],
     whyMatch: [
-      { atMs: 600, target: "why-fits", action: "move", zoom: 1.01 },
-      { atMs: 2100, target: "what-explore", action: "hover", zoom: 1.01 },
+      { atMs: 800, target: "why-fits", action: "move", zoom: 1.01 },
+      { atMs: 3200, target: "what-explore", action: "hover", zoom: 1.01 },
     ],
     conversation: [
-      { atMs: 400, target: "start-conversation", action: "click", zoom: 1.01 },
-      { atMs: 1200, target: "chat-thread", action: "move", zoom: 1.01 },
+      { atMs: 500, target: "start-conversation", action: "click", zoom: 1.01 },
+      { atMs: 1700, target: "chat-thread", action: "move", zoom: 1.01 },
       {
-        atMs: 2100,
+        atMs: 3300,
         target: "chat-composer",
         action: "type",
         zoom: 1.01,
         typeText: "Looking forward to Thursday.",
       },
-      { atMs: 3100, target: "chat-send", action: "click", zoom: 1.01 },
+      { atMs: 4800, target: "chat-send", action: "click", zoom: 1.01 },
     ],
   };
 

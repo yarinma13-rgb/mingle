@@ -57,7 +57,7 @@ function usePrefersReducedMotion() {
 }
 
 /**
- * Cinematic product film — ~35s (3.5s slides), no captions.
+ * Cinematic product film — ~55s (5.5s slides), no captions.
  * Smooth rAF clock + soft crossfades (no hard cuts / stutter).
  */
 export function ProductDemoExperience({
@@ -95,8 +95,8 @@ export function ProductDemoExperience({
       setSceneIndex(next);
       setElapsedInScene(0);
       sceneStartedAt.current = performance.now();
-      window.setTimeout(() => setVeil(false), 180);
-    }, 160);
+      window.setTimeout(() => setVeil(false), 320);
+    }, 280);
   }, []);
 
   const next = useCallback(() => {
@@ -210,8 +210,8 @@ export function ProductDemoExperience({
           window.setTimeout(() => {
             setVeil(false);
             advancingRef.current = false;
-          }, 280);
-        }, 220);
+          }, 320);
+        }, 280);
         return;
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -325,8 +325,8 @@ export function ProductDemoExperience({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-20 bg-white"
-            animate={{ opacity: veil && !reducedMotion ? 0.45 : 0 }}
-            transition={{ duration: 0.28, ease: demoEase }}
+            animate={{ opacity: veil && !reducedMotion ? 0.5 : 0 }}
+            transition={{ duration: 0.45, ease: demoEase }}
           />
 
           <div className="relative flex min-h-0 flex-1 flex-col">
@@ -356,7 +356,7 @@ export function ProductDemoExperience({
                     initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.35, ease: demoEase }}
+                    transition={{ duration: 0.5, ease: demoEase }}
                     className="min-h-0 w-full"
                   >
                     {body}

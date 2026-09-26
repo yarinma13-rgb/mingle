@@ -37,10 +37,10 @@ export type DemoSceneConfig = {
   fullBleed?: boolean;
 };
 
-const SLIDE_MS = 3500;
+const SLIDE_MS = 5500;
 
 /**
- * Cinematic product film — tight 3.5s slides, no captions.
+ * Cinematic product film — 5.5s slides, no captions.
  * Talent + Company → Mutual Matching → Understand Why → Better Conversation
  */
 export const DEMO_SCENES: DemoSceneConfig[] = [
