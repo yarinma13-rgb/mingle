@@ -30,7 +30,9 @@ export function isPublicPhotoUrl(value: string): boolean {
     value.startsWith("http://") ||
     value.startsWith("https://") ||
     value.startsWith("blob:") ||
-    value.startsWith("data:")
+    value.startsWith("data:") ||
+    // Static app assets (/landing/avatars/…, brand marks, etc.)
+    value.startsWith("/")
   );
 }
 

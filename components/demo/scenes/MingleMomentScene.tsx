@@ -3,10 +3,21 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
-import { DEMO_EMMA } from "@/lib/demo/data";
+import { DEMO_DANIEL } from "@/lib/demo/data";
+import { demoEase } from "@/lib/demo/motion";
 
-const CONFETTI_COLORS = ["#EA1E63", "#D83A52", "#7B2FF7", "#3E6BE0"];
-const CONFETTI_COUNT = 28;
+const CONFETTI_COLORS = [
+  "#EA1E63",
+  "#D83A52",
+  "#7B2FF7",
+  "#3E6BE0",
+  "#FDEAF1",
+  "#F1E8FE",
+  "#E8F0FE",
+  "#FFB4C8",
+  "#C9A8FF",
+];
+const CONFETTI_COUNT = 72;
 
 type ConfettiSpec = {
   id: number;
@@ -19,26 +30,32 @@ type ConfettiSpec = {
   fallY: number;
   rotBurst: number;
   rotEnd: number;
+  kind: "bar" | "square" | "spark";
+  originTop: string;
 };
 
 function generateConfettiSpecs(): ConfettiSpec[] {
   return Array.from({ length: CONFETTI_COUNT }, (_, i) => {
-    const angleDeg = 20 + Math.random() * 140;
+    const wave = Math.floor(i / 24);
+    const angleDeg = 5 + Math.random() * 170;
     const rad = (angleDeg * Math.PI) / 180;
-    const distance = 72 + Math.random() * 110;
+    const distance = 110 + Math.random() * 200;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    const rotBurst = spin * (36 + Math.random() * 70);
+    const rotBurst = spin * (48 + Math.random() * 120);
+    const kindRoll = Math.random();
     return {
       id: i,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      size: 5 + Math.random() * 5,
-      delay: 0.02 + Math.random() * 0.18,
-      duration: 2.15 + Math.random() * 0.45,
-      burstX: Math.cos(rad) * distance,
-      burstY: -Math.sin(rad) * distance,
-      fallY: 110 + Math.random() * 90,
+      size: 6 + Math.random() * 9,
+      delay: wave * 0.55 + Math.random() * 0.28,
+      duration: 2.1 + Math.random() * 0.85,
+      burstX: Math.cos(rad) * distance * (0.85 + Math.random() * 0.35),
+      burstY: -Math.sin(rad) * distance * (0.9 + Math.random() * 0.3),
+      fallY: 140 + Math.random() * 160,
       rotBurst,
-      rotEnd: rotBurst + spin * (80 + Math.random() * 90),
+      rotEnd: rotBurst + spin * (100 + Math.random() * 140),
+      kind: kindRoll < 0.5 ? "bar" : kindRoll < 0.78 ? "square" : "spark",
+      originTop: `${32 + (i % 5) * 3}%`,
     };
   });
 }
@@ -50,8 +67,7 @@ function subscribeReducedMotion(onStoreChange: () => void) {
 }
 
 /**
- * Demo-safe twin of MingleMomentOverlay — same brand moment + confetti,
- * no router navigation or production side effects.
+ * Full-screen platform twin of MingleMomentOverlay — brand moment + confetti.
  */
 export function MingleMomentScene() {
   const reduceMotion = useSyncExternalStore(
@@ -66,15 +82,29 @@ export function MingleMomentScene() {
 
   return (
     <div className="mingle-moment-overlay relative flex h-full min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-mingle-bg px-6">
-      <div className="pointer-events-none absolute inset-0 z-[1]" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] overflow-visible"
+        aria-hidden
+      >
         {confetti.map((piece) => (
           <span
             key={piece.id}
             className="mingle-confetti-piece"
             style={{
-              width: piece.size,
-              height: piece.size * 2.2,
+              top: piece.originTop,
+              width: piece.kind === "spark" ? piece.size * 0.6 : piece.size,
+              height:
+                piece.kind === "bar"
+                  ? piece.size * 2.6
+                  : piece.kind === "spark"
+                    ? piece.size * 0.6
+                    : piece.size,
+              borderRadius: piece.kind === "spark" ? "999px" : "2px",
               backgroundColor: piece.color,
+              boxShadow:
+                piece.kind === "spark"
+                  ? `0 0 6px ${piece.color}`
+                  : undefined,
               animationDelay: `${piece.delay}s`,
               animationDuration: `${piece.duration}s`,
               ["--burst-x" as string]: `${piece.burstX}px`,
@@ -88,32 +118,43 @@ export function MingleMomentScene() {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: demoEase }}
         className="relative z-[2] flex flex-col items-center text-center"
       >
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden
-            className="absolute h-44 w-44 rounded-full bg-mingle-blue/12 blur-3xl"
+            className="absolute h-52 w-52 rounded-full bg-mingle-blue/16 blur-3xl"
           />
-          <MingleLogo variant="mark" size={88} className="relative" priority />
+          <span
+            aria-hidden
+            className="absolute h-36 w-36 rounded-full bg-mingle-accent-pink/14 blur-2xl"
+          />
+          <span
+            aria-hidden
+            className="absolute h-28 w-28 rounded-full bg-mingle-accent-purple/12 blur-xl"
+          />
+          <MingleLogo variant="mark" size={96} className="relative" priority />
         </div>
 
-        <h2 className="mt-6 max-w-full px-1 font-display text-3xl font-bold tracking-[-0.03em] text-mingle-text sm:text-5xl">
-          {"It's a mingle"}
+        <h2
+          data-demo-target="mingle-headline"
+          className="mt-7 max-w-full px-1 font-display text-4xl font-bold tracking-[-0.03em] text-mingle-text sm:text-5xl"
+        >
+          It&rsquo;s a mingle
         </h2>
 
-        <p className="mt-4 max-w-xs text-sm text-mingle-text-secondary">
-          You and {DEMO_EMMA.name} both want to get to know each other.
+        <p className="mt-4 max-w-sm text-sm text-mingle-text-secondary sm:text-base">
+          You and {DEMO_DANIEL.name} both want to get to know each other.
         </p>
 
         <motion.div
           data-demo-target="mingle-cta"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.4 }}
+          transition={{ delay: 0.28, duration: 0.35, ease: demoEase }}
           className="mt-8 w-full max-w-xs rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,115,234,0.28)]"
         >
           Start conversation
