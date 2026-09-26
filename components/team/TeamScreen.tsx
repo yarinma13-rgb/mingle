@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { InviteTeammateButton } from "@/components/team/InviteTeammateButton";
 import { EmptyState } from "@/components/EmptyState";
@@ -40,6 +41,17 @@ export function TeamScreen({
         </p>
         {canInvite ? <InviteTeammateButton onInvited={() => router.refresh()} /> : null}
       </div>
+      <Link
+        href="/team/referrals"
+        className="rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle transition-colors hover:border-mingle-cta"
+      >
+        <p className="font-display text-sm font-semibold text-mingle-text">
+          Referrals &amp; bonuses
+        </p>
+        <p className="mt-1 text-xs text-mingle-text-secondary">
+          Share open roles with people you know and track referral bonuses.
+        </p>
+      </Link>
       <div className="rounded-2xl border border-mingle-border bg-mingle-white p-6 shadow-mingle">
         <h2 className="font-display text-base font-semibold tracking-tight text-mingle-text">
           Members
