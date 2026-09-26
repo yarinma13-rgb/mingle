@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { OutboundInterestBeacon } from "@/components/analytics/OutboundInterestBeacon";
+import { ReferralBeacon } from "@/components/analytics/ReferralBeacon";
 import { landingMetadata } from "@/lib/landing-metadata";
 import { redirectIfAuthenticated } from "@/lib/auth/redirect-if-authed";
 
@@ -13,6 +14,7 @@ export default async function WelcomeLandingPage() {
     <>
       <Suspense fallback={null}>
         <OutboundInterestBeacon />
+        <ReferralBeacon />
       </Suspense>
       <LandingPage />
     </>
