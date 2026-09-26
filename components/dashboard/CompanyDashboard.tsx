@@ -22,6 +22,7 @@ import {
   CalendarIcon,
   TargetIcon,
   CheckCircleIcon,
+  ClockIcon,
 } from "@/components/dashboard/icons";
 
 export type CandidateRow = {
@@ -68,6 +69,7 @@ export function CompanyDashboard({
   upcomingInterviews,
   acceptanceRate,
   interviewsHeldCount,
+  averageTimeToHireDays,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
@@ -77,6 +79,7 @@ export function CompanyDashboard({
   upcomingInterviews: UpcomingInterviewRow[];
   acceptanceRate: number;
   interviewsHeldCount: number;
+  averageTimeToHireDays: number | null;
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -176,6 +179,18 @@ export function CompanyDashboard({
           accent="blue"
           href="/interviews"
           sparkline={sparkFrom(interviewsHeldCount)}
+        />
+        <KpiTile
+          icon={ClockIcon}
+          label="Average time to hire"
+          value={
+            averageTimeToHireDays === null
+              ? "—"
+              : `${Math.round(averageTimeToHireDays)}d`
+          }
+          accent="success"
+          href="/board"
+          sparkline={sparkFrom(averageTimeToHireDays ?? 0)}
         />
       </div>
 
