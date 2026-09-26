@@ -111,6 +111,7 @@ function DiscoveryCardView({
     initialFeedback,
   );
   const [saving, setSaving] = useState(false);
+  const [roleDetailsOpen, setRoleDetailsOpen] = useState(false);
 
   useEffect(() => {
     track(AnalyticsEvent.matchCardViewed, {
@@ -313,15 +314,81 @@ function DiscoveryCardView({
             ) : null}
 
             {card.about ? (
-              <div className="mt-0.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/70">
-                  About the role
-                </p>
-                <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-white/90">
-                  {card.about}
-                </p>
+              <div className="mt-0.5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  className="w-full rounded-xl bg-white/10 px-3 py-2.5 text-left backdrop-blur-sm transition-colors hover:bg-white/15 active:bg-white/20"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setRoleDetailsOpen(true);
+                    track(AnalyticsEvent.matchViewed, {
+                      target_user_id: card.userId,
+                      source: "discover_role_about",
+                    });
+                  }}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/70">
+                    About the role
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-white/90">
+                    {card.about}
+                  </p>
+                  <p className="mt-1.5 text-[11px] font-semibold text-white underline decoration-white/50 underline-offset-2">
+                    Tap to read full description
+                  </p>
+                </button>
+                <div
+                  className="flex flex-wrap items-center gap-2"
+                  onPointerDown={(event) => event.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setRoleDetailsOpen(true);
+                      track(AnalyticsEvent.matchViewed, {
+                        target_user_id: card.userId,
+                        source: "discover_role_details",
+                      });
+                    }}
+                    className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white shadow-sm"
+                  >
+                    View role details
+                  </button>
+                  <Link
+                    href={`/profile/view/${card.userId}`}
+                    onClick={() =>
+                      track(AnalyticsEvent.matchViewed, {
+                        target_user_id: card.userId,
+                        source: "discover_company_profile",
+                      })
+                    }
+                    className="rounded-full border border-white/55 bg-white/15 px-4 py-2 font-display text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                  >
+                    View company
+                  </Link>
+                </div>
               </div>
-            ) : null}
+            ) : (
+              <div
+                className="mt-1 flex flex-wrap items-center gap-2"
+                onPointerDown={(event) => event.stopPropagation()}
+              >
+                <Link
+                  href={`/profile/view/${card.userId}`}
+                  onClick={() =>
+                    track(AnalyticsEvent.matchViewed, {
+                      target_user_id: card.userId,
+                      source: "discover_company_profile",
+                    })
+                  }
+                  className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white shadow-sm"
+                >
+                  View company
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -400,6 +467,67 @@ function DiscoveryCardView({
           onInterested={() => void expressInterest()}
         />
       </div>
+
+      <AnimatePresence>
+        {roleDetailsOpen && card.about ? (
+          <motion.div
+            key="role-details"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-end bg-black/55 p-3 sm:items-center sm:justify-center"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => setRoleDetailsOpen(false)}
+            role="presentation"
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Role details"
+              initial={{ y: 24, opacity: 0.96 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              className="max-h-[80%] w-full max-w-sm overflow-y-auto rounded-2xl bg-mingle-white p-5 shadow-mingle"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+                About the role
+              </p>
+              <h3 className="mt-1 font-display text-lg font-semibold tracking-tight text-mingle-text">
+                {card.roleTitle || card.subtitle || "Role"}
+              </h3>
+              <p className="mt-0.5 text-sm text-mingle-text-secondary">
+                {card.name}
+              </p>
+              {card.locationLabel ? (
+                <p className="mt-2 text-xs text-mingle-text-secondary">
+                  {card.locationLabel}
+                </p>
+              ) : null}
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-mingle-text">
+                {card.about}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link
+                  href={`/profile/view/${card.userId}`}
+                  className="mingle-btn-primary rounded-full px-4 py-2 text-sm"
+                  onClick={() => setRoleDetailsOpen(false)}
+                >
+                  View company
+                </Link>
+                <button
+                  type="button"
+                  className="mingle-btn-secondary rounded-full px-4 py-2 text-sm"
+                  onClick={() => setRoleDetailsOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </motion.div>
   );
 }
