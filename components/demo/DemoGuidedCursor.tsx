@@ -171,9 +171,9 @@ export function DemoGuidedCursor({
             y: point.y,
           }}
           transition={{
-            opacity: { duration: 0.25 },
-            x: { duration: 0.65, ease: demoEase },
-            y: { duration: 0.65, ease: demoEase },
+            opacity: { duration: 0.35 },
+            x: { duration: 0.85, ease: demoEase },
+            y: { duration: 0.85, ease: demoEase },
           }}
           style={{ marginLeft: -2, marginTop: -2 }}
         >
