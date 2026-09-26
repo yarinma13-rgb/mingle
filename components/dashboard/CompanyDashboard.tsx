@@ -20,6 +20,8 @@ import {
   CompassIcon,
   BriefcaseIcon,
   CalendarIcon,
+  TargetIcon,
+  CheckCircleIcon,
 } from "@/components/dashboard/icons";
 
 export type CandidateRow = {
@@ -64,6 +66,8 @@ export function CompanyDashboard({
   funnel,
   activeRolesCount,
   upcomingInterviews,
+  acceptanceRate,
+  interviewsHeldCount,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
@@ -71,6 +75,8 @@ export function CompanyDashboard({
   funnel: CompanyFunnel;
   activeRolesCount: number;
   upcomingInterviews: UpcomingInterviewRow[];
+  acceptanceRate: number;
+  interviewsHeldCount: number;
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -106,7 +112,7 @@ export function CompanyDashboard({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <KpiTile
           icon={GaugeIcon}
           label="Profile completion"
@@ -154,6 +160,22 @@ export function CompanyDashboard({
           accent="waiting"
           href="/board"
           sparkline={sparkFrom(funnel.counts.opportunity)}
+        />
+        <KpiTile
+          icon={TargetIcon}
+          label="Connection acceptance rate"
+          value={`${acceptanceRate}%`}
+          accent="violet"
+          href="/connections"
+          sparkline={sparkFrom(acceptanceRate)}
+        />
+        <KpiTile
+          icon={CheckCircleIcon}
+          label="Interviews scheduled/completed"
+          value={String(interviewsHeldCount)}
+          accent="blue"
+          href="/interviews"
+          sparkline={sparkFrom(interviewsHeldCount)}
         />
       </div>
 
@@ -299,7 +321,7 @@ export function CompanyDashboard({
                   </div>
                   <p className="text-xs text-mingle-text-secondary">
                     {candidate.headline || "—"}
-                </p>
+                  </p>
                   <p className="text-xs text-mingle-text-secondary">
                     {[candidate.location, timeAgo(candidate.updatedAt)]
                       .filter(Boolean)
