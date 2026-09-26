@@ -392,6 +392,32 @@ export interface Database {
         };
         Relationships: [];
       };
+      role_referrals: {
+        Row: {
+          id: string;
+          company_id: string;
+          role_id: string;
+          referrer_user_id: string;
+          referred_user_id: string | null;
+          status: string;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          company_id: string;
+          role_id: string;
+          referrer_user_id: string;
+          referred_user_id?: string | null;
+          status?: string;
+          paid_at?: string | null;
+        };
+        Update: {
+          referred_user_id?: string | null;
+          status?: string;
+          paid_at?: string | null;
+        };
+        Relationships: [];
+      };
       match_reviews: {
         Row: {
           id: string;
@@ -1033,6 +1059,10 @@ export interface Database {
       claim_company_invite: {
         Args: Record<string, never>;
         Returns: { company_id: string; company_name: string }[];
+      };
+      claim_role_referral: {
+        Args: { p_referral_id: string };
+        Returns: undefined;
       };
       list_related_push_subscriptions: {
         Args: { p_user_id: string };
