@@ -19,6 +19,7 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import { reportInterestAttribution } from "@/lib/outbound-interest/client";
 import { reportReferralAttribution } from "@/lib/referrals/client";
+import { reportCareerApplyAttribution } from "@/lib/careers/client";
 import type { UserType } from "@/lib/supabase/types";
 import {
   LocaleGlobeButton,
@@ -103,6 +104,7 @@ export function AuthForm({
     });
     if (resolvedPath === "talent") {
       void reportReferralAttribution();
+      void reportCareerApplyAttribution();
     }
   };
 
