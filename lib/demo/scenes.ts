@@ -1,14 +1,16 @@
 export type DemoSceneId =
   | "opening"
   | "problem"
-  | "introduce"
-  | "company"
   | "profile"
+  | "company"
   | "match"
-  | "mingleMoment"
+  | "whyMatch"
   | "conversation"
-  | "recommendations"
+  | "idea"
   | "closing"
+  | "introduce"
+  | "mingleMoment"
+  | "recommendations"
   | "talent"
   | "board"
   | "darkMode"
@@ -16,7 +18,6 @@ export type DemoSceneId =
 
 export type DemoCaption = {
   lines: string[];
-  /** When within the scene the caption appears (ms). */
   atMs?: number;
 };
 
@@ -26,6 +27,7 @@ export type DemoSceneConfig = {
   id: DemoSceneId;
   /** Approximate duration for autoplay (ms). */
   durationMs: number;
+  /** Empty for the cinematic film — no on-screen captions. */
   captions: DemoCaption[];
   showChrome?: boolean;
   chromeNav?: string;
@@ -36,145 +38,81 @@ export type DemoSceneConfig = {
 };
 
 /**
- * Investor demo v2 — ~88s cinematic product walkthrough.
- * Real mingle UI surfaces, marketing-grade captions, guided cursor + typing.
+ * Cinematic product film — ~3:00, no captions.
+ * Talent + Company → Mutual Matching → Understand Why → Better Conversation
  */
 export const DEMO_SCENES: DemoSceneConfig[] = [
   {
     id: "opening",
-    durationMs: 5500,
-    captions: [{ lines: ["Meet mingle.", "Beyond the match."] }],
+    durationMs: 12000,
+    captions: [],
+    fullBleed: true,
   },
   {
     id: "problem",
-    durationMs: 8000,
-    captions: [
-      { lines: ["Hiring is more than matching keywords."] },
-      {
-        atMs: 3200,
-        lines: ["Skills matter.", "So do people, values, goals and fit."],
-      },
-    ],
+    durationMs: 23000,
+    captions: [],
     showChrome: true,
-    chromeNav: "Roles",
-    chromeTitle: "Roles",
-    audience: "company",
-  },
-  {
-    id: "introduce",
-    durationMs: 8000,
-    captions: [
-      { lines: ["A better way to connect", "talent and companies."] },
-      {
-        atMs: 3800,
-        lines: ["More context from the very beginning."],
-      },
-    ],
-    showChrome: true,
-    chromeNav: "Dashboard",
-    chromeTitle: "Dashboard",
-    audience: "company",
-  },
-  {
-    id: "company",
-    durationMs: 7000,
-    captions: [
-      { lines: ["Define the opportunity."] },
-      {
-        atMs: 3200,
-        lines: ["Then see who fits — beyond keywords."],
-      },
-    ],
-    showChrome: true,
-    chromeNav: "Roles",
-    chromeTitle: "Open role",
+    chromeNav: "Candidates",
+    chromeTitle: "Applicants",
     audience: "company",
   },
   {
     id: "profile",
-    durationMs: 12000,
-    captions: [
-      { lines: ["Go beyond the CV."] },
-      {
-        atMs: 4200,
-        lines: ["Discover the person behind the profile."],
-      },
-      {
-        atMs: 8000,
-        lines: ["Experience, goals, values, expectations."],
-      },
-    ],
+    durationMs: 25000,
+    captions: [],
     showChrome: true,
     chromeNav: "Candidates",
     chromeTitle: "Candidate profile",
     audience: "company",
   },
   {
-    id: "match",
-    durationMs: 11000,
-    captions: [
-      { lines: ["More context.", "Better connections."] },
-      {
-        atMs: 4500,
-        lines: ["Role Fit. Human Fit. Motivation Fit."],
-      },
-    ],
+    id: "company",
+    durationMs: 25000,
+    captions: [],
     showChrome: true,
-    chromeNav: "Candidates",
-    chromeTitle: "Match report",
+    chromeNav: "Roles",
+    chromeTitle: "Open role",
     audience: "company",
   },
   {
-    id: "mingleMoment",
-    durationMs: 4800,
-    captions: [{ lines: ["Mutual interest.", "It's a mingle."] }],
-    fullBleed: true,
+    id: "match",
+    durationMs: 25000,
+    captions: [],
+    showChrome: true,
+    chromeNav: "Candidates",
+    chromeTitle: "Your Match",
+    audience: "company",
+  },
+  {
+    id: "whyMatch",
+    durationMs: 30000,
+    captions: [],
+    showChrome: true,
+    chromeNav: "Candidates",
+    chromeTitle: "Why this match",
+    audience: "company",
   },
   {
     id: "conversation",
-    durationMs: 14000,
-    captions: [
-      { lines: ["Start a meaningful conversation."] },
-      {
-        atMs: 5500,
-        lines: ["From matching to an actual relationship."],
-      },
-    ],
+    durationMs: 22000,
+    captions: [],
     showChrome: true,
     chromeNav: "Conversations",
     chromeTitle: "Conversation",
     audience: "company",
   },
   {
-    id: "recommendations",
-    durationMs: 8500,
-    captions: [
-      { lines: ["Context you can trust."] },
-      {
-        atMs: 3800,
-        lines: ["Recommendations that enrich the picture."],
-      },
-    ],
-    showChrome: true,
-    chromeNav: "Candidates",
-    chromeTitle: "Recommendations",
-    audience: "company",
+    id: "idea",
+    durationMs: 10000,
+    captions: [],
+    fullBleed: true,
   },
   {
     id: "closing",
-    durationMs: 11000,
-    captions: [
-      {
-        lines: [
-          "The first working version of mingle",
-          "is now ready for pilot.",
-        ],
-      },
-      {
-        atMs: 4800,
-        lines: ["mingle", "Beyond the match."],
-      },
-    ],
+    durationMs: 8000,
+    captions: [],
+    fullBleed: true,
   },
 ];
 

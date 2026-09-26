@@ -23,21 +23,26 @@
     #7b2ff7 48%,
     #3e6be0 100%
   );
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-light-pink: #fdeaf1;
+  --mingle-light-purple: #f1e8fe;
+  --mingle-light-blue: #e9effe;
+  --mingle-gap-bg: #faf6f2;
+  --mingle-gap-accent: #c47a5a;
+  --mingle-background: #f4f1fa;
+  --mingle-bg: #f4f1fa;
+  --mingle-lavender: #f1e8fe;
+  --mingle-product-bg: #f4f1fa;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-success: #00ca72;
-  --mingle-warning: #ffcc00;
-  --mingle-error: #d83a52;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-success: #2f9d6a;
+  --mingle-warning: #d4a017;
+  --mingle-error: #c47a5a;
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
   --mingle-radius-sm: 6px;
   --mingle-radius: 10px;
   --mingle-radius-card: 16px;
@@ -48,30 +53,30 @@
       --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
-  --font-display: var(--font-poppins);
-  --font-sans: var(--font-poppins);
+  --font-display: var(--font-figtree);
+  --font-sans: var(--font-figtree);
   --font-hebrew: var(--font-rubik);
 }
 
 [data-theme="light"] {
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-background: #f4f1fa;
+  --mingle-bg: #f4f1fa;
+  --mingle-lavender: #f1e8fe;
+  --mingle-product-bg: #f4f1fa;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
-  --mingle-mascot-backdrop: #f7f8fc;
-      --mingle-nav-active-bg: var(--mingle-lavender);
-  --mingle-nav-hover-bg: #f3f4f8;
-      --mingle-nav-active: var(--mingle-purple);
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
+  --mingle-mascot-backdrop: #f4f1fa;
+  --mingle-nav-active-bg: var(--mingle-lavender);
+  --mingle-nav-hover-bg: #f8f6fc;
+  --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
-  --mingle-nav-divider: #e6e9ef;
+  --mingle-nav-divider: rgba(28, 27, 46, 0.08);
 }
 
 /* Original dark product surface (#0F1420 family), mapped onto the
@@ -131,8 +136,8 @@
   --color-mingle-nav-idle: var(--mingle-nav-idle);
   --color-mingle-nav-divider: var(--mingle-nav-divider);
 
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-hebrew: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-mingle: var(--mingle-shadow);
@@ -194,7 +199,7 @@ html[data-theme="dark"] .mingle-app-canvas::before {
 
 body {
   color: var(--mingle-text);
-  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
 }
 
@@ -376,6 +381,28 @@ button:disabled {
 .mingle-chip-pink {
   background: color-mix(in srgb, var(--mingle-pink) 14%, var(--mingle-lavender));
   color: var(--mingle-pink-deep);
+}
+
+.mingle-logo-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+}
+
+.mingle-btn-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.mingle-btn-primary:hover:not(:disabled) .mingle-btn-arrow {
+  transform: translateX(3px);
 }
 
 .profile-section {

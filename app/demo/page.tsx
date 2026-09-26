@@ -7,7 +7,7 @@ import { isDemoRouteEnabled } from "@/lib/demo/access";
 export const metadata: Metadata = {
   title: "Product demo | mingle",
   description:
-    "Private ~90s investor product demo of mingle — real product UI, guided cursor, and marketing-grade captions.",
+    "Private ~3min cinematic product film of mingle — no captions. Talent + Company → Mutual Matching → Understand Why → Better Conversation.",
   robots: {
     index: false,
     follow: false,

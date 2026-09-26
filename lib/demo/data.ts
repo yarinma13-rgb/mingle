@@ -11,43 +11,48 @@ import type { MessageRow } from "@/lib/messaging/persistence";
 export const DEMO_IDS = {
   companyUser: "demo-company-northstar",
   company: "demo-northstar-labs",
-  role: "demo-role-senior-product-designer",
+  role: "demo-role-senior-product-manager",
   emma: "demo-talent-emma-carter",
-  daniel: "demo-talent-daniel-morgan",
-  connection: "demo-connection-emma-northstar",
-  conversation: "demo-conversation-emma-northstar",
+  daniel: "demo-talent-daniel-cohen",
+  connection: "demo-connection-daniel-northstar",
+  conversation: "demo-conversation-daniel-northstar",
 } as const;
 
 export const DEMO_COMPANY = {
   name: "Northstar Labs",
-  subtitle: "Series B · Product design hiring",
+  subtitle: "Series B · Product hiring",
   initials: "NL",
-  location: "London · Remote-friendly",
+  location: "London · Hybrid",
   industry: "B2B SaaS",
   stage: "Series B",
-  culture: ["Clarity", "Craft", "Ownership", "Kind intensity"],
+  size: "120–200 employees",
+  culture: ["Fast-moving", "Ownership-driven", "Clarity", "Craft"],
 } as const;
 
 export const DEMO_ROLE = {
-  title: "Senior Product Designer",
-  department: "Design",
+  title: "Senior Product Manager",
+  department: "Product",
   seniority: "Senior",
   employment: "Full-time",
-  workModel: ["Hybrid", "Remote"],
+  workModel: ["Hybrid"],
   requiredSkills: [
-    "Product design",
-    "Figma",
+    "Product strategy",
+    "Analytics",
+    "Stakeholder management",
+    "Roadmapping",
     "User research",
-    "Design systems",
-    "Prototyping",
   ],
   whatMatters: [
-    "Systems thinking",
-    "Clear collaboration with PMs and engineers",
-    "Comfortable owning end-to-end product surfaces",
+    "Build and scale products with clear ownership",
+    "Collaborative and autonomous work style",
+    "Comfortable in a fast-moving, ownership-driven culture",
   ],
+  goals: ["Build and scale products"],
+  workStyle: ["Collaborative", "Autonomous"],
+  expectations: ["Hybrid", "Competitive compensation"],
+  culture: ["Fast-moving", "Ownership-driven"],
   summary:
-    "Own core product surfaces for a growing B2B platform. Partner closely with product and engineering — from discovery through polished delivery.",
+    "Own a core product surface end-to-end. Partner with design and engineering to ship clarity — from discovery through measurable outcomes.",
 } as const;
 
 export const DEMO_EMMA = {
@@ -58,34 +63,49 @@ export const DEMO_EMMA = {
   photo: "/landing/avatars/avatar-sofia.png",
   gender: "female" as const,
   about:
-    "I design product systems that help teams move faster without losing craft. Most recently led the redesign of an analytics workspace used by 40k weekly active users.",
-  skills: [
-    "Product design",
-    "Figma",
-    "Design systems",
-    "User research",
-    "Prototyping",
-    "Workshop facilitation",
-  ],
-  experience: "7 years · B2B SaaS & marketplace",
-  values: ["Craft", "Clarity", "Ownership", "Honest feedback"],
-  goals: ["Lead design on a product with real users", "Grow into design leadership"],
-  workStyle: ["Async-first", "Collaborative critique", "Deep work mornings"],
-  lookingFor: [
-    "Product-led companies",
-    "Designers who partner with engineering",
-    "Room to shape process, not only pixels",
-  ],
+    "I design product systems that help teams move faster without losing craft.",
+  skills: ["Product design", "Figma", "Design systems", "User research"],
+  experience: "7 years · B2B SaaS",
+  values: ["Craft", "Clarity", "Ownership"],
+  goals: ["Lead design on a product with real users"],
+  workStyle: ["Async-first", "Collaborative critique"],
+  lookingFor: ["Product-led companies"],
 } as const;
 
+/** Hero talent for the cinematic product film. */
 export const DEMO_DANIEL = {
-  name: "Daniel Morgan",
-  initials: "DM",
-  headline: "Product Designer",
-  location: "Austin · Hybrid",
+  name: "Daniel Cohen",
+  initials: "DC",
+  headline: "Product Manager",
+  location: "Tel Aviv · Open to hybrid EU",
   photo: "/landing/avatars/avatar-noah.png",
   gender: "male" as const,
-  matchScore: 81,
+  matchScore: 92,
+  about:
+    "I build product systems that turn messy discovery into clear bets. Most recently owned activation for a B2B platform used by 18k weekly teams.",
+  skills: [
+    "Product strategy",
+    "Analytics",
+    "Stakeholder management",
+    "Roadmapping",
+    "User interviews",
+    "Experiment design",
+  ],
+  experience: "6 years · B2B SaaS & marketplace",
+  values: ["Impact", "Clarity", "Ownership", "Honest feedback"],
+  goals: [
+    "Own a product surface end-to-end",
+    "Grow into senior PM leadership",
+  ],
+  workStyle: ["Collaborative", "Autonomous", "Deep-work mornings"],
+  lookingFor: [
+    "Product-led Series B teams",
+    "Clear ownership with strong design partners",
+    "Hybrid with intentional office time",
+  ],
+  salary: "$140k–$165k",
+  motivation:
+    "I want to ship products where strategy, craft and outcomes stay connected — not buried in status decks.",
 } as const;
 
 const daysAgo = (n: number) =>
@@ -96,138 +116,170 @@ const hoursAgo = (n: number) =>
 
 export const DEMO_CANDIDATES: CandidateRow[] = [
   {
-    userId: DEMO_IDS.emma,
-    name: DEMO_EMMA.name,
-    headline: DEMO_EMMA.headline,
-    location: DEMO_EMMA.location,
-    matchScore: 92,
-    updatedAt: daysAgo(1),
-    initials: DEMO_EMMA.initials,
-    gender: DEMO_EMMA.gender,
-    photo: DEMO_EMMA.photo,
-  },
-  {
     userId: DEMO_IDS.daniel,
     name: DEMO_DANIEL.name,
     headline: DEMO_DANIEL.headline,
     location: DEMO_DANIEL.location,
-    matchScore: DEMO_DANIEL.matchScore,
-    updatedAt: daysAgo(2),
+    matchScore: 92,
+    updatedAt: daysAgo(1),
     initials: DEMO_DANIEL.initials,
     gender: DEMO_DANIEL.gender,
     photo: DEMO_DANIEL.photo,
   },
   {
+    userId: DEMO_IDS.emma,
+    name: DEMO_EMMA.name,
+    headline: DEMO_EMMA.headline,
+    location: DEMO_EMMA.location,
+    matchScore: 84,
+    updatedAt: daysAgo(2),
+    initials: DEMO_EMMA.initials,
+    gender: DEMO_EMMA.gender,
+    photo: DEMO_EMMA.photo,
+  },
+  {
     userId: "demo-talent-sofia-reyes",
     name: "Sofia Reyes",
-    headline: "UX Designer",
-    location: "Madrid · Remote",
-    matchScore: 78,
+    headline: "Product Manager",
+    location: "Madrid · Hybrid",
+    matchScore: 79,
     updatedAt: daysAgo(3),
     initials: "SR",
     gender: "female",
     photo: "/landing/avatars/avatar-maya.png",
   },
+  {
+    userId: "demo-talent-noah-kim",
+    name: "Noah Kim",
+    headline: "Senior Product Manager",
+    location: "Amsterdam · Remote",
+    matchScore: 76,
+    updatedAt: daysAgo(4),
+    initials: "NK",
+    gender: "male",
+    photo: "/landing/avatars/avatar-noah.png",
+  },
+  {
+    userId: "demo-talent-aya-ben",
+    name: "Aya Ben-David",
+    headline: "Associate Product Manager",
+    location: "London · Onsite preferred",
+    matchScore: 71,
+    updatedAt: daysAgo(5),
+    initials: "AB",
+    gender: "female",
+    photo: "/landing/avatars/avatar-sofia.png",
+  },
 ];
 
 export const DEMO_FUNNEL: CompanyFunnel = {
-  total: 5,
+  total: 247,
   counts: {
-    connected: 1,
-    exploring: 1,
-    in_conversation: 2,
-    interview_booked: 1,
-    opportunity: 0,
-    decision: 0,
+    connected: 18,
+    exploring: 42,
+    in_conversation: 11,
+    interview_booked: 4,
+    opportunity: 2,
+    decision: 1,
     relationship: 0,
   },
 };
 
 export const DEMO_EMMA_MATCH_REPORT: MatchReport = {
   overall: 92,
-  strength: "Strong fit",
+  strength: "Strong match",
   confidence: "High",
   audience: "company",
   whatMattersMost:
-    "Role skills, shared values around craft and ownership, and aligned career goals.",
+    "Role skills, shared ownership culture, and aligned career goals around building and scaling products.",
   axes: [
-    { id: "role", label: "Role Fit", score: 94 },
-    { id: "company", label: "Human Fit", score: 90 },
-    { id: "motivation", label: "Motivation Fit", score: 91 },
+    { id: "role", label: "Role Fit", score: 92 },
+    { id: "company", label: "Human Fit", score: 87 },
+    { id: "motivation", label: "Motivation Fit", score: 94 },
   ],
   why: [
     {
+      key: "experience",
+      label: "Strong experience alignment",
+      finding: "Six years owning B2B product surfaces with measurable activation outcomes.",
+    },
+    {
+      key: "workStyle",
+      label: "Shared work preferences",
+      finding: "Collaborative and autonomous — matches how Northstar ships.",
+    },
+    {
+      key: "careerGoals",
+      label: "Relevant career goals",
+      finding: "Looking to own a product end-to-end at a Series B pace.",
+    },
+    {
       key: "skills",
       label: "Skills",
-      finding: "Product design, Figma, research and systems overlap strongly with the role.",
+      finding: "Product strategy, analytics and stakeholder management overlap strongly.",
     },
     {
       key: "motivations",
       label: "Values",
-      finding: "Craft, clarity and ownership match what Northstar prioritizes.",
-    },
-    {
-      key: "careerGoals",
-      label: "Career goals",
-      finding: "Looking to lead design on a real product — aligned with this senior seat.",
-    },
-    {
-      key: "workStyle",
-      label: "Work style",
-      finding: "Async-first collaboration fits a distributed Series B team.",
-    },
-    {
-      key: "experience",
-      label: "Experience",
-      finding: "Seven years in B2B SaaS with end-to-end product ownership.",
+      finding: "Impact, clarity and ownership show up on both sides.",
     },
   ],
   mismatch: [
     {
+      key: "experience",
+      label: "Compensation expectations",
+      finding: "Candidate: $140k–$165k · Role band slightly lower — worth confirming.",
+    },
+    {
       key: "location",
-      label: "Location",
-      finding: "Berlin-based; role is hybrid London with strong remote flexibility.",
+      label: "Location / office expectations",
+      finding: "Candidate prefers intentional hybrid; role is primarily London hybrid.",
+    },
+    {
+      key: "experience",
+      label: "Experience gap",
+      finding: "Role asks for 7+ years; Daniel has 6 with strong ownership signal.",
     },
   ],
   technicalSignal: null,
-  salaryGapPercent: null,
+  salaryGapPercent: 8,
 };
 
 export const DEMO_EMMA_SECTIONS: ProfileDetailSection[] = [
   {
     title: "About",
-    text: DEMO_EMMA.about,
+    text: DEMO_DANIEL.about,
   },
   {
     title: "Skills",
-    chips: [...DEMO_EMMA.skills],
+    chips: [...DEMO_DANIEL.skills],
   },
   {
     title: "Experience",
-    text: DEMO_EMMA.experience,
+    text: DEMO_DANIEL.experience,
   },
   {
     title: "Values that drive me",
-    chips: [...DEMO_EMMA.values],
+    chips: [...DEMO_DANIEL.values],
   },
   {
     title: "Career goals",
-    chips: [...DEMO_EMMA.goals],
+    chips: [...DEMO_DANIEL.goals],
   },
   {
     title: "How I work best",
-    chips: [...DEMO_EMMA.workStyle],
+    chips: [...DEMO_DANIEL.workStyle],
   },
   {
     title: "What I'm looking for",
-    chips: [...DEMO_EMMA.lookingFor],
+    chips: [...DEMO_DANIEL.lookingFor],
   },
 ];
 
 export const DEMO_WHAT_TO_EXPLORE = [
-  "How Emma runs discovery with PMs before jumping into Figma",
-  "Her experience scaling a design system across squads",
-  "What 'kind intensity' looks like in her day-to-day collaboration",
+  "Compensation expectations and role band alignment",
+  "Hybrid rhythm — intentional office days vs fully remote weeks",
+  "How Daniel runs discovery with design before committing to a roadmap bet",
 ];
 
 export const DEMO_RECOMMENDATIONS: SubmittedRecommendation[] = [
@@ -235,13 +287,13 @@ export const DEMO_RECOMMENDATIONS: SubmittedRecommendation[] = [
     id: "demo-rec-1",
     rating: 5,
     recommenderName: "Priya Shah",
-    body: "Emma raises the quality bar without slowing the team down. She turns ambiguous product problems into clear design directions, and engineers trust her specs.",
+    body: "Daniel turns ambiguous product problems into clear bets. Engineers trust his prioritization, and he never loses the user in the process.",
   },
   {
     id: "demo-rec-2",
     rating: 5,
     recommenderName: "Marcus Chen",
-    body: "One of the strongest design partners I've worked with. Thoughtful with research, decisive in critique, and consistently focused on the user and the business.",
+    body: "One of the strongest product partners I've worked with. Decisive in critique, thoughtful with research, consistently focused on outcomes.",
   },
 ];
 
@@ -252,7 +304,7 @@ export const DEMO_ALIGNED_FACTORS: MatchFactor[] = [
     weight: 16,
     fraction: 0.92,
     verdict: "aligned",
-    detail: "Strong overlap on product design, research and systems.",
+    detail: "Strong overlap on strategy, analytics and stakeholder work.",
   },
   {
     key: "motivations",
@@ -260,7 +312,7 @@ export const DEMO_ALIGNED_FACTORS: MatchFactor[] = [
     weight: 17,
     fraction: 0.9,
     verdict: "aligned",
-    detail: "Craft and ownership show up on both sides.",
+    detail: "Impact, clarity and ownership show up on both sides.",
   },
   {
     key: "careerGoals",
@@ -279,7 +331,7 @@ export const DEMO_EXPLORE_FACTORS: MatchFactor[] = [
     weight: 7,
     fraction: 0.45,
     verdict: "partial",
-    detail: "Worth confirming hybrid vs fully remote expectations.",
+    detail: "Worth confirming hybrid vs office-day expectations.",
   },
 ];
 
@@ -304,7 +356,7 @@ export const DEMO_TIMELINE: RelationshipEventRow[] = [
     id: "demo-ev-3",
     connection_id: DEMO_IDS.connection,
     stage: "in_conversation",
-    actor_id: DEMO_IDS.emma,
+    actor_id: DEMO_IDS.daniel,
     metadata: {},
     created_at: daysAgo(2),
   },
@@ -313,7 +365,7 @@ export const DEMO_TIMELINE: RelationshipEventRow[] = [
     connection_id: DEMO_IDS.connection,
     stage: "interview_booked",
     actor_id: DEMO_IDS.companyUser,
-    metadata: { note: "Design deep-dive" },
+    metadata: { note: "Product deep-dive" },
     created_at: hoursAgo(6),
   },
 ];
@@ -323,15 +375,15 @@ export const DEMO_MESSAGES: MessageRow[] = [
     id: "demo-msg-1",
     conversation_id: DEMO_IDS.conversation,
     sender_id: DEMO_IDS.companyUser,
-    body: "Hi Emma — your profile stood out beyond the portfolio. We'd love to learn how you run discovery with PMs on complex B2B surfaces.",
+    body: "Hi Daniel — your profile stood out beyond the CV. We'd love to learn how you turn discovery into clear product bets on complex B2B surfaces.",
     created_at: daysAgo(2),
     read_at: daysAgo(2),
   },
   {
     id: "demo-msg-2",
     conversation_id: DEMO_IDS.conversation,
-    sender_id: DEMO_IDS.emma,
-    body: "Thanks! Happy to share. I usually start with a lightweight problem brief, then a short research loop before we commit to a direction. Curious how Northstar balances craft with shipping pace.",
+    sender_id: DEMO_IDS.daniel,
+    body: "Thanks! Happy to share. I usually start with a lightweight problem brief, then a short research loop before we commit to a direction. Curious how Northstar balances ownership with shipping pace.",
     created_at: daysAgo(2),
     read_at: daysAgo(2),
   },
@@ -339,14 +391,14 @@ export const DEMO_MESSAGES: MessageRow[] = [
     id: "demo-msg-3",
     conversation_id: DEMO_IDS.conversation,
     sender_id: DEMO_IDS.companyUser,
-    body: "That's exactly the tension we care about. Would you be open to a 45-minute design conversation this week?",
+    body: "That's exactly the tension we care about. Would you be open to a 45-minute product conversation this week?",
     created_at: hoursAgo(20),
     read_at: hoursAgo(18),
   },
   {
     id: "demo-msg-4",
     conversation_id: DEMO_IDS.conversation,
-    sender_id: DEMO_IDS.emma,
+    sender_id: DEMO_IDS.daniel,
     body: "Yes — Thursday afternoon works well for me. Looking forward to it.",
     created_at: hoursAgo(12),
     read_at: hoursAgo(10),
@@ -391,19 +443,19 @@ export const DEMO_BOARD_COLUMNS = [
     id: "exploring",
     label: "Exploring",
     accent: "var(--mingle-accent-purple)",
-    names: ["Daniel Morgan"],
+    names: ["Daniel Cohen"],
   },
   {
     id: "in_conversation",
     label: "In conversation",
     accent: "var(--mingle-accent-blue)",
-    names: ["Emma Carter"],
+    names: ["Daniel Cohen"],
   },
   {
     id: "interview_booked",
     label: "Interview booked",
     accent: "var(--mingle-success)",
-    names: ["Emma Carter"],
+    names: ["Daniel Cohen"],
   },
 ] as const;
 
@@ -436,22 +488,14 @@ export const DEMO_PHASE2 = {
  * Full investor voiceover — record separately, then lay over a clean
  * screen capture. Target runtime ~85–90s.
  */
-export const DEMO_VOICEOVER = `Meet mingle — the relationship layer between talent and companies.
+export const DEMO_VOICEOVER = `Today, recruiters can go through hundreds of applications, but a CV only tells you part of the story.
 
-Hiring is more than matching keywords. Skills matter — but so do people, values, goals and fit.
+With mingle, we look beyond the CV — understanding what the person brings, what they’re looking for, and how they want to work.
 
-mingle brings companies and talent together with more context from the very beginning.
+The company does the same — it tells us what it actually needs from the person and the role.
 
-Define the opportunity, then discover who fits — beyond keywords alone.
+Then we bring both sides together and look at the match across role fit, human fit and motivation.
 
-Instead of relying only on a CV, mingle helps companies understand the person behind the profile — their experience, goals, values and expectations.
+And this is one of the parts I care most about. We don’t just give you a score. We explain why the match exists — and where both sides should look closer.
 
-The result is a more meaningful way to discover relevant connections. Role Fit. Human Fit. Motivation Fit.
-
-And when there’s mutual interest, it’s a mingle — and the experience moves forward from matching to an actual conversation.
-
-With additional context such as recommendations, companies can build a richer picture of the people they meet.
-
-This is the first working version of mingle — now moving into our first pilot stage.
-
-mingle. Beyond the match.`;
+The goal isn’t to replace the conversation. It’s to make the conversation start from a much better place.`;
