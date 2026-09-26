@@ -1,5 +1,9 @@
 import { extractRoleFromJd } from "@/lib/roles/extract-jd";
 import type { RoleDraft } from "@/lib/roles/persistence";
+import {
+  heuristicSkillTiers,
+  type SkillRequirement,
+} from "@/lib/matching/skill-requirement-tiers";
 
 export type StructuredJd = {
   companyPresentation: string;
@@ -11,6 +15,8 @@ export type StructuredJd = {
   seniority?: string;
   workModel?: string;
   requiredSkills?: string[];
+  /** MUST_HAVE/PREFERRED/etc tiering for requiredSkills — see engine.ts. */
+  skillRequirements?: SkillRequirement[];
 };
 
 export function composeRoleDescription(structured: StructuredJd): string {
@@ -37,6 +43,16 @@ export function draftFromStructuredJd(
 ): RoleDraft {
   const heuristic = extractRoleFromJd(sourceText, sourceUrl);
   const description = composeRoleDescription(structured) || heuristic.description;
+  const requiredSkills =
+    structured.requiredSkills && structured.requiredSkills.length > 0
+      ? structured.requiredSkills.slice(0, 8)
+      : heuristic.requiredSkills;
+  // Prefer AI-provided tiers; fall back to the heuristic tagger over the
+  // final skill list (covers both AI- and heuristic-sourced skills).
+  const skillRequirements =
+    structured.skillRequirements && structured.skillRequirements.length > 0
+      ? structured.skillRequirements
+      : heuristicSkillTiers(requiredSkills, sourceText);
 
   return {
     ...heuristic,
@@ -44,10 +60,8 @@ export function draftFromStructuredJd(
     department: structured.department?.trim() || heuristic.department,
     seniority: structured.seniority?.trim() || heuristic.seniority,
     workModel: structured.workModel?.trim() || heuristic.workModel,
-    requiredSkills:
-      structured.requiredSkills && structured.requiredSkills.length > 0
-        ? structured.requiredSkills.slice(0, 8)
-        : heuristic.requiredSkills,
+    requiredSkills,
+    skillRequirements,
     description,
     companyPresentation: structured.companyPresentation.trim(),
     jobPresentation: structured.jobPresentation.trim(),

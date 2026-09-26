@@ -7,9 +7,18 @@ import type {
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 import { ensureRediscoveryForRole } from "@/lib/matching/rediscovery";
+import {
+  parseSkillRequirements,
+  type SkillRequirement,
+} from "@/lib/matching/skill-requirement-tiers";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, skill_requirements, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, created_at, updated_at";
+
+// Same generic "column"/"schema cache" substrings already used below also
+// catch a missing skill_requirements column, so it shares the one fallback
+// path with company_presentation/job_presentation/responsibilities/requirements
+// rather than needing its own — see the shared regex at each call site.
 
 export type RoleRecord = {
   id: string;
@@ -20,6 +29,7 @@ export type RoleRecord = {
   employmentType: RoleEmploymentType | null;
   workModel: string | null;
   requiredSkills: string[];
+  skillRequirements: SkillRequirement[];
   description: string | null;
   status: RoleStatus;
   salaryMin: number | null;
@@ -41,6 +51,7 @@ export type RoleDraft = {
   employmentType: RoleEmploymentType;
   workModel: string;
   requiredSkills: string[];
+  skillRequirements: SkillRequirement[];
   description: string;
   salaryMin: number | null;
   salaryMax: number | null;
@@ -59,6 +70,7 @@ export const EMPTY_ROLE_DRAFT: RoleDraft = {
   employmentType: "full_time",
   workModel: "",
   requiredSkills: [],
+  skillRequirements: [],
   description: "",
   salaryMin: null,
   salaryMax: null,
@@ -80,6 +92,7 @@ type RoleListRow = Pick<
   | "employment_type"
   | "work_model"
   | "required_skills"
+  | "skill_requirements"
   | "description"
   | "status"
   | "salary_min"
@@ -104,6 +117,9 @@ function toRecord(row: RoleListRow): RoleRecord {
     employmentType: row.employment_type,
     workModel: row.work_model,
     requiredSkills: row.required_skills ?? [],
+    skillRequirements: parseSkillRequirements(
+      (row as { skill_requirements?: unknown }).skill_requirements,
+    ),
     description: row.description,
     status: row.status,
     salaryMin: row.salary_min,
@@ -138,6 +154,7 @@ export function draftFromRole(role: RoleRecord): RoleDraft {
     employmentType: role.employmentType ?? "full_time",
     workModel: role.workModel ?? "",
     requiredSkills: role.requiredSkills,
+    skillRequirements: role.skillRequirements,
     description: role.description ?? "",
     salaryMin: role.salaryMin,
     salaryMax: role.salaryMax,
@@ -160,7 +177,7 @@ export async function loadCompanyRoles(
     .eq("company_id", companyId)
     .order("created_at", { ascending: false });
   if (error) {
-    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
       const { data: fallback, error: fallbackError } = await supabase
         .from("roles")
         .select(
@@ -172,6 +189,7 @@ export async function loadCompanyRoles(
       return (fallback ?? []).map((row) =>
         toRecord({
           ...row,
+          skill_requirements: null,
           company_presentation: null,
           job_presentation: null,
           responsibilities: null,
@@ -199,6 +217,7 @@ export async function createCompanyRole(
       employment_type: draft.employmentType,
       work_model: draft.workModel || null,
       required_skills: draft.requiredSkills,
+      skill_requirements: draft.skillRequirements,
       description: draft.description.trim() || null,
       status: "open",
       salary_min: draft.salaryMin,
@@ -213,7 +232,7 @@ export async function createCompanyRole(
     .select(ROLE_LIST_COLUMNS)
     .single();
   if (error) {
-    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
       const { data: fallback, error: fallbackError } = await supabase
         .from("roles")
         .insert({
@@ -238,6 +257,7 @@ export async function createCompanyRole(
       if (fallbackError) throw fallbackError;
       const record = toRecord({
         ...fallback,
+        skill_requirements: null,
         company_presentation: null,
         job_presentation: null,
         responsibilities: null,
@@ -290,6 +310,7 @@ export async function updateCompanyRole(
       employment_type: draft.employmentType,
       work_model: draft.workModel || null,
       required_skills: draft.requiredSkills,
+      skill_requirements: draft.skillRequirements,
       description: draft.description.trim() || null,
       salary_min: draft.salaryMin,
       salary_max: draft.salaryMax,
@@ -305,7 +326,7 @@ export async function updateCompanyRole(
     .select(ROLE_LIST_COLUMNS)
     .single();
   if (error) {
-    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
       const { data: fallback, error: fallbackError } = await supabase
         .from("roles")
         .update({
@@ -330,6 +351,7 @@ export async function updateCompanyRole(
       if (fallbackError) throw fallbackError;
       return toRecord({
         ...fallback,
+        skill_requirements: null,
         company_presentation: null,
         job_presentation: null,
         responsibilities: null,
@@ -370,7 +392,7 @@ export async function loadCompanyRole(
     .eq("company_id", companyId)
     .maybeSingle();
   if (error) {
-    if (/company_presentation|job_presentation|responsibilities|requirements|schema cache|column/i.test(error.message)) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
       const { data: fallback, error: fallbackError } = await supabase
         .from("roles")
         .select(
@@ -383,6 +405,7 @@ export async function loadCompanyRole(
       if (!fallback) return null;
       return toRecord({
         ...fallback,
+        skill_requirements: null,
         company_presentation: null,
         job_presentation: null,
         responsibilities: null,

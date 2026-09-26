@@ -14,6 +14,12 @@ import {
   ROLE_SENIORITY_OPTIONS,
   WORK_MODEL_OPTIONS,
 } from "@/lib/roles/questions";
+import {
+  SKILL_TIERS,
+  heuristicSkillTiers,
+  isSkillTier,
+  type SkillRequirement,
+} from "@/lib/matching/skill-requirement-tiers";
 
 export type StructureJdResult =
   | { ok: true; structured: StructuredJd; draft: RoleDraft; usedAi: boolean }
@@ -29,6 +35,7 @@ type GeminiJdPayload = {
   seniority?: string;
   workModel?: string;
   requiredSkills?: string[];
+  skillRequirements?: { skill?: string; tier?: string; rationale?: string }[];
 };
 
 function asText(value: unknown, max = 2000): string {
@@ -46,7 +53,37 @@ function pickOption(value: unknown, options: readonly string[]): string {
   return hit ?? "";
 }
 
-function normalizeStructured(raw: GeminiJdPayload): StructuredJd {
+/** Reconcile AI-provided tiers with the final skill list — every skill gets
+ * exactly one entry; anything the AI omitted or invented is fixed up rather
+ * than trusted blindly. */
+function normalizeSkillRequirements(
+  skills: string[],
+  raw: GeminiJdPayload["skillRequirements"],
+  rawText: string,
+): SkillRequirement[] {
+  const bySkillLower = new Map<string, SkillRequirement>();
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      const skill = typeof item?.skill === "string" ? item.skill.trim() : "";
+      if (!skill) continue;
+      const tier = isSkillTier(item?.tier) ? item.tier : "UNKNOWN";
+      const rationale =
+        typeof item?.rationale === "string" ? item.rationale.trim().slice(0, 200) : undefined;
+      bySkillLower.set(skill.toLowerCase(), { skill, tier, rationale });
+    }
+  }
+  // Anything the AI didn't tier gets the same conservative heuristic used
+  // in the no-AI path, rather than being silently dropped or left UNKNOWN.
+  const untiered = skills.filter((skill) => !bySkillLower.has(skill.toLowerCase()));
+  const fallback = heuristicSkillTiers(untiered, rawText);
+  return skills.map(
+    (skill) =>
+      bySkillLower.get(skill.toLowerCase()) ??
+      fallback.find((f) => f.skill === skill) ?? { skill, tier: "UNKNOWN" as const },
+  );
+}
+
+function normalizeStructured(raw: GeminiJdPayload, sourceText: string): StructuredJd {
   const skills = Array.isArray(raw.requiredSkills)
     ? raw.requiredSkills
         .filter((item): item is string => typeof item === "string")
@@ -65,6 +102,9 @@ function normalizeStructured(raw: GeminiJdPayload): StructuredJd {
     seniority: pickOption(raw.seniority, ROLE_SENIORITY_OPTIONS) || undefined,
     workModel: pickOption(raw.workModel, WORK_MODEL_OPTIONS) || undefined,
     requiredSkills: skills.length ? skills : undefined,
+    skillRequirements: skills.length
+      ? normalizeSkillRequirements(skills, raw.skillRequirements, sourceText)
+      : undefined,
   };
 }
 
@@ -84,6 +124,7 @@ function heuristicStructured(text: string): StructuredJd {
     seniority: draft.seniority || undefined,
     workModel: draft.workModel || undefined,
     requiredSkills: draft.requiredSkills,
+    skillRequirements: draft.skillRequirements,
   };
 }
 
@@ -131,12 +172,22 @@ export async function structureJobFromFreeTextAction(
         `seniority must be one of: ${ROLE_SENIORITY_OPTIONS.join(", ")} (or empty).`,
         `workModel must be one of: ${WORK_MODEL_OPTIONS.join(", ")} (or empty).`,
         "requiredSkills: array of up to 8 short skill strings.",
+        "skillRequirements: array with one entry per requiredSkills item, each",
+        "{skill, tier, rationale}. tier must be exactly one of:",
+        `${SKILL_TIERS.join(", ")}.`,
+        "MUST_HAVE = genuinely critical to do the job.",
+        "PREFERRED = useful but not essential.",
+        "TRANSFERABLE = could be satisfied by adjacent/equivalent experience — explain why in rationale.",
+        "DEVELOPMENTAL = could realistically be learned on the job.",
+        "CONTEXTUAL = depends on this specific company's environment.",
+        "UNKNOWN = the JD does not make this clear.",
+        "Never mark something TRANSFERABLE or DEVELOPMENTAL without a one-sentence rationale explaining why — if unsure, use UNKNOWN instead.",
         "Keep language matching the input (Hebrew or English). Do not invent fake company facts.",
       ].join(" "),
       user: text,
     });
 
-    const structured = normalizeStructured(raw);
+    const structured = normalizeStructured(raw, text);
     if (
       !structured.companyPresentation &&
       !structured.jobPresentation &&

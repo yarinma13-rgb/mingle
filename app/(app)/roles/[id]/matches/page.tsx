@@ -65,6 +65,7 @@ export default async function RoleMatchesPage({
       roleTitle: role.title,
       roleDepartment: role.department,
       roleRequiredSkills: role.requiredSkills,
+      roleSkillRequirements: role.skillRequirements,
       salaryMin: role.salaryMin,
       salaryMax: role.salaryMax,
     },

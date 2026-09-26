@@ -2,6 +2,7 @@ import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
 import { skillCoverageWithAdjacency } from "@/lib/matching/skill-adjacency";
+import { tierWeightsBySkill, type SkillRequirement } from "@/lib/matching/skill-requirement-tiers";
 import { applySalaryNudge } from "@/lib/matching/salary-nudge";
 import { applyTargetRoleNudge } from "@/lib/matching/target-role-nudge";
 
@@ -59,6 +60,12 @@ export type CompanyMatchInput = {
   roleDepartment?: string | null;
   /** Required skills from an open role — primary skills signal for Role Fit. */
   roleRequiredSkills?: string[] | null;
+  /**
+   * Optional MUST_HAVE/PREFERRED/TRANSFERABLE/etc tiering for the same
+   * skills (see lib/matching/skill-requirement-tiers.ts). When present,
+   * missing a MUST_HAVE skill costs more than missing a PREFERRED one.
+   */
+  roleSkillRequirements?: SkillRequirement[] | null;
 };
 
 function overlapFraction(a: string[], b: string[]): number {
@@ -360,9 +367,11 @@ function skillsFactor(
     };
   }
 
+  const tierWeights = tierWeightsBySkill(company.roleSkillRequirements);
   const { exact, adjacent, fraction } = skillCoverageWithAdjacency(
     talentSkills,
     required,
+    tierWeights.size > 0 ? tierWeights : undefined,
   );
   const verdict = verdictFromFraction(fraction);
   const preview = exact.slice(0, 3).join(", ");

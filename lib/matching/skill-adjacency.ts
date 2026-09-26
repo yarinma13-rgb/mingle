@@ -169,15 +169,22 @@ export function findAdjacentSkillHits(
   return hits;
 }
 
-/** Soft coverage fraction: exact hits count 1, adjacent hits count 0.45. */
+/**
+ * Soft coverage fraction: exact hits count their full tier weight, adjacent
+ * (transferable) hits count 0.45 of it. `tierWeights` is optional — when
+ * absent every required skill weighs 1, matching the original behavior.
+ */
 export function skillCoverageWithAdjacency(
   talentSkills: string[],
   requiredSkills: string[],
+  tierWeights?: Map<string, number>,
 ): {
   exact: string[];
   adjacent: AdjacentSkillHit[];
   fraction: number;
 } {
+  const weightFor = (skill: string) => tierWeights?.get(canonicalize(skill)) ?? 1;
+
   const exact = talentSkills.filter((skill) =>
     requiredSkills.some((req) => canonicalize(req) === canonicalize(skill)),
   );
@@ -190,7 +197,10 @@ export function skillCoverageWithAdjacency(
   if (requiredSkills.length === 0) {
     return { exact: exactUnique, adjacent: [], fraction: 0.55 };
   }
-  const earned = exactUnique.length + adjacent.length * 0.45;
-  const fraction = Math.min(1, earned / requiredSkills.length);
+  const totalWeight = requiredSkills.reduce((sum, req) => sum + weightFor(req), 0) || 1;
+  const earnedWeight =
+    exactUnique.reduce((sum, req) => sum + weightFor(req), 0) +
+    adjacent.reduce((sum, hit) => sum + weightFor(hit.required) * 0.45, 0);
+  const fraction = Math.min(1, earnedWeight / totalWeight);
   return { exact: exactUnique, adjacent, fraction };
 }

@@ -850,6 +850,8 @@ export interface Database {
           employment_type: RoleEmploymentType | null;
           work_model: string | null;
           required_skills: string[];
+          /** SkillRequirement[] (see lib/matching/skill-requirement-tiers.ts) stored as jsonb. */
+          skill_requirements: unknown;
           description: string | null;
           status: RoleStatus;
           salary_min: number | null;
@@ -871,6 +873,7 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;
@@ -889,6 +892,7 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;
