@@ -9,7 +9,7 @@ import {
   loadTalentMatchInput,
   loadCompanyMatchInput,
 } from "@/lib/matching/context";
-import { loadCompanyFunnel } from "@/lib/dashboard/funnel";
+import { loadCompanyFunnel, loadAverageTimeToHireDays } from "@/lib/dashboard/funnel";
 import { loadTalentDashboardStats } from "@/lib/dashboard/talent-stats";
 import { loadCompanyInterviews } from "@/lib/interviews/persistence";
 import { loadCompanyRoles } from "@/lib/roles/persistence";
@@ -35,6 +35,7 @@ export default async function DashboardPage() {
       funnel,
       ownMatchInput,
       acceptance,
+      timeToHire,
     ] = await Promise.all([
       supabase
         .from("company_profiles")
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
       loadCompanyFunnel(supabase, companyId),
       loadCompanyMatchInput(supabase, companyId),
       loadConnectionAcceptanceRate(supabase, companyId),
+      loadAverageTimeToHireDays(supabase, companyId),
     ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
 
@@ -62,13 +64,12 @@ export default async function DashboardPage() {
       (interview) => interview.status === "scheduled" || interview.status === "completed",
     ).length;
 
-    // Snapshot once for the upcoming filter (server page, not a client render loop).
-    const nowMs = new Date().getTime();
+    const now = Date.now();
     const upcomingRaw = interviews
       .filter(
         (interview) =>
           interview.status === "scheduled" &&
-          new Date(interview.scheduledAt).getTime() >= nowMs,
+          new Date(interview.scheduledAt).getTime() >= now,
       )
       .slice(0, 3);
 
@@ -151,6 +152,7 @@ export default async function DashboardPage() {
           upcomingInterviews={upcomingInterviews}
           acceptanceRate={acceptance.rate}
           interviewsHeldCount={interviewsHeldCount}
+          averageTimeToHireDays={timeToHire.averageDays}
         />
       </>
     );
