@@ -48,8 +48,8 @@
       --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
-  --font-display: var(--font-poppins);
-  --font-sans: var(--font-poppins);
+  --font-display: var(--font-figtree);
+  --font-sans: var(--font-figtree);
   --font-hebrew: var(--font-rubik);
 }
 
@@ -131,8 +131,8 @@
   --color-mingle-nav-idle: var(--mingle-nav-idle);
   --color-mingle-nav-divider: var(--mingle-nav-divider);
 
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-hebrew: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-mingle: var(--mingle-shadow);
@@ -194,7 +194,7 @@ html[data-theme="dark"] .mingle-app-canvas::before {
 
 body {
   color: var(--mingle-text);
-  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
 }
 
