@@ -421,6 +421,76 @@ export interface Database {
         };
         Relationships: [];
       };
+      talent_referral_codes: {
+        Row: {
+          user_id: string;
+          code: string;
+          share_count: number;
+          open_count: number;
+          signup_started_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          code: string;
+          share_count?: number;
+          open_count?: number;
+          signup_started_count?: number;
+        };
+        Update: {
+          code?: string;
+          share_count?: number;
+          open_count?: number;
+          signup_started_count?: number;
+        };
+        Relationships: [];
+      };
+      talent_referral_opens: {
+        Row: {
+          id: string;
+          code: string;
+          visitor_key: string;
+          created_at: string;
+        };
+        Insert: {
+          code: string;
+          visitor_key: string;
+          id?: string;
+        };
+        Update: {
+          code?: string;
+          visitor_key?: string;
+        };
+        Relationships: [];
+      };
+      talent_referral_attributions: {
+        Row: {
+          id: string;
+          referrer_user_id: string;
+          referred_user_id: string;
+          code: string;
+          status: string;
+          created_at: string;
+          profile_completed_at: string | null;
+          matched_at: string | null;
+        };
+        Insert: {
+          referrer_user_id: string;
+          referred_user_id: string;
+          code: string;
+          status?: string;
+          profile_completed_at?: string | null;
+          matched_at?: string | null;
+          id?: string;
+        };
+        Update: {
+          status?: string;
+          profile_completed_at?: string | null;
+          matched_at?: string | null;
+        };
+        Relationships: [];
+      };
       role_applications: {
         Row: {
           id: string;
@@ -1079,6 +1149,30 @@ export interface Database {
       };
       claim_role_referral: {
         Args: { p_referral_id: string };
+        Returns: undefined;
+      };
+      claim_talent_referral: {
+        Args: { p_code: string };
+        Returns: undefined;
+      };
+      record_talent_referral_open: {
+        Args: { p_code: string; p_visitor_key: string };
+        Returns: boolean;
+      };
+      bump_talent_referral_share: {
+        Args: { p_code: string };
+        Returns: undefined;
+      };
+      bump_talent_referral_signup_started: {
+        Args: { p_code: string; p_visitor_key: string };
+        Returns: undefined;
+      };
+      mark_talent_referral_profile_completed: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      mark_talent_referral_matched: {
+        Args: Record<string, never>;
         Returns: undefined;
       };
       career_page_by_slug: {

@@ -12,6 +12,7 @@ import { MingleLogo } from "@/components/MingleLogo";
 // components/MascotMagnet.tsx, component and assets are kept.
 import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import { ProfilePreview } from "@/components/ProfilePreview";
+import { TalentInviteScreen } from "@/components/referrals/TalentInviteScreen";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
@@ -105,6 +106,7 @@ export function ProfileWizard() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [cvExtractNote, setCvExtractNote] = useState<string | null>(null);
   const [cvExtracting, setCvExtracting] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -382,6 +384,21 @@ export function ProfileWizard() {
   if (loadState === "error") return <ProfileWizardError onRetry={retry} />;
 
   if (step >= TOTAL_STEPS) {
+    if (showInvite) {
+      return (
+        <TalentInviteScreen
+          onDone={() => {
+            try {
+              window.localStorage.setItem("mingle_talent_invite_seen", "1");
+            } catch {
+              // ignore
+            }
+            router.push("/dashboard");
+            router.refresh();
+          }}
+        />
+      );
+    }
     return (
       <ProfilePreview
         profile={profile}
@@ -409,6 +426,18 @@ export function ProfileWizard() {
           void persistAndAdvance({ gender }, nextProfile, TOTAL_STEPS);
         }}
         onEditStep={setStep}
+        onContinue={() => {
+          try {
+            if (window.localStorage.getItem("mingle_talent_invite_seen") === "1") {
+              router.push("/dashboard");
+              router.refresh();
+              return;
+            }
+          } catch {
+            // ignore
+          }
+          setShowInvite(true);
+        }}
       />
     );
   }

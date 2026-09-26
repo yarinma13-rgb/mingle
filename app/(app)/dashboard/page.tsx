@@ -11,6 +11,7 @@ import {
 } from "@/lib/matching/context";
 import { loadCompanyFunnel, loadAverageTimeToHireDays } from "@/lib/dashboard/funnel";
 import { loadTalentDashboardStats } from "@/lib/dashboard/talent-stats";
+import { loadTalentReferralStats } from "@/lib/talent-referrals/persistence";
 import { loadCompanyInterviews } from "@/lib/interviews/persistence";
 import { loadCompanyRoles } from "@/lib/roles/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
@@ -163,6 +164,7 @@ export default async function DashboardPage() {
     { data: companyRows },
     stats,
     ownMatchInput,
+    referralStats,
   ] = await Promise.all([
     supabase
       .from("talent_profiles")
@@ -177,6 +179,7 @@ export default async function DashboardPage() {
       .limit(6),
     loadTalentDashboardStats(supabase, user.id),
     loadTalentMatchInput(supabase, user.id),
+    loadTalentReferralStats(supabase, user.id).catch(() => null),
   ]);
   const ownProfile = ownProfileRow ? toTalentProfile(ownProfileRow) : null;
   const liveCompletion = ownProfile
@@ -217,6 +220,7 @@ export default async function DashboardPage() {
         dna={ownProfile ? buildCandidateDna(ownProfile) : null}
         stats={stats}
         missingPhoto={!ownProfile?.profilePhoto}
+        referralStats={referralStats}
       />
     </>
   );

@@ -7,6 +7,7 @@ import {
   isStartAvailability,
   type StartAvailability,
 } from "@/lib/profile/search-status";
+import { markTalentReferralProfileCompleted } from "@/lib/talent-referrals/persistence";
 
 export type ProfileState = {
   firstName: string;
@@ -267,5 +268,12 @@ export async function saveProfileCompletion(
   if (error) throw error;
   if (completion >= 100) {
     track(AnalyticsEvent.profileCompleted, { completion }, userId);
+    void markTalentReferralProfileCompleted(supabase)
+      .then(() => {
+        track(AnalyticsEvent.talentReferralProfileCompleted, undefined, userId);
+      })
+      .catch(() => {
+        // Referral status must never break profile saves.
+      });
   }
 }
