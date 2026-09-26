@@ -15,6 +15,8 @@ import {
 import { ProfileCompletionRing } from "@/components/dashboard/ProfileCompletionRing";
 import { TalentMatchOverview } from "@/components/dashboard/TalentMatchOverview";
 import { PilotTips } from "@/components/pilot/PilotTips";
+import { TalentReferralCard } from "@/components/referrals/TalentReferralCard";
+import type { TalentReferralStats } from "@/lib/talent-referrals/persistence";
 
 function timeAgo(iso: string): string {
   const days = Math.max(
@@ -47,12 +49,14 @@ export function TalentDashboard({
   dna,
   stats,
   missingPhoto = false,
+  referralStats = null,
 }: {
   profileCompletion: number;
   companies: CompanyRow[];
   dna: CandidateDna | null;
   stats: TalentDashboardStats;
   missingPhoto?: boolean;
+  referralStats?: TalentReferralStats | null;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -138,6 +142,8 @@ export function TalentDashboard({
           savedCompanies: stats.savedCompanies,
         }}
       />
+
+      <TalentReferralCard stats={referralStats} />
 
       {dna ? <CandidateDnaPanel dna={dna} /> : null}
 

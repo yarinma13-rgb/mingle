@@ -3,6 +3,20 @@ import type { ConnectionStatus, Database } from "@/lib/supabase/types";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 import { assertConnectionSendAllowed } from "@/lib/rate-limit";
+import { markTalentReferralMatched } from "@/lib/talent-referrals/persistence";
+
+function noteReferralMatch(
+  supabase: SupabaseClient<Database>,
+  userId?: string,
+) {
+  void markTalentReferralMatched(supabase)
+    .then(() => {
+      track(AnalyticsEvent.talentReferralMatched, undefined, userId);
+    })
+    .catch(() => {
+      // Referral status must never break matching.
+    });
+}
 
 export type ConnectionRow = Database["public"]["Tables"]["connections"]["Row"];
 
@@ -56,6 +70,7 @@ export async function sendOrAcceptConnection(
         .single();
       if (updateError) throw updateError;
       track(AnalyticsEvent.mingleCreated, { connection_id: updated.id }, fromUserId);
+      noteReferralMatch(supabase, fromUserId);
       return { outcome: "mutual", connection: updated };
     }
     // Declined or cancelled — reactivate the same row as a fresh send
@@ -95,6 +110,7 @@ export async function acceptConnection(
     .single();
   if (error) throw error;
   track(AnalyticsEvent.mingleCreated, { connection_id: data.id });
+  noteReferralMatch(supabase);
   return data;
 }
 

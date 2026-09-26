@@ -19,6 +19,10 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
 import { reportInterestAttribution } from "@/lib/outbound-interest/client";
 import { reportReferralAttribution } from "@/lib/referrals/client";
+import {
+  reportTalentReferralAttribution,
+  reportTalentReferralSignupStarted,
+} from "@/lib/talent-referrals/client";
 import { reportCareerApplyAttribution } from "@/lib/careers/client";
 import type { UserType } from "@/lib/supabase/types";
 import {
@@ -104,9 +108,16 @@ export function AuthForm({
     });
     if (resolvedPath === "talent") {
       void reportReferralAttribution();
+      void reportTalentReferralAttribution();
       void reportCareerApplyAttribution();
     }
   };
+
+  useEffect(() => {
+    if (path !== "talent" && path !== null) return;
+    // Count unique visitors who reached auth with a stashed talent invite.
+    void reportTalentReferralSignupStarted();
+  }, [path]);
 
   const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
     setServerError(null);

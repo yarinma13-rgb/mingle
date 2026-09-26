@@ -62,6 +62,19 @@ export const AnalyticsEvent = {
 
   // Rediscovery
   candidateRediscovered: "candidate_rediscovered",
+
+  // Talent → talent referrals
+  talentReferralLinkViewed: "talent_referral_link_viewed",
+  talentReferralOpened: "talent_referral_opened",
+  talentReferralSignupStarted: "talent_referral_signup_started",
+  talentReferralSignupCompleted: "talent_referral_signup_completed",
+  talentReferralInviteShown: "talent_referral_invite_shown",
+  talentReferralInviteOpened: "talent_referral_invite_opened",
+  talentReferralInviteDismissed: "talent_referral_invite_dismissed",
+  talentReferralShared: "talent_referral_shared",
+  talentReferralCtaClicked: "talent_referral_cta_clicked",
+  talentReferralProfileCompleted: "talent_referral_profile_completed",
+  talentReferralMatched: "talent_referral_matched",
 } as const;
 
 export type AnalyticsEventName =

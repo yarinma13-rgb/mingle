@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { identifyUser } from "@/lib/analytics/track";
 import { reportInterestAttribution } from "@/lib/outbound-interest/client";
+import { reportTalentReferralAttribution } from "@/lib/talent-referrals/client";
 import type { UserType } from "@/lib/supabase/types";
 
 const STORAGE_KEY = "mingle_ph_identified_user_id";
@@ -58,6 +59,11 @@ export function IdentifySession() {
           userType,
           userId: user.id,
         });
+
+        // Talent invite attribution for OAuth / email-confirm paths.
+        if (userType === "talent") {
+          await reportTalentReferralAttribution();
+        }
       } catch {
         // Analytics must never take down the product.
       }

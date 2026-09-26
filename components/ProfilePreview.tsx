@@ -30,6 +30,7 @@ export function ProfilePreview({
   onPhotoChanged,
   onGenderChanged: _onGenderChanged,
   onEditStep,
+  onContinue,
 }: {
   profile: ProfileState;
   userId: string | null;
@@ -38,6 +39,8 @@ export function ProfilePreview({
   onPhotoChanged: (photo: string | null) => void;
   onGenderChanged: (gender: Gender) => void;
   onEditStep?: (step: number) => void;
+  /** When set, replaces the default dashboard link (e.g. invite step). */
+  onContinue?: () => void;
 }) {
   void _onGenderChanged;
   const initials = personInitials(profile.firstName, profile.lastName);
@@ -239,9 +242,19 @@ export function ProfilePreview({
           </p>
         </ProfileSection>
 
-      <Link href="/dashboard" className="mingle-btn-primary mt-2">
-          Go to dashboard
-        </Link>
+      {onContinue ? (
+          <button
+            type="button"
+            onClick={onContinue}
+            className="mingle-btn-primary mt-2"
+          >
+            Continue
+          </button>
+        ) : (
+          <Link href="/dashboard" className="mingle-btn-primary mt-2">
+            Go to dashboard
+          </Link>
+        )}
       </motion.div>
     </div>
   );
