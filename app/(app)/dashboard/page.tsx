@@ -14,8 +14,10 @@ import { loadTalentDashboardStats } from "@/lib/dashboard/talent-stats";
 import { loadCompanyInterviews } from "@/lib/interviews/persistence";
 import { loadCompanyRoles } from "@/lib/roles/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
+import { loadConnectionAcceptanceRate } from "@/lib/connections/persistence";
 import type { UpcomingInterviewRow } from "@/components/dashboard/UpcomingInterviewsCard";
 import { requireAppUser, requireShellUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { profileCompletion } from "@/lib/profile/persistence";
@@ -26,16 +28,18 @@ export default async function DashboardPage() {
   const { shellAvatar } = await requireShellUser();
 
   if (userRow.user_type === "company") {
+    const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
     const [
       { data: ownProfileRow },
       { data: talentRows },
       funnel,
       ownMatchInput,
+      acceptance,
     ] = await Promise.all([
       supabase
         .from("company_profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", companyId)
         .maybeSingle(),
       supabase
         .from("talent_profiles")
@@ -43,16 +47,20 @@ export default async function DashboardPage() {
         .neq("user_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(8),
-      loadCompanyFunnel(supabase, user.id),
-      loadCompanyMatchInput(supabase, user.id),
+      loadCompanyFunnel(supabase, companyId),
+      loadCompanyMatchInput(supabase, companyId),
+      loadConnectionAcceptanceRate(supabase, companyId),
     ]);
     const ownProfile = ownProfileRow ? toCompanyProfile(ownProfileRow) : null;
 
     const [interviews, roles] = await Promise.all([
-      loadCompanyInterviews(supabase, user.id),
-      loadCompanyRoles(supabase, user.id),
+      loadCompanyInterviews(supabase, companyId),
+      loadCompanyRoles(supabase, companyId),
     ]);
     const activeRolesCount = roles.filter((role) => role.status === "open").length;
+    const interviewsHeldCount = interviews.filter(
+      (interview) => interview.status === "scheduled" || interview.status === "completed",
+    ).length;
 
     const now = Date.now();
     const upcomingRaw = interviews
@@ -74,13 +82,13 @@ export default async function DashboardPage() {
         );
       const connById = new Map((connRows ?? []).map((row) => [row.id, row]));
       const otherIds = (connRows ?? []).map((row) =>
-        row.requester_id === user.id ? row.recipient_id : row.requester_id,
+        row.requester_id === companyId ? row.recipient_id : row.requester_id,
       );
       const info = await loadDisplayInfoForUsers(supabase, otherIds);
       upcomingInterviews = upcomingRaw.map((interview) => {
         const conn = connById.get(interview.connectionId);
         const otherId = conn
-          ? conn.requester_id === user.id
+          ? conn.requester_id === companyId
             ? conn.recipient_id
             : conn.requester_id
           : null;
@@ -140,6 +148,8 @@ export default async function DashboardPage() {
           funnel={funnel}
           activeRolesCount={activeRolesCount}
           upcomingInterviews={upcomingInterviews}
+          acceptanceRate={acceptance.rate}
+          interviewsHeldCount={interviewsHeldCount}
         />
       </>
     );
