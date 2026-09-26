@@ -40,8 +40,9 @@ export function TalentInviteScreen({
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
   const [busyChannel, setBusyChannel] = useState<ShareChannel | null>(null);
-  const [canNativeShare, setCanNativeShare] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
+  const canNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   useEffect(() => {
     let cancelled = false;
@@ -60,12 +61,6 @@ export function TalentInviteScreen({
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    setCanNativeShare(
-      typeof navigator !== "undefined" && typeof navigator.share === "function",
-    );
   }, []);
 
   const origin =
