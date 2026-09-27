@@ -1,5 +1,9 @@
 import { WORK_MODEL_OPTIONS } from "@/lib/discovery/filters";
-import type { RoleEmploymentType, RoleStatus } from "@/lib/supabase/types";
+import type {
+  RequisitionStatus,
+  RoleEmploymentType,
+  RoleStatus,
+} from "@/lib/supabase/types";
 
 export { WORK_MODEL_OPTIONS };
 
@@ -51,6 +55,15 @@ export const ROLE_STATUS_OPTIONS: { value: RoleStatus; label: string }[] = [
   { value: "open", label: "Open" },
   { value: "paused", label: "Paused" },
   { value: "closed", label: "Closed" },
+];
+
+export const REQUISITION_STATUS_OPTIONS: {
+  value: RequisitionStatus;
+  label: string;
+}[] = [
+  { value: "draft", label: "Draft" },
+  { value: "pending_approval", label: "Pending approval" },
+  { value: "approved", label: "Approved" },
 ];
 
 export const ROLE_SKILL_OPTIONS = [
@@ -194,4 +207,11 @@ export function employmentLabel(value: string | null): string {
 
 export function statusLabel(value: RoleStatus): string {
   return ROLE_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value;
+}
+
+export function requisitionStatusLabel(value: RequisitionStatus): string {
+  return (
+    REQUISITION_STATUS_OPTIONS.find((option) => option.value === value)?.label ??
+    value
+  );
 }
