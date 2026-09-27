@@ -15,7 +15,6 @@ import { passProfile } from "@/lib/matching/passed";
 import { recordMatchFeedback, type MatchFeedbackAction, type NotFitReason } from "@/lib/matching/feedback";
 import type { MatchReport } from "@/lib/matching/report";
 import {
-  AskMingleButton,
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
@@ -443,7 +442,6 @@ export function ProfileDetailShell({
                     onInterested={() => void handleInterested()}
                     onNotFit={(reason) => void handleNotFit(reason)}
                   />
-                  <AskMingleButton report={matchReport} />
                 </div>
                 {matchReport.audience === "company" && connectionId && companyId ? (
                   <div className="mt-3">
