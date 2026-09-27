@@ -13,7 +13,7 @@ import {
 } from "@/lib/matching/skill-requirement-tiers";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, skill_requirements, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, skill_requirements, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, quiet_signals, created_at, updated_at";
 
 // Same generic "column"/"schema cache" substrings already used below also
 // catch a missing skill_requirements column, so it shares the one fallback
@@ -40,6 +40,8 @@ export type RoleRecord = {
   jobPresentation: string | null;
   responsibilities: string | null;
   requirements: string | null;
+  /** Mingo-inferred implicit fit signals — distinct from explicit requiredSkills. */
+  quietSignals: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -61,6 +63,7 @@ export type RoleDraft = {
   jobPresentation: string;
   responsibilities: string;
   requirements: string;
+  quietSignals: string[];
 };
 
 export const EMPTY_ROLE_DRAFT: RoleDraft = {
@@ -80,6 +83,7 @@ export const EMPTY_ROLE_DRAFT: RoleDraft = {
   jobPresentation: "",
   responsibilities: "",
   requirements: "",
+  quietSignals: [],
 };
 
 type RoleListRow = Pick<
@@ -103,6 +107,7 @@ type RoleListRow = Pick<
   | "job_presentation"
   | "responsibilities"
   | "requirements"
+  | "quiet_signals"
   | "created_at"
   | "updated_at"
 >;
@@ -130,6 +135,8 @@ function toRecord(row: RoleListRow): RoleRecord {
     jobPresentation: row.job_presentation ?? null,
     responsibilities: row.responsibilities ?? null,
     requirements: row.requirements ?? null,
+    quietSignals:
+      (row as { quiet_signals?: string[] | null }).quiet_signals ?? [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -164,6 +171,7 @@ export function draftFromRole(role: RoleRecord): RoleDraft {
     jobPresentation: role.jobPresentation ?? "",
     responsibilities: role.responsibilities ?? "",
     requirements: role.requirements ?? "",
+    quietSignals: role.quietSignals,
   };
 }
 
@@ -194,6 +202,7 @@ export async function loadCompanyRoles(
           job_presentation: null,
           responsibilities: null,
           requirements: null,
+          quiet_signals: null,
         } as RoleListRow),
       );
     }
@@ -228,6 +237,7 @@ export async function createCompanyRole(
       job_presentation: draft.jobPresentation.trim() || null,
       responsibilities: draft.responsibilities.trim() || null,
       requirements: draft.requirements.trim() || null,
+      quiet_signals: draft.quietSignals,
     })
     .select(ROLE_LIST_COLUMNS)
     .single();
@@ -262,6 +272,7 @@ export async function createCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
+        quiet_signals: null,
       } as RoleListRow);
       try {
         await ensureRediscoveryForRole(supabase, {
@@ -320,6 +331,7 @@ export async function updateCompanyRole(
       job_presentation: draft.jobPresentation.trim() || null,
       responsibilities: draft.responsibilities.trim() || null,
       requirements: draft.requirements.trim() || null,
+      quiet_signals: draft.quietSignals,
     })
     .eq("id", roleId)
     .eq("company_id", companyId)
@@ -356,6 +368,7 @@ export async function updateCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
+        quiet_signals: null,
       } as RoleListRow);
     }
     throw error;
@@ -410,6 +423,7 @@ export async function loadCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
+        quiet_signals: null,
       } as RoleListRow);
     }
     throw error;
