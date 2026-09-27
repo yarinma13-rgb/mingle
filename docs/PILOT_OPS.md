@@ -15,6 +15,7 @@ If a migration errors as "already exists", skip and continue.
 - Enable **email confirmation**
 - Confirm URL template:
   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup`
+- **Google OAuth branding (urgent):** users currently see `yehbilfmzjmdlthhbfgw.supabase.co` on Google sign-in. Follow **`docs/AUTH_GOOGLE_BRANDING.md`** — activate a Supabase custom domain (`auth.mingle.careers`) and publish Google Auth Platform branding. Then set `NEXT_PUBLIC_SUPABASE_URL=https://auth.mingle.careers` in Vercel and redeploy.
 
 ## 3. Vercel env (production)
 
