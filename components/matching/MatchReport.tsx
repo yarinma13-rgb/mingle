@@ -196,7 +196,13 @@ export function MatchReportBody({
   } | null>(null);
 
   useEffect(() => {
-    if (!matchIds || compact) return;
+    // `compact` only controls visual density (used by both the Board's
+    // single expanded card, which DOES want a real fetch, and
+    // RoleMatchesScreen's list cards, which must not fetch per-card) — the
+    // actual "single opened match" signal is matchIds being passed at all,
+    // never `compact` itself. Gating on compact here previously left the
+    // Board's expanded card stuck on "Analyzing…" forever.
+    if (!matchIds) return;
     const key = `${matchIds.companyId}:${matchIds.candidateId}:${matchIds.roleId ?? ""}`;
     let cancelled = false;
     fetchAiMatchExplanation(matchIds)

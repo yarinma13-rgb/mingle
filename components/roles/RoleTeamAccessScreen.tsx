@@ -48,7 +48,7 @@ export function RoleTeamAccessScreen({
     <div className="flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-mingle-text-secondary">
         Candidates for this role with at least one teammate invited to weigh
-        in. Open a candidate's profile to invite someone or leave feedback.
+        in. Open a candidate&apos;s profile to invite someone or leave feedback.
       </p>
       <ul className="flex flex-col gap-3">
         {candidates.map((candidate) => (
