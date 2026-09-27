@@ -1,4 +1,3 @@
-import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
 import { RoleMatchesScreen } from "@/components/roles/RoleMatchesScreen";
 import {
   DiscoveryFiltersForm,
@@ -91,26 +90,23 @@ export default async function RoleMatchesPage({
   });
 
   return (
-    <>
-      <DashboardHeading>Roles</DashboardHeading>
-      <RoleMatchesScreen
-        roleId={role.id}
-        roleTitle={role.title}
-        requiredSkills={role.requiredSkills}
-        cards={cards}
-        rediscoveryByUser={rediscoveryByUser}
-        viewerId={user.id}
-        feedbackByUser={feedbackByUser}
-        filters={
-          <DiscoveryFiltersForm
-            filters={filters}
-            styleOptions={styleOptions}
-            valueOptions={valueOptions}
-            audience="company"
-            formAction={`/roles/${role.id}/matches`}
-          />
-        }
-      />
-    </>
+    <RoleMatchesScreen
+      roleId={role.id}
+      roleTitle={role.title}
+      requiredSkills={role.requiredSkills}
+      cards={cards}
+      rediscoveryByUser={rediscoveryByUser}
+      viewerId={user.id}
+      feedbackByUser={feedbackByUser}
+      filters={
+        <DiscoveryFiltersForm
+          filters={filters}
+          styleOptions={styleOptions}
+          valueOptions={valueOptions}
+          audience="company"
+          formAction={`/roles/${role.id}/matches`}
+        />
+      }
+    />
   );
 }
