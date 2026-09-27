@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, startTransition, useEffect } from "react";
+import { useState, startTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,28 @@ import {
 
 type AuthMode = "signup" | "signin";
 
+// Minimal shape of the bits of Google Identity Services (loaded via
+// https://accounts.google.com/gsi/client) that this file actually uses —
+// Google doesn't ship official types for it.
+type GoogleCodeClient = { requestCode: () => void };
+type GoogleCodeResponse = { code?: string; error?: string };
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initCodeClient: (config: {
+            client_id: string;
+            scope: string;
+            ux_mode: "popup";
+            callback: (response: GoogleCodeResponse) => void;
+          }) => GoogleCodeClient;
+        };
+      };
+    };
+  }
+}
+
 export function AuthForm({
   path: initialPath,
   initialMode = "signin",
@@ -56,6 +79,90 @@ export function AuthForm({
   const [resetSent, setResetSent] = useState(false);
   const [deletionScheduledNotice, setDeletionScheduledNotice] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+
+  // Refs so the GIS callback (created once at init) always sees the latest
+  // selection — path/mode change on every toggle click, well after init.
+  const googleCodeClientRef = useRef<GoogleCodeClient | null>(null);
+  const pathForGoogleRef = useRef<UserType>(path ?? "talent");
+  useEffect(() => {
+    pathForGoogleRef.current = path ?? "talent";
+  }, [path]);
+
+  const initGoogleCodeClient = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || !window.google || googleCodeClientRef.current) return;
+    googleCodeClientRef.current = window.google.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: "openid email profile",
+      ux_mode: "popup",
+      callback: (response) => {
+        if (!response.code) {
+          setServerError(
+            response.error ? "Couldn't sign in with Google." : null,
+          );
+          setIsSubmitting(false);
+          return;
+        }
+        void handleGoogleCode(response.code);
+      },
+    });
+    setGoogleReady(true);
+  };
+
+  const handleGoogleCode = async (code: string) => {
+    try {
+      const exchangeRes = await fetch("/api/auth/google/login-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const exchangeJson = (await exchangeRes.json()) as {
+        idToken?: string;
+        error?: string;
+      };
+      if (!exchangeRes.ok || !exchangeJson.idToken) {
+        setServerError(exchangeJson.error ?? "Couldn't sign in with Google.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: exchangeJson.idToken,
+      });
+      if (error || !data.user) {
+        setServerError(error?.message ?? "Couldn't sign in with Google.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Metadata wins over the UI toggle — same rule as the old
+      // /auth/callback route: don't let a stray click flip an existing
+      // account's track.
+      const metaType = data.user.user_metadata?.user_type;
+      const resolvedPath: UserType =
+        metaType === "company" || metaType === "talent"
+          ? metaType
+          : pathForGoogleRef.current;
+
+      if (resolvedPath === "company" && !isWorkEmail(data.user.email ?? "")) {
+        await supabase.auth.signOut();
+        setServerError(COMPANY_WORK_EMAIL_MESSAGE);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (metaType !== resolvedPath) {
+        await supabase.auth.updateUser({ data: { user_type: resolvedPath } });
+      }
+
+      await goAfterAuth(data.user.id, resolvedPath);
+    } catch {
+      setServerError("Couldn't sign in with Google. Try again.");
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -267,37 +374,30 @@ export function AuthForm({
         }
     : null;
 
-  const continueWithGoogle = async () => {
+  const continueWithGoogle = () => {
     if (mode === "signup" && !path) {
       setServerError(t.auth.choosePathContinue);
+      return;
+    }
+    if (!googleCodeClientRef.current) {
+      setServerError(
+        googleReady
+          ? "Couldn't start Google sign-in. Try again."
+          : "Google sign-in is still loading — try again in a second.",
+      );
       return;
     }
     setServerError(null);
     setIsSubmitting(true);
     // Sign-in can omit path (resolved after session). Signup always has path here.
-    const pathForRedirect = path ?? "talent";
     track(AnalyticsEvent.authGoogleClicked, {
       mode,
-      path: pathForRedirect,
+      path: pathForGoogleRef.current,
     });
-    const origin = window.location.origin;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        // path query is read by /auth/callback → ensureUserProfile (user_type).
-        // Callback also rejects personal emails on the company track.
-        // NOTE: Google's "Continue to …" host comes from NEXT_PUBLIC_SUPABASE_URL
-        // (Supabase Auth), not this redirectTo. Use a custom domain — see
-        // docs/AUTH_GOOGLE_BRANDING.md — so users do not see *.supabase.co.
-        redirectTo: `${origin}/auth/callback?path=${pathForRedirect}`,
-        queryParams: { access_type: "offline", prompt: "select_account" },
-      },
-    });
-    if (error) {
-      setServerError(error.message);
-      setIsSubmitting(false);
-    }
-    // On success the browser redirects to Google — leave submitting true.
+    // Opens Google's own popup — mingle.careers never redirects through
+    // Supabase's auth host for this, so Google shows "mingle.careers", not
+    // *.supabase.co. See docs/AUTH_GOOGLE_BRANDING.md.
+    googleCodeClientRef.current.requestCode();
   };
 
   const formInner = awaitingConfirmation ? (
@@ -483,7 +583,7 @@ export function AuthForm({
         <button
           type="button"
           disabled={isSubmitting || (mode === "signup" && !path)}
-          onClick={() => void continueWithGoogle()}
+          onClick={continueWithGoogle}
           className="inline-flex items-center justify-center gap-2 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
         >
           <GoogleMark />
@@ -518,6 +618,11 @@ export function AuthForm({
 
   return (
     <div className="relative flex min-h-screen flex-1 bg-mingle-white" dir={dir} lang={locale}>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogleCodeClient}
+      />
       <section className="relative flex min-h-screen w-full flex-col lg:w-1/2">
         <div
           className={`flex flex-1 items-center justify-center px-6 py-12 sm:px-10 ${

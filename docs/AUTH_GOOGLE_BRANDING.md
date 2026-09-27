@@ -1,6 +1,15 @@
 # Google OAuth branding — stop showing `*.supabase.co`
 
-Users currently see **"Continue to yehbilfmzjmdlthhbfgw.supabase.co"** on the Google sign-in screen. That host is the Supabase project ref. It looks untrustworthy and is unrelated to mingle branding.
+**Status: fixed for free, without the paid path below.** "Continue with Google"
+no longer redirects through Supabase's auth host at all — see "What the app
+does now" further down. Options A/B below (Supabase custom domain, ~$35/mo)
+were the original plan and are kept here in case the free approach ever needs
+to be revisited, but they are **not** currently needed for this specific
+problem.
+
+---
+
+Users used to see **"Continue to yehbilfmzjmdlthhbfgw.supabase.co"** on the Google sign-in screen. That host is the Supabase project ref. It looks untrustworthy and is unrelated to mingle branding.
 
 App `redirectTo` (`/auth/callback`) does **not** control this line. Google shows the **OAuth callback host** — the Supabase Auth URL from `NEXT_PUBLIC_SUPABASE_URL`.
 
@@ -41,15 +50,47 @@ After activation, Google should show **"Continue to auth.mingle.careers"** inste
 
 ---
 
-## What the app already does
+## What the app does now (the actual fix, $0/month)
 
-- Google button uses `signInWithOAuth` with `redirectTo: {origin}/auth/callback?path=…`
-- Clients read `NEXT_PUBLIC_SUPABASE_URL` — once pointed at the custom domain, Auth uses that host
+"Continue with Google" no longer uses `supabase.auth.signInWithOAuth` (which
+always redirects through the Supabase Auth host — that's what showed
+`*.supabase.co`). Instead:
 
-## Checklist
+1. `components/AuthForm.tsx` loads Google Identity Services
+   (`https://accounts.google.com/gsi/client`) and opens a **Google-hosted
+   popup** via `google.accounts.oauth2.initCodeClient({ ux_mode: "popup" })`.
+   The popup's origin is `mingle.careers` (an already-Authorized JavaScript
+   origin on the OAuth client) — Supabase is never involved in anything the
+   user sees.
+2. The popup returns an authorization `code` to the page (no navigation, no
+   redirect at all).
+3. The code is POSTed to `app/api/auth/google/login-exchange/route.ts`, which
+   exchanges it server-side for a Google ID token (`GOOGLE_CLIENT_ID` /
+   `GOOGLE_CLIENT_SECRET`, already-existing env vars — reused from the
+   calendar-connect flow, no new secret needed).
+4. The browser calls `supabase.auth.signInWithIdToken({ provider: "google",
+   token })` with that ID token — this establishes the Supabase session
+   without any redirect through Supabase's own host either.
+5. `AuthForm.tsx` then replicates what `app/auth/callback/route.ts` used to
+   do server-side (resolve `user_type`, block personal emails on the company
+   track, stamp metadata, call `destinationAfterAuth`) — same rules, just
+   client-side now.
 
-- [ ] Custom domain activated on Supabase
-- [ ] Google redirect URI updated for custom domain
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` updated in Vercel + redeploy
-- [ ] Google branding published / verified
-- [ ] Manual test: Incognito → Continue with Google → host is **not** `*.supabase.co`
+New env var: `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (same value as `GOOGLE_CLIENT_ID`,
+just exposed to the browser — client IDs aren't secret). No Google Cloud
+Console changes were needed — the popup code-exchange flow uses Google's
+reserved `redirect_uri: "postmessage"` value, which needs no entry in
+Authorized redirect URIs, and the existing Authorized JavaScript origins
+(`https://mingle.careers`, `http://localhost:3000`) already covered it.
+
+The old `/auth/callback?code=...` path (`app/auth/callback/route.ts`) is
+untouched and still used for password-reset links and any other flow that
+still exchanges a Supabase code server-side — this change only affects the
+Google button.
+
+## Checklist (for the free fix above)
+
+- [ ] `NEXT_PUBLIC_GOOGLE_CLIENT_ID` added to Vercel (Production + Preview) — same value as `GOOGLE_CLIENT_ID`
+- [ ] Manual test: Incognito → Continue with Google → popup shows **mingle.careers**, not `*.supabase.co`
+- [ ] Manual test: new talent signup, new company signup (work email), existing user sign-in — all still land on the right destination
+- [ ] Manual test: personal email + company path still gets blocked with the same message as before
