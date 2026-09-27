@@ -11,6 +11,7 @@ export type RelationshipStage =
   | "relationship";
 
 export type RoleStatus = "open" | "paused" | "closed";
+export type RequisitionStatus = "draft" | "pending_approval" | "approved";
 export type RoleEmploymentType =
   | "full_time"
   | "part_time"
@@ -897,6 +898,7 @@ export interface Database {
           responsibilities: string | null;
           requirements: string | null;
           quiet_signals: string[];
+          requisition_status: RequisitionStatus;
           created_at: string;
           updated_at: string;
         };
@@ -920,6 +922,7 @@ export interface Database {
           responsibilities?: string | null;
           requirements?: string | null;
           quiet_signals?: string[];
+          requisition_status?: RequisitionStatus;
         };
         Update: {
           title?: string;
@@ -940,6 +943,7 @@ export interface Database {
           responsibilities?: string | null;
           requirements?: string | null;
           quiet_signals?: string[];
+          requisition_status?: RequisitionStatus;
         };
         Relationships: [];
       };
