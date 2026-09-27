@@ -202,7 +202,7 @@ export async function loadCompanyRoles(
           job_presentation: null,
           responsibilities: null,
           requirements: null,
-          quiet_signals: null,
+          quiet_signals: [],
         } as RoleListRow),
       );
     }
@@ -272,7 +272,7 @@ export async function createCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
-        quiet_signals: null,
+        quiet_signals: [],
       } as RoleListRow);
       try {
         await ensureRediscoveryForRole(supabase, {
@@ -368,7 +368,7 @@ export async function updateCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
-        quiet_signals: null,
+        quiet_signals: [],
       } as RoleListRow);
     }
     throw error;
@@ -423,7 +423,7 @@ export async function loadCompanyRole(
         job_presentation: null,
         responsibilities: null,
         requirements: null,
-        quiet_signals: null,
+        quiet_signals: [],
       } as RoleListRow);
     }
     throw error;
