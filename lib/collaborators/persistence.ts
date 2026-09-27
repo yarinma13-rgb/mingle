@@ -60,6 +60,30 @@ export async function loadCollaboratorsForConnection(
   return (data ?? []).map(toRow);
 }
 
+export async function loadCollaboratorsForConnections(
+  supabase: SupabaseClient<Database>,
+  connectionIds: string[],
+): Promise<Map<string, MatchCollaboratorRow[]>> {
+  const map = new Map<string, MatchCollaboratorRow[]>();
+  if (connectionIds.length === 0) return map;
+
+  const { data, error } = await supabase
+    .from("match_collaborators")
+    .select("*")
+    .in("connection_id", connectionIds)
+    .order("created_at", { ascending: true });
+  if (error) {
+    if (isMissingMatchCollaboratorsTable(error)) return map;
+    throw error;
+  }
+  for (const row of (data ?? []).map(toRow)) {
+    const list = map.get(row.connectionId) ?? [];
+    list.push(row);
+    map.set(row.connectionId, list);
+  }
+  return map;
+}
+
 export async function inviteCollaborator(
   supabase: SupabaseClient<Database>,
   input: {
