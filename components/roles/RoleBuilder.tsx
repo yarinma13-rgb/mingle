@@ -147,6 +147,7 @@ export function RoleBuilder({
             responsibilities: draft.responsibilities,
             requirements: draft.requirements,
             skillRequirements: draft.skillRequirements,
+            quietSignals: draft.quietSignals,
           })
         : await createCompanyRole(supabase, companyId, {
             ...parsed.data,
@@ -157,6 +158,7 @@ export function RoleBuilder({
             responsibilities: draft.responsibilities,
             requirements: draft.requirements,
             skillRequirements: draft.skillRequirements,
+            quietSignals: draft.quietSignals,
           });
       onSaved(saved);
     } catch (caught) {
