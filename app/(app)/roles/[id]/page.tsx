@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
 import { RoleCandidatesScreen } from "@/components/roles/RoleCandidatesScreen";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
 import { loadAcceptedConnections } from "@/lib/connections/persistence";
@@ -62,9 +61,6 @@ export default async function RoleDetailPage({
     .filter((row) => row !== null);
 
   return (
-    <>
-      <DashboardHeading>Roles</DashboardHeading>
-      <RoleCandidatesScreen roleTitle={role.title} candidates={candidates} />
-    </>
+    <RoleCandidatesScreen roleTitle={role.title} candidates={candidates} />
   );
 }
