@@ -1,5 +1,8 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
+
 export const REFERRAL_ID_STORAGE_KEY = "mingle_referral_id";
 
 export function readStashedReferralId(): string | null {
@@ -25,11 +28,14 @@ export async function reportReferralAttribution(): Promise<void> {
   if (!referralId) return;
 
   try {
-    await fetch("/api/referrals/claim", {
+    const res = await fetch("/api/referrals/claim", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ referralId }),
     });
+    if (res.ok) {
+      track(AnalyticsEvent.referralSignup, { referral_id: referralId });
+    }
     window.sessionStorage.removeItem(REFERRAL_ID_STORAGE_KEY);
   } catch {
     // Attribution must never break auth.

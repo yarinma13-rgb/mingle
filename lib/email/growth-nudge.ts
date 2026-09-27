@@ -13,7 +13,7 @@ export async function sendGrowthNudgeEmail(input: {
   const resend = new Resend(apiKey);
   const html = `<!doctype html><html><body style="font-family:Inter,Arial,sans-serif;line-height:1.55;color:#252238;padding:24px;">
 <p style="white-space:pre-wrap;">${input.body.replace(/</g, "&lt;")}</p>
-<p style="color:#77738a;font-size:12px;margin-top:24px;">mingle · Early Access</p>
+<p style="color:#77738a;font-size:12px;margin-top:24px;">mingle</p>
 </body></html>`;
 
   const { error } = await resend.emails.send({

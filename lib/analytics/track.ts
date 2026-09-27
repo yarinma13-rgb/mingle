@@ -83,6 +83,37 @@ export async function initPosthogBrowser(): Promise<void> {
   }
 }
 
+export type FirstTouchAttribution = {
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  referrer: string | null;
+};
+
+/**
+ * Reads PostHog's first-touch UTM data (captured on the user's very first
+ * anonymous pageview, persisted client-side). Used both to stamp the
+ * PostHog person profile (identifyUser) and to compute acquisition_channel
+ * on the users row (see IdentifySession).
+ */
+export async function getFirstTouchAttribution(): Promise<FirstTouchAttribution | null> {
+  if (!posthogKey() || typeof window === "undefined") return null;
+  try {
+    const mod = await import("posthog-js");
+    const posthog = mod.default;
+    return {
+      utmSource: posthog.get_property("$initial_utm_source") ?? null,
+      utmMedium: posthog.get_property("$initial_utm_medium") ?? null,
+      utmCampaign: posthog.get_property("$initial_utm_campaign") ?? null,
+      utmContent: posthog.get_property("$initial_utm_content") ?? null,
+      referrer: posthog.get_property("$initial_referrer") ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Identifies the user and stamps their first-touch UTM data (captured by
  * PostHog on their very first anonymous pageview) onto the person profile.
@@ -93,16 +124,20 @@ export async function initPosthogBrowser(): Promise<void> {
 export function identifyUser(userId: string, traits?: EventProps): void {
   if (!posthogKey() || typeof window === "undefined") return;
   void import("posthog-js")
-    .then((mod) => {
+    .then(async (mod) => {
       const posthog = mod.default;
-      const attribution: EventProps = {
-        utm_source: posthog.get_property("$initial_utm_source"),
-        utm_medium: posthog.get_property("$initial_utm_medium"),
-        utm_campaign: posthog.get_property("$initial_utm_campaign"),
-        utm_content: posthog.get_property("$initial_utm_content"),
-        initial_referrer: posthog.get_property("$initial_referrer"),
-      };
-      posthog.identify(userId, cleanProps({ ...attribution, ...traits }));
+      const attribution = await getFirstTouchAttribution();
+      posthog.identify(
+        userId,
+        cleanProps({
+          utm_source: attribution?.utmSource,
+          utm_medium: attribution?.utmMedium,
+          utm_campaign: attribution?.utmCampaign,
+          utm_content: attribution?.utmContent,
+          initial_referrer: attribution?.referrer,
+          ...traits,
+        }),
+      );
     })
     .catch(() => {});
 }

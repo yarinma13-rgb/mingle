@@ -103,13 +103,15 @@ export function ConnectionsScreen({
   const [accepted, setAccepted] = useState(initialAccepted);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [mingleMatch, setMingleMatch] = useState<ConnectionDisplayRow | null>(null);
+  const [mingleIsFirstMatch, setMingleIsFirstMatch] = useState(false);
 
   const handleAccept = async (row: ConnectionDisplayRow) => {
     setBusyId(row.connectionId);
     try {
-      await acceptConnection(supabase, row.connectionId);
+      const acceptResult = await acceptConnection(supabase, row.connectionId);
       setIncoming((prev) => prev.filter((r) => r.connectionId !== row.connectionId));
       setAccepted((prev) => [{ ...row, stage: "connected" }, ...prev]);
+      setMingleIsFirstMatch(acceptResult.isFirstMingle);
       setMingleMatch(row);
       void notifyPushConnection(row.userId);
     } catch {
@@ -168,7 +170,11 @@ export function ConnectionsScreen({
           matchName={mingleMatch.name}
           matchUserId={mingleMatch.userId}
           connectionId={mingleMatch.connectionId}
-          onClose={() => setMingleMatch(null)}
+          isFirstMatch={mingleIsFirstMatch}
+          onClose={() => {
+            setMingleMatch(null);
+            setMingleIsFirstMatch(false);
+          }}
         />
       )}
 

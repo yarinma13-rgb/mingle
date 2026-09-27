@@ -12,6 +12,9 @@ export const GROWTH_REPORT_WINDOW_DAYS = 14;
 /** Minimum hours between automated growth nudge emails per user. */
 export const GROWTH_NUDGE_MIN_HOURS = 48;
 
+/** Weekly digest lookback window (days) for "new since last week" counts. */
+export const WEEKLY_DIGEST_WINDOW_DAYS = 7;
+
 /** North Star event — mutual match that opens a real relationship. */
 export const NORTH_STAR_EVENT: AnalyticsEventName = "mingle_created";
 

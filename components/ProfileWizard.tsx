@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { MingleLogo } from "@/components/MingleLogo";
 // Mascot temporarily removed from loading states — see
 // components/MascotMagnet.tsx, component and assets are kept.
@@ -107,6 +109,7 @@ export function ProfileWizard() {
   const [cvExtractNote, setCvExtractNote] = useState<string | null>(null);
   const [cvExtracting, setCvExtracting] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const profileStartedSent = useRef(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -119,8 +122,16 @@ export function ProfileWizard() {
     }
     setUserId(result.userId);
     setProfile(result.profile);
-    setStep(resumeStep(result.profile));
+    const startStep = resumeStep(result.profile);
+    setStep(startStep);
     setLoadState("ready");
+    if (!profileStartedSent.current) {
+      profileStartedSent.current = true;
+      track(AnalyticsEvent.profileStarted, {
+        path: "talent",
+        resume_step: startStep,
+      });
+    }
   };
 
   useEffect(() => {
@@ -207,6 +218,11 @@ export function ProfileWizard() {
       );
       setProfile(nextProfile);
       setStep(nextStep);
+      track(AnalyticsEvent.profileStepCompleted, {
+        path: "talent",
+        step,
+        next_step: nextStep,
+      });
     } catch {
       setSaveError("Couldn't save that. Check your connection and try again.");
     } finally {

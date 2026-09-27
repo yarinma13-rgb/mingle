@@ -24,7 +24,19 @@ export type SendConnectionResult =
   | { outcome: "sent" }
   | { outcome: "already-pending" }
   | { outcome: "already-connected" }
-  | { outcome: "mutual"; connection: ConnectionRow };
+  | { outcome: "mutual"; connection: ConnectionRow; isFirstMingle: boolean };
+
+async function countAcceptedConnections(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<number> {
+  const { count } = await supabase
+    .from("connections")
+    .select("id", { count: "exact", head: true })
+    .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`)
+    .eq("status", "accepted");
+  return count ?? 0;
+}
 
 /**
  * Sending a connection request when the other person already has a
@@ -69,9 +81,15 @@ export async function sendOrAcceptConnection(
         .select("*")
         .single();
       if (updateError) throw updateError;
-      track(AnalyticsEvent.mingleCreated, { connection_id: updated.id }, fromUserId);
+      const acceptedCount = await countAcceptedConnections(supabase, fromUserId);
+      const isFirstMingle = acceptedCount <= 1;
+      track(
+        AnalyticsEvent.mingleCreated,
+        { connection_id: updated.id, is_first_match: isFirstMingle },
+        fromUserId,
+      );
       noteReferralMatch(supabase, fromUserId);
-      return { outcome: "mutual", connection: updated };
+      return { outcome: "mutual", connection: updated, isFirstMingle };
     }
     // Declined or cancelled — reactivate the same row as a fresh send
     // from whoever is acting now, rather than creating a second row.
@@ -101,7 +119,7 @@ export async function sendOrAcceptConnection(
 export async function acceptConnection(
   supabase: SupabaseClient<Database>,
   connectionId: string,
-): Promise<ConnectionRow> {
+): Promise<ConnectionRow & { isFirstMingle: boolean }> {
   const { data, error } = await supabase
     .from("connections")
     .update({ status: "accepted" })
@@ -109,9 +127,19 @@ export async function acceptConnection(
     .select("*")
     .single();
   if (error) throw error;
-  track(AnalyticsEvent.mingleCreated, { connection_id: data.id });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const viewerId = user?.id ?? data.requester_id;
+  const acceptedCount = await countAcceptedConnections(supabase, viewerId);
+  const isFirstMingle = acceptedCount <= 1;
+  track(AnalyticsEvent.mingleCreated, {
+    connection_id: data.id,
+    is_first_match: isFirstMingle,
+  });
   noteReferralMatch(supabase);
-  return data;
+  return { ...data, isFirstMingle };
 }
 
 export async function declineConnection(

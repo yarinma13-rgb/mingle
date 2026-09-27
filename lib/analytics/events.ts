@@ -48,6 +48,17 @@ export const AnalyticsEvent = {
   onboardingCompleted: "onboarding_completed",
   onboardingAbandoned: "onboarding_abandoned",
 
+  // Profile build (the longer wizard after onboarding preferences)
+  profileStarted: "profile_started",
+  profileStepCompleted: "profile_step_completed",
+
+  // Referral (existing role_referrals mechanism had no analytics events)
+  referralStarted: "referral_started",
+  referralSignup: "referral_signup",
+
+  // Notifications
+  notificationOpened: "notification_opened",
+
   // Discover / activation
   discoverViewed: "discover_viewed",
   matchCardViewed: "match_card_viewed",

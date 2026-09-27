@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { IdentifySession } from "@/components/analytics/IdentifySession";
+import { NotificationOpenBeacon } from "@/components/analytics/NotificationOpenBeacon";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { AppLocaleProvider } from "@/components/i18n/AppLocaleProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <AppLocaleProvider>
               <ToastProvider>
                 <Suspense fallback={null}>
+                  <NotificationOpenBeacon />
                   <CommandPaletteProvider>{children}</CommandPaletteProvider>
                 </Suspense>
               </ToastProvider>

@@ -79,6 +79,10 @@ export const requireAppUser = cache(async function requireAppUser(opts?: {
     redirect("/dashboard");
   }
 
+  if (userRow.onboarding_status !== "completed") {
+    redirect(`/onboarding/${userRow.user_type}`);
+  }
+
   const accountLabel = user.email?.split("@")[0] ?? "You";
   const isCompany = userRow.user_type === "company";
 

@@ -154,6 +154,7 @@ export function ProfileDetailShell({
   const [mingleConnectionId, setMingleConnectionId] = useState<string | null>(
     initialConnectionStatus?.id ?? null,
   );
+  const [mingleIsFirstMatch, setMingleIsFirstMatch] = useState(false);
 
   const isSelf = viewerId === targetUserId;
   const isPendingIncoming =
@@ -168,6 +169,7 @@ export function ProfileDetailShell({
       if (result.outcome === "mutual") {
         setConnectionState({ status: "accepted", isRequester: false });
         setMingleConnectionId(result.connection.id);
+        setMingleIsFirstMatch(result.isFirstMingle);
         setShowMingleMoment(true);
         void notifyPushConnection(targetUserId);
       } else if (result.outcome === "sent") {
@@ -264,9 +266,11 @@ export function ProfileDetailShell({
           matchName={name}
           matchUserId={targetUserId}
           connectionId={mingleConnectionId ?? undefined}
+          isFirstMatch={mingleIsFirstMatch}
           onClose={() => {
             setShowMingleMoment(false);
             setMingleConnectionId(null);
+            setMingleIsFirstMatch(false);
           }}
         />
       )}

@@ -202,6 +202,12 @@ export function OnboardingWizard({ path }: { path: UserType }) {
   };
 
   const onboardingStartedSent = useRef(false);
+  const onboardingCompletedSent = useRef(false);
+  const latestProgressRef = useRef({ path: resolvedType, step });
+  useEffect(() => {
+    latestProgressRef.current = { path: resolvedType, step };
+  }, [resolvedType, step]);
+
   useEffect(() => {
     if (loadState !== "ready" || !resolvedType || onboardingStartedSent.current) {
       return;
@@ -209,6 +215,17 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     onboardingStartedSent.current = true;
     track(AnalyticsEvent.onboardingStarted, { path: resolvedType, step });
   }, [loadState, resolvedType, step]);
+
+  useEffect(() => {
+    return () => {
+      if (onboardingStartedSent.current && !onboardingCompletedSent.current) {
+        const { path, step: lastStep } = latestProgressRef.current;
+        if (path) {
+          track(AnalyticsEvent.onboardingAbandoned, { path, step: lastStep });
+        }
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -275,6 +292,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
         question_key: currentQuestion.key,
       });
       if (nextStep > questions.length) {
+        onboardingCompletedSent.current = true;
         track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
       }
       setStep(nextStep);
@@ -299,6 +317,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
         skipped: true,
       });
       if (nextStep > questions.length) {
+        onboardingCompletedSent.current = true;
         track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
       }
       setStep(nextStep);

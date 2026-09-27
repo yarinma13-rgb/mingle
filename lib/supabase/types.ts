@@ -41,6 +41,8 @@ export interface Database {
           last_active_at: string;
           deletion_requested_at: string | null;
           deletion_scheduled_for: string | null;
+          acquisition_channel: string | null;
+          acquisition_source_raw: string | null;
         };
         Insert: {
           id: string;
@@ -51,6 +53,8 @@ export interface Database {
           profile_completion?: number;
           deletion_requested_at?: string | null;
           deletion_scheduled_for?: string | null;
+          acquisition_channel?: string | null;
+          acquisition_source_raw?: string | null;
         };
         Update: {
           user_type?: UserType;
@@ -60,6 +64,24 @@ export interface Database {
           last_active_at?: string;
           deletion_requested_at?: string | null;
           deletion_scheduled_for?: string | null;
+          acquisition_channel?: string | null;
+          acquisition_source_raw?: string | null;
+        };
+        Relationships: [];
+      };
+      growth_nudge_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          nudge_type: string;
+          sent_at: string;
+        };
+        Insert: {
+          user_id: string;
+          nudge_type: string;
+        };
+        Update: {
+          nudge_type?: string;
         };
         Relationships: [];
       };

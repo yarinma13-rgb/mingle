@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -47,6 +47,8 @@ import {
   type CompanyBasicInfoValues,
 } from "@/lib/validation/company-profile";
 import { uploadCompanyLogoAction } from "@/lib/company-profile/logo-action";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import type { Database } from "@/lib/supabase/types";
 
 const TOTAL_STEPS = 5;
@@ -107,6 +109,7 @@ export function CompanyProfileWizard() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const profileStartedSent = useRef(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -119,8 +122,16 @@ export function CompanyProfileWizard() {
     }
     setUserId(result.userId);
     setProfile(result.profile);
-    setStep(resumeCompanyStep(result.profile));
+    const startStep = resumeCompanyStep(result.profile);
+    setStep(startStep);
     setLoadState("ready");
+    if (!profileStartedSent.current) {
+      profileStartedSent.current = true;
+      track(AnalyticsEvent.profileStarted, {
+        path: "company",
+        resume_step: startStep,
+      });
+    }
   };
 
   useEffect(() => {
@@ -188,6 +199,11 @@ export function CompanyProfileWizard() {
       );
       setProfile(nextProfile);
       setStep(nextStep);
+      track(AnalyticsEvent.profileStepCompleted, {
+        path: "company",
+        step,
+        next_step: nextStep,
+      });
     } catch {
       setSaveError("Couldn't save that. Check your connection and try again.");
     } finally {
