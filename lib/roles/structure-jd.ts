@@ -17,6 +17,8 @@ export type StructuredJd = {
   requiredSkills?: string[];
   /** MUST_HAVE/PREFERRED/etc tiering for requiredSkills — see engine.ts. */
   skillRequirements?: SkillRequirement[];
+  /** Mingo-inferred implicit signals (culture/working-style fit) — distinct from explicit requiredSkills. */
+  quietSignals?: string[];
 };
 
 export function composeRoleDescription(structured: StructuredJd): string {
@@ -62,6 +64,7 @@ export function draftFromStructuredJd(
     workModel: structured.workModel?.trim() || heuristic.workModel,
     requiredSkills,
     skillRequirements,
+    quietSignals: structured.quietSignals ?? [],
     description,
     companyPresentation: structured.companyPresentation.trim(),
     jobPresentation: structured.jobPresentation.trim(),
