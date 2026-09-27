@@ -11,17 +11,26 @@ import { RoleBuilder } from "@/components/roles/RoleBuilder";
 import { useToast } from "@/components/toast/ToastProvider";
 import {
   employmentLabel,
+  requisitionStatusLabel,
   ROLE_STATUS_OPTIONS,
   statusLabel,
 } from "@/lib/roles/questions";
 import {
+  approveRoleRequisition,
   draftFromRole,
   EMPTY_ROLE_DRAFT,
   isMissingRolesTable,
+  submitRoleForApproval,
   updateCompanyRoleStatus,
   type RoleRecord,
 } from "@/lib/roles/persistence";
 import type { RoleStatus } from "@/lib/supabase/types";
+
+function requisitionChipTone(status: RoleRecord["requisitionStatus"]) {
+  if (status === "approved") return "green" as const;
+  if (status === "pending_approval") return "amber" as const;
+  return "slate" as const;
+}
 
 type FilterId = "all" | RoleStatus;
 
@@ -83,6 +92,23 @@ export function RolesScreen({
           : "Could not update status",
         "error",
       );
+    }
+  }
+
+  async function toggleRequisition(role: RoleRecord) {
+    try {
+      const updated =
+        role.requisitionStatus === "pending_approval"
+          ? await approveRoleRequisition(supabase, role.id, companyId)
+          : await submitRoleForApproval(supabase, role.id, companyId);
+      setRoles((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      toast(
+        `${updated.title} requisition is now ${requisitionStatusLabel(
+          updated.requisitionStatus,
+        ).toLowerCase()}`,
+      );
+    } catch {
+      toast("Could not update requisition status", "error");
     }
   }
 
@@ -220,6 +246,9 @@ export function RolesScreen({
                 {role.requiredSkills.slice(0, 3).map((skill) => (
                   <MingleChip key={skill}>{skill}</MingleChip>
                 ))}
+                <MingleChip tone={requisitionChipTone(role.requisitionStatus)}>
+                  {requisitionStatusLabel(role.requisitionStatus)}
+                </MingleChip>
               </div>
               <div className="mt-auto flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -235,6 +264,15 @@ export function RolesScreen({
                     className="mingle-btn-secondary text-xs"
                   >
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void toggleRequisition(role)}
+                    className="mingle-btn-secondary text-xs"
+                  >
+                    {role.requisitionStatus === "pending_approval"
+                      ? "Approve requisition"
+                      : "Submit for approval"}
                   </button>
                 </div>
                 <label className="flex flex-wrap items-center gap-2 text-xs text-mingle-text-secondary">
