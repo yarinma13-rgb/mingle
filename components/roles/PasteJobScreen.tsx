@@ -103,7 +103,7 @@ function StructuredReview({
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
           {usedAi
-            ? "Gemini drafted these sections from your paste. Edit anything, then continue to the role builder."
+            ? "Mingo drafted these sections from your paste. Edit anything, then continue to the role builder."
             : "Structured from your paste with heuristics (Gemini key not set). Edit anything, then continue."}
         </p>
       </div>
@@ -124,6 +124,30 @@ function StructuredReview({
           />
         </label>
       ))}
+
+      {usedAi ? (
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
+            Quiet signals from Mingo — one per line
+          </span>
+          <textarea
+            dir="auto"
+            value={(structured.quietSignals ?? []).join("\n")}
+            onChange={(event) =>
+              onChange({
+                ...structured,
+                quietSignals: event.target.value
+                  .split("\n")
+                  .map((line) => line.trim())
+                  .filter(Boolean),
+              })
+            }
+            rows={3}
+            placeholder="Implicit fit signals Mingo read between the lines will show up here."
+            className="w-full resize-y rounded-2xl border border-mingle-border bg-mingle-white p-4 text-sm text-mingle-text focus:border-mingle-blue focus:outline-none"
+          />
+        </label>
+      ) : null}
 
       <div className="flex flex-wrap gap-3">
         <button
