@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Database,
+  RequisitionStatus,
   RoleEmploymentType,
   RoleStatus,
 } from "@/lib/supabase/types";
@@ -13,7 +14,7 @@ import {
 } from "@/lib/matching/skill-requirement-tiers";
 
 const ROLE_LIST_COLUMNS =
-  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, skill_requirements, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, quiet_signals, created_at, updated_at";
+  "id, company_id, title, department, seniority, employment_type, work_model, required_skills, skill_requirements, description, status, salary_min, salary_max, source_jd, source_url, company_presentation, job_presentation, responsibilities, requirements, quiet_signals, requisition_status, created_at, updated_at";
 
 // Same generic "column"/"schema cache" substrings already used below also
 // catch a missing skill_requirements column, so it shares the one fallback
@@ -42,6 +43,8 @@ export type RoleRecord = {
   requirements: string | null;
   /** Mingo-inferred implicit fit signals — distinct from explicit requiredSkills. */
   quietSignals: string[];
+  /** Opt-in requisition tracking (draft/pending_approval/approved) — independent of `status`. */
+  requisitionStatus: RequisitionStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -108,6 +111,7 @@ type RoleListRow = Pick<
   | "responsibilities"
   | "requirements"
   | "quiet_signals"
+  | "requisition_status"
   | "created_at"
   | "updated_at"
 >;
@@ -137,6 +141,9 @@ function toRecord(row: RoleListRow): RoleRecord {
     requirements: row.requirements ?? null,
     quietSignals:
       (row as { quiet_signals?: string[] | null }).quiet_signals ?? [],
+    requisitionStatus:
+      (row as { requisition_status?: RequisitionStatus | null })
+        .requisition_status ?? "approved",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -203,6 +210,7 @@ export async function loadCompanyRoles(
           responsibilities: null,
           requirements: null,
           quiet_signals: [],
+          requisition_status: "approved",
         } as RoleListRow),
       );
     }
@@ -273,6 +281,7 @@ export async function createCompanyRole(
         responsibilities: null,
         requirements: null,
         quiet_signals: [],
+        requisition_status: "approved",
       } as RoleListRow);
       try {
         await ensureRediscoveryForRole(supabase, {
@@ -369,6 +378,7 @@ export async function updateCompanyRole(
         responsibilities: null,
         requirements: null,
         quiet_signals: [],
+        requisition_status: "approved",
       } as RoleListRow);
     }
     throw error;
@@ -424,9 +434,44 @@ export async function loadCompanyRole(
         responsibilities: null,
         requirements: null,
         quiet_signals: [],
+        requisition_status: "approved",
       } as RoleListRow);
     }
     throw error;
   }
   return data ? toRecord(data) : null;
+}
+
+/** Mark a role as awaiting sign-off. Simple opt-in tracking, not a gate on `status`. */
+export async function submitRoleForApproval(
+  supabase: SupabaseClient<Database>,
+  roleId: string,
+  companyId: string,
+): Promise<RoleRecord> {
+  const { data, error } = await supabase
+    .from("roles")
+    .update({ requisition_status: "pending_approval" })
+    .eq("id", roleId)
+    .eq("company_id", companyId)
+    .select(ROLE_LIST_COLUMNS)
+    .single();
+  if (error) throw error;
+  return toRecord(data);
+}
+
+/** Sign off on a role's requisition. Any active team member may approve — this is tracking, not a permission gate. */
+export async function approveRoleRequisition(
+  supabase: SupabaseClient<Database>,
+  roleId: string,
+  companyId: string,
+): Promise<RoleRecord> {
+  const { data, error } = await supabase
+    .from("roles")
+    .update({ requisition_status: "approved" })
+    .eq("id", roleId)
+    .eq("company_id", companyId)
+    .select(ROLE_LIST_COLUMNS)
+    .single();
+  if (error) throw error;
+  return toRecord(data);
 }
