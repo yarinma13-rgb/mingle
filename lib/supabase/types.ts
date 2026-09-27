@@ -896,6 +896,7 @@ export interface Database {
           job_presentation: string | null;
           responsibilities: string | null;
           requirements: string | null;
+          quiet_signals: string[];
           created_at: string;
           updated_at: string;
         };
@@ -918,6 +919,7 @@ export interface Database {
           job_presentation?: string | null;
           responsibilities?: string | null;
           requirements?: string | null;
+          quiet_signals?: string[];
         };
         Update: {
           title?: string;
@@ -937,6 +939,7 @@ export interface Database {
           job_presentation?: string | null;
           responsibilities?: string | null;
           requirements?: string | null;
+          quiet_signals?: string[];
         };
         Relationships: [];
       };
