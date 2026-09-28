@@ -527,7 +527,7 @@ export function ProfileDetailShell({
                           {tags.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full bg-[color:var(--mingle-light-purple)] px-2.5 py-1 text-[11px] font-semibold text-mingle-text"
+                              className="rounded-full bg-[#efe8fe] px-2.5 py-1 text-[11px] font-semibold text-[#6b3fd4]"
                             >
                               {tag}
                             </span>
@@ -611,7 +611,7 @@ export function ProfileDetailShell({
                 <button
                   type="button"
                   onClick={scrollToFullReport}
-                  className="mingle-connection-fill mt-8 w-full rounded-full px-5 py-3.5 text-center font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(234,30,99,0.22)]"
+                  className="mingle-connection-fill mt-8 w-full rounded-full px-5 py-3.5 text-center font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(235,89,168,0.28)]"
                 >
                   View full report →
                 </button>

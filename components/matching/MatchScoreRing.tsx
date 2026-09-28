@@ -21,17 +21,15 @@ export function MatchScoreRing({
 }) {
   const gid = useId().replace(/:/g, "");
   const value = Math.max(0, Math.min(100, Math.round(score)));
-  const stroke = size >= 88 ? 8 : size >= 64 ? 7 : 5;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = c - (value / 100) * c;
-  const track = showLabel
-    ? "color-mix(in srgb, var(--mingle-lavender) 70%, var(--mingle-border))"
-    : "rgba(255,255,255,0.25)";
+  const track = showLabel ? "#e4e7fb" : "rgba(255,255,255,0.25)";
   const labelColor = showLabel ? "text-mingle-text" : "text-white";
   const shell = showLabel
     ? "bg-transparent"
     : "bg-black/25 shadow-sm backdrop-blur rounded-full";
+  const strokeWidth = size >= 96 ? 9 : size >= 88 ? 8 : size >= 64 ? 7 : 5;
+  const radius = (size - strokeWidth) / 2;
+  const circ = 2 * Math.PI * radius;
+  const dashOffset = circ - (value / 100) * circ;
 
   const ring = (
     <div
@@ -41,30 +39,30 @@ export function MatchScoreRing({
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <defs>
-          <linearGradient id={`${gid}-ring`} x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--mingle-blue)" />
-            <stop offset="45%" stopColor="var(--mingle-purple)" />
-            <stop offset="100%" stopColor="var(--mingle-pink)" />
+          <linearGradient id={`${gid}-ring`} x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#4e73f5" />
+            <stop offset="42%" stopColor="#8b53f5" />
+            <stop offset="100%" stopColor="#eb59a8" />
           </linearGradient>
         </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={r}
+          r={radius}
           fill="none"
           stroke={track}
-          strokeWidth={stroke}
+          strokeWidth={strokeWidth}
         />
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={r}
+          r={radius}
           fill="none"
           stroke={`url(#${gid}-ring)`}
-          strokeWidth={stroke}
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
+          strokeDasharray={circ}
+          strokeDashoffset={dashOffset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           className="motion-safe:transition-[stroke-dashoffset] motion-safe:duration-700 motion-safe:ease-out"
         />
@@ -105,7 +103,7 @@ function SparkleMark() {
       width={12}
       height={12}
       viewBox="0 0 16 16"
-      fill="var(--mingle-purple)"
+      fill="#8b53f5"
       aria-hidden
       className="shrink-0"
     >

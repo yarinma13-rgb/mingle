@@ -34,15 +34,15 @@ const TOP_N = 5;
 const MAX_COMPARE = 2;
 
 const RANK_GRADIENTS = [
-  "linear-gradient(90deg, var(--mingle-pink) 0%, var(--mingle-purple) 100%)",
-  "linear-gradient(90deg, var(--mingle-purple) 0%, var(--mingle-blue) 100%)",
-  "linear-gradient(90deg, var(--mingle-blue) 0%, #6b8fd4 100%)",
+  "linear-gradient(90deg, #eb59a8 0%, #8b53f5 100%)",
+  "linear-gradient(90deg, #8b53f5 0%, #4e73f5 100%)",
+  "linear-gradient(90deg, #4e73f5 0%, #7aa0ff 100%)",
 ] as const;
 
 const RANK_GLOWS = [
-  "rgba(234, 30, 99, 0.35)",
-  "rgba(123, 47, 247, 0.32)",
-  "rgba(62, 107, 224, 0.28)",
+  "rgba(235, 89, 168, 0.38)",
+  "rgba(139, 83, 245, 0.34)",
+  "rgba(78, 115, 245, 0.30)",
 ] as const;
 
 function ResultCard({

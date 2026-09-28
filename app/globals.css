@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 :root {
-    /* Official palette (updated 2026-09-21, handoff-dev-agent-ui-redesign.md
-     Phase 0) — pink/purple/blue promoted from the accent tier below to
-     primary. Source of truth for color is this file. */
-  --mingle-pink: #ea1e63;
-  --mingle-pink-deep: #d83a52;
-  --mingle-blue: #3e6be0;
-  --mingle-purple: #7b2ff7;
-  --mingle-indigo: #3e6be0;
-  --mingle-cta: #3e6be0;
+    /* Match mockup palette (sampled from product match UI comps) —
+     hotter rose pink, soft violet purple, bright royal blue. */
+  --mingle-pink: #e94d8a;
+  --mingle-pink-deep: #d63a78;
+  --mingle-blue: #4e73f5;
+  --mingle-purple: #8b53f5;
+  --mingle-indigo: #4e73f5;
+  --mingle-cta: #4e73f5;
   /* Saturated accents for icons and small highlights only — not
      backgrounds, not replacements for the brand tokens above. */
-  --mingle-accent-pink: #ea1e63;
---mingle-accent-magenta: #c42a9b;
-  --mingle-accent-purple: #7b2ff7;
-  --mingle-accent-violet: #5548e8;
-  --mingle-accent-blue: #3e6be0;
+  --mingle-accent-pink: #e94d8a;
+  --mingle-accent-magenta: #eb59a8;
+  --mingle-accent-purple: #8b53f5;
+  --mingle-accent-violet: #7e57f5;
+  --mingle-accent-blue: #4e78f4;
+  /* CTA / ring — pink → purple → blue, matching mockup buttons */
   --mingle-connection-gradient: linear-gradient(
-    135deg,
-    #ea1e63 0%,
-    #7b2ff7 48%,
-    #3e6be0 100%
+    90deg,
+    #eb59a8 0%,
+    #8b53f5 48%,
+    #4e73f5 100%
   );
-  --mingle-light-pink: #fdeaf1;
-  --mingle-light-purple: #f1e8fe;
-  --mingle-light-blue: #e9effe;
+  --mingle-light-pink: #fde8f1;
+  --mingle-light-purple: #efe8fe;
+  --mingle-light-blue: #e8eeff;
   --mingle-gap-bg: #faf6f2;
   --mingle-gap-accent: #c47a5a;
-  --mingle-background: #f4f1fa;
-  --mingle-bg: #f4f1fa;
-  --mingle-lavender: #f1e8fe;
-  --mingle-product-bg: #f4f1fa;
+  --mingle-background: #eff0fc;
+  --mingle-bg: #eff0fc;
+  --mingle-lavender: #efe8fe;
+  --mingle-product-bg: #eff0fc;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
@@ -59,10 +59,10 @@
 }
 
 [data-theme="light"] {
-  --mingle-background: #f4f1fa;
-  --mingle-bg: #f4f1fa;
-  --mingle-lavender: #f1e8fe;
-  --mingle-product-bg: #f4f1fa;
+  --mingle-background: #eff0fc;
+  --mingle-bg: #eff0fc;
+  --mingle-lavender: #efe8fe;
+  --mingle-product-bg: #eff0fc;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;

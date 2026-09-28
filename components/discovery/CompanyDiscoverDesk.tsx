@@ -227,7 +227,7 @@ export function CompanyDiscoverDesk({
                     {whyTags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-[color:var(--mingle-light-purple)] px-3.5 py-1.5 text-[12px] font-semibold text-mingle-text"
+                        className="rounded-full bg-[#efe8fe] px-3.5 py-1.5 text-[12px] font-semibold text-[#6b3fd4]"
                       >
                         {tag}
                       </span>
@@ -240,7 +240,7 @@ export function CompanyDiscoverDesk({
                 {messageHref ? (
                   <Link
                     href={messageHref}
-                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(234,30,99,0.22)] transition-transform hover:scale-[1.01] active:scale-[0.99] sm:w-auto sm:self-end"
+                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(235,89,168,0.28)] transition-transform hover:scale-[1.01] active:scale-[0.99] sm:w-auto sm:self-end"
                   >
                     Open conversation →
                   </Link>
@@ -249,7 +249,7 @@ export function CompanyDiscoverDesk({
                     type="button"
                     disabled={saving}
                     onClick={() => void expressInterest()}
-                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(234,30,99,0.22)] transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:self-end"
+                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(235,89,168,0.28)] transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:self-end"
                   >
                     Start conversation →
                   </button>
