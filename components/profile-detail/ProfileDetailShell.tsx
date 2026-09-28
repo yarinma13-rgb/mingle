@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -15,9 +15,11 @@ import { passProfile } from "@/lib/matching/passed";
 import { recordMatchFeedback, type MatchFeedbackAction, type NotFitReason } from "@/lib/matching/feedback";
 import type { MatchReport } from "@/lib/matching/report";
 import {
+  FitBars,
   MatchFeedbackActions,
   MatchReportBody,
 } from "@/components/matching/MatchReport";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 import { CollaboratorRow } from "@/components/matching/CollaboratorRow";
 import type { MatchCollaboratorRow } from "@/lib/collaborators/persistence";
 import { TalentCvField } from "@/components/profile/TalentCvField";
@@ -34,9 +36,9 @@ import type { SubmittedRecommendation } from "@/lib/recommendations/persistence"
 import type { ConnectionStatus } from "@/lib/supabase/types";
 import type { Gender } from "@/lib/profile/avatar";
 import {
-  scoreChipClass,
-  scoreTextClass,
-} from "@/lib/matching/score-tone";
+  MapPinIcon,
+  SparkleIcon,
+} from "@/components/dashboard/icons";
 
 const MingleMomentOverlay = dynamic(
   () =>
@@ -110,6 +112,51 @@ const CONNECT_LABEL: Record<ConnectionStatus, string> = {
   cancelled: "Start a connection",
 };
 
+const REPORT_NAV = [
+  {
+    id: "why",
+    title: "Why this match?",
+    body: "See the key reasons behind the match.",
+  },
+  {
+    id: "risks",
+    title: "Potential risks",
+    body: "Get ahead of possible misalignments.",
+  },
+  {
+    id: "feedback",
+    title: "Candidate's feedback",
+    body: "Understand how they feel about the fit.",
+  },
+] as const;
+
+function skillTagsFromSections(sections: ProfileDetailSection[]): string[] {
+  const skills = sections.find((s) => s.title === "Skills")?.chips ?? [];
+  return skills.filter(Boolean);
+}
+
+function metaRows(meta: string, sections: ProfileDetailSection[]) {
+  const parts = meta
+    .split("·")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const location = parts[0] ?? "";
+  const about = sections.find((s) => s.title === "About")?.text ?? "";
+  const aboutParts = about
+    .split("·")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const experience =
+    aboutParts.find((p) => /year|yrs|experience|\d+\+/i.test(p)) ??
+    aboutParts[0] ??
+    "";
+  const education =
+    aboutParts.find((p) => /B\.|M\.|PhD|degree|computer|science|BA|BS/i.test(p)) ??
+    aboutParts[1] ??
+    "";
+  return { location, experience, education };
+}
+
 export function ProfileDetailShell({
   eyebrow,
   photo,
@@ -140,6 +187,7 @@ export function ProfileDetailShell({
 }: ProfileDetailShellProps) {
   const router = useRouter();
   const toast = useToast();
+  const fullReportRef = useRef<HTMLDivElement | null>(null);
   const [supabase] = useState(() => createClient());
   const [connectionState, setConnectionState] = useState(initialConnectionStatus);
   const [connecting, setConnecting] = useState(false);
@@ -154,10 +202,16 @@ export function ProfileDetailShell({
     initialConnectionStatus?.id ?? null,
   );
   const [mingleIsFirstMatch, setMingleIsFirstMatch] = useState(false);
+  const [fullReportOpen, setFullReportOpen] = useState(true);
 
   const isSelf = viewerId === targetUserId;
   const isPendingIncoming =
     connectionState?.status === "pending" && !connectionState.isRequester;
+  const companyTalentView =
+    matchReport?.audience === "company" && showCv && !isSelf;
+
+  const tags = useMemo(() => skillTagsFromSections(sections), [sections]);
+  const rows = useMemo(() => metaRows(meta, sections), [meta, sections]);
 
   const handleConnect = async () => {
     if (connecting || isSelf) return;
@@ -254,9 +308,137 @@ export function ProfileDetailShell({
     ? "Accept connection"
     : connectionState
       ? CONNECT_LABEL[connectionState.status]
-      : "Start a connection";
+      : "Start conversation";
   const connectDisabled =
     connecting || connectionState?.status === "accepted" || connectionState?.status === "pending" && !isPendingIncoming;
+
+  const scrollToFullReport = () => {
+    setFullReportOpen(true);
+    requestAnimationFrame(() => {
+      fullReportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const connectCta = !isSelf ? (
+    <div className="flex flex-col gap-2">
+      {connectError ? (
+        <p className="text-center text-sm text-mingle-pink">{connectError}</p>
+      ) : null}
+      {connectionState?.status === "accepted" ? (
+        <Link
+          href={
+            mingleConnectionId
+              ? `/conversations/${mingleConnectionId}`
+              : "/conversations"
+          }
+          className="rounded-full bg-mingle-success/15 px-6 py-3 text-center font-display text-sm font-semibold text-mingle-success transition-colors hover:bg-mingle-success/25"
+        >
+          ✓ Connected · Open chat
+        </Link>
+      ) : (
+        <motion.button
+          type="button"
+          onClick={handleConnect}
+          disabled={connectDisabled}
+          whileHover={connectDisabled ? undefined : { scale: 1.02 }}
+          whileTap={connectDisabled ? undefined : { scale: 0.98 }}
+          className={`rounded-full px-6 py-3.5 text-center font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            connectDisabled
+              ? "bg-mingle-lavender text-mingle-text-secondary"
+              : "bg-mingle-cta text-white"
+          }`}
+        >
+          {connecting ? "Sending…" : `${connectLabel} →`}
+        </motion.button>
+      )}
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        aria-pressed={saved}
+        className={`rounded-full border px-6 py-3 text-center font-display text-sm font-semibold transition-colors disabled:opacity-60 ${
+          saved
+            ? "border-mingle-purple/40 bg-mingle-purple/15 text-mingle-purple"
+            : "border-mingle-border bg-mingle-white text-mingle-text hover:bg-mingle-lavender"
+        }`}
+      >
+        {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
+      </button>
+    </div>
+  ) : null;
+
+  const profileSections = (
+    <>
+      {cvPath && !companyTalentView ? (
+        <ProfileSection title="CV">
+          <TalentCvField
+            supabase={supabase}
+            userId={targetUserId}
+            cvPath={cvPath}
+            cvFileName={cvFileName ?? "CV.pdf"}
+            editable={false}
+            showLabel={false}
+            onChanged={() => {}}
+          />
+        </ProfileSection>
+      ) : null}
+
+      {sections.map((section, index) => {
+        const chips = section.chips?.filter(Boolean) ?? [];
+        const text = section.text?.trim() ?? "";
+        const empty = chips.length === 0 && !text;
+        return (
+          <ProfileSection
+            key={section.title}
+            title={section.title}
+            elevated={index % 2 === 1}
+            empty={empty}
+          >
+            {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
+            {text ? (
+              <p
+                dir="auto"
+                className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary"
+              >
+                {text}
+              </p>
+            ) : null}
+          </ProfileSection>
+        );
+      })}
+
+      {(recommendations.length > 0 ||
+        (canRequestRecommendation && isSelf)) && (
+        <ProfileSection title="Recommendations" elevated>
+          <RecommendationsList items={recommendations} />
+          {canRequestRecommendation && isSelf ? (
+            <div className={recommendations.length > 0 ? "mt-2" : undefined}>
+              <RequestRecommendation />
+            </div>
+          ) : null}
+        </ProfileSection>
+      )}
+
+      {whatToExplore.length > 0 ? (
+        <ProfileSection title="What to explore">
+          <ul className="flex flex-col gap-2">
+            {whatToExplore.map((prompt) => (
+              <li
+                key={prompt}
+                className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
+              >
+                <span
+                  aria-hidden
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-purple"
+                />
+                {prompt}
+              </li>
+            ))}
+          </ul>
+        </ProfileSection>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="flex flex-1 justify-center">
@@ -278,7 +460,9 @@ export function ProfileDetailShell({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex w-full max-w-4xl flex-col gap-5"
+        className={`flex w-full flex-col gap-5 ${
+          companyTalentView ? "max-w-5xl" : "max-w-4xl"
+        }`}
       >
         <div className="sticky top-0 z-20 -mx-1 flex items-center gap-3 rounded-2xl border border-mingle-border/80 bg-mingle-surface/95 px-3 py-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-mingle-surface/85">
           <button
@@ -298,240 +482,298 @@ export function ProfileDetailShell({
             </p>
           </div>
           {matchReport ? (
-            <span
-              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(matchReport.overall)}`}
-            >
-              <span className={scoreTextClass(matchReport.overall)}>
-                {matchReport.overall}%
-              </span>
-            </span>
+            <MatchScoreRing score={matchReport.overall} size={44} showLabel />
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start">
-          <aside className="flex flex-col gap-4 lg:sticky lg:top-16">
-            <div className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
-              <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
-                {eyebrow}
-              </p>
-              <div className="mt-4 flex flex-col items-center gap-3 text-center">
-                <Avatar
-                  photo={photo}
-                  initials={initial}
-                  gender={gender}
-                  size="hero"
-                  shape={avatarShape}
-                />
-                <div>
-                  <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-2xl">
-                    {name}
-                  </h1>
-                  <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
-                    {subtitle}
-                  </p>
-                  {meta ? (
-                    <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
-                      {meta}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+        {companyTalentView && matchReport ? (
+          <>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,300px)] lg:items-stretch">
+              {/* Left — candidate + fit axes */}
+              <motion.section
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut", delay: 0.05 }}
+                className="flex flex-col rounded-[28px] border border-mingle-border/60 bg-mingle-surface p-5 shadow-[0_12px_40px_rgba(28,27,46,0.08)] sm:p-7"
+              >
+                <p className="font-display text-sm font-bold tracking-tight text-mingle-text">
+                  mingle
+                </p>
 
-              {showCv ? (
-                <div className="mt-4 flex justify-center">
-                  {cvPath ? (
-                    <OpenTalentCvButton
-                      cvPath={cvPath}
-                      cvFileName={cvFileName}
-                      label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                      className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
+                <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-start gap-3.5">
+                    <Avatar
+                      photo={photo}
+                      initials={initial}
+                      gender={gender}
+                      size="xl"
+                      shape="soft"
                     />
-                  ) : (
-                    <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
-                      No CV uploaded
-                    </span>
-                  )}
-                </div>
-              ) : null}
+                    <div className="min-w-0">
+                      <h1 className="font-display text-xl font-bold tracking-tight text-mingle-text sm:text-2xl">
+                        {name}
+                      </h1>
+                      <p className="mt-0.5 text-sm text-mingle-text-secondary">
+                        {subtitle}
+                      </p>
+                      {rows.location ? (
+                        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-mingle-text-secondary">
+                          <MapPinIcon size={14} className="shrink-0 text-mingle-blue" />
+                          <span>{rows.location}</span>
+                        </p>
+                      ) : null}
+                      {tags.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-[#efe8fe] px-2.5 py-1 text-[11px] font-semibold text-[#6b3fd4]"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {tags.length > 2 ? (
+                            <span className="rounded-full bg-mingle-lavender px-2.5 py-1 text-[11px] font-semibold text-mingle-text-secondary">
+                              +{tags.length - 2}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
 
-              {!isSelf ? (
-                <div className="mt-5 flex flex-col gap-2">
-                  {connectError ? (
-                    <p className="text-center text-sm text-mingle-pink">
-                      {connectError}
-                    </p>
-                  ) : null}
-                  {connectionState?.status === "accepted" ? (
-                    <Link
-                      href={
-                        mingleConnectionId
-                          ? `/conversations/${mingleConnectionId}`
-                          : "/conversations"
-                      }
-                      className="rounded-full bg-mingle-success/15 px-6 py-3 text-center font-display text-sm font-semibold text-mingle-success transition-colors hover:bg-mingle-success/25"
-                    >
-                      ✓ Connected · Open chat
-                    </Link>
-                  ) : (
-                    <motion.button
-                      type="button"
-                      onClick={handleConnect}
-                      disabled={connectDisabled}
-                      whileHover={connectDisabled ? undefined : { scale: 1.02 }}
-                      whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-                      className={`rounded-full px-6 py-3 text-center font-display text-sm font-semibold transition-colors ${
-                        connectDisabled
-                          ? "cursor-not-allowed bg-mingle-lavender text-mingle-text-secondary"
-                          : "bg-mingle-cta text-white"
-                      }`}
-                    >
-                      {connecting ? "Sending…" : connectLabel}
-                    </motion.button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    aria-pressed={saved}
-                    className={`rounded-full border px-6 py-3 text-center font-display text-sm font-semibold transition-colors disabled:opacity-60 ${
-                      saved
-                        ? "border-mingle-purple/40 bg-mingle-purple/15 text-mingle-purple"
-                        : "border-mingle-border bg-mingle-white text-mingle-text hover:bg-mingle-lavender"
-                    }`}
-                  >
-                    {saving ? "Saving…" : saved ? "★ Saved" : "Save for later"}
-                  </button>
+                  <div className="flex shrink-0 flex-col items-center self-center sm:self-start">
+                    <MatchScoreRing
+                      score={matchReport.overall}
+                      size={100}
+                      showLabel
+                    />
+                  </div>
                 </div>
-              ) : null}
-              {isSelf && showCv && cvPath ? (
-                <div className="mt-5">
+
+                <div className="mt-1">
+                  <FitBars axes={matchReport.axes} report={matchReport} />
+                </div>
+              </motion.section>
+
+              {/* Right — Match Report sidebar (mockup: checklist + one CTA) */}
+              <motion.aside
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut", delay: 0.12 }}
+                className="flex flex-col rounded-[28px] border border-mingle-border/60 bg-mingle-surface p-5 shadow-[0_12px_40px_rgba(28,27,46,0.08)] sm:p-6"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--mingle-light-purple)] text-mingle-purple">
+                    <SparkleIcon size={14} />
+                  </span>
+                  <h2 className="font-display text-base font-bold tracking-tight text-mingle-text">
+                    Match Report
+                  </h2>
+                </div>
+
+                <ul className="mt-6 flex flex-1 flex-col gap-5">
+                  {REPORT_NAV.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={scrollToFullReport}
+                        className="flex w-full items-start gap-3 text-left"
+                      >
+                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--mingle-light-blue)] text-mingle-blue">
+                          <svg
+                            width={12}
+                            height={12}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2.4}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden
+                          >
+                            <path d="m5 12 5 5L20 7" />
+                          </svg>
+                        </span>
+                        <span>
+                          <span className="block font-display text-sm font-bold text-mingle-text">
+                            {item.title}
+                          </span>
+                          <span className="mt-0.5 block text-[12px] leading-snug text-mingle-text-secondary">
+                            {item.body}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  type="button"
+                  onClick={scrollToFullReport}
+                  className="mingle-connection-fill mt-8 w-full rounded-full px-5 py-3.5 text-center font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(235,89,168,0.28)]"
+                >
+                  View full report →
+                </button>
+              </motion.aside>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
+              {connectCta}
+              {showCv ? (
+                cvPath ? (
                   <OpenTalentCvButton
                     cvPath={cvPath}
                     cvFileName={cvFileName}
                     label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
-                    className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+                    className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
                   />
-                </div>
+                ) : null
+              ) : null}
+              <MatchFeedbackActions
+                audience={matchReport.audience}
+                action={feedback}
+                busy={saving}
+                onInterested={() => void handleInterested()}
+                onNotFit={(reason) => void handleNotFit(reason)}
+              />
+              {connectionId && companyId ? (
+                <CollaboratorRow
+                  connectionId={connectionId}
+                  companyId={companyId}
+                  currentUserId={viewerId}
+                  initialCollaborators={initialCollaborators}
+                  teamMembers={activeTeamMembers}
+                />
               ) : null}
             </div>
-          </aside>
 
-          <div className="flex flex-col gap-4">
-            {cvPath ? (
-              <ProfileSection title="CV">
-                <TalentCvField
-                  supabase={supabase}
-                  userId={targetUserId}
-                  cvPath={cvPath}
-                  cvFileName={cvFileName ?? "CV.pdf"}
-                  editable={false}
-                  showLabel={false}
-                  onChanged={() => {}}
-                />
-              </ProfileSection>
-            ) : null}
-
-            {matchReport ? (
-              <ProfileSection title="Match Report">
-                <MatchReportBody report={matchReport} />
-                <div className="mt-3 flex flex-col gap-3">
-                  <MatchFeedbackActions
-                    audience={matchReport.audience}
-                    action={feedback}
-                    busy={saving}
-                    onInterested={() => void handleInterested()}
-                    onNotFit={(reason) => void handleNotFit(reason)}
+            <div ref={fullReportRef}>
+              {fullReportOpen ? (
+                <ProfileSection title="Full match report">
+                  <MatchReportBody
+                    report={matchReport}
+                    omitOverview
+                    matchIds={{
+                      companyId: viewerId,
+                      candidateId: targetUserId,
+                    }}
                   />
+                </ProfileSection>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-4">{profileSections}</div>
+          </>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start">
+            <aside className="flex flex-col gap-4 lg:sticky lg:top-16">
+              <div className="rounded-3xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
+                <p className="mingle-gradient-text text-center font-display text-[11px] font-semibold uppercase tracking-[0.18em]">
+                  {eyebrow}
+                </p>
+                <div className="mt-4 flex flex-col items-center gap-3 text-center">
+                  <Avatar
+                    photo={photo}
+                    initials={initial}
+                    gender={gender}
+                    size="hero"
+                    shape={avatarShape}
+                  />
+                  <div>
+                    <h1 className="font-display text-xl font-bold leading-tight tracking-tight text-mingle-text sm:text-2xl">
+                      {name}
+                    </h1>
+                    <p className="mt-1.5 text-sm leading-relaxed text-mingle-text-secondary">
+                      {subtitle}
+                    </p>
+                    {meta ? (
+                      <p className="mt-1 text-xs font-medium text-mingle-text-secondary/90">
+                        {meta}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-                {matchReport.audience === "company" && connectionId && companyId ? (
-                  <div className="mt-3">
-                    <CollaboratorRow
-                      connectionId={connectionId}
-                      companyId={companyId}
-                      currentUserId={viewerId}
-                      initialCollaborators={initialCollaborators}
-                      teamMembers={activeTeamMembers}
+
+                {showCv ? (
+                  <div className="mt-4 flex justify-center">
+                    {cvPath ? (
+                      <OpenTalentCvButton
+                        cvPath={cvPath}
+                        cvFileName={cvFileName}
+                        label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
+                        className="inline-flex max-w-full items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-5 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
+                      />
+                    ) : (
+                      <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
+                        No CV uploaded
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+
+                {connectCta}
+                {isSelf && showCv && cvPath ? (
+                  <div className="mt-5">
+                    <OpenTalentCvButton
+                      cvPath={cvPath}
+                      cvFileName={cvFileName}
+                      label={cvFileName?.trim() ? cvFileName.trim() : "Open CV"}
+                      className="w-full rounded-full border border-mingle-border bg-mingle-white px-6 py-3 text-center font-display text-sm font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
                     />
                   </div>
                 ) : null}
-              </ProfileSection>
-            ) : whyMatch ? (
-              <ProfileSection title="Why this could be a match">
-                <ul className="flex flex-col gap-2">
-                  {whyMatch.map((reason) => (
-                    <li
-                      key={reason}
-                      className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
-                    >
-                      <span
-                        aria-hidden
-                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-pink"
-                      />
-                      {reason}
-                    </li>
-                  ))}
-                </ul>
-              </ProfileSection>
-            ) : null}
+              </div>
+            </aside>
 
-            {sections.map((section, index) => {
-              const chips = section.chips?.filter(Boolean) ?? [];
-              const text = section.text?.trim() ?? "";
-              const empty = chips.length === 0 && !text;
-              return (
-                <ProfileSection
-                  key={section.title}
-                  title={section.title}
-                  elevated={index % 2 === 1}
-                  empty={empty}
-                >
-                  {chips.length > 0 ? <ProfileChipRow items={chips} /> : null}
-                  {text ? (
-                    <p
-                      dir="auto"
-                      className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary"
-                    >
-                      {text}
-                    </p>
+            <div className="flex flex-col gap-4">
+              {matchReport ? (
+                <ProfileSection title="Match Report">
+                  <MatchReportBody report={matchReport} />
+                  <div className="mt-3 flex flex-col gap-3">
+                    <MatchFeedbackActions
+                      audience={matchReport.audience}
+                      action={feedback}
+                      busy={saving}
+                      onInterested={() => void handleInterested()}
+                      onNotFit={(reason) => void handleNotFit(reason)}
+                    />
+                  </div>
+                  {matchReport.audience === "company" && connectionId && companyId ? (
+                    <div className="mt-3">
+                      <CollaboratorRow
+                        connectionId={connectionId}
+                        companyId={companyId}
+                        currentUserId={viewerId}
+                        initialCollaborators={initialCollaborators}
+                        teamMembers={activeTeamMembers}
+                      />
+                    </div>
                   ) : null}
                 </ProfileSection>
-              );
-            })}
+              ) : whyMatch ? (
+                <ProfileSection title="Why this could be a match">
+                  <ul className="flex flex-col gap-2">
+                    {whyMatch.map((reason) => (
+                      <li
+                        key={reason}
+                        className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
+                      >
+                        <span
+                          aria-hidden
+                          className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-pink"
+                        />
+                        {reason}
+                      </li>
+                    ))}
+                  </ul>
+                </ProfileSection>
+              ) : null}
 
-            {(recommendations.length > 0 ||
-              (canRequestRecommendation && isSelf)) && (
-              <ProfileSection title="Recommendations" elevated>
-                <RecommendationsList items={recommendations} />
-                {canRequestRecommendation && isSelf ? (
-                  <div
-                    className={recommendations.length > 0 ? "mt-2" : undefined}
-                  >
-                    <RequestRecommendation />
-                  </div>
-                ) : null}
-              </ProfileSection>
-            )}
-
-            {whatToExplore.length > 0 ? (
-              <ProfileSection title="What to explore">
-                <ul className="flex flex-col gap-2">
-                  {whatToExplore.map((prompt) => (
-                    <li
-                      key={prompt}
-                      className="flex gap-2 text-sm leading-relaxed text-mingle-text-secondary"
-                    >
-                      <span
-                        aria-hidden
-                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mingle-purple"
-                      />
-                      {prompt}
-                    </li>
-                  ))}
-                </ul>
-              </ProfileSection>
-            ) : null}
+              {profileSections}
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
     </div>
   );
