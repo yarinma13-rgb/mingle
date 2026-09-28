@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { RoleCandidatesScreen } from "@/components/roles/RoleCandidatesScreen";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { loadAcceptedConnections } from "@/lib/connections/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
 import { loadCompanyRole } from "@/lib/roles/persistence";
@@ -13,13 +14,14 @@ export default async function RoleDetailPage({
   const { supabase, user } = await requireAppUser({
     userType: "company",
   });
+  const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
 
-  const role = await loadCompanyRole(supabase, id, user.id);
+  const role = await loadCompanyRole(supabase, id, companyId);
   if (!role) notFound();
 
-  const accepted = await loadAcceptedConnections(supabase, user.id);
+  const accepted = await loadAcceptedConnections(supabase, companyId);
   const talentIds = accepted.map((row) =>
-    row.requester_id === user.id ? row.recipient_id : row.requester_id,
+    row.requester_id === companyId ? row.recipient_id : row.requester_id,
   );
   const info = await loadDisplayInfoForUsers(supabase, talentIds);
 
@@ -44,7 +46,7 @@ export default async function RoleDetailPage({
   const candidates = accepted
     .map((row) => {
       const talentId =
-        row.requester_id === user.id ? row.recipient_id : row.requester_id;
+        row.requester_id === companyId ? row.recipient_id : row.requester_id;
       const display = info.get(talentId);
       if (!display) return null;
       return {
