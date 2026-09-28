@@ -72,7 +72,8 @@ const AXIS_VISUAL: Record<
     Icon: CodeBracketsIcon,
     iconBg: "bg-[#8b53f5]",
     iconFg: "text-white",
-    bar: "linear-gradient(90deg, #9853f4 0%, #7e57f5 100%)",
+    /* Mockup: solid purple Role bar */
+    bar: "#8b53f5",
     track: "bg-[#eee9ff]",
     fallback: "Relevant role experience and skills for this opening.",
   },
@@ -80,7 +81,8 @@ const AXIS_VISUAL: Record<
     Icon: PeopleIcon,
     iconBg: "bg-[#4e78f4]",
     iconFg: "text-white",
-    bar: "linear-gradient(90deg, #4e78f4 0%, #9488f6 100%)",
+    /* Mockup: solid blue Human bar */
+    bar: "#4e78f4",
     track: "bg-[#e8eeff]",
     fallback: "Work style and culture signals line up with your team.",
   },
@@ -88,7 +90,8 @@ const AXIS_VISUAL: Record<
     Icon: HeartIcon,
     iconBg: "bg-[#e94d8a]",
     iconFg: "text-white",
-    bar: "linear-gradient(90deg, #e94d8a 0%, #eb59a8 55%, #c45ef0 100%)",
+    /* Mockup: solid pink Motivation bar */
+    bar: "#e94d8a",
     track: "bg-[#fde8f1]",
     fallback: "Motivations and values point in a shared direction.",
   },
