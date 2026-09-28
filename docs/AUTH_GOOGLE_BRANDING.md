@@ -90,7 +90,9 @@ Google button.
 
 ## Checklist (for the free fix above)
 
-- [ ] `NEXT_PUBLIC_GOOGLE_CLIENT_ID` added to Vercel (Production + Preview) — same value as `GOOGLE_CLIENT_ID`
-- [ ] Manual test: Incognito → Continue with Google → popup shows **mingle.careers**, not `*.supabase.co`
-- [ ] Manual test: new talent signup, new company signup (work email), existing user sign-in — all still land on the right destination
-- [ ] Manual test: personal email + company path still gets blocked with the same message as before
+- [x] `NEXT_PUBLIC_GOOGLE_CLIENT_ID` added to Vercel (All Environments) — same value as `GOOGLE_CLIENT_ID`. Confirmed present in Vercel env vars, 2026-09-28.
+- [x] Manual test: Incognito → Continue with Google → popup shows **mingle.careers**, not `*.supabase.co`. Confirmed by Yarin, 2026-09-28: "החיבור עם גוגל ואז דומיין של מינגל עובד."
+- [x] Manual test: new talent signup, new company signup (work email), existing user sign-in — all still land on the right destination. Confirmed by Yarin, 2026-09-28 (see above).
+- [ ] Manual test: personal email + company path still gets blocked with the same message as before — **not yet explicitly confirmed**, worth a quick spot-check next time someone's in the company signup flow.
+
+**Status as of 2026-09-28: closed.** Yarin confirmed the Google button + mingle.careers branding works end-to-end in production. The Option A/B paid custom-domain path above was never applied and is not needed.
