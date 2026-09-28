@@ -44,14 +44,12 @@ export function CompanyDiscoverDesk({
 }) {
   const toast = useToast();
   const [supabase] = useState(() => createClient());
+  // Parent remounts this component with key={card.userId}, so initial state
+  // is enough — no setState-in-effect sync.
   const [feedback, setFeedback] = useState<MatchFeedbackAction | null>(
     initialFeedback,
   );
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setFeedback(initialFeedback);
-  }, [card.userId, initialFeedback]);
 
   useEffect(() => {
     track(AnalyticsEvent.matchCardViewed, {
