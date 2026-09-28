@@ -12,6 +12,8 @@ const SIZES = {
   lg: { box: "h-12 w-12", text: "text-sm" },
   xl: { box: "h-20 w-20", text: "text-xl" },
   hero: { box: "h-24 w-24", text: "text-xl" },
+  /** Soft square portrait used on company Discover / match mockups. */
+  portrait: { box: "h-36 w-36", text: "text-3xl" },
 } as const;
 
 const SHAPE = {

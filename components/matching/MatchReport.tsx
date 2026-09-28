@@ -72,7 +72,7 @@ const AXIS_VISUAL: Record<
     Icon: CodeBracketsIcon,
     iconBg: "bg-mingle-purple",
     iconFg: "text-white",
-    bar: "bg-mingle-purple",
+    bar: "linear-gradient(90deg, var(--mingle-purple) 0%, #9b6cff 100%)",
     track: "bg-[color:var(--mingle-light-purple)]",
     fallback: "Relevant role experience and skills for this opening.",
   },
@@ -80,7 +80,7 @@ const AXIS_VISUAL: Record<
     Icon: PeopleIcon,
     iconBg: "bg-mingle-blue",
     iconFg: "text-white",
-    bar: "bg-mingle-blue",
+    bar: "linear-gradient(90deg, var(--mingle-blue) 0%, #6b8fd4 100%)",
     track: "bg-[color:var(--mingle-light-blue)]",
     fallback: "Work style and culture signals line up with your team.",
   },
@@ -88,7 +88,7 @@ const AXIS_VISUAL: Record<
     Icon: HeartIcon,
     iconBg: "bg-mingle-pink",
     iconFg: "text-white",
-    bar: "bg-mingle-pink",
+    bar: "linear-gradient(90deg, var(--mingle-pink) 0%, #f06a9a 100%)",
     track: "bg-[color:var(--mingle-light-pink)]",
     fallback: "Motivations and values point in a shared direction.",
   },
@@ -146,8 +146,8 @@ export function FitBars({
                   className={`h-2.5 min-w-0 flex-1 overflow-hidden rounded-full ${visual.track}`}
                 >
                   <div
-                    className={`h-full rounded-full transition-[width] duration-500 ease-out ${visual.bar}`}
-                    style={{ width: `${pct}%` }}
+                    className="h-full rounded-full transition-[width] duration-500 ease-out"
+                    style={{ width: `${pct}%`, background: visual.bar }}
                   />
                 </div>
                 <span className="w-9 shrink-0 text-right text-xs font-bold tabular-nums text-mingle-text">

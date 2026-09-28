@@ -27,7 +27,6 @@ import {
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
 import { buildSkillOverlapSignal } from "@/lib/matching/skill-overlap";
-import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import { buildPoolInsight } from "@/lib/matching/pool-insight";
 import { CandidateComparisonPanel } from "@/components/matching/CandidateComparisonPanel";
 
@@ -81,6 +80,12 @@ function ResultCard({
   const gradient = RANK_GRADIENTS[Math.min(rank, RANK_GRADIENTS.length - 1)];
   const glow = RANK_GLOWS[Math.min(rank, RANK_GLOWS.length - 1)];
   const score = Math.round(card.report.overall);
+  // Mockup-style short name: "Noa S."
+  const shortName = (() => {
+    const parts = card.name.trim().split(/\s+/);
+    if (parts.length < 2) return card.name;
+    return `${parts[0]} ${parts[parts.length - 1][0]}.`;
+  })();
 
   async function interested() {
     if (feedback === "interested") return;
@@ -118,76 +123,8 @@ function ResultCard({
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-mingle-border/80 bg-mingle-surface p-4 shadow-[0_8px_24px_rgba(28,27,46,0.05)] transition-shadow duration-200 hover:shadow-mingle sm:p-5">
-      <div className="flex items-center gap-3.5">
-        <div className="relative shrink-0">
-          <span
-            aria-hidden
-            className="absolute -inset-1.5 rounded-full opacity-80 blur-md"
-            style={{ background: glow }}
-          />
-          <div
-            className="relative rounded-full p-[2.5px]"
-            style={{ background: gradient }}
-          >
-            <div className="rounded-full bg-mingle-surface p-[2px]">
-              <Avatar
-                photo={card.photo}
-                initials={card.initial}
-                gender={card.gender}
-                size="md"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-[15px] font-bold tracking-tight text-mingle-text">
-            {card.name}
-          </p>
-          <p className="truncate text-[12px] text-mingle-text-secondary">
-            {card.subtitle}
-          </p>
-          {rediscovery ? (
-            <p className="mt-1 text-[11px] font-semibold text-mingle-cta">
-              {formatRediscoveryLabel(rediscovery)}
-            </p>
-          ) : null}
-          <span
-            className="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold text-white"
-            style={{ background: gradient }}
-          >
-            {score}% match
-          </span>
-        </div>
-
-        <div className="flex shrink-0 flex-col items-end gap-2 self-start">
-          <label className="flex items-center gap-1.5 text-[11px] font-medium text-mingle-text-secondary">
-            <input
-              type="checkbox"
-              checked={compareChecked}
-              onChange={() => onToggleCompare(card.userId)}
-              className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
-            />
-            Compare
-          </label>
-          <Link
-            href={`/profile/view/${card.userId}`}
-            onClick={() =>
-              track(AnalyticsEvent.matchViewed, {
-                role_id: roleId,
-                target_user_id: card.userId,
-              })
-            }
-            className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-mingle-text transition-colors hover:bg-mingle-lavender"
-            aria-label={`View ${card.name}`}
-          >
-            →
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
+    <article className="rounded-2xl bg-mingle-surface px-4 py-4 transition-colors hover:bg-mingle-lavender/40 sm:px-5">
+      <div className="flex items-center gap-4">
         <Link
           href={`/profile/view/${card.userId}`}
           onClick={() =>
@@ -196,33 +133,81 @@ function ResultCard({
               target_user_id: card.userId,
             })
           }
-          className="rounded-full bg-mingle-cta px-4 py-2 font-display text-xs font-semibold text-white"
+          className="flex min-w-0 flex-1 items-center gap-4"
         >
-          View profile
-        </Link>
-        {card.cvPath ? (
-          <OpenTalentCvButton
-            cvPath={card.cvPath}
-            cvFileName={card.cvFileName}
-            label={card.cvFileName?.trim() ? card.cvFileName.trim() : "Open CV"}
-            className="inline-flex max-w-[11rem] items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-white px-4 py-2 font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
-          />
-        ) : (
-          <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
-            No CV
+          <div className="relative shrink-0">
+            <span
+              aria-hidden
+              className="absolute -inset-1.5 rounded-full opacity-70 blur-md"
+              style={{ background: glow }}
+            />
+            <div
+              className="relative rounded-full p-[2.5px]"
+              style={{ background: gradient }}
+            >
+              <div className="rounded-full bg-mingle-surface p-[2px]">
+                <Avatar
+                  photo={card.photo}
+                  initials={card.initial}
+                  gender={card.gender}
+                  size="md"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-[15px] font-bold tracking-tight text-mingle-text">
+              {shortName}
+            </p>
+            <p className="truncate text-[12px] text-mingle-text-secondary">
+              {card.subtitle}
+            </p>
+            {rediscovery ? (
+              <p className="mt-1 text-[11px] font-semibold text-mingle-cta">
+                {formatRediscoveryLabel(rediscovery)}
+              </p>
+            ) : null}
+            <span
+              className="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold text-white"
+              style={{ background: gradient }}
+            >
+              {score}% match
+            </span>
+          </div>
+
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center text-xl text-mingle-text"
+            aria-hidden
+          >
+            →
           </span>
-        )}
+        </Link>
+
+        <label className="flex shrink-0 items-center gap-1.5 self-start text-[11px] font-medium text-mingle-text-secondary">
+          <input
+            type="checkbox"
+            checked={compareChecked}
+            onChange={() => onToggleCompare(card.userId)}
+            className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
+            onClick={(e) => e.stopPropagation()}
+          />
+          Compare
+        </label>
+      </div>
+
+      <div className="mt-2 flex justify-end">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="ml-auto text-[11px] font-semibold text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
+          className="text-[11px] font-semibold text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
         >
-          {expanded ? "Hide details" : "Match details"}
+          {expanded ? "Hide details" : "Details"}
         </button>
       </div>
 
       {expanded ? (
-        <div className="flex flex-col gap-3 border-t border-mingle-border/70 pt-3">
+        <div className="mt-3 flex flex-col gap-3 border-t border-mingle-border/70 pt-3">
           <MatchReportBody report={card.report} compact />
           {skillOverlap ? (
             <p className="text-[11px] leading-snug text-mingle-text">
@@ -240,17 +225,7 @@ function ResultCard({
             onNotFit={(reason) => void notFit(reason)}
           />
         </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <MatchFeedbackActions
-            audience="company"
-            action={feedback}
-            busy={busy}
-            onInterested={() => void interested()}
-            onNotFit={(reason) => void notFit(reason)}
-          />
-        </div>
-      )}
+      ) : null}
     </article>
   );
 }
@@ -349,17 +324,11 @@ export function RoleMatchesScreen({
           actionLabel="Open Discover"
         />
       ) : (
-        <section className="rounded-[28px] border border-mingle-border bg-mingle-surface p-4 shadow-mingle sm:p-6">
+        <section className="rounded-[28px] border border-mingle-border/60 bg-mingle-surface p-5 shadow-[0_12px_40px_rgba(28,27,46,0.08)] sm:p-7">
           <h3 className="font-display text-lg font-bold tracking-tight text-mingle-text">
             {perfectCount} perfect match{perfectCount === 1 ? "" : "es"}
           </h3>
-          <p className="mt-1 text-xs text-mingle-text-secondary">
-            Sort: Best Match
-            {visible.length > TOP_N
-              ? ` · ${visible.length} total — top ${TOP_N} shown first`
-              : null}
-          </p>
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-2">
             {listed.map((card, index) => (
               <ResultCard
                 key={card.userId}

@@ -29,11 +29,14 @@ function reportForScore(score: number): MatchReport {
 }
 
 const PREVIEW_CARDS: DiscoveryCard[] = DEMO_CANDIDATES.slice(0, 3).map(
-  (candidate) => ({
+  (candidate, index) => ({
     userId: candidate.userId,
     name: candidate.name,
     subtitle: candidate.headline,
-    meta: candidate.location,
+    meta:
+      index === 0
+        ? `${DEMO_DANIEL.location.split("·")[0]?.trim()} · ${DEMO_DANIEL.experience} · B.Sc. Computer Science`
+        : candidate.location,
     initial: candidate.initials,
     photo: candidate.photo,
     gender: candidate.gender,

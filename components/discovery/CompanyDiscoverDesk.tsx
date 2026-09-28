@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { saveProfile } from "@/lib/matching/saved";
 import {
@@ -15,40 +15,17 @@ import { track } from "@/lib/analytics/track";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Avatar } from "@/components/Avatar";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
-import {
-  FitBars,
-  MatchReportBody,
-} from "@/components/matching/MatchReport";
 import { DiscoverSwipeActions } from "@/components/discovery/DiscoverSwipeActions";
-import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import {
   BriefcaseIcon,
+  GraduationCapIcon,
   MapPinIcon,
-  SparkleIcon,
 } from "@/components/dashboard/icons";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 
-const REPORT_NAV = [
-  {
-    id: "why",
-    title: "Why this match?",
-    body: "See the key reasons behind the match.",
-  },
-  {
-    id: "risks",
-    title: "Potential risks",
-    body: "Get ahead of possible misalignments.",
-  },
-  {
-    id: "feedback",
-    title: "Candidate's feedback",
-    body: "Understand how they feel about the fit.",
-  },
-] as const;
-
 /**
- * Company Discover desktop — mockup two-card layout (candidate + Match Report)
- * instead of dating-style swipe card + stacked report.
+ * Company Discover desktop — one-to-one with the product mockup:
+ * single white card, photo + meta left, match ring + Why it works + CTA right.
  */
 export function CompanyDiscoverDesk({
   card,
@@ -66,7 +43,6 @@ export function CompanyDiscoverDesk({
   onHide: (userId: string) => void;
 }) {
   const toast = useToast();
-  const fullReportRef = useRef<HTMLDivElement | null>(null);
   const [supabase] = useState(() => createClient());
   const [feedback, setFeedback] = useState<MatchFeedbackAction | null>(
     initialFeedback,
@@ -85,20 +61,29 @@ export function CompanyDiscoverDesk({
     });
   }, [card.userId, card.score, card.kind]);
 
-  const tags = useMemo(() => {
-    const fromSkills = card.skills?.filter(Boolean) ?? [];
-    const fromTags = card.tags?.filter(Boolean) ?? [];
-    return (fromSkills.length > 0 ? fromSkills : fromTags).slice(0, 6);
-  }, [card.skills, card.tags]);
-
-  const whyTags = useMemo(
-    () =>
-      card.report.why
-        .map((b) => b.label)
-        .filter(Boolean)
-        .slice(0, 3),
-    [card.report.why],
-  );
+  const whyTags = useMemo(() => {
+    // Mockup uses short chips: Values / Work style / Career goals
+    const SHORT: Partial<Record<string, string>> = {
+      motivations: "Values",
+      workStyle: "Work style",
+      careerGoals: "Career goals",
+      skills: "Skills",
+      experience: "Experience",
+      industry: "Industry",
+      location: "Location",
+      companyStage: "Stage",
+    };
+    const seen = new Set<string>();
+    const tags: string[] = [];
+    for (const bullet of card.report.why) {
+      const label = SHORT[bullet.key] ?? bullet.label;
+      if (!label || seen.has(label)) continue;
+      seen.add(label);
+      tags.push(label);
+      if (tags.length >= 3) break;
+    }
+    return tags;
+  }, [card.report.why]);
 
   const metaParts = useMemo(
     () =>
@@ -108,6 +93,16 @@ export function CompanyDiscoverDesk({
         .filter(Boolean),
     [card.meta],
   );
+
+  const location = metaParts[0] ?? card.locationLabel ?? "";
+  const experience =
+    metaParts.find((p) => /year|yrs|experience|\d+\+/i.test(p)) ??
+    metaParts[1] ??
+    "";
+  const education =
+    metaParts.find((p) => /B\.|M\.|PhD|degree|computer|science|BA|BS/i.test(p)) ??
+    metaParts[2] ??
+    "";
 
   const advanceAfterInterest = () => onHide(card.userId);
 
@@ -157,236 +152,137 @@ export function CompanyDiscoverDesk({
     }
   };
 
-  const scrollToFullReport = () => {
-    fullReportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
-    <motion.div
-      key={card.userId}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex w-full flex-col gap-4"
-    >
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,300px)] lg:items-stretch">
-        <section className="flex flex-col rounded-[28px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle sm:p-6">
-          <p className="font-display text-sm font-bold tracking-tight text-mingle-text">
-            mingle
-          </p>
-
-          <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3.5">
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={card.userId}
+        initial={{ opacity: 0, x: 28 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="mx-auto flex w-full max-w-3xl flex-col gap-5"
+      >
+        <article className="relative overflow-hidden rounded-[28px] border border-mingle-border/60 bg-mingle-surface p-6 shadow-[0_12px_40px_rgba(28,27,46,0.08)] sm:p-8">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:items-stretch">
+            {/* Left — identity */}
+            <div className="flex flex-col">
               <Avatar
                 photo={card.photo}
                 initials={card.initial}
                 gender={card.gender}
-                size="xl"
+                size="portrait"
                 shape="soft"
               />
-              <div className="min-w-0">
-                <h2 className="font-display text-xl font-bold tracking-tight text-mingle-text sm:text-2xl">
-                  {card.name}
-                </h2>
-                <p className="mt-0.5 text-sm text-mingle-text-secondary">
-                  {card.subtitle}
-                </p>
-                <ul className="mt-2.5 flex flex-col gap-1.5 text-[12px] text-mingle-text-secondary">
-                  {metaParts[0] ? (
-                    <li className="flex items-center gap-1.5">
-                      <MapPinIcon size={14} className="shrink-0 text-mingle-blue" />
-                      <span className="truncate">{metaParts[0]}</span>
-                    </li>
-                  ) : null}
-                  {metaParts.slice(1, 3).map((part) => (
-                    <li key={part} className="flex items-center gap-1.5">
-                      <BriefcaseIcon
-                        size={14}
-                        className="shrink-0 text-mingle-blue"
-                      />
-                      <span className="truncate">{part}</span>
-                    </li>
-                  ))}
-                </ul>
-                {tags.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {tags.slice(0, 2).map((tag) => (
+              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-mingle-text">
+                {card.name}
+              </h2>
+              <p className="mt-1 text-[15px] text-mingle-text-secondary">
+                {card.subtitle}
+              </p>
+              <ul className="mt-4 flex flex-col gap-2 text-[13px] text-mingle-text-secondary">
+                {location ? (
+                  <li className="flex items-center gap-2">
+                    <MapPinIcon size={15} className="shrink-0 text-mingle-blue" />
+                    <span>{location}</span>
+                  </li>
+                ) : null}
+                {experience ? (
+                  <li className="flex items-center gap-2">
+                    <BriefcaseIcon
+                      size={15}
+                      className="shrink-0 text-mingle-blue"
+                    />
+                    <span>{experience}</span>
+                  </li>
+                ) : null}
+                {education ? (
+                  <li className="flex items-center gap-2">
+                    <GraduationCapIcon
+                      size={15}
+                      className="shrink-0 text-mingle-blue"
+                    />
+                    <span>{education}</span>
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+
+            {/* Right — match + why + CTA */}
+            <div className="flex min-h-full flex-col">
+              <div className="flex items-center gap-3">
+                <MatchScoreRing
+                  score={card.score}
+                  size={104}
+                  showLabel
+                  labelBeside
+                />
+              </div>
+
+              {whyTags.length > 0 ? (
+                <div className="mt-7">
+                  <p className="font-display text-[15px] font-bold text-mingle-text">
+                    Why it works?
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {whyTags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-[color:var(--mingle-light-purple)] px-2.5 py-1 text-[11px] font-semibold text-mingle-text"
+                        className="rounded-full bg-[color:var(--mingle-light-purple)] px-3.5 py-1.5 text-[12px] font-semibold text-mingle-text"
                       >
                         {tag}
                       </span>
                     ))}
-                    {tags.length > 2 ? (
-                      <span className="rounded-full bg-mingle-lavender px-2.5 py-1 text-[11px] font-semibold text-mingle-text-secondary">
-                        +{tags.length - 2}
-                      </span>
-                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            </div>
+                </div>
+              ) : null}
 
-            <div className="flex shrink-0 flex-col items-center self-center sm:self-start">
-              <MatchScoreRing score={card.score} size={96} showLabel />
-            </div>
-          </div>
-
-          {whyTags.length > 0 ? (
-            <div className="mt-5">
-              <p className="font-display text-sm font-bold text-mingle-text">
-                Why it works?
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {whyTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-[color:var(--mingle-light-purple)] px-3 py-1.5 text-[11px] font-semibold text-mingle-text"
+              <div className="mt-auto flex flex-col gap-3 pt-8">
+                {messageHref ? (
+                  <Link
+                    href={messageHref}
+                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(234,30,99,0.22)] transition-transform hover:scale-[1.01] active:scale-[0.99] sm:w-auto sm:self-end"
                   >
-                    {tag}
-                  </span>
-                ))}
+                    Open conversation →
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void expressInterest()}
+                    className="mingle-connection-fill inline-flex w-full items-center justify-center rounded-full px-6 py-3.5 font-display text-sm font-semibold text-white shadow-[0_10px_28px_rgba(234,30,99,0.22)] transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:self-end"
+                  >
+                    Start conversation →
+                  </button>
+                )}
+                <Link
+                  href={`/profile/view/${card.userId}`}
+                  onClick={() =>
+                    track(AnalyticsEvent.matchViewed, {
+                      target_user_id: card.userId,
+                      source: "discover_desk",
+                    })
+                  }
+                  className="self-end text-[12px] font-semibold text-mingle-text-secondary underline decoration-dotted underline-offset-2 hover:text-mingle-text"
+                >
+                  View full profile & match report
+                </Link>
               </div>
             </div>
-          ) : null}
-
-          <div className="mt-2">
-            <FitBars axes={card.report.axes} report={card.report} />
           </div>
+        </article>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Link
-              href={`/profile/view/${card.userId}`}
-              onClick={() =>
-                track(AnalyticsEvent.matchViewed, {
-                  target_user_id: card.userId,
-                  source: "discover_desk",
-                })
-              }
-              className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-xs font-semibold text-white"
-            >
-              View profile
-            </Link>
-            {card.cvPath ? (
-              <OpenTalentCvButton
-                cvPath={card.cvPath}
-                cvFileName={card.cvFileName}
-                label={
-                  card.cvFileName?.trim() ? card.cvFileName.trim() : "Open CV"
-                }
-                className="inline-flex max-w-[12rem] items-center justify-center truncate rounded-full border border-mingle-border bg-mingle-lavender px-4 py-2.5 font-display text-xs font-semibold text-mingle-text transition-colors hover:border-mingle-blue disabled:opacity-60"
-              />
-            ) : (
-              <span className="rounded-full border border-dashed border-mingle-border px-4 py-2 font-display text-xs font-semibold text-mingle-text-secondary">
-                No CV uploaded
-              </span>
-            )}
-          </div>
-
-          <div className="mt-4 border-t border-mingle-border/70 pt-3">
-            <DiscoverSwipeActions
-              busy={saving}
-              interestedDone={feedback === "interested"}
-              messageHref={messageHref}
-              dragX={null}
-              onSkip={() => onPass(card.userId)}
-              onSave={() => void saveForLater()}
-              onInterested={() => void expressInterest()}
-            />
-          </div>
-        </section>
-
-        <aside className="flex flex-col rounded-[28px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle sm:p-6">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--mingle-light-purple)] text-mingle-purple">
-              <SparkleIcon size={14} />
-            </span>
-            <h3 className="font-display text-base font-bold tracking-tight text-mingle-text">
-              Match Report
-            </h3>
-          </div>
-
-          <ul className="mt-5 flex flex-col gap-4">
-            {REPORT_NAV.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={scrollToFullReport}
-                  className="flex w-full items-start gap-3 text-left"
-                >
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--mingle-light-blue)] text-mingle-blue">
-                    <svg
-                      width={12}
-                      height={12}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2.4}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <path d="m5 12 5 5L20 7" />
-                    </svg>
-                  </span>
-                  <span>
-                    <span className="block font-display text-sm font-bold text-mingle-text">
-                      {item.title}
-                    </span>
-                    <span className="mt-0.5 block text-[12px] leading-snug text-mingle-text-secondary">
-                      {item.body}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-auto flex flex-col gap-2.5 pt-6">
-            <button
-              type="button"
-              onClick={scrollToFullReport}
-              className="mingle-connection-fill w-full rounded-full px-5 py-3.5 text-center font-display text-sm font-semibold text-white"
-            >
-              View full report →
-            </button>
-            <Link
-              href={`/profile/view/${card.userId}`}
-              onClick={() =>
-                track(AnalyticsEvent.matchViewed, {
-                  target_user_id: card.userId,
-                  source: "discover_desk_cta",
-                })
-              }
-              className="w-full rounded-full bg-mingle-cta px-5 py-3.5 text-center font-display text-sm font-semibold text-white"
-            >
-              Start conversation →
-            </Link>
-          </div>
-        </aside>
-      </div>
-
-      <div
-        ref={fullReportRef}
-        className="rounded-[28px] border border-mingle-border bg-mingle-surface p-5 shadow-mingle sm:p-6"
-      >
-        <p className="font-display text-sm font-bold tracking-tight text-mingle-text">
-          Full match report
-        </p>
-        <div className="mt-4">
-          <MatchReportBody
-            report={card.report}
-            omitOverview
-            matchIds={{
-              companyId: viewerId,
-              candidateId: card.userId,
-              roleId: null,
-            }}
+        <div className="flex justify-center">
+          <DiscoverSwipeActions
+            busy={saving}
+            interestedDone={feedback === "interested"}
+            messageHref={messageHref}
+            dragX={null}
+            onSkip={() => onPass(card.userId)}
+            onSave={() => void saveForLater()}
+            onInterested={() => void expressInterest()}
           />
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

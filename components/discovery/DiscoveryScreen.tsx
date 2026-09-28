@@ -772,23 +772,21 @@ export function DiscoveryScreen({
                   </div>
                 ) : null}
               </div>
-              {/* Desktop: mockup two-card match layout */}
+              {/* Desktop: mockup single candidate card */}
               <div className="mx-auto hidden w-full max-w-5xl lg:block">
-                <AnimatePresence mode="wait">
-                  <CompanyDiscoverDesk
-                    key={cards[0].userId}
-                    card={cards[0]}
-                    initialFeedback={feedbackByUser[cards[0].userId] ?? null}
-                    viewerId={viewerId}
-                    messageHref={
-                      acceptedConnectionByUser[cards[0].userId]
-                        ? `/conversations/${acceptedConnectionByUser[cards[0].userId]}`
-                        : null
-                    }
-                    onPass={persistPass}
-                    onHide={hideCard}
-                  />
-                </AnimatePresence>
+                <CompanyDiscoverDesk
+                  key={cards[0].userId}
+                  card={cards[0]}
+                  initialFeedback={feedbackByUser[cards[0].userId] ?? null}
+                  viewerId={viewerId}
+                  messageHref={
+                    acceptedConnectionByUser[cards[0].userId]
+                      ? `/conversations/${acceptedConnectionByUser[cards[0].userId]}`
+                      : null
+                  }
+                  onPass={persistPass}
+                  onHide={hideCard}
+                />
               </div>
             </>
           ) : (
