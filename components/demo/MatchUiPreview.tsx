@@ -2,6 +2,7 @@
 
 import { ProfileDetailShell } from "@/components/profile-detail/ProfileDetailShell";
 import { RoleMatchesScreen } from "@/components/roles/RoleMatchesScreen";
+import { CompanyDiscoverDesk } from "@/components/discovery/CompanyDiscoverDesk";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DEMO_CANDIDATES,
@@ -71,6 +72,19 @@ export function MatchUiPreview() {
           viewerId={DEMO_IDS.companyUser}
           feedbackByUser={{}}
           filters={null}
+        />
+      </section>
+
+      <section id="discover-desk" aria-label="Company Discover desktop preview">
+        <h2 className="mb-3 font-display text-lg font-bold tracking-tight text-mingle-text">
+          Discover (company desktop)
+        </h2>
+        <CompanyDiscoverDesk
+          card={PREVIEW_CARDS[0]}
+          initialFeedback={null}
+          viewerId={DEMO_IDS.companyUser}
+          onPass={() => {}}
+          onHide={() => {}}
         />
       </section>
 
