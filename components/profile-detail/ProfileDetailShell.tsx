@@ -352,8 +352,10 @@ export function ProfileDetailShell({
           disabled={connectDisabled}
           whileHover={connectDisabled ? undefined : { scale: 1.02 }}
           whileTap={connectDisabled ? undefined : { scale: 0.98 }}
-          className={`rounded-full px-6 py-3.5 text-center font-display text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 ${
-            connectDisabled ? "bg-mingle-lavender !text-mingle-text-secondary" : "mingle-connection-fill"
+          className={`rounded-full px-6 py-3.5 text-center font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            connectDisabled
+              ? "bg-mingle-lavender text-mingle-text-secondary"
+              : "bg-mingle-cta text-white"
           }`}
         >
           {connecting ? "Sending…" : `${connectLabel} →`}
