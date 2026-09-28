@@ -29,8 +29,10 @@ import {
 import { buildSkillOverlapSignal } from "@/lib/matching/skill-overlap";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import { buildPoolInsight } from "@/lib/matching/pool-insight";
+import { CandidateComparisonPanel } from "@/components/matching/CandidateComparisonPanel";
 
 const TOP_N = 5;
+const MAX_COMPARE = 2;
 
 function ResultCard({
   card,
@@ -40,6 +42,8 @@ function ResultCard({
   initialFeedback,
   rediscovery,
   onPass,
+  compareChecked,
+  onToggleCompare,
 }: {
   card: DiscoveryCard;
   roleId: string;
@@ -48,6 +52,8 @@ function ResultCard({
   initialFeedback: MatchFeedbackAction | null;
   rediscovery: RediscoveryBadge | null;
   onPass: (userId: string) => void;
+  compareChecked: boolean;
+  onToggleCompare: (userId: string) => void;
 }) {
   const toast = useToast();
   const [supabase] = useState(() => createClient());
@@ -115,6 +121,15 @@ function ResultCard({
             </p>
           ) : null}
         </div>
+        <label className="ml-auto flex shrink-0 items-center gap-1.5 self-start text-[11px] font-medium text-mingle-text-secondary">
+          <input
+            type="checkbox"
+            checked={compareChecked}
+            onChange={() => onToggleCompare(card.userId)}
+            className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
+          />
+          Compare
+        </label>
       </div>
       <MatchReportBody report={card.report} compact />
       {skillOverlap ? (
@@ -188,9 +203,13 @@ export function RoleMatchesScreen({
   const [supabase] = useState(() => createClient());
   const [hidden, setHidden] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
   const visible = cards.filter((card) => !hidden.includes(card.userId));
   const listed = showAll ? visible : visible.slice(0, TOP_N);
   const poolInsight = buildPoolInsight(cards);
+  const compareCards = compareIds
+    .map((id) => cards.find((card) => card.userId === id))
+    .filter((card): card is DiscoveryCard => card != null);
 
   async function persistPass(userId: string) {
     try {
@@ -200,6 +219,17 @@ export function RoleMatchesScreen({
     }
     setHidden((prev) => [...prev, userId]);
     router.refresh();
+  }
+
+  function toggleCompare(userId: string) {
+    setCompareIds((prev) => {
+      if (prev.includes(userId)) return prev.filter((id) => id !== userId);
+      if (prev.length >= MAX_COMPARE) {
+        toast(`You can compare up to ${MAX_COMPARE} candidates at a time.`);
+        return prev;
+      }
+      return [...prev, userId];
+    });
   }
 
   return (
@@ -234,6 +264,13 @@ export function RoleMatchesScreen({
         </div>
       ) : null}
       {filters}
+      {compareCards.length === 2 ? (
+        <CandidateComparisonPanel
+          a={{ name: compareCards[0].name, report: compareCards[0].report }}
+          b={{ name: compareCards[1].name, report: compareCards[1].report }}
+          onClear={() => setCompareIds([])}
+        />
+      ) : null}
       {listed.length === 0 ? (
         <EmptyState
           title="No matches to rank yet"
@@ -253,6 +290,8 @@ export function RoleMatchesScreen({
               initialFeedback={feedbackByUser[card.userId] ?? null}
               rediscovery={rediscoveryByUser[card.userId] ?? null}
               onPass={persistPass}
+              compareChecked={compareIds.includes(card.userId)}
+              onToggleCompare={toggleCompare}
             />
           ))}
         </div>
