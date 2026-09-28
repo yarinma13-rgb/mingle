@@ -28,6 +28,7 @@ import {
 } from "@/lib/matching/rediscovery";
 import { buildSkillOverlapSignal } from "@/lib/matching/skill-overlap";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
+import { buildPoolInsight } from "@/lib/matching/pool-insight";
 
 const TOP_N = 5;
 
@@ -189,6 +190,7 @@ export function RoleMatchesScreen({
   const [showAll, setShowAll] = useState(false);
   const visible = cards.filter((card) => !hidden.includes(card.userId));
   const listed = showAll ? visible : visible.slice(0, TOP_N);
+  const poolInsight = buildPoolInsight(cards);
 
   async function persistPass(userId: string) {
     try {
@@ -223,6 +225,14 @@ export function RoleMatchesScreen({
           Sort: Best Match
         </p>
       </div>
+      {poolInsight ? (
+        <div className="mingle-banner rounded-2xl border border-mingle-border p-5">
+          <p className="font-display text-[11px] font-semibold uppercase tracking-[0.1em] text-mingle-text-secondary">
+            Pool insight
+          </p>
+          <p className="mt-2 text-sm text-mingle-text">{poolInsight.message}</p>
+        </div>
+      ) : null}
       {filters}
       {listed.length === 0 ? (
         <EmptyState
