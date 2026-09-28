@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import type { MatchFactorKey } from "@/lib/matching/engine";
 import type {
   MatchAudience,
+  MatchAxisId,
   MatchBullet,
   MatchReport,
 } from "@/lib/matching/report";
+import { AXIS_FACTOR_KEYS } from "@/lib/matching/report";
 import { fetchAiMatchExplanation } from "@/lib/matching/ai-explanation-action";
 import {
   NOT_FIT_REASONS,
@@ -17,17 +19,18 @@ import { IconBadge } from "@/components/dashboard/IconBadge";
 import {
   BriefcaseIcon,
   ClockIcon,
+  CodeBracketsIcon,
   ColumnsIcon,
   CompassIcon,
   GridIcon,
   GearIcon,
+  HeartIcon,
   PeopleIcon,
   TargetIcon,
   ShieldCheckIcon,
 } from "@/components/dashboard/icons";
 import {
   scoreBandLabel,
-  scoreBarClass,
   scoreChipClass,
   scoreTextClass,
 } from "@/lib/matching/score-tone";
@@ -54,25 +57,110 @@ const BULLET_ICON: Record<
 
 const MISMATCH_PREVIEW = 4;
 
-function FitBars({ axes }: { axes: MatchReport["axes"] }) {
+const AXIS_VISUAL: Record<
+  MatchAxisId,
+  {
+    Icon: React.ComponentType<{ className?: string; size?: number }>;
+    iconBg: string;
+    iconFg: string;
+    bar: string;
+    track: string;
+    fallback: string;
+  }
+> = {
+  role: {
+    Icon: CodeBracketsIcon,
+    iconBg: "bg-mingle-purple",
+    iconFg: "text-white",
+    bar: "bg-mingle-purple",
+    track: "bg-[color:var(--mingle-light-purple)]",
+    fallback: "Relevant role experience and skills for this opening.",
+  },
+  company: {
+    Icon: PeopleIcon,
+    iconBg: "bg-mingle-blue",
+    iconFg: "text-white",
+    bar: "bg-mingle-blue",
+    track: "bg-[color:var(--mingle-light-blue)]",
+    fallback: "Work style and culture signals line up with your team.",
+  },
+  motivation: {
+    Icon: HeartIcon,
+    iconBg: "bg-mingle-pink",
+    iconFg: "text-white",
+    bar: "bg-mingle-pink",
+    track: "bg-[color:var(--mingle-light-pink)]",
+    fallback: "Motivations and values point in a shared direction.",
+  },
+};
+
+function axisFinding(
+  axisId: MatchAxisId,
+  report: MatchReport | null | undefined,
+): string {
+  if (!report) return AXIS_VISUAL[axisId].fallback;
+  const keys = AXIS_FACTOR_KEYS[axisId];
+  const fromWhy = report.why.find((b) => keys.includes(b.key));
+  if (fromWhy?.finding) return fromWhy.finding;
+  const fromRisk = (report.risks ?? []).find((b) => keys.includes(b.key as MatchFactorKey));
+  if (fromRisk?.finding) return fromRisk.finding;
+  const fromMismatch = report.mismatch.find((b) => keys.includes(b.key));
+  if (fromMismatch?.finding) return fromMismatch.finding;
+  return AXIS_VISUAL[axisId].fallback;
+}
+
+/** Role / Human / Motivation fit rows — product mockup styling. */
+export function FitBars({
+  axes,
+  report,
+}: {
+  axes: MatchReport["axes"];
+  /** Optional full report for per-axis finding copy. */
+  report?: MatchReport | null;
+}) {
   return (
-    <div className="flex flex-col gap-2">
-      {axes.map((axis) => (
-        <div key={axis.id} className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[11px] text-mingle-text">
-            <span>{axis.label}</span>
-            <span className={`font-semibold ${scoreTextClass(axis.score)}`}>
-              {axis.score}
+    <div className="flex flex-col">
+      {axes.map((axis, index) => {
+        const visual = AXIS_VISUAL[axis.id] ?? AXIS_VISUAL.role;
+        const Icon = visual.Icon;
+        const pct = Math.max(0, Math.min(100, Math.round(axis.score)));
+        const finding = axisFinding(axis.id, report);
+        return (
+          <div
+            key={axis.id}
+            className={`flex items-start gap-3 py-3.5 ${
+              index > 0 ? "border-t border-mingle-border/80" : ""
+            }`}
+          >
+            <span
+              className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${visual.iconBg} ${visual.iconFg}`}
+            >
+              <Icon size={16} />
             </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-sm font-bold text-mingle-text">
+                {axis.label}
+              </p>
+              <div className="mt-1.5 flex items-center gap-2.5">
+                <div
+                  className={`h-2.5 min-w-0 flex-1 overflow-hidden rounded-full ${visual.track}`}
+                >
+                  <div
+                    className={`h-full rounded-full transition-[width] duration-500 ease-out ${visual.bar}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="w-9 shrink-0 text-right text-xs font-bold tabular-nums text-mingle-text">
+                  {pct}%
+                </span>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-snug text-mingle-text-secondary">
+                {finding}
+              </p>
+            </div>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-mingle-bg">
-            <div
-              className={`h-full rounded-full transition-[width] duration-300 ${scoreBarClass(axis.score)}`}
-              style={{ width: `${Math.max(0, Math.min(100, axis.score))}%` }}
-            />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -168,6 +256,7 @@ export function MatchReportBody({
   report,
   compact,
   matchIds,
+  omitOverview = false,
 }: {
   report: MatchReport;
   compact?: boolean;
@@ -177,6 +266,8 @@ export function MatchReportBody({
    * deterministic-only report (e.g. inside a list of many cards).
    */
   matchIds?: { companyId: string; candidateId: string; roleId?: string | null };
+  /** Skip overall banner + fit bars when the parent already shows them. */
+  omitOverview?: boolean;
 }) {
   const whyTitle = "Why this match";
   const mismatchTitle = "Why not / potential risks";
@@ -251,37 +342,41 @@ export function MatchReportBody({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
-            Overall Match
-          </p>
-          <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
-            <span className={scoreTextClass(report.overall)}>
-              {report.overall}%
-            </span>
-          </p>
-          {report.mutualSummary ? (
-            <p className="mt-1 max-w-[28rem] text-[12px] leading-snug text-mingle-text-secondary">
-              {report.mutualSummary}
+      {!omitOverview ? (
+        <div className="flex items-start justify-between gap-3 rounded-2xl border border-mingle-accent-purple/20 bg-gradient-to-br from-mingle-accent-purple/8 via-mingle-accent-pink/5 to-mingle-accent-blue/8 px-3.5 py-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-accent-purple">
+              Overall Match
             </p>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <span
-            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
-          >
-            {scoreBandLabel(report.overall)}
-          </span>
-          {report.discoveryTier ? (
-            <span className="rounded-full bg-mingle-lavender px-2.5 py-1 text-[10px] font-semibold text-mingle-text-secondary">
-              {TIER_LABEL[report.discoveryTier] ?? report.discoveryTier}
+            <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-mingle-text">
+              <span className={scoreTextClass(report.overall)}>
+                {report.overall}%
+              </span>
+            </p>
+            {report.mutualSummary ? (
+              <p className="mt-1 max-w-[28rem] text-[12px] leading-snug text-mingle-text-secondary">
+                {report.mutualSummary}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(report.overall)}`}
+            >
+              {scoreBandLabel(report.overall)}
             </span>
-          ) : null}
+            {report.discoveryTier ? (
+              <span className="rounded-full bg-mingle-lavender px-2.5 py-1 text-[10px] font-semibold text-mingle-text-secondary">
+                {TIER_LABEL[report.discoveryTier] ?? report.discoveryTier}
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      {!compact ? <FitBars axes={report.axes} /> : null}
+      {!compact && !omitOverview ? (
+        <FitBars axes={report.axes} report={report} />
+      ) : null}
 
       {report.technicalSignal ? (
         <p className="text-[11px] leading-snug text-mingle-text">

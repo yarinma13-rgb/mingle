@@ -10,38 +10,41 @@ export function MatchScoreRing({
   score,
   size = 72,
   showLabel = false,
+  labelBeside = false,
 }: {
   score: number;
   size?: number;
   /** When true, render for light surfaces (Discover desktop aside / list). */
   showLabel?: boolean;
+  /** Place "Match" to the right of the ring (profile card mockup). */
+  labelBeside?: boolean;
 }) {
   const gid = useId().replace(/:/g, "");
   const value = Math.max(0, Math.min(100, Math.round(score)));
-  const stroke = size >= 64 ? 7 : 5;
+  const stroke = size >= 88 ? 8 : size >= 64 ? 7 : 5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
   const track = showLabel
-    ? "var(--mingle-border)"
+    ? "color-mix(in srgb, var(--mingle-lavender) 70%, var(--mingle-border))"
     : "rgba(255,255,255,0.25)";
   const labelColor = showLabel ? "text-mingle-text" : "text-white";
   const shell = showLabel
-    ? "bg-mingle-surface-elevated shadow-mingle"
-    : "bg-black/25 shadow-sm backdrop-blur";
+    ? "bg-transparent"
+    : "bg-black/25 shadow-sm backdrop-blur rounded-full";
 
-  return (
+  const ring = (
     <div
-      className={`relative shrink-0 rounded-full ${shell}`}
+      className={`relative shrink-0 ${shell}`}
       style={{ width: size, height: size }}
       aria-label={`Match score ${value}%`}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <defs>
-          <linearGradient id={`${gid}-ring`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--mingle-pink)" />
-            <stop offset="48%" stopColor="var(--mingle-purple)" />
-            <stop offset="100%" stopColor="var(--mingle-blue)" />
+          <linearGradient id={`${gid}-ring`} x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--mingle-blue)" />
+            <stop offset="45%" stopColor="var(--mingle-purple)" />
+            <stop offset="100%" stopColor="var(--mingle-pink)" />
           </linearGradient>
         </defs>
         <circle
@@ -63,6 +66,7 @@ export function MatchScoreRing({
           strokeDasharray={c}
           strokeDashoffset={offset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          className="motion-safe:transition-[stroke-dashoffset] motion-safe:duration-700 motion-safe:ease-out"
         />
       </svg>
       <span
@@ -71,12 +75,41 @@ export function MatchScoreRing({
         <span className={size >= 88 ? "text-xl" : size >= 64 ? "text-sm" : "text-[11px]"}>
           {value}%
         </span>
-        {showLabel && size >= 72 ? (
-          <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-mingle-text-secondary">
+        {showLabel && !labelBeside && size >= 72 ? (
+          <span className="mt-0.5 text-[9px] font-semibold tracking-[0.06em] text-mingle-text-secondary">
             Match
           </span>
         ) : null}
       </span>
     </div>
+  );
+
+  if (showLabel && labelBeside) {
+    return (
+      <div className="flex items-center gap-2.5" aria-label={`Match score ${value}%`}>
+        {ring}
+        <span className="flex items-center gap-1 font-display text-sm font-bold text-mingle-text">
+          Match
+          <SparkleMark />
+        </span>
+      </div>
+    );
+  }
+
+  return ring;
+}
+
+function SparkleMark() {
+  return (
+    <svg
+      width={12}
+      height={12}
+      viewBox="0 0 16 16"
+      fill="var(--mingle-purple)"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path d="M8 0.5 9.4 6.6 15.5 8 9.4 9.4 8 15.5 6.6 9.4 0.5 8 6.6 6.6Z" />
+    </svg>
   );
 }

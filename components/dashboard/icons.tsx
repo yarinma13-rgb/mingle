@@ -206,3 +206,55 @@ export function ShieldCheckIcon({ className, size = 18 }: IconProps) {
     </svg>
   );
 }
+
+export function HeartIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
+    </svg>
+  );
+}
+
+export function CodeBracketsIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path d="M8.5 7.5 5 12l3.5 4.5M15.5 7.5 19 12l-3.5 4.5" />
+    </svg>
+  );
+}
+
+export function MapPinIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.8 12 21 12 21Z" />
+      <circle cx="12" cy="10.5" r="2.25" />
+    </svg>
+  );
+}
+
+export function SparkleIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path
+        d="M8 1.5 9.2 6.3 14 7.5 9.2 8.7 8 13.5 6.8 8.7 2 7.5 6.8 6.3Z"
+        fill="currentColor"
+        stroke="none"
+      />
+      <path
+        d="M13.5 9.5 14.2 12.2 17 13l-2.8.8-.7 2.7-.7-2.7L10 13l2.8-.8Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
+export function GraduationCapIcon({ className, size = 18 }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden>
+      <path d="M3 10.5 12 5.5l9 5-9 5-9-5Z" />
+      <path d="M7 12.5v4c0 1.2 2.2 2.5 5 2.5s5-1.3 5-2.5v-4" />
+      <path d="M21 10.5v5" />
+    </svg>
+  );
+}

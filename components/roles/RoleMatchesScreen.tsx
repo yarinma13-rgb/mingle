@@ -34,8 +34,21 @@ import { CandidateComparisonPanel } from "@/components/matching/CandidateCompari
 const TOP_N = 5;
 const MAX_COMPARE = 2;
 
+const RANK_GRADIENTS = [
+  "linear-gradient(90deg, var(--mingle-pink) 0%, var(--mingle-purple) 100%)",
+  "linear-gradient(90deg, var(--mingle-purple) 0%, var(--mingle-blue) 100%)",
+  "linear-gradient(90deg, var(--mingle-blue) 0%, #6b8fd4 100%)",
+] as const;
+
+const RANK_GLOWS = [
+  "rgba(234, 30, 99, 0.35)",
+  "rgba(123, 47, 247, 0.32)",
+  "rgba(62, 107, 224, 0.28)",
+] as const;
+
 function ResultCard({
   card,
+  rank,
   roleId,
   requiredSkills,
   viewerId,
@@ -46,6 +59,7 @@ function ResultCard({
   onToggleCompare,
 }: {
   card: DiscoveryCard;
+  rank: number;
   roleId: string;
   requiredSkills: string[];
   viewerId: string;
@@ -59,10 +73,14 @@ function ResultCard({
   const [supabase] = useState(() => createClient());
   const [feedback, setFeedback] = useState(initialFeedback);
   const [busy, setBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const skillOverlap = buildSkillOverlapSignal(
     card.skills ?? [],
     requiredSkills,
   );
+  const gradient = RANK_GRADIENTS[Math.min(rank, RANK_GRADIENTS.length - 1)];
+  const glow = RANK_GLOWS[Math.min(rank, RANK_GLOWS.length - 1)];
+  const score = Math.round(card.report.overall);
 
   async function interested() {
     if (feedback === "interested") return;
@@ -100,19 +118,34 @@ function ResultCard({
   }
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl border border-mingle-border bg-mingle-surface p-5">
-      <div className="flex items-center gap-3">
-        <Avatar
-          photo={card.photo}
-          initials={card.initial}
-          gender={card.gender}
-          size="md"
-        />
-        <div className="min-w-0">
-          <p className="truncate font-display text-sm font-semibold text-mingle-text">
+    <article className="flex flex-col gap-3 rounded-2xl border border-mingle-border/80 bg-mingle-surface p-4 shadow-[0_8px_24px_rgba(28,27,46,0.05)] transition-shadow duration-200 hover:shadow-mingle sm:p-5">
+      <div className="flex items-center gap-3.5">
+        <div className="relative shrink-0">
+          <span
+            aria-hidden
+            className="absolute -inset-1.5 rounded-full opacity-80 blur-md"
+            style={{ background: glow }}
+          />
+          <div
+            className="relative rounded-full p-[2.5px]"
+            style={{ background: gradient }}
+          >
+            <div className="rounded-full bg-mingle-surface p-[2px]">
+              <Avatar
+                photo={card.photo}
+                initials={card.initial}
+                gender={card.gender}
+                size="md"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-display text-[15px] font-bold tracking-tight text-mingle-text">
             {card.name}
           </p>
-          <p className="truncate text-xs text-mingle-text-secondary">
+          <p className="truncate text-[12px] text-mingle-text-secondary">
             {card.subtitle}
           </p>
           {rediscovery ? (
@@ -120,26 +153,40 @@ function ResultCard({
               {formatRediscoveryLabel(rediscovery)}
             </p>
           ) : null}
-        </div>
-        <label className="ml-auto flex shrink-0 items-center gap-1.5 self-start text-[11px] font-medium text-mingle-text-secondary">
-          <input
-            type="checkbox"
-            checked={compareChecked}
-            onChange={() => onToggleCompare(card.userId)}
-            className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
-          />
-          Compare
-        </label>
-      </div>
-      <MatchReportBody report={card.report} compact />
-      {skillOverlap ? (
-        <p className="text-[11px] leading-snug text-mingle-text">
-          <span className="font-semibold">Skill overlap vs role:</span>{" "}
-          <span className="text-mingle-text-secondary">
-            {skillOverlap.finding}
+          <span
+            className="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold text-white"
+            style={{ background: gradient }}
+          >
+            {score}% match
           </span>
-        </p>
-      ) : null}
+        </div>
+
+        <div className="flex shrink-0 flex-col items-end gap-2 self-start">
+          <label className="flex items-center gap-1.5 text-[11px] font-medium text-mingle-text-secondary">
+            <input
+              type="checkbox"
+              checked={compareChecked}
+              onChange={() => onToggleCompare(card.userId)}
+              className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
+            />
+            Compare
+          </label>
+          <Link
+            href={`/profile/view/${card.userId}`}
+            onClick={() =>
+              track(AnalyticsEvent.matchViewed, {
+                role_id: roleId,
+                target_user_id: card.userId,
+              })
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-mingle-text transition-colors hover:bg-mingle-lavender"
+            aria-label={`View ${card.name}`}
+          >
+            →
+          </Link>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/profile/view/${card.userId}`}
@@ -165,16 +212,45 @@ function ResultCard({
             No CV
           </span>
         )}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="ml-auto text-[11px] font-semibold text-mingle-text-secondary underline decoration-dotted hover:text-mingle-text"
+        >
+          {expanded ? "Hide details" : "Match details"}
+        </button>
       </div>
-      <div className="flex flex-col gap-2">
-        <MatchFeedbackActions
-          audience="company"
-          action={feedback}
-          busy={busy}
-          onInterested={() => void interested()}
-          onNotFit={(reason) => void notFit(reason)}
-        />
-      </div>
+
+      {expanded ? (
+        <div className="flex flex-col gap-3 border-t border-mingle-border/70 pt-3">
+          <MatchReportBody report={card.report} compact />
+          {skillOverlap ? (
+            <p className="text-[11px] leading-snug text-mingle-text">
+              <span className="font-semibold">Skill overlap vs role:</span>{" "}
+              <span className="text-mingle-text-secondary">
+                {skillOverlap.finding}
+              </span>
+            </p>
+          ) : null}
+          <MatchFeedbackActions
+            audience="company"
+            action={feedback}
+            busy={busy}
+            onInterested={() => void interested()}
+            onNotFit={(reason) => void notFit(reason)}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <MatchFeedbackActions
+            audience="company"
+            action={feedback}
+            busy={busy}
+            onInterested={() => void interested()}
+            onNotFit={(reason) => void notFit(reason)}
+          />
+        </div>
+      )}
     </article>
   );
 }
@@ -210,6 +286,7 @@ export function RoleMatchesScreen({
   const compareCards = compareIds
     .map((id) => cards.find((card) => card.userId === id))
     .filter((card): card is DiscoveryCard => card != null);
+  const perfectCount = Math.min(visible.length, TOP_N);
 
   async function persistPass(userId: string) {
     try {
@@ -245,14 +322,7 @@ export function RoleMatchesScreen({
           {roleTitle}
         </h2>
         <p className="mt-1 text-sm text-mingle-text-secondary">
-          {visible.length === 0
-            ? "No strong matches in this view yet."
-            : visible.length <= TOP_N
-              ? `${visible.length} strong match${visible.length === 1 ? "" : "es"}.`
-              : `${visible.length} strong matches. Top ${TOP_N} shown first.`}
-        </p>
-        <p className="mt-1 text-xs font-semibold text-mingle-text-secondary">
-          Sort: Best Match
+          Ranked by Best Match — Role, Human, and Motivation Fit.
         </p>
       </div>
       {poolInsight ? (
@@ -279,22 +349,34 @@ export function RoleMatchesScreen({
           actionLabel="Open Discover"
         />
       ) : (
-        <div className="flex flex-col gap-4">
-          {listed.map((card) => (
-            <ResultCard
-              key={card.userId}
-              card={card}
-              roleId={roleId}
-              requiredSkills={requiredSkills}
-              viewerId={viewerId}
-              initialFeedback={feedbackByUser[card.userId] ?? null}
-              rediscovery={rediscoveryByUser[card.userId] ?? null}
-              onPass={persistPass}
-              compareChecked={compareIds.includes(card.userId)}
-              onToggleCompare={toggleCompare}
-            />
-          ))}
-        </div>
+        <section className="rounded-[28px] border border-mingle-border bg-mingle-surface p-4 shadow-mingle sm:p-6">
+          <h3 className="font-display text-lg font-bold tracking-tight text-mingle-text">
+            {perfectCount} perfect match{perfectCount === 1 ? "" : "es"}
+          </h3>
+          <p className="mt-1 text-xs text-mingle-text-secondary">
+            Sort: Best Match
+            {visible.length > TOP_N
+              ? ` · ${visible.length} total — top ${TOP_N} shown first`
+              : null}
+          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            {listed.map((card, index) => (
+              <ResultCard
+                key={card.userId}
+                card={card}
+                rank={index}
+                roleId={roleId}
+                requiredSkills={requiredSkills}
+                viewerId={viewerId}
+                initialFeedback={feedbackByUser[card.userId] ?? null}
+                rediscovery={rediscoveryByUser[card.userId] ?? null}
+                onPass={persistPass}
+                compareChecked={compareIds.includes(card.userId)}
+                onToggleCompare={toggleCompare}
+              />
+            ))}
+          </div>
+        </section>
       )}
       {!showAll && visible.length > TOP_N ? (
         <button
