@@ -87,15 +87,23 @@
   z-index: -1;
   border-radius: 0 0 40% 40% / 0 0 18% 18%;
   background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, #ea1e63 18%, transparent),
-      color-mix(in srgb, #7b2ff7 22%, transparent) 45%,
-      color-mix(in srgb, #3e6be0 18%, transparent)
+    radial-gradient(
+      520px 280px at 78% 30%,
+      color-mix(in srgb, #ea1e63 28%, transparent),
+      transparent 70%
     ),
-    url("/investors/be834461-28e2-4a80-9fc2-69d4ed32f940.jpg") center 20% / cover no-repeat;
-  opacity: 0.22;
-  filter: saturate(1.05);
+    radial-gradient(
+      480px 260px at 18% 40%,
+      color-mix(in srgb, #7b2ff7 26%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      420px 240px at 55% 10%,
+      color-mix(in srgb, #3e6be0 20%, transparent),
+      transparent 65%
+    );
+  opacity: 0.9;
+  filter: blur(2px);
 }
 
 .inv-hero-brand {
