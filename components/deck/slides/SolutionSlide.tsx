@@ -31,6 +31,7 @@ export function SolutionSlide() {
     <SlideShell
       kicker="הפתרון"
       title="Mutual Matching בשלוש שכבות"
+      titleDir="rtl"
       subtitle="לא עוד אלגוריתם התאמה שחור. שלוש שכבות שמסבירות למה החיבור הגיוני, ומה עדיין צריך לבדוק."
     >
       <div className="flex w-full max-w-5xl flex-col items-center gap-6">

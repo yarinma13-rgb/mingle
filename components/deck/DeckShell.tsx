@@ -70,9 +70,15 @@ export function DeckShell() {
         setNotesOpen((open) => !open);
       } else if (event.key === "a" || event.key === "A") {
         setMode((prev) => {
-          const next = prev === "main" ? "all" : "main";
+          if (prev === "main") {
+            const firstAppendix = DECK_SLIDES.findIndex(
+              (slide) => slide.section === "appendix",
+            );
+            setIndex(firstAppendix >= 0 ? firstAppendix : 0);
+            return "all";
+          }
           setIndex(0);
-          return next;
+          return "main";
         });
       }
     };
@@ -136,7 +142,7 @@ export function DeckShell() {
           ))}
         </div>
 
-        <div className="deck-chrome-meta">
+        <div className="deck-chrome-meta" style={{ direction: "ltr" }}>
           <span>
             {safeIndex + 1} / {slides.length}
             {mode === "main" ? ` · ${MAIN_SLIDE_COUNT} main` : " · + Appendix"}
@@ -146,8 +152,17 @@ export function DeckShell() {
             className="deck-chrome-btn"
             data-active={mode === "all" ? "true" : "false"}
             onClick={() => {
-              setMode((prev) => (prev === "main" ? "all" : "main"));
-              setIndex(0);
+              setMode((prev) => {
+                if (prev === "main") {
+                  const firstAppendix = DECK_SLIDES.findIndex(
+                    (slide) => slide.section === "appendix",
+                  );
+                  setIndex(firstAppendix >= 0 ? firstAppendix : 0);
+                  return "all";
+                }
+                setIndex(0);
+                return "main";
+              });
             }}
           >
             Appendix

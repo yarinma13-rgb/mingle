@@ -30,7 +30,10 @@ export function OpeningSlide() {
         <p className="font-display text-[2.8rem] font-bold tracking-[-0.03em] text-[color:var(--deck-dark)] sm:text-[3.4rem]">
           mingle
         </p>
-        <p className="mt-3 font-display text-2xl font-semibold tracking-[-0.02em] deck-gradient-text sm:text-3xl">
+        <p
+          className="mt-3 font-display text-2xl font-semibold tracking-[-0.02em] deck-gradient-text sm:text-3xl"
+          dir="ltr"
+        >
           Beyond the match.
         </p>
         <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-[color:var(--deck-secondary)]">
@@ -38,7 +41,7 @@ export function OpeningSlide() {
         </p>
       </div>
 
-      <div className="relative z-10 flex items-end justify-between gap-4">
+      <div className="relative z-10 flex items-end justify-between gap-4" dir="ltr">
         <p className="text-sm font-medium text-[color:var(--deck-secondary)]">
           Future of Work · Mutual Matching
         </p>

@@ -9,6 +9,7 @@ export function SlideShell({
   children,
   compact,
   className = "",
+  titleDir,
 }: {
   kicker?: string;
   title?: string;
@@ -16,13 +17,18 @@ export function SlideShell({
   children: ReactNode;
   compact?: boolean;
   className?: string;
+  titleDir?: "ltr" | "rtl";
 }) {
   return (
     <div className={`deck-slide-inner ${compact ? "compact" : ""} ${className}`.trim()}>
       {(kicker || title || subtitle) && (
         <header>
           {kicker ? <p className="deck-kicker">{kicker}</p> : null}
-          {title ? <h1 className="deck-title">{title}</h1> : null}
+          {title ? (
+            <h1 className="deck-title" dir={titleDir}>
+              {title}
+            </h1>
+          ) : null}
           {subtitle ? <p className="deck-subtitle">{subtitle}</p> : null}
         </header>
       )}
