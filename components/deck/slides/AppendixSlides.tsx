@@ -253,27 +253,53 @@ export function AppendixCompetitiveSlide() {
     <SlideShell
       kicker="Appendix · Landscape"
       title="איפה mingle שונה"
-      subtitle="רוב הכלים עוזרים לאחסן או לחפש. mingle מסבירה למה כדאי לדבר."
+      subtitle="רוב הכלים עוזרים לנהל תהליך או לחפש אנשים. mingle מסבירה למה כדאי לדבר."
     >
-      <div className="grid w-full max-w-4xl gap-4 md:grid-cols-2">
-        <article className="deck-card p-6">
-          <h3 className="font-display text-lg font-bold">כלים קיימים</h3>
-          <ul className="mt-4 space-y-3 text-sm text-[color:var(--deck-secondary)]">
-            <li>ATS וניהול תהליך</li>
-            <li>Job boards ונפח מועמדים</li>
-            <li>חיפוש לפי מילות מפתח</li>
-            <li>ציונים בלי הסבר מספיק</li>
-          </ul>
-        </article>
-        <article className="deck-soft-panel p-6">
-          <h3 className="font-display text-lg font-bold">mingle</h3>
-          <ul className="mt-4 space-y-3 text-sm text-[color:var(--deck-dark)]">
-            <li>Explained shortlists</li>
-            <li>Role · Human · Motivation Fit</li>
-            <li>Potential gaps לפני השיחה</li>
-            <li>Relationship לפני ואחרי ההעסקה</li>
-          </ul>
-        </article>
+      <div className="flex w-full max-w-5xl flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {["PeopleForce", "ATS", "Job boards", "Keyword search"].map(
+            (name) => (
+              <span key={name} className="deck-pill">
+                {name}
+              </span>
+            ),
+          )}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <article className="deck-card p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[color:var(--deck-secondary)]">
+              Landscape
+            </p>
+            <h3 className="mt-2 font-display text-lg font-bold">
+              PeopleForce וכלים דומים
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm text-[color:var(--deck-secondary)]">
+              <li>HR suite וניהול תהליך גיוס</li>
+              <li>ארגון מועמדים, משרות וWorkflow</li>
+              <li>חיפוש וסינון לפי מילות מפתח</li>
+              <li>פחות דגש על למה באמת יש Fit</li>
+            </ul>
+          </article>
+          <article className="deck-soft-panel p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[color:var(--deck-purple)]">
+              mingle
+            </p>
+            <h3 className="mt-2 font-display text-lg font-bold">
+              Explained Mutual Matching
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm text-[color:var(--deck-dark)]">
+              <li>Strong Matches עם Why this match</li>
+              <li>Role · Human · Motivation Fit</li>
+              <li>Potential gaps לפני השיחה</li>
+              <li>Relationship layer לפני ואחרי ההעסקה</li>
+            </ul>
+          </article>
+        </div>
+
+        <p className="text-center text-sm font-medium text-[color:var(--deck-secondary)]">
+          לא מחליפים מערכת HR. מוסיפים שכבת הבנה שחסרה לפני החיבור.
+        </p>
       </div>
     </SlideShell>
   );

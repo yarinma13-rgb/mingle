@@ -213,7 +213,7 @@ export const DECK_SLIDES: DeckSlideDef[] = [
     id: "appendix-landscape",
     section: "appendix",
     label: "Landscape",
-    notes: "השוואה עדינה מול כלים קיימים.",
+    notes: "PeopleForce וכלים דומים מנהלים תהליך. mingle מוסיפה הבנת Fit לפני החיבור.",
     render: () => <AppendixCompetitiveSlide />,
   },
   {
