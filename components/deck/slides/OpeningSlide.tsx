@@ -12,9 +12,9 @@ export function OpeningSlide() {
         style={{ background: "var(--deck-soft-gradient)" }}
       />
       <div className="relative z-10 flex items-start justify-between gap-6">
-        <MingleLogo size={56} priority />
+        <MingleLogo size={64} priority />
         <div className="flex items-center gap-4">
-          <div className="text-left" style={{ direction: "ltr", textAlign: "left" }}>
+          <div dir="rtl" className="text-right">
             <p className="font-display text-sm font-bold text-[color:var(--deck-dark)]">
               ירין כהן
             </p>
@@ -22,7 +22,7 @@ export function OpeningSlide() {
               Founder
             </p>
           </div>
-          <FounderPhoto size={72} />
+          <FounderPhoto size={88} />
         </div>
       </div>
 

@@ -24,7 +24,7 @@ export function FounderSlide() {
     >
       <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="deck-soft-panel flex flex-col items-center gap-4 p-8 text-center">
-          <FounderPhoto size={128} />
+          <FounderPhoto size={140} />
           <div>
             <p className="font-display text-2xl font-bold">ירין כהן</p>
             <p className="mt-1 text-sm font-semibold text-[color:var(--deck-purple)]">

@@ -313,7 +313,7 @@ export function AppendixFounderSlide() {
       subtitle="פירוט נוסף אם עולה שאלה על המייסדת או על החיבור לבעיה."
     >
       <div className="flex w-full max-w-3xl flex-col items-center gap-6 text-center">
-        <FounderPhoto size={112} />
+        <FounderPhoto size={120} />
         <div>
           <p className="font-display text-2xl font-bold">ירין כהן</p>
           <p className="mt-1 text-sm font-semibold text-[color:var(--deck-purple)]">
