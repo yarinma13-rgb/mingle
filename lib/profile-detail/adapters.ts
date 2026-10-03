@@ -36,6 +36,8 @@ export function toTalentProfile(row: TalentRow): ProfileState {
         ? (row.github_meta as Record<string, unknown>)
         : null,
     isEmployed: typeof row.is_employed === "boolean" ? row.is_employed : null,
+    currentEmployer:
+      typeof row.current_employer === "string" ? row.current_employer : "",
     discreetSearch: Boolean(row.discreet_search),
     startAvailability: isStartAvailability(row.start_availability)
       ? row.start_availability
