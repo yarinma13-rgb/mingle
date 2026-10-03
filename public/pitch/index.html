@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mingle · Investor Brief</title>
+    <meta
+      name="description"
+      content="mingle investor brief — folder-based pitch demos for Mutual Match Intelligence."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="assets/mingle-mark.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <nav class="nav" aria-label="Investor brief">
+        <a class="brand" href="./">
+          <img src="assets/mingle-mark.png" alt="" width="34" height="34" />
+          <span>mingle</span>
+        </a>
+        <span class="pill">Investor Brief</span>
+      </nav>
+
+      <header class="hero">
+        <div class="hero-bg" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <p class="hero-kicker">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2zm7 11.5.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6zM5.5 14l.8 2.2L8.5 17l-2.2.8L5.5 20l-.8-2.2L2.5 17l2.2-.8L5.5 14z"
+              />
+            </svg>
+            AI powered mutual matching
+          </p>
+          <h1 class="hero-title">
+            The intelligence layer between people,
+            <span class="grad">companies, roles and careers.</span>
+          </h1>
+          <p class="hero-sub">
+            Open a topic folder — a short demo pops up. Press Play for ~50 seconds
+            of investor-ready storytelling, in meeting order.
+          </p>
+          <p class="hero-meta">Role. Human. Motivation.</p>
+          <button class="cta" type="button" id="startBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.5v13l11-6.5L8 5.5z" />
+            </svg>
+            Start with the founder
+          </button>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-orb">
+            <img class="hero-portrait-img" src="assets/hero-portrait.jpg" alt="" />
+          </div>
+          <div class="float-card a">
+            <strong>Great match!</strong>
+            <span>Skills + Personality + Goals</span>
+          </div>
+          <div class="float-card b">
+            <div class="chip-row">
+              <span class="mini-chip"><i class="dot" style="background:#ea1e63"></i> Role</span>
+              <span class="mini-chip"><i class="dot" style="background:#7b2ff7"></i> Human</span>
+              <span class="mini-chip"><i class="dot" style="background:#3e6be0"></i> Motivation</span>
+            </div>
+          </div>
+          <div class="float-card c">
+            <strong>Mutual fit across the team</strong>
+            <span>People × roles × culture</span>
+            <div class="avatars">
+              <i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="problem-strip">
+        <span aria-hidden="true">◎</span>
+        <div>
+          <b>THE REAL PROBLEM:</b>
+          It is not finding more candidates. It is understanding the match.
+        </div>
+      </div>
+
+      <section class="desk" id="folders" aria-labelledby="desk-title">
+        <div class="desk-head">
+          <div>
+            <p class="desk-kicker">Meeting flow</p>
+            <h2 class="desk-title" id="desk-title">Topic folders</h2>
+          </div>
+          <p class="desk-hint">
+            Click a folder → the demo opens. Expanded content lives inside the
+            film, so the desk stays light.
+          </p>
+        </div>
+        <div class="folders" id="folderGrid"></div>
+      </section>
+
+      <footer class="footer">
+        <div><strong>mingle</strong> · Ideas are what shape the world</div>
+        <div>Confidential · For investor conversations</div>
+      </footer>
+    </div>
+
+    <div class="modal" id="modal" aria-hidden="true">
+      <button class="backdrop" type="button" aria-label="Close"></button>
+      <div class="panel" role="dialog" aria-modal="true" aria-labelledby="playerTitle">
+        <div class="player-top">
+          <div>
+            <strong id="playerTitle">Topic</strong>
+            <span id="playerTag">Demo</span>
+          </div>
+          <button class="close" type="button" aria-label="Close">×</button>
+        </div>
+        <div class="stage">
+          <div class="stage-inner" id="stage"></div>
+          <div class="idle" id="idle">
+            <button class="idle-btn" type="button" id="idlePlay">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5.5v13l11-6.5L8 5.5z" />
+              </svg>
+              Play demo · ~50s
+            </button>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="playbtn" type="button" id="playBtn" aria-label="Play">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.5v13l11-6.5L8 5.5z" />
+            </svg>
+          </button>
+          <input class="progress" id="progress" type="range" min="0" max="1000" value="0" />
+          <div class="time" id="time">0:00 / 0:00</div>
+        </div>
+        <div class="next-row">
+          <button class="next" type="button" id="nextBtn">Next topic →</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
