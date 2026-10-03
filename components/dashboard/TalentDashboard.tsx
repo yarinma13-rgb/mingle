@@ -193,7 +193,7 @@ export function TalentDashboard({
                         {company.industry || company.mission || "—"}
                       </td>
                       <td className="py-3 pr-4">
-                        <MingleChip>{company.matchScore}% match</MingleChip>
+                        <MingleChip score={company.matchScore}>{company.matchScore}% match</MingleChip>
                       </td>
                       <td className="py-3 pr-4 text-mingle-text-secondary">
                         {company.location || "—"}
@@ -218,7 +218,7 @@ export function TalentDashboard({
                     <p className="font-display text-sm font-semibold tracking-tight text-mingle-text transition-colors group-hover:text-mingle-cta">
                       {company.companyName}
                     </p>
-                    <MingleChip tone="pink">{company.matchScore}% match</MingleChip>
+                    <MingleChip score={company.matchScore}>{company.matchScore}% match</MingleChip>
                   </div>
                   <p className="text-xs leading-relaxed text-mingle-text-secondary">
                     {company.mission}

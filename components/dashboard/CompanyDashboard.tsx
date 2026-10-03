@@ -297,7 +297,7 @@ export function CompanyDashboard({
                         {candidate.headline || "—"}
                       </td>
                       <td className="py-3 pr-4">
-                        <MingleChip>{candidate.matchScore}% match</MingleChip>
+                        <MingleChip score={candidate.matchScore}>{candidate.matchScore}% match</MingleChip>
                       </td>
                       <td className="py-3 pr-4 text-mingle-text-secondary">
                         {candidate.location || "—"}
@@ -330,7 +330,7 @@ export function CompanyDashboard({
                         {candidate.name}
                       </p>
                     </div>
-                    <MingleChip tone="pink" className="shrink-0">
+                    <MingleChip score={candidate.matchScore} className="shrink-0">
                       {candidate.matchScore}% match
                     </MingleChip>
                   </div>

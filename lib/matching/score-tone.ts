@@ -49,6 +49,18 @@ export function scoreChipClass(score: number): string {
   }
 }
 
+/**
+ * Vivid gradient treatment for match-score badges (pill chips showing
+ * "N% match"), sliced from the brand gradient by how strong the match is —
+ * top scores get the warm pink→purple end, weaker ones settle into blue.
+ */
+export function scoreBadgeClass(score: number): string {
+  const n = Math.max(0, Math.min(100, Math.round(score)));
+  if (n >= 90) return "bg-gradient-to-br from-mingle-pink to-mingle-purple text-white";
+  if (n >= 80) return "bg-gradient-to-br from-mingle-purple to-mingle-blue text-white";
+  return "bg-mingle-blue text-white";
+}
+
 export function scoreBandLabel(score: number): string {
   switch (scoreBand(score)) {
     case "high":

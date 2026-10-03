@@ -34,7 +34,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
-import { scoreChipClass } from "@/lib/matching/score-tone";
+import { scoreChipClass, scoreBadgeClass } from "@/lib/matching/score-tone";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 import {
   CandidateProfileCvActions,
@@ -651,7 +651,7 @@ export function DiscoveryScreen({
                 </p>
               </div>
               <span
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(card.score)}`}
+                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${scoreBadgeClass(card.score)}`}
               >
                 {card.score}% · {card.report.strength}
               </span>
@@ -713,7 +713,7 @@ export function DiscoveryScreen({
                 ) : null}
               </div>
               <span
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${scoreChipClass(card.score)}`}
+                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${scoreBadgeClass(card.score)}`}
               >
                 {card.score}% · {card.report.strength}
               </span>

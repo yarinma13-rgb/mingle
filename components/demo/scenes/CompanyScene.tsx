@@ -157,7 +157,7 @@ export function CompanyScene({
                       {candidate.headline}
                     </p>
                   </div>
-                  <MingleChip>{candidate.matchScore}% match</MingleChip>
+                  <MingleChip score={candidate.matchScore}>{candidate.matchScore}% match</MingleChip>
                 </button>
               </li>
             ))}

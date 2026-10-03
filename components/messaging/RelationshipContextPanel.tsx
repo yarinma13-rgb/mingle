@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MingleChip } from "@/components/MingleChip";
 import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import type { MatchFactor } from "@/lib/matching/engine";
+import { scoreBadgeClass } from "@/lib/matching/score-tone";
 import type { RelationshipStage } from "@/lib/supabase/types";
 import type { RelationshipEventRow } from "@/lib/relationship/persistence";
 
@@ -96,8 +97,7 @@ export function RelationshipContextPanel({
     <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
       <div className="flex items-center gap-3">
         <span
-          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-          style={{ background: "var(--mingle-connection-gradient)" }}
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${scoreBadgeClass(score)}`}
         >
           {score}% match
         </span>

@@ -21,7 +21,7 @@ import {
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 import type { InterviewProposal } from "@/lib/interviews/proposals";
 import { notifyPushMessage } from "@/lib/push/actions";
-import { scoreChipClass } from "@/lib/matching/score-tone";
+import { scoreBadgeClass } from "@/lib/matching/score-tone";
 
 function SendIcon({ size = 18 }: { size?: number }) {
   return (
@@ -193,7 +193,7 @@ export function ConversationScreen({
         <div className="ml-auto flex min-w-0 shrink-0 items-center gap-3">
                     {typeof matchScore === "number" ? (
             <span
-              className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${scoreChipClass(matchScore)}`}
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${scoreBadgeClass(matchScore)}`}
             >
               {matchScore}%
             </span>
