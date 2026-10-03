@@ -33,6 +33,10 @@ import {
   talentDomainSignature,
 } from "@/lib/discovery/domain-affinity";
 import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
+import {
+  employerDomainForExclusion,
+  isOwnEmployeeByDomain,
+} from "@/lib/matching/employer-exclusion";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -124,7 +128,7 @@ export async function loadDiscoveryPage(
         ? query.order("updated_at", { ascending: false }).limit(400)
         : query.order("updated_at", { ascending: false }).range(from, to);
 
-    const [ownInput, listed, viewerCompany] = await Promise.all([
+    const [ownInput, listed, viewerCompany, viewerAccount] = await Promise.all([
       loadCompanyMatchInput(supabase, viewer.id),
       listedQuery,
       supabase
@@ -132,6 +136,7 @@ export async function loadDiscoveryPage(
         .select("latitude, longitude")
         .eq("user_id", viewer.id)
         .maybeSingle(),
+      supabase.from("users").select("email").eq("id", viewer.id).maybeSingle(),
     ]);
     const { data, count, error } = listed;
     if (error) {
@@ -189,6 +194,32 @@ export async function loadDiscoveryPage(
         );
         activeRows = rowsForCards.filter(
           (row) => !pendingDeletion.has(row.user_id),
+        );
+      }
+    }
+
+    // Safety: never let a candidate appear as a match to their own current
+    // employer, so an employer browsing mingle can't discover one of their
+    // own employees quietly job-hunting. Applies unconditionally — not
+    // gated on the candidate's discreet-search flag — using their verified
+    // work-email domain (see lib/matching/employer-exclusion.ts).
+    const companyDomain = employerDomainForExclusion(viewerAccount.data?.email);
+    if (companyDomain && activeRows.length > 0) {
+      const { data: candidateEmailRows } = await supabase
+        .from("users")
+        .select("id, email")
+        .in(
+          "id",
+          activeRows.map((row) => row.user_id),
+        );
+      const ownEmployeeIds = new Set(
+        (candidateEmailRows ?? [])
+          .filter((row) => isOwnEmployeeByDomain(row.email, companyDomain))
+          .map((row) => row.id),
+      );
+      if (ownEmployeeIds.size > 0) {
+        activeRows = activeRows.filter(
+          (row) => !ownEmployeeIds.has(row.user_id),
         );
       }
     }
