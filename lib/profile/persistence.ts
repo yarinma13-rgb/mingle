@@ -33,6 +33,10 @@ export type ProfileState = {
   githubLogin: string | null;
   githubMeta: Record<string, unknown> | null;
   isEmployed: boolean | null;
+  /** Self-reported current employer, required when isEmployed is true.
+   *  Private — used only for employer-exclusion matching safety, never
+   *  shown publicly. See lib/matching/employer-exclusion.ts. */
+  currentEmployer: string;
   discreetSearch: boolean;
   startAvailability: StartAvailability | null;
   targetRole: string;
@@ -62,6 +66,7 @@ export const EMPTY_PROFILE: ProfileState = {
   githubLogin: null,
   githubMeta: null,
   isEmployed: null,
+  currentEmployer: "",
   discreetSearch: false,
   startAvailability: null,
   targetRole: "",
@@ -76,7 +81,12 @@ function hasBasicInfo(p: ProfileState) {
 }
 
 function hasSearchStatus(p: ProfileState) {
-  return p.isEmployed !== null && Boolean(p.startAvailability) && Boolean(p.targetRole.trim());
+  return (
+    p.isEmployed !== null &&
+    Boolean(p.startAvailability) &&
+    Boolean(p.targetRole.trim()) &&
+    (!p.isEmployed || Boolean(p.currentEmployer.trim()))
+  );
 }
 
 /**
@@ -147,6 +157,8 @@ export async function loadProfile(
     maxCommuteKm:
       typeof data.max_commute_km === "number" ? data.max_commute_km : 0,
     isEmployed: typeof data.is_employed === "boolean" ? data.is_employed : null,
+    currentEmployer:
+      typeof data.current_employer === "string" ? data.current_employer : "",
     discreetSearch: Boolean(data.discreet_search),
     startAvailability: isStartAvailability(data.start_availability)
       ? data.start_availability
@@ -179,6 +191,7 @@ export async function saveProfilePatch(
     salary_expectation: number | null;
     max_commute_km: number | null;
     is_employed: boolean | null;
+    current_employer: string | null;
     discreet_search: boolean;
     start_availability: string | null;
     target_role: string | null;
@@ -190,6 +203,7 @@ export async function saveProfilePatch(
     salary_expectation,
     max_commute_km,
     is_employed,
+    current_employer,
     discreet_search,
     start_availability,
     target_role,
@@ -217,6 +231,7 @@ export async function saveProfilePatch(
     "salary_expectation" in patch ||
     "max_commute_km" in patch ||
     "is_employed" in patch ||
+    "current_employer" in patch ||
     "discreet_search" in patch ||
     "start_availability" in patch ||
     "target_role" in patch
@@ -227,6 +242,7 @@ export async function saveProfilePatch(
       salary_expectation?: number | null;
       max_commute_km?: number | null;
       is_employed?: boolean | null;
+      current_employer?: string | null;
       discreet_search?: boolean;
       start_availability?: string | null;
       target_role?: string | null;
@@ -237,6 +253,9 @@ export async function saveProfilePatch(
     if ("salary_expectation" in patch) extra.salary_expectation = salary_expectation ?? null;
     if ("max_commute_km" in patch) extra.max_commute_km = max_commute_km ?? null;
     if ("is_employed" in patch) extra.is_employed = is_employed ?? null;
+    if ("current_employer" in patch) {
+      extra.current_employer = current_employer?.trim() || null;
+    }
     if ("discreet_search" in patch) extra.discreet_search = Boolean(discreet_search);
     if ("start_availability" in patch) {
       extra.start_availability = start_availability ?? null;
@@ -247,7 +266,7 @@ export async function saveProfilePatch(
       .upsert(extra, { onConflict: "user_id" });
     if (
       extraError &&
-      !/skills|salary_expectation|max_commute_km|is_employed|discreet_search|start_availability|target_role|schema cache|column/i.test(
+      !/skills|salary_expectation|max_commute_km|is_employed|current_employer|discreet_search|start_availability|target_role|schema cache|column/i.test(
         extraError.message,
       )
     ) {
