@@ -34,7 +34,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/toast/ToastProvider";
 import { TalentPhotoImg } from "@/components/profile/TalentPhotoImg";
 import { avatarToneClass, type Gender } from "@/lib/profile/avatar";
-import { scoreChipClass, scoreBadgeClass } from "@/lib/matching/score-tone";
+import { scoreBadgeClass } from "@/lib/matching/score-tone";
 import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
 import {
   CandidateProfileCvActions,
