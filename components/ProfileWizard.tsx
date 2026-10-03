@@ -196,6 +196,7 @@ export function ProfileWizard() {
       salary_expectation: number | null;
       max_commute_km: number | null;
       is_employed: boolean | null;
+      current_employer: string | null;
       discreet_search: boolean;
       start_availability: string | null;
       target_role: string | null;
@@ -262,9 +263,13 @@ export function ProfileWizard() {
     if (profile.isEmployed === null) return;
     if (!profile.startAvailability) return;
     if (!profile.targetRole.trim()) return;
+    if (profile.isEmployed && !profile.currentEmployer.trim()) return;
     persistAndAdvance(
       {
         is_employed: profile.isEmployed,
+        current_employer: profile.isEmployed
+          ? profile.currentEmployer.trim()
+          : null,
         discreet_search: profile.discreetSearch,
         start_availability: profile.startAvailability,
         target_role: profile.targetRole.trim(),
@@ -469,7 +474,8 @@ export function ProfileWizard() {
   const searchStatusReady =
     profile.isEmployed !== null &&
     Boolean(profile.startAvailability) &&
-    Boolean(profile.targetRole.trim());
+    Boolean(profile.targetRole.trim()) &&
+    (!profile.isEmployed || Boolean(profile.currentEmployer.trim()));
 
   const stepHeadline =
     step === 1
@@ -727,6 +733,30 @@ export function ProfileWizard() {
                     ))}
                   </div>
                 </div>
+
+                {profile.isEmployed ? (
+                  <Field
+                    required
+                    label="Where do you currently work?"
+                  >
+                    <input
+                      type="text"
+                      value={profile.currentEmployer}
+                      onChange={(event) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          currentEmployer: event.target.value,
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="Company name"
+                    />
+                    <span className="mt-1 block text-[11px] font-normal text-mingle-text-secondary">
+                      Private — we use this only to make sure you never show
+                      up as a match to your own employer.
+                    </span>
+                  </Field>
+                ) : null}
 
                 <div>
                   <p className="mb-2 text-xs font-medium text-mingle-text-secondary">
