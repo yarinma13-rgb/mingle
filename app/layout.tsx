@@ -11,7 +11,7 @@ import { AppLocaleProvider } from "@/components/i18n/AppLocaleProvider";
 import { THEME_BOOTSTRAP } from "@/lib/theme/theme";
 import "./globals.css";
 
-/* Figtree is mingle’s product typeface; Rubik covers Hebrew glyphs. */
+/* Figtree is mingle's product typeface; Rubik covers Hebrew glyphs. */
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin", "latin-ext"],
@@ -45,6 +45,15 @@ export const viewport = {
   viewportFit: "cover" as const,
 };
 
+const ORGANIZATION_JSON_LD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "mingle",
+  url: "https://mingle.careers",
+  description:
+    "mingle is the career relationship platform that connects talent and companies before a hiring decision is made.",
+});
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -55,6 +64,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: ORGANIZATION_JSON_LD }}
+        />
       </head>
       <body className="mingle-app-canvas min-h-full flex flex-col font-sans text-mingle-text">
         <AppErrorBoundary>
