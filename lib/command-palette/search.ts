@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { CommandItem } from "@/lib/command-palette/items";
+import {
+  employerDomainForExclusion,
+  isOwnEmployeeByDomain,
+} from "@/lib/matching/employer-exclusion";
 
 function sanitize(raw: string): string {
   return raw.trim().replace(/[%_,]/g, " ").slice(0, 80);
@@ -49,7 +53,33 @@ export async function searchCompanyCommandItems(
       .limit(8),
   ]);
 
-  const talentItems: CommandItem[] = (talents ?? []).map((row) => {
+  // Safety: never let a company find their own current employee through
+  // search either — same rule as Discover/Matches, see
+  // lib/matching/employer-exclusion.ts. Command palette search bypasses
+  // matching entirely, so it needs this check independently.
+  const companyDomain = employerDomainForExclusion(user.email);
+  let visibleTalents = talents ?? [];
+  if (companyDomain && visibleTalents.length > 0) {
+    const { data: candidateEmailRows } = await supabase
+      .from("users")
+      .select("id, email")
+      .in(
+        "id",
+        visibleTalents.map((row) => row.user_id),
+      );
+    const ownEmployeeIds = new Set(
+      (candidateEmailRows ?? [])
+        .filter((row) => isOwnEmployeeByDomain(row.email, companyDomain))
+        .map((row) => row.id),
+    );
+    if (ownEmployeeIds.size > 0) {
+      visibleTalents = visibleTalents.filter(
+        (row) => !ownEmployeeIds.has(row.user_id),
+      );
+    }
+  }
+
+  const talentItems: CommandItem[] = visibleTalents.map((row) => {
     const name = `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim() || "Talent";
     const detail =
       row.headline?.trim() || row.current_job_title?.trim() || "Candidate";
