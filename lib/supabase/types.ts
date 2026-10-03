@@ -161,6 +161,7 @@ export interface Database {
           longitude: number | null;
           max_commute_km: number | null;
           is_employed: boolean | null;
+          current_employer: string | null;
           discreet_search: boolean;
           start_availability: string | null;
           target_role: string | null;
@@ -195,6 +196,7 @@ export interface Database {
           longitude?: number | null;
           max_commute_km?: number | null;
           is_employed?: boolean | null;
+          current_employer?: string | null;
           discreet_search?: boolean;
           start_availability?: string | null;
           target_role?: string | null;
@@ -226,6 +228,7 @@ export interface Database {
           longitude?: number | null;
           max_commute_km?: number | null;
           is_employed?: boolean | null;
+          current_employer?: string | null;
           discreet_search?: boolean;
           start_availability?: string | null;
           target_role?: string | null;
