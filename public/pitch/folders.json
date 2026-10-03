@@ -6,7 +6,7 @@
     "tagline": "Lived the problem from both sides",
     "accent": "purple",
     "durationLabel": "~50s",
-    "preview": "assets/87cf62ed-43b6-4029-aa40-633737f2f8b9.jpg",
+    "preview": "/pitch/assets/87cf62ed-43b6-4029-aa40-633737f2f8b9.jpg",
     "scenes": [
       {
         "id": "f1",
@@ -35,7 +35,12 @@
         "eyebrow": "The insight",
         "title": "Missing transparency. Missing certainty. Missing fit.",
         "body": "Interviews run one way. People interview another way. Then work starts — and the gaps show. Intuition alone is no longer enough.",
-        "chips": ["Process opacity", "Interview theater", "Day-1 reality gap", "Gut ≠ data"],
+        "chips": [
+          "Process opacity",
+          "Interview theater",
+          "Day-1 reality gap",
+          "Gut ≠ data"
+        ],
         "visual": "chips"
       },
       {
@@ -44,10 +49,22 @@
         "eyebrow": "Domain depth",
         "title": "Built from the inside",
         "stats": [
-          { "value": "1,000+", "label": "Hiring decisions observed" },
-          { "value": "10+", "label": "Companies exposed to the problem" },
-          { "value": "100+", "label": "Interviews with HR, recruiters & managers" },
-          { "value": "MVP", "label": "Validated with early users" }
+          {
+            "value": "1,000+",
+            "label": "Hiring decisions observed"
+          },
+          {
+            "value": "10+",
+            "label": "Companies exposed to the problem"
+          },
+          {
+            "value": "100+",
+            "label": "Interviews with HR, recruiters & managers"
+          },
+          {
+            "value": "MVP",
+            "label": "Validated with early users"
+          }
         ],
         "visual": "stats"
       },
@@ -69,7 +86,7 @@
     "tagline": "Fit is still hard to understand",
     "accent": "pink",
     "durationLabel": "~50s",
-    "preview": "assets/problem-ref.jpg",
+    "preview": "/pitch/assets/problem-ref.jpg",
     "scenes": [
       {
         "id": "p1",
@@ -140,7 +157,7 @@
     "tagline": "Mutual Match Intelligence",
     "accent": "magenta",
     "durationLabel": "~50s",
-    "preview": "assets/222092bb-1b46-49eb-9494-4a2c8341c4ff.jpg",
+    "preview": "/pitch/assets/222092bb-1b46-49eb-9494-4a2c8341c4ff.jpg",
     "scenes": [
       {
         "id": "s1",
@@ -158,11 +175,21 @@
         "title": "More than a CV. More than a JD.",
         "left": {
           "title": "The person",
-          "items": ["Skills & Experience", "Goals & Motivation", "Work Style", "Values & Preferences"]
+          "items": [
+            "Skills & Experience",
+            "Goals & Motivation",
+            "Work Style",
+            "Values & Preferences"
+          ]
         },
         "right": {
           "title": "The company",
-          "items": ["Role & Skills", "Culture & Values", "Expectations", "Environment"]
+          "items": [
+            "Role & Skills",
+            "Culture & Values",
+            "Expectations",
+            "Environment"
+          ]
         },
         "visual": "two-sides"
       },
@@ -172,11 +199,26 @@
         "eyebrow": "Mingle Intelligence",
         "title": "Five layers behind Mutual Match",
         "pillars": [
-          { "title": "Semantic Understanding", "body": "Turn unstructured data into signals." },
-          { "title": "Profile Enrichment", "body": "Build a richer view of people and companies." },
-          { "title": "Compatibility Modeling", "body": "Multi-dimensional matching with trade-offs." },
-          { "title": "AI Matching", "body": "Find the best mutual fit." },
-          { "title": "Feedback Loops", "body": "Learn from real outcomes." }
+          {
+            "title": "Semantic Understanding",
+            "body": "Turn unstructured data into signals."
+          },
+          {
+            "title": "Profile Enrichment",
+            "body": "Build a richer view of people and companies."
+          },
+          {
+            "title": "Compatibility Modeling",
+            "body": "Multi-dimensional matching with trade-offs."
+          },
+          {
+            "title": "AI Matching",
+            "body": "Find the best mutual fit."
+          },
+          {
+            "title": "Feedback Loops",
+            "body": "Learn from real outcomes."
+          }
         ],
         "visual": "pillars"
       },
@@ -187,10 +229,22 @@
         "title": "Not just a score — an explanation",
         "body": "Role Fit · Human Fit · Motivation Fit · Culture Fit — with Why Match / Why Not, gaps, and confidence.",
         "stats": [
-          { "value": "92%", "label": "Example Mutual Match" },
-          { "value": "Why", "label": "Clear explanation for both sides" },
-          { "value": "Gaps", "label": "Flexibility checks before the call" },
-          { "value": "Seconds", "label": "Rich context in a quick scan" }
+          {
+            "value": "92%",
+            "label": "Example Mutual Match"
+          },
+          {
+            "value": "Why",
+            "label": "Clear explanation for both sides"
+          },
+          {
+            "value": "Gaps",
+            "label": "Flexibility checks before the call"
+          },
+          {
+            "value": "Seconds",
+            "label": "Rich context in a quick scan"
+          }
         ],
         "visual": "match-gauge"
       },
@@ -211,7 +265,7 @@
     "tagline": "AI, market pressure, precision hiring",
     "accent": "blue",
     "durationLabel": "~50s",
-    "preview": "assets/6d2f57ea-51a8-4de9-b99d-7efb80a65403.jpg",
+    "preview": "/pitch/assets/6d2f57ea-51a8-4de9-b99d-7efb80a65403.jpg",
     "scenes": [
       {
         "id": "w1",
@@ -239,7 +293,13 @@
         "durationMs": 6000,
         "eyebrow": "Timing",
         "title": "What changed in practice",
-        "chips": ["GenAI readiness", "Skills-based hiring", "Explainable AI", "Cost-per-hire scrutiny", "Retention as strategy"],
+        "chips": [
+          "GenAI readiness",
+          "Skills-based hiring",
+          "Explainable AI",
+          "Cost-per-hire scrutiny",
+          "Retention as strategy"
+        ],
         "visual": "chips"
       },
       {
@@ -260,7 +320,7 @@
     "tagline": "TAM · SAM · SOM",
     "accent": "purple",
     "durationLabel": "~50s",
-    "preview": "assets/market-ref.jpg",
+    "preview": "/pitch/assets/market-ref.jpg",
     "scenes": [
       {
         "id": "m1",
@@ -277,10 +337,22 @@
         "eyebrow": "Market structure",
         "title": "Where the opportunity sits",
         "stats": [
-          { "value": "$94B", "label": "HR Technology Market" },
-          { "value": "$4.8B", "label": "AI Recruitment Market · 2025" },
-          { "value": "~$11B", "label": "Talent Acquisition Software" },
-          { "value": "Beachhead", "label": "IL + EU mid-market hiring teams" }
+          {
+            "value": "$94B",
+            "label": "HR Technology Market"
+          },
+          {
+            "value": "$4.8B",
+            "label": "AI Recruitment Market · 2025"
+          },
+          {
+            "value": "~$11B",
+            "label": "Talent Acquisition Software"
+          },
+          {
+            "value": "Beachhead",
+            "label": "IL + EU mid-market hiring teams"
+          }
         ],
         "visual": "stats"
       },
@@ -290,10 +362,22 @@
         "eyebrow": "The opportunity",
         "title": "From recruiting problem to workforce intelligence",
         "milestones": [
-          { "when": "Recruiting", "what": "Attract, assess, and hire the right talent." },
-          { "when": "Talent Intelligence", "what": "Understand skills, potential, and fit." },
-          { "when": "Internal Mobility", "what": "Connect employees to new opportunities." },
-          { "when": "Workforce Intelligence", "what": "A unified view of people, skills, and opportunities." }
+          {
+            "when": "Recruiting",
+            "what": "Attract, assess, and hire the right talent."
+          },
+          {
+            "when": "Talent Intelligence",
+            "what": "Understand skills, potential, and fit."
+          },
+          {
+            "when": "Internal Mobility",
+            "what": "Connect employees to new opportunities."
+          },
+          {
+            "when": "Workforce Intelligence",
+            "what": "A unified view of people, skills, and opportunities."
+          }
         ],
         "visual": "timeline"
       },
@@ -315,7 +399,7 @@
     "tagline": "From finding candidates to finding the right match",
     "accent": "pink",
     "durationLabel": "~50s",
-    "preview": "assets/competition-ref.jpg",
+    "preview": "/pitch/assets/competition-ref.jpg",
     "scenes": [
       {
         "id": "c1",
@@ -332,10 +416,27 @@
         "eyebrow": "Category map",
         "title": "Where others stop — and mingle begins",
         "rows": [
-          { "name": "LinkedIn / Indeed", "category": "Job Networks", "gap": "Find candidates and jobs — not deep fit" },
-          { "name": "Greenhouse / Workday", "category": "Recruitment platforms", "gap": "Manage workflows — not mutual intelligence" },
-          { "name": "Eightfold / SeekOut", "category": "Talent Intelligence", "gap": "Strong on skills & sourcing — weaker on two-sided lived fit" },
-          { "name": "mingle", "category": "Mutual Match", "gap": "Person ↔ Company across skills, goals, values, culture", "highlight": true }
+          {
+            "name": "LinkedIn / Indeed",
+            "category": "Job Networks",
+            "gap": "Find candidates and jobs — not deep fit"
+          },
+          {
+            "name": "Greenhouse / Workday",
+            "category": "Recruitment platforms",
+            "gap": "Manage workflows — not mutual intelligence"
+          },
+          {
+            "name": "Eightfold / SeekOut",
+            "category": "Talent Intelligence",
+            "gap": "Strong on skills & sourcing — weaker on two-sided lived fit"
+          },
+          {
+            "name": "mingle",
+            "category": "Mutual Match",
+            "gap": "Person ↔ Company across skills, goals, values, culture",
+            "highlight": true
+          }
         ],
         "visual": "competitors"
       },
@@ -369,7 +470,7 @@
     "tagline": "SaaS priced by Active Jobs",
     "accent": "blue",
     "durationLabel": "~50s",
-    "preview": "assets/6d2f57ea-51a8-4de9-b99d-7efb80a65403.jpg",
+    "preview": "/pitch/assets/6d2f57ea-51a8-4de9-b99d-7efb80a65403.jpg",
     "scenes": [
       {
         "id": "b1",
@@ -429,7 +530,12 @@
         "durationMs": 5500,
         "eyebrow": "Motion",
         "title": "Land & Expand",
-        "chips": ["PLG + Sales-assist", "Recruiter champion", "Annual commit discount", "Expand via jobs & seats"],
+        "chips": [
+          "PLG + Sales-assist",
+          "Recruiter champion",
+          "Annual commit discount",
+          "Expand via jobs & seats"
+        ],
         "visual": "chips"
       },
       {
@@ -449,7 +555,7 @@
     "tagline": "Evidence from the field",
     "accent": "magenta",
     "durationLabel": "~50s",
-    "preview": "assets/222092bb-1b46-49eb-9494-4a2c8341c4ff.jpg",
+    "preview": "/pitch/assets/222092bb-1b46-49eb-9494-4a2c8341c4ff.jpg",
     "scenes": [
       {
         "id": "v1",
@@ -465,10 +571,22 @@
         "eyebrow": "Learning loops",
         "title": "What we already know",
         "stats": [
-          { "value": "100+", "label": "Discovery interviews" },
-          { "value": "10+", "label": "Companies exposed to the problem" },
-          { "value": "1,000+", "label": "Hiring decisions observed" },
-          { "value": "Live", "label": "Active product + pilot path" }
+          {
+            "value": "100+",
+            "label": "Discovery interviews"
+          },
+          {
+            "value": "10+",
+            "label": "Companies exposed to the problem"
+          },
+          {
+            "value": "1,000+",
+            "label": "Hiring decisions observed"
+          },
+          {
+            "value": "Live",
+            "label": "Active product + pilot path"
+          }
         ],
         "visual": "stats"
       },
@@ -502,7 +620,7 @@
     "tagline": "One home for people decisions",
     "accent": "purple",
     "durationLabel": "~50s",
-    "preview": "assets/87cf62ed-43b6-4029-aa40-633737f2f8b9.jpg",
+    "preview": "/pitch/assets/87cf62ed-43b6-4029-aa40-633737f2f8b9.jpg",
     "scenes": [
       {
         "id": "r1",
@@ -518,10 +636,22 @@
         "eyebrow": "Now → Next",
         "title": "Product evolution",
         "milestones": [
-          { "when": "Now", "what": "Mutual Matching · Why Match · Pipeline · Conversations · Profiles" },
-          { "when": "Near", "what": "Interview Intelligence · Copilot · Talent Rediscovery · Advanced Analytics" },
-          { "when": "Next", "what": "Internal Mobility · Company Insights · Deeper automations" },
-          { "when": "Then", "what": "Employee lifecycle layer · Continuity after hire · Mobile for both sides" }
+          {
+            "when": "Now",
+            "what": "Mutual Matching · Why Match · Pipeline · Conversations · Profiles"
+          },
+          {
+            "when": "Near",
+            "what": "Interview Intelligence · Copilot · Talent Rediscovery · Advanced Analytics"
+          },
+          {
+            "when": "Next",
+            "what": "Internal Mobility · Company Insights · Deeper automations"
+          },
+          {
+            "when": "Then",
+            "what": "Employee lifecycle layer · Continuity after hire · Mobile for both sides"
+          }
         ],
         "visual": "timeline"
       },
@@ -531,9 +661,18 @@
         "eyebrow": "Platform vision",
         "title": "Hire → Grow → Retain",
         "pillars": [
-          { "title": "Hire", "body": "More precise mutual match. Better conversations." },
-          { "title": "Grow", "body": "Internal mobility on the same fit signals." },
-          { "title": "Retain", "body": "Ongoing understanding of fit — not just day one." }
+          {
+            "title": "Hire",
+            "body": "More precise mutual match. Better conversations."
+          },
+          {
+            "title": "Grow",
+            "body": "Internal mobility on the same fit signals."
+          },
+          {
+            "title": "Retain",
+            "body": "Ongoing understanding of fit — not just day one."
+          }
         ],
         "visual": "pillars"
       },
@@ -554,7 +693,7 @@
     "tagline": "Capital, use of funds, milestones",
     "accent": "pink",
     "durationLabel": "~50s",
-    "preview": "assets/be834461-28e2-4a80-9fc2-69d4ed32f940.jpg",
+    "preview": "/pitch/assets/be834461-28e2-4a80-9fc2-69d4ed32f940.jpg",
     "scenes": [
       {
         "id": "a1",
@@ -602,10 +741,22 @@
         "eyebrow": "Milestones · 18–24 months",
         "title": "What success looks like",
         "milestones": [
-          { "when": "0–6 mo", "what": "Paid pilots · Match quality · Sales playbook" },
-          { "when": "6–12 mo", "what": "Positive NRR in first cohort · Plus/Max expansion · Case studies" },
-          { "when": "12–18 mo", "what": "Repeatable pipeline · Team growth · EU beachhead tests" },
-          { "when": "18–24 mo", "what": "Series A readiness · Hire→Grow→Retain narrative" }
+          {
+            "when": "0–6 mo",
+            "what": "Paid pilots · Match quality · Sales playbook"
+          },
+          {
+            "when": "6–12 mo",
+            "what": "Positive NRR in first cohort · Plus/Max expansion · Case studies"
+          },
+          {
+            "when": "12–18 mo",
+            "what": "Repeatable pipeline · Team growth · EU beachhead tests"
+          },
+          {
+            "when": "18–24 mo",
+            "what": "Series A readiness · Hire→Grow→Retain narrative"
+          }
         ],
         "visual": "timeline"
       },

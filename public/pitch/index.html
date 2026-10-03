@@ -9,20 +9,22 @@
       content="mingle investor brief — folder-based pitch demos for Mutual Match Intelligence."
     />
     <meta name="robots" content="noindex,nofollow" />
+    <!-- Absolute base so /pitch (no trailing slash) still loads CSS/JS/assets -->
+    <base href="/pitch/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" href="assets/mingle-mark.png" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="/pitch/assets/mingle-mark.png" />
+    <link rel="stylesheet" href="/pitch/styles.css" />
   </head>
   <body>
     <div class="shell">
       <nav class="nav" aria-label="Investor brief">
-        <a class="brand" href="./">
-          <img src="assets/mingle-mark.png" alt="" width="34" height="34" />
+        <a class="brand" href="/pitch/">
+          <img src="/pitch/assets/mingle-mark.png" alt="" width="34" height="34" />
           <span>mingle</span>
         </a>
         <span class="pill">Investor Brief</span>
@@ -32,7 +34,7 @@
         <div class="hero-bg" aria-hidden="true"></div>
         <div class="hero-copy">
           <p class="hero-kicker">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path
                 d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2zm7 11.5.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6zM5.5 14l.8 2.2L8.5 17l-2.2.8L5.5 20l-.8-2.2L2.5 17l2.2-.8L5.5 14z"
               />
@@ -58,7 +60,7 @@
 
         <div class="hero-visual" aria-hidden="true">
           <div class="hero-orb">
-            <img class="hero-portrait-img" src="assets/hero-portrait.jpg" alt="" />
+            <img class="hero-portrait-img" src="/pitch/assets/hero-portrait.jpg" alt="" />
           </div>
           <div class="float-card a">
             <strong>Great match!</strong>
@@ -145,6 +147,6 @@
       </div>
     </div>
 
-    <script src="app.js" type="module"></script>
+    <script src="/pitch/app.js" type="module"></script>
   </body>
 </html>

@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
         source: "/pitch",
         destination: "/pitch/index.html",
       },
+      {
+        source: "/pitch/",
+        destination: "/pitch/index.html",
+      },
     ];
   },
 };

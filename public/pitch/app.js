@@ -315,6 +315,6 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-const res = await fetch("./folders.json");
+const res = await fetch("/pitch/folders.json");
 folders = await res.json();
 renderFolders();
