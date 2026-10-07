@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
+import { MatchActions } from "@/src/components/MatchActions";
 import {
   Body,
   EmptyState,
@@ -15,9 +16,14 @@ import {
   Screen,
   StatusBadge,
 } from "@/src/components/ui";
-import { fetchDiscoverCompanies } from "@/src/lib/api";
+import {
+  fetchDiscoverCompanies,
+  loadMatchFeedbackMap,
+  type MatchFeedbackAction,
+} from "@/src/lib/api";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { brand, scoreTone } from "@/src/theme/tokens";
+import { scoreTone } from "@/src/theme/tokens";
 
 type CompanyCard = {
   user_id: string;
@@ -25,10 +31,15 @@ type CompanyCard = {
   industry: string | null;
   location: string | null;
   mission: string | null;
+  description: string | null;
 };
 
 export default function TalentDiscover() {
+  const { user } = useAuth();
   const [items, setItems] = useState<CompanyCard[]>([]);
+  const [feedback, setFeedback] = useState<Record<string, MatchFeedbackAction>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { colors } = useTheme();
@@ -38,19 +49,26 @@ export default function TalentDiscover() {
     setLoading(true);
     setError(null);
     try {
-      setItems((await fetchDiscoverCompanies()) as CompanyCard[]);
+      const [companies, map] = await Promise.all([
+        fetchDiscoverCompanies(),
+        user ? loadMatchFeedbackMap(user.id) : Promise.resolve({}),
+      ]);
+      setItems(companies as CompanyCard[]);
+      setFeedback(map);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
       void load();
     }, [load]),
   );
+
+  const visible = items.filter((item) => feedback[item.user_id] !== "not_fit");
 
   return (
     <Screen>
@@ -67,7 +85,7 @@ export default function TalentDiscover() {
         </View>
       ) : (
         <FlatList
-          data={items}
+          data={visible}
           keyExtractor={(item) => item.user_id}
           contentContainerStyle={{ padding: 16, gap: 12 }}
           refreshControl={
@@ -84,8 +102,7 @@ export default function TalentDiscover() {
           renderItem={({ item, index }) => {
             const score = 85 - ((index * 7) % 40);
             return (
-              <Pressable
-                onPress={() => router.push(`/profile/view/${item.user_id}`)}
+              <View
                 style={{
                   backgroundColor: colors.surfaceElevated,
                   borderRadius: 16,
@@ -95,88 +112,74 @@ export default function TalentDiscover() {
                   gap: 8,
                 }}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                <Pressable
+                  onPress={() => router.push(`/profile/view/${item.user_id}`)}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Poppins_700Bold",
+                        fontSize: 18,
+                        color: colors.text,
+                        flex: 1,
+                      }}
+                    >
+                      {item.company_name || "Company"}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Poppins_700Bold",
+                        fontSize: 18,
+                        color: scoreTone(score),
+                      }}
+                    >
+                      {score}%
+                    </Text>
+                  </View>
+                  <StatusBadge
+                    label={
+                      score >= 70
+                        ? "Strong match"
+                        : score >= 45
+                          ? "Worth a look"
+                          : "Low overlap"
+                    }
+                    tone={
+                      score >= 70
+                        ? "success"
+                        : score >= 45
+                          ? "warning"
+                          : "danger"
+                    }
+                  />
+                  <Body muted>
+                    {[item.industry, item.location].filter(Boolean).join(" · ") ||
+                      "Open profile for more detail"}
+                  </Body>
+                  {item.mission ? <Body>{item.mission}</Body> : null}
+                </Pressable>
+                <MatchActions
+                  actorId={user?.id}
+                  targetUserId={item.user_id}
+                  initialAction={feedback[item.user_id] ?? null}
+                  onDone={({ action }) => {
+                    setFeedback((prev) => ({
+                      ...prev,
+                      [item.user_id]: action,
+                    }));
                   }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: "Poppins_700Bold",
-                      fontSize: 18,
-                      color: colors.text,
-                      flex: 1,
-                    }}
-                  >
-                    {item.company_name || "Company"}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Poppins_700Bold",
-                      fontSize: 18,
-                      color: scoreTone(score),
-                    }}
-                  >
-                    {score}%
-                  </Text>
-                </View>
-                <StatusBadge
-                  label={
-                    score >= 70
-                      ? "Strong match"
-                      : score >= 45
-                        ? "Worth a look"
-                        : "Low overlap"
-                  }
-                  tone={
-                    score >= 70
-                      ? "success"
-                      : score >= 45
-                        ? "warning"
-                        : "danger"
-                  }
                 />
-                <Body muted>
-                  {[item.industry, item.location].filter(Boolean).join(" · ") ||
-                    "Profile details coming soon"}
-                </Body>
-                {item.mission ? <Body>{item.mission}</Body> : null}
-                <View
-                  style={{ flexDirection: "row", gap: 8, marginTop: 8 }}
-                >
-                  <Chip label="Interested" color={brand.success} />
-                  <Chip label="Not a fit" color={brand.error} />
-                </View>
-              </Pressable>
+              </View>
             );
           }}
         />
       )}
     </Screen>
-  );
-}
-
-function Chip({ label, color }: { label: string; color: string }) {
-  return (
-    <View
-      style={{
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 999,
-        backgroundColor: `${color}22`,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: "Poppins_600SemiBold",
-          fontSize: 12,
-          color,
-        }}
-      >
-        {label}
-      </Text>
-    </View>
   );
 }
