@@ -1,12 +1,11 @@
 import { Image, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { brand } from "@/src/theme/tokens";
 
 export default function WelcomeScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, toggleTheme, theme } = useTheme();
 
@@ -23,6 +22,7 @@ export default function WelcomeScreen() {
           top: 0,
           bottom: 0,
           opacity: 0.18,
+          pointerEvents: "none",
         }}
       />
       <View
@@ -31,6 +31,7 @@ export default function WelcomeScreen() {
           paddingTop: insets.top + 16,
           paddingBottom: insets.bottom + 24,
           paddingHorizontal: 24,
+          zIndex: 1,
         }}
       >
         <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
@@ -79,37 +80,37 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={{ gap: 12 }}>
-          <Pressable
-            onPress={() => router.push("/(auth)/path")}
-            style={{ borderRadius: 999, overflow: "hidden" }}
-          >
-            <LinearGradient
-              colors={[brand.accentPink, brand.accentPurple, brand.accentBlue]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{ paddingVertical: 14, alignItems: "center" }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
-                Get started
-              </Text>
-            </LinearGradient>
-          </Pressable>
+          <Link href="/(auth)/path" asChild>
+            <Pressable style={{ borderRadius: 999, overflow: "hidden" }}>
+              <LinearGradient
+                colors={[brand.accentPink, brand.accentPurple, brand.accentBlue]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ paddingVertical: 14, alignItems: "center" }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                  Get started
+                </Text>
+              </LinearGradient>
+            </Pressable>
+          </Link>
 
-          <Pressable
-            onPress={() => router.push("/(auth)/sign-in")}
-            style={{
-              paddingVertical: 14,
-              alignItems: "center",
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: colors.border,
-              backgroundColor: colors.surface,
-            }}
-          >
-            <Text style={{ color: brand.cta, fontWeight: "700", fontSize: 16 }}>
-              I already have an account
-            </Text>
-          </Pressable>
+          <Link href="/(auth)/sign-in" asChild>
+            <Pressable
+              style={{
+                paddingVertical: 14,
+                alignItems: "center",
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              }}
+            >
+              <Text style={{ color: brand.cta, fontWeight: "700", fontSize: 16 }}>
+                I already have an account
+              </Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
     </View>
