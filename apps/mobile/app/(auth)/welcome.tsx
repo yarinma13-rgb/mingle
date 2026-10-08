@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { brand } from "@/src/theme/tokens";
+import mingleMark from "../../assets/images/mingle-mark.png";
 
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
@@ -54,7 +55,9 @@ export default function WelcomeScreen() {
 
         <View style={{ flex: 1, justifyContent: "center", gap: 16 }}>
           <Image
-            source={require("../../assets/images/mingle-mark.png")}
+            source={mingleMark}
+            alt="mingle"
+            accessibilityLabel="mingle"
             style={{ width: 88, height: 88, borderRadius: 20 }}
           />
           <Text

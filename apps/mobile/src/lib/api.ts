@@ -66,7 +66,7 @@ export async function completeOnboarding(userId: string) {
     .eq("id", userId);
 }
 
-export async function fetchDashboardStats(userId: string, _userType: UserType) {
+export async function fetchDashboardStats(userId: string) {
   const [connections, saved, conversations] = await Promise.all([
     supabase
       .from("connections")
@@ -489,4 +489,154 @@ export async function fetchProfileView(userId: string): Promise<ProfileView> {
         : null,
     ].filter(Boolean) as string[],
   };
+}
+
+export type TalentProfileDraft = {
+  first_name: string;
+  last_name: string;
+  headline: string;
+  location: string;
+  current_job_title: string;
+  industry: string;
+  beyond_cv: string;
+  skillsText: string;
+};
+
+export type CompanyProfileDraft = {
+  company_name: string;
+  industry: string;
+  location: string;
+  mission: string;
+  description: string;
+  company_stage: string;
+  company_size: string;
+  valuesText: string;
+};
+
+function splitTags(value: string) {
+  return value
+    .split(/[,;\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+export async function loadTalentProfileDraft(
+  userId: string,
+): Promise<TalentProfileDraft> {
+  const { data, error } = await supabase
+    .from("talent_profiles")
+    .select(
+      "first_name, last_name, headline, location, current_job_title, industry, beyond_cv, skills",
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    first_name: data?.first_name ?? "",
+    last_name: data?.last_name ?? "",
+    headline: data?.headline ?? "",
+    location: data?.location ?? "",
+    current_job_title: data?.current_job_title ?? "",
+    industry: data?.industry ?? "",
+    beyond_cv: data?.beyond_cv ?? "",
+    skillsText: (data?.skills ?? []).join(", "),
+  };
+}
+
+export async function saveTalentProfileDraft(
+  userId: string,
+  draft: TalentProfileDraft,
+) {
+  const payload = {
+    user_id: userId,
+    first_name: draft.first_name.trim() || null,
+    last_name: draft.last_name.trim() || null,
+    headline: draft.headline.trim() || null,
+    location: draft.location.trim() || null,
+    current_job_title: draft.current_job_title.trim() || null,
+    industry: draft.industry.trim() || null,
+    beyond_cv: draft.beyond_cv.trim() || null,
+    skills: splitTags(draft.skillsText),
+  };
+  const { error } = await supabase
+    .from("talent_profiles")
+    .upsert(payload, { onConflict: "user_id" });
+  if (error) throw error;
+}
+
+export async function loadCompanyProfileDraft(
+  userId: string,
+): Promise<CompanyProfileDraft> {
+  const { data, error } = await supabase
+    .from("company_profiles")
+    .select(
+      "company_name, industry, location, mission, description, company_stage, company_size, values",
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    company_name: data?.company_name ?? "",
+    industry: data?.industry ?? "",
+    location: data?.location ?? "",
+    mission: data?.mission ?? "",
+    description: data?.description ?? "",
+    company_stage: data?.company_stage ?? "",
+    company_size: data?.company_size ?? "",
+    valuesText: (data?.values ?? []).join(", "),
+  };
+}
+
+export async function saveCompanyProfileDraft(
+  userId: string,
+  draft: CompanyProfileDraft,
+) {
+  const payload = {
+    user_id: userId,
+    company_name: draft.company_name.trim() || null,
+    industry: draft.industry.trim() || null,
+    location: draft.location.trim() || null,
+    mission: draft.mission.trim() || null,
+    description: draft.description.trim() || null,
+    company_stage: draft.company_stage.trim() || null,
+    company_size: draft.company_size.trim() || null,
+    values: splitTags(draft.valuesText),
+  };
+  const { error } = await supabase
+    .from("company_profiles")
+    .upsert(payload, { onConflict: "user_id" });
+  if (error) throw error;
+}
+
+export async function saveTalentCareerGoal(userId: string, goal: string) {
+  const lookingFor = splitTags(goal);
+  const { error } = await supabase.from("talent_profiles").upsert(
+    {
+      user_id: userId,
+      looking_for: lookingFor.length ? lookingFor : [goal.trim()],
+      headline: goal.trim() || null,
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) throw error;
+}
+
+export async function createRole(input: {
+  companyId: string;
+  title: string;
+  workModel?: string;
+}) {
+  const { data, error } = await supabase
+    .from("roles")
+    .insert({
+      company_id: input.companyId,
+      title: input.title.trim(),
+      status: "open",
+      work_model: input.workModel?.trim() || null,
+    })
+    .select("id, title, status, work_model, created_at")
+    .single();
+  if (error) throw error;
+  return data;
 }

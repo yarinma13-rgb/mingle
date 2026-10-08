@@ -5,7 +5,6 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";

@@ -3,7 +3,7 @@ import { Alert, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { Button, Field, Screen, Subtitle, Title } from "@/src/components/ui";
-import { completeOnboarding } from "@/src/lib/api";
+import { completeOnboarding, saveTalentCareerGoal } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 
 export default function OnboardingTalent() {
@@ -16,6 +16,7 @@ export default function OnboardingTalent() {
     if (!user) return;
     setLoading(true);
     try {
+      await saveTalentCareerGoal(user.id, goal);
       await completeOnboarding(user.id);
       await refreshProfile();
       router.replace("/(talent)/dashboard");

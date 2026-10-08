@@ -32,7 +32,7 @@ export default function TalentDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      setStats(await fetchDashboardStats(user.id, "talent"));
+      setStats(await fetchDashboardStats(user.id));
     } finally {
       setLoading(false);
     }

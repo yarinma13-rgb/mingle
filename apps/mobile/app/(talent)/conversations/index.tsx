@@ -8,16 +8,18 @@ import {
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import {
+  Body,
   EmptyState,
   LoadingBlock,
   Screen,
   StatusBadge,
 } from "@/src/components/ui";
-import { fetchConnections } from "@/src/lib/api";
+import { fetchEnrichedConnections } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { brand } from "@/src/theme/tokens";
 
-type Row = { id: string; status: string };
+type Row = Awaited<ReturnType<typeof fetchEnrichedConnections>>[number];
 
 export default function TalentConversations() {
   const { user } = useAuth();
@@ -30,7 +32,7 @@ export default function TalentConversations() {
     if (!user) return;
     setLoading(true);
     try {
-      const all = (await fetchConnections(user.id)) as Row[];
+      const all = await fetchEnrichedConnections(user.id);
       setRows(all.filter((r) => r.status === "accepted"));
     } finally {
       setLoading(false);
@@ -59,6 +61,8 @@ export default function TalentConversations() {
             <EmptyState
               title="No conversations yet"
               body="Accepted connections open a chat and a relationship path."
+              actionLabel="Discover"
+              onAction={() => router.push("/(talent)/discover")}
             />
           ) : null
         }
@@ -78,11 +82,22 @@ export default function TalentConversations() {
               style={{
                 fontFamily: "Poppins_600SemiBold",
                 color: colors.text,
+                fontSize: 16,
               }}
             >
-              Conversation
+              {item.name}
             </Text>
+            {item.subtitle ? <Body muted>{item.subtitle}</Body> : null}
             <StatusBadge label="Connected" tone="success" />
+            <Text
+              style={{
+                fontFamily: "Poppins_500Medium",
+                color: brand.cta,
+                fontSize: 13,
+              }}
+            >
+              Open chat →
+            </Text>
           </Pressable>
         )}
       />

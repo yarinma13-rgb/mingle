@@ -32,7 +32,7 @@ export default function CompanyDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      setStats(await fetchDashboardStats(user.id, "company"));
+      setStats(await fetchDashboardStats(user.id));
     } finally {
       setLoading(false);
     }
