@@ -76,23 +76,6 @@ export function isMissingCareerPageFunction(
   );
 }
 
-export async function listCareerPages(
-  supabase: SupabaseClient<Database>,
-): Promise<{ slug: string }[]> {
-  const { data, error } = await supabase
-    .from("company_profiles")
-    .select("slug")
-    .not("slug", "is", null);
-  if (error) {
-    if (isMissingCareerPageFunction(error)) return [];
-    throw error;
-  }
-  return (data ?? [])
-    .map((row) => row.slug)
-    .filter((slug): slug is string => Boolean(slug))
-    .map((slug) => ({ slug }));
-}
-
 export async function loadCareerPage(
   supabase: SupabaseClient<Database>,
   slug: string,
