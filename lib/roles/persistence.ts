@@ -219,6 +219,51 @@ export async function loadCompanyRoles(
   return (data ?? []).map(toRecord);
 }
 
+/**
+ * All currently-open roles at every company EXCEPT the given one — used
+ * by the post-rejection talent exchange to find other opportunities for a
+ * candidate a different company just declined. Single query across
+ * companies rather than looping loadCompanyRoles per company.
+ */
+export async function loadOpenRolesAcrossOtherCompanies(
+  supabase: SupabaseClient<Database>,
+  excludeCompanyId: string,
+): Promise<RoleRecord[]> {
+  const { data, error } = await supabase
+    .from("roles")
+    .select(ROLE_LIST_COLUMNS)
+    .eq("status", "open")
+    .neq("company_id", excludeCompanyId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("roles")
+        .select(
+          "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
+        )
+        .eq("status", "open")
+        .neq("company_id", excludeCompanyId)
+        .order("created_at", { ascending: false });
+      if (fallbackError) throw fallbackError;
+      return (fallback ?? []).map((row) =>
+        toRecord({
+          ...row,
+          skill_requirements: null,
+          company_presentation: null,
+          job_presentation: null,
+          responsibilities: null,
+          requirements: null,
+          quiet_signals: [],
+          requisition_status: "approved",
+        } as RoleListRow),
+      );
+    }
+    throw error;
+  }
+  return (data ?? []).map(toRecord);
+}
+
 export async function createCompanyRole(
   supabase: SupabaseClient<Database>,
   companyId: string,
