@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -20,18 +20,14 @@ import {
   ensureConversation,
   fetchMessages,
   fetchRelationshipStage,
+  markConversationRead,
   sendMessage,
+  subscribeToMessages,
+  type MessageRow,
 } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { brand } from "@/src/theme/tokens";
-
-type Msg = {
-  id: string;
-  sender_id: string;
-  body: string;
-  created_at: string;
-};
 
 export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,7 +37,7 @@ export default function ConversationScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<MessageRow[]>([]);
   const [stage, setStage] = useState("connected");
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -57,7 +53,7 @@ export default function ConversationScreen() {
         fetchMessages(conversation.id),
         fetchRelationshipStage(id),
       ]);
-      setMessages(msgs as Msg[]);
+      setMessages(msgs as MessageRow[]);
       setStage(st);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Messaging isn't ready yet.");
@@ -72,6 +68,34 @@ export default function ConversationScreen() {
     }, [load]),
   );
 
+  // Mark unread messages from the other side as read once we know which
+  // conversation we're in — non-critical, the unread badge just catches
+  // up next load if this fails.
+  useEffect(() => {
+    if (!conversationId || !user) return;
+    markConversationRead(conversationId, user.id).catch(() => {});
+  }, [conversationId, user]);
+
+  // Live incoming messages via Supabase Realtime, same as web
+  // (lib/messaging/persistence.ts subscribeToConversation). Dedupe by id
+  // since the sender's own optimistic append can race the INSERT event.
+  useFocusEffect(
+    useCallback(() => {
+      if (!conversationId || !user) return;
+      const unsubscribe = subscribeToMessages(conversationId, (message) => {
+        setMessages((prev) =>
+          prev.some((existing) => existing.id === message.id)
+            ? prev
+            : [...prev, message],
+        );
+        if (message.sender_id !== user.id) {
+          markConversationRead(conversationId, user.id).catch(() => {});
+        }
+      });
+      return unsubscribe;
+    }, [conversationId, user]),
+  );
+
   async function onSend() {
     if (!user || !conversationId || !draft.trim()) return;
     setSending(true);
@@ -82,7 +106,7 @@ export default function ConversationScreen() {
         body: draft,
       });
       setDraft("");
-      setMessages((await fetchMessages(conversationId)) as Msg[]);
+      setMessages((await fetchMessages(conversationId)) as MessageRow[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not send");
     } finally {

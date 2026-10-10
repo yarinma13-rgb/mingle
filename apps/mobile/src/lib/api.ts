@@ -160,6 +160,53 @@ export async function ensureConversation(connectionId: string) {
   return data;
 }
 
+export type MessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+};
+
+/** Ported from lib/messaging/persistence.ts (web) — Supabase Realtime on
+ *  the messages table, filtered to this conversation. Returns an
+ *  unsubscribe function; call it from a useFocusEffect/useEffect cleanup. */
+export function subscribeToMessages(
+  conversationId: string,
+  onInsert: (message: MessageRow) => void,
+) {
+  const channel = supabase
+    .channel(`conversation-${conversationId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => onInsert(payload.new as MessageRow),
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+export async function markConversationRead(
+  conversationId: string,
+  viewerId: string,
+) {
+  const { error } = await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .neq("sender_id", viewerId)
+    .is("read_at", null);
+  if (error) throw error;
+}
+
 export async function fetchMessages(conversationId: string) {
   const { data, error } = await supabase
     .from("messages")
