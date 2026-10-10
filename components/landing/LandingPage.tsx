@@ -299,7 +299,7 @@ function LandingPageInner() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
-                        </svg>
+                      </svg>
                       </span>
                       <span>{row.mingle}</span>
                     </div>
@@ -332,6 +332,24 @@ function LandingPageInner() {
               ))}
             </div>
           </div>
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: t.faq.items.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: item.a,
+                  },
+                })),
+              }),
+            }}
+          />
         </section>
 
         <section className="landing-banner">
@@ -349,9 +367,9 @@ function LandingPageInner() {
                 <Link
                   href={DEMO_HREF}
                   className="landing-btn landing-btn-ghost landing-btn-lg"
-                >
+              >
                   {t.banner.bookDemo}
-                </Link>
+              </Link>
               </div>
               <p className="landing-banner-note">{t.banner.freeLine}</p>
             </div>
@@ -377,14 +395,6 @@ function LandingPageInner() {
           </div>
           <div>
             <p className="landing-footer-label">{t.footer.company}</p>
-            <div className="landing-footer-links">
-              <Link href={DEMO_HREF}>{t.footer.bookDemo}</Link>
-              <Link href={DEMO_HREF}>{t.footer.contact}</Link>
-              <Link href={SIGN_IN_HREF}>{t.footer.signIn}</Link>
-            </div>
-          </div>
-          <div>
-            <p className="landing-footer-label">{t.footer.legal}</p>
             <div className="landing-footer-links">
               <Link href="/legal/terms">{t.footer.terms}</Link>
               <Link href="/legal/privacy">{t.footer.privacy}</Link>
