@@ -1,10 +1,14 @@
 import { SettingsHub } from "@/components/settings/SettingsHub";
 import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { getCandidateVisibility } from "@/lib/talent-exchange/persistence";
 
 export default async function SettingsPage() {
-  const { user, isCompany, accountLabel } = await requireAppUser();
+  const { supabase, user, isCompany, accountLabel } = await requireAppUser();
   const profileHref = isCompany ? "/company-profile/build" : "/profile/build";
+  const visibilityStatus = isCompany
+    ? null
+    : await getCandidateVisibility(supabase, user.id);
 
   return (
     <>
@@ -14,6 +18,8 @@ export default async function SettingsPage() {
         pathLabel={isCompany ? "Company" : "Talent"}
         profileHref={profileHref}
         isCompany={isCompany}
+        candidateId={user.id}
+        visibilityStatus={visibilityStatus}
       />
     </>
   );

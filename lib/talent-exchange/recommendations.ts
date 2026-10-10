@@ -27,7 +27,7 @@ export type CrossCompanyOpportunity = {
 export async function findCrossCompanyOpportunities(
   supabase: SupabaseClient<Database>,
   candidateId: string,
-  excludeCompanyId: string,
+  excludeCompanyId?: string,
   threshold: number = TALENT_EXCHANGE_MATCH_THRESHOLD,
 ): Promise<CrossCompanyOpportunity[]> {
   const talentInput = await loadTalentMatchInput(supabase, candidateId);

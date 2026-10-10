@@ -78,6 +78,14 @@ export type AppMessages = {
     visibility: string;
     visibilityTalent: string;
     visibilityCompany: string;
+    visibilityModePrivate: string;
+    visibilityModePrivateBody: string;
+    visibilityModeDiscoverable: string;
+    visibilityModeDiscoverableBody: string;
+    visibilityModeOpen: string;
+    visibilityModeOpenBody: string;
+    visibilitySaved: string;
+    visibilityChangeAnytime: string;
     support: string;
     reportProblem: string;
     reportProblemBody: string;
@@ -192,6 +200,16 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
         "Coming soon — your talent profile is visible to companies on mingle today. A pause toggle will land here.",
       visibilityCompany:
         "Coming soon — your company profile is visible to talent on mingle today.",
+      visibilityModePrivate: "Private",
+      visibilityModePrivateBody: "Only you can discover opportunities.",
+      visibilityModeDiscoverable: "Discoverable",
+      visibilityModeDiscoverableBody:
+        "Companies can discover an anonymous version of your profile.",
+      visibilityModeOpen: "Open to opportunities",
+      visibilityModeOpenBody:
+        "Relevant companies can discover your professional profile.",
+      visibilitySaved: "Saved your visibility preference.",
+      visibilityChangeAnytime: "You can change this anytime.",
       support: "Support",
       reportProblem: "Report a problem",
       reportProblemBody:
@@ -309,6 +327,15 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
         "בקרוב — כרגע הפרופיל שלכם גלוי לחברות ב־mingle. מתג השהיה יגיע לכאן.",
       visibilityCompany:
         "בקרוב — כרגע פרופיל החברה גלוי לטאלנט ב־mingle.",
+      visibilityModePrivate: "פרטי",
+      visibilityModePrivateBody: "רק אתם יכולים לגלות הזדמנויות.",
+      visibilityModeDiscoverable: "ניתן לגילוי",
+      visibilityModeDiscoverableBody:
+        "חברות יכולות לגלות גרסה אנונימית של הפרופיל שלכם.",
+      visibilityModeOpen: "פתוח/ה להזדמנויות",
+      visibilityModeOpenBody: "חברות רלוונטיות יכולות לראות את הפרופיל המקצועי שלכם.",
+      visibilitySaved: "ההעדפה נשמרה.",
+      visibilityChangeAnytime: "אפשר לשנות את זה בכל רגע.",
       support: "תמיכה",
       reportProblem: "דיווח על בעיה",
       reportProblemBody: "משהו נשבר או נראה לא נכון? שלחו לנו הודעה מהאפליקציה.",

@@ -18,6 +18,7 @@ import {
   findCrossCompanyOpportunities,
   type CrossCompanyOpportunity,
 } from "@/lib/talent-exchange/recommendations";
+import { notifyPushCompanyInterest } from "@/lib/push/actions";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
@@ -123,6 +124,16 @@ export async function expressCompanyInterest(
   if (error) throw error;
 
   track(AnalyticsEvent.talentExchangeCompanyInterested, { match_id: matchId });
+
+  const { data: match } = await supabase
+    .from("matches")
+    .select("candidate_id")
+    .eq("id", matchId)
+    .maybeSingle();
+  if (match?.candidate_id) {
+    void notifyPushCompanyInterest(match.candidate_id, matchId);
+  }
+
   return { outcome: "recorded" };
 }
 
@@ -291,6 +302,55 @@ export async function declineConnectionAndCheckOpportunities(
     );
   }
   return opportunities;
+}
+
+/**
+ * Whether the candidate's dashboard should show the post-rejection
+ * visibility prompt right now. Deliberately stateless/no new table: "never
+ * prompted before" is read from visibility_audit_log being empty (a
+ * candidate who ever made an explicit choice — even 'private' — has an
+ * audit row and is never prompted again), "was declined by a company" is
+ * read live from connections, and "still worth prompting" is a fresh
+ * findCrossCompanyOpportunities call rather than a stored, possibly-stale
+ * list. Computed on every load; cheap at today's data volume.
+ */
+export async function loadPendingVisibilityPrompt(
+  supabase: SupabaseClient<Database>,
+  candidateId: string,
+): Promise<{ opportunityCount: number } | null> {
+  const { count: auditCount } = await supabase
+    .from("visibility_audit_log")
+    .select("id", { count: "exact", head: true })
+    .eq("candidate_id", candidateId);
+  if (auditCount && auditCount > 0) return null;
+
+  const { data: declinedRows } = await supabase
+    .from("connections")
+    .select("requester_id, recipient_id")
+    .or(`requester_id.eq.${candidateId},recipient_id.eq.${candidateId}`)
+    .eq("status", "declined");
+  if (!declinedRows || declinedRows.length === 0) return null;
+
+  const otherPartyIds = [
+    ...new Set(
+      declinedRows.map((row) =>
+        row.requester_id === candidateId ? row.recipient_id : row.requester_id,
+      ),
+    ),
+  ];
+  const { data: otherParties } = await supabase
+    .from("users")
+    .select("id, user_type")
+    .in("id", otherPartyIds);
+  const wasDeclinedByCompany = (otherParties ?? []).some(
+    (row) => row.user_type === "company",
+  );
+  if (!wasDeclinedByCompany) return null;
+
+  const opportunities = await findCrossCompanyOpportunities(supabase, candidateId);
+  if (opportunities.length === 0) return null;
+
+  return { opportunityCount: opportunities.length };
 }
 
 export { getOrCreateMatchId };
