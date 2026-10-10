@@ -14,7 +14,7 @@ const COPY: Record<
   },
   missing_schema: {
     title: "Messaging isn’t wired up yet",
-    body: "The chat tables aren’t available in this environment. Refresh in a moment, or ask an admin to apply the messaging migration.",
+    body: "Messaging is not available right now. Refresh in a moment, or contact support if this keeps happening.",
   },
   permission: {
     title: "Can’t open this conversation",

@@ -142,11 +142,23 @@ export function RoleBuilder({
             ...parsed.data,
             sourceJd: draft.sourceJd,
             sourceUrl: draft.sourceUrl,
+            companyPresentation: draft.companyPresentation,
+            jobPresentation: draft.jobPresentation,
+            responsibilities: draft.responsibilities,
+            requirements: draft.requirements,
+            skillRequirements: draft.skillRequirements,
+            quietSignals: draft.quietSignals,
           })
         : await createCompanyRole(supabase, companyId, {
             ...parsed.data,
             sourceJd: draft.sourceJd,
             sourceUrl: draft.sourceUrl,
+            companyPresentation: draft.companyPresentation,
+            jobPresentation: draft.jobPresentation,
+            responsibilities: draft.responsibilities,
+            requirements: draft.requirements,
+            skillRequirements: draft.skillRequirements,
+            quietSignals: draft.quietSignals,
           });
       onSaved(saved);
     } catch (caught) {
@@ -155,7 +167,7 @@ export function RoleBuilder({
       );
       setError(
         missing
-          ? "Roles are not in the database yet. Run supabase/migrations/0014_company_roles.sql in the Supabase SQL Editor."
+          ? "Roles are not available on this workspace yet. Please try again later."
           : "Could not save this role. Try again.",
       );
     } finally {
@@ -426,13 +438,15 @@ export function RoleBuilder({
               : "cursor-not-allowed bg-mingle-surface text-mingle-text-secondary/50"
           }`}
         >
-          {saving
+            {saving
             ? "Saving…"
             : step === TOTAL_STEPS
               ? editingId
                 ? "Save role"
                 : "Create role"
-              : "Continue"}
+              : step === 6 && draft.description.trim().length === 0
+                ? "Skip"
+                : "Continue"}
         </motion.button>
       </div>
     </div>

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { ContactSalesPage } from "@/components/landing/ContactSalesPage";
 import { appOrigin } from "@/lib/app-origin";
 import "@/components/landing/landing.css";
 
-const poppins = Poppins({
-  subsets: ["latin"],
+const figtree = Figtree({
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-landing-poppins",
+  variable: "--font-landing-figtree",
   display: "swap",
 });
 
@@ -25,12 +25,26 @@ export const metadata: Metadata = {
     url: `${appOrigin()}/contact`,
     siteName: "mingle",
     type: "website",
+    images: [
+      {
+        url: `${appOrigin()}/welcome/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "mingle — Post a job. Get the right people. Understand why.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [`${appOrigin()}/welcome/opengraph-image`],
   },
 };
 
 export default function ContactPage() {
   return (
-    <div className={poppins.variable}>
+    <div className={figtree.variable}>
       <ContactSalesPage />
     </div>
   );

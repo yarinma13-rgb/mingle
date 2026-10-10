@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { MingleLogo } from "@/components/MingleLogo";
 // Mascot temporarily removed from loading states — see
 // components/MascotMagnet.tsx, component and assets are kept.
 import { ProfileBuildChrome } from "@/components/profile/ProfileBuildChrome";
 import { ProfilePreview } from "@/components/ProfilePreview";
+import { TalentInviteScreen } from "@/components/referrals/TalentInviteScreen";
 import { TalentCvField } from "@/components/profile/TalentCvField";
 import { TalentPhotoField } from "@/components/profile/TalentPhotoField";
 import { GenderField } from "@/components/profile/GenderField";
@@ -53,9 +56,13 @@ import {
   type BasicProfileValues,
 } from "@/lib/validation/profile";
 import { clampSalary, SALARY_MAX_MONTHLY_ILS } from "@/lib/profile/salary";
+import {
+  START_AVAILABILITY_OPTIONS,
+  type StartAvailability,
+} from "@/lib/profile/search-status";
 import type { Database } from "@/lib/supabase/types";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -101,6 +108,8 @@ export function ProfileWizard() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [cvExtractNote, setCvExtractNote] = useState<string | null>(null);
   const [cvExtracting, setCvExtracting] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const profileStartedSent = useRef(false);
 
   const applyResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
@@ -113,8 +122,16 @@ export function ProfileWizard() {
     }
     setUserId(result.userId);
     setProfile(result.profile);
-    setStep(resumeStep(result.profile));
+    const startStep = resumeStep(result.profile);
+    setStep(startStep);
     setLoadState("ready");
+    if (!profileStartedSent.current) {
+      profileStartedSent.current = true;
+      track(AnalyticsEvent.profileStarted, {
+        path: "talent",
+        resume_step: startStep,
+      });
+    }
   };
 
   useEffect(() => {
@@ -178,6 +195,11 @@ export function ProfileWizard() {
       skills: string[];
       salary_expectation: number | null;
       max_commute_km: number | null;
+      is_employed: boolean | null;
+      current_employer: string | null;
+      discreet_search: boolean;
+      start_availability: string | null;
+      target_role: string | null;
     }>,
     nextProfile: ProfileState,
     nextStep: number,
@@ -197,6 +219,11 @@ export function ProfileWizard() {
       );
       setProfile(nextProfile);
       setStep(nextStep);
+      track(AnalyticsEvent.profileStepCompleted, {
+        path: "talent",
+        step,
+        next_step: nextStep,
+      });
     } catch {
       setSaveError("Couldn't save that. Check your connection and try again.");
     } finally {
@@ -232,6 +259,26 @@ export function ProfileWizard() {
     );
   };
 
+  const continueSearchStatus = () => {
+    if (profile.isEmployed === null) return;
+    if (!profile.startAvailability) return;
+    if (!profile.targetRole.trim()) return;
+    if (profile.isEmployed && !profile.currentEmployer.trim()) return;
+    persistAndAdvance(
+      {
+        is_employed: profile.isEmployed,
+        current_employer: profile.isEmployed
+          ? profile.currentEmployer.trim()
+          : null,
+        discreet_search: profile.discreetSearch,
+        start_availability: profile.startAvailability,
+        target_role: profile.targetRole.trim(),
+      },
+      profile,
+      3,
+    );
+  };
+
   const toggleMulti = (key: "drives" | "workStyle", option: string) => {
     setProfile((prev) => ({
       ...prev,
@@ -264,6 +311,10 @@ export function ProfileWizard() {
     );
   };
 
+  const skipWorkStyle = () => {
+    persistAndAdvance({}, profile, 5);
+  };
+
   const beyondCvError = beyondCvSchema.safeParse(profile.beyondCv).success
     ? null
     : profile.beyondCv.length > 0
@@ -278,6 +329,10 @@ export function ProfileWizard() {
       { ...profile, beyondCv: parsed.data },
       TOTAL_STEPS,
     );
+  };
+
+  const skipBeyondCv = () => {
+    persistAndAdvance({}, profile, TOTAL_STEPS);
   };
 
   const goBack = () => {
@@ -350,6 +405,21 @@ export function ProfileWizard() {
   if (loadState === "error") return <ProfileWizardError onRetry={retry} />;
 
   if (step >= TOTAL_STEPS) {
+    if (showInvite) {
+      return (
+        <TalentInviteScreen
+          onDone={() => {
+            try {
+              window.localStorage.setItem("mingle_talent_invite_seen", "1");
+            } catch {
+              // ignore
+            }
+            router.push("/dashboard");
+            router.refresh();
+          }}
+        />
+      );
+    }
     return (
       <ProfilePreview
         profile={profile}
@@ -377,18 +447,61 @@ export function ProfileWizard() {
           void persistAndAdvance({ gender }, nextProfile, TOTAL_STEPS);
         }}
         onEditStep={setStep}
+        onContinue={() => {
+          try {
+            if (window.localStorage.getItem("mingle_talent_invite_seen") === "1") {
+              router.push("/dashboard");
+              router.refresh();
+              return;
+            }
+          } catch {
+            // ignore
+          }
+          setShowInvite(true);
+        }}
       />
     );
   }
 
   const completionPct = profileCompletion(profile);
   const multiQuestion =
-    step === 2 ? PROFILE_QUESTIONS[0] : step === 3 ? PROFILE_QUESTIONS[1] : null;
+    step === 3 ? PROFILE_QUESTIONS[0] : step === 4 ? PROFILE_QUESTIONS[1] : null;
   const multiKey: "drives" | "workStyle" | null =
-    step === 2 ? "drives" : step === 3 ? "workStyle" : null;
+    step === 3 ? "drives" : step === 4 ? "workStyle" : null;
   const multiColumn: "drives" | "work_style" | null =
-    step === 2 ? "drives" : step === 3 ? "work_style" : null;
-  const multiNextStep = step === 2 ? 3 : 4;
+    step === 3 ? "drives" : step === 4 ? "work_style" : null;
+  const multiNextStep = step === 3 ? 4 : 5;
+  const searchStatusReady =
+    profile.isEmployed !== null &&
+    Boolean(profile.startAvailability) &&
+    Boolean(profile.targetRole.trim()) &&
+    (!profile.isEmployed || Boolean(profile.currentEmployer.trim()));
+
+  const stepHeadline =
+    step === 1
+      ? "Your CV tells your story"
+      : step === 2
+        ? "Your search right now"
+        : multiQuestion
+          ? multiQuestion.headline
+          : step === 5
+            ? "Skills"
+            : step === 6
+              ? "Salary expectation"
+              : "Beyond the CV";
+
+  const stepSubtext =
+    step === 1
+      ? "We want to know what comes next."
+      : step === 2
+        ? "Employment status, discretion, when you can start, and the role you want."
+        : multiQuestion
+          ? multiQuestion.subtext
+          : step === 5
+            ? "Technologies and craft. Add your own if it is not listed."
+            : step === 6
+              ? "Private. Companies never see the number, only whether you fit a role budget."
+              : "Optional. What should someone know about you before they meet you?";
 
   return (
     <div className="relative flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
@@ -401,26 +514,10 @@ export function ProfileWizard() {
             Build your mingle profile
           </span>
           <h1 className="mt-2 font-display text-2xl font-bold text-mingle-text sm:text-3xl">
-            {step === 1
-              ? "Your CV tells your story"
-              : multiQuestion
-                ? multiQuestion.headline
-                : step === 4
-                  ? "Skills"
-                  : step === 5
-                    ? "Salary expectation"
-                    : "Beyond the CV"}
+            {stepHeadline}
           </h1>
           <p className="mt-2 text-sm text-mingle-text-secondary">
-            {step === 1
-              ? "We want to know what comes next."
-              : multiQuestion
-                ? multiQuestion.subtext
-                : step === 4
-                  ? "Technologies and craft. Add your own if it is not listed."
-                  : step === 6
-                    ? "Private. Companies never see the number, only whether you fit a role budget."
-                    : "What should someone know about you before they meet you?"}
+            {stepSubtext}
           </p>
         </div>
 
@@ -604,6 +701,173 @@ export function ProfileWizard() {
               </form>
             )}
 
+            {step === 2 && (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <p className="mb-2 text-xs font-medium text-mingle-text-secondary">
+                    Do you currently work?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        [true, "Yes, employed"],
+                        [false, "Not employed"],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={label}
+                        type="button"
+                        role="radio"
+                        aria-checked={profile.isEmployed === value}
+                        onClick={() =>
+                          setProfile((prev) => ({ ...prev, isEmployed: value }))
+                        }
+                        className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
+                          profile.isEmployed === value
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {profile.isEmployed ? (
+                  <Field
+                    required
+                    label="Where do you currently work?"
+                  >
+                    <input
+                      type="text"
+                      value={profile.currentEmployer}
+                      onChange={(event) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          currentEmployer: event.target.value,
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="Company name"
+                    />
+                    <span className="mt-1 block text-[11px] font-normal text-mingle-text-secondary">
+                      Private — we use this only to make sure you never show
+                      up as a match to your own employer.
+                    </span>
+                  </Field>
+                ) : null}
+
+                <div>
+                  <p className="mb-2 text-xs font-medium text-mingle-text-secondary">
+                    Is your search discreet?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        [true, "Discreet search"],
+                        [false, "Open search"],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={label}
+                        type="button"
+                        role="radio"
+                        aria-checked={profile.discreetSearch === value}
+                        onClick={() =>
+                          setProfile((prev) => ({
+                            ...prev,
+                            discreetSearch: value,
+                          }))
+                        }
+                        className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
+                          profile.discreetSearch === value
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-xs font-medium text-mingle-text-secondary">
+                    When can you start?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {START_AVAILABILITY_OPTIONS.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        role="radio"
+                        aria-checked={profile.startAvailability === option}
+                        onClick={() =>
+                          setProfile((prev) => ({
+                            ...prev,
+                            startAvailability: option as StartAvailability,
+                          }))
+                        }
+                        className={`rounded-[10px] border px-4 py-2.5 text-sm font-medium transition-colors ${
+                          profile.startAvailability === option
+                            ? "border-mingle-blue bg-mingle-lavender text-mingle-text"
+                            : "border-mingle-border bg-mingle-white text-mingle-text-secondary hover:border-mingle-blue/50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Field required label="What role are you looking for today?">
+                  <SuggestInput
+                    value={profile.targetRole}
+                    onChange={(event) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        targetRole: event.target.value,
+                      }))
+                    }
+                    listId="talent-target-role"
+                    suggestions={TITLE_SUGGESTIONS}
+                    className={inputClass}
+                    placeholder="QA engineer, Product manager…"
+                  />
+                </Field>
+
+                {saveError && (
+                  <p className="text-center text-sm text-mingle-pink">
+                    {saveError}
+                  </p>
+                )}
+
+                <div className="mt-2 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    disabled={saving}
+                    className="mingle-btn-secondary disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <motion.button
+                    type="button"
+                    onClick={continueSearchStatus}
+                    disabled={!searchStatusReady || saving}
+                    className={`font-display text-sm ${
+                      searchStatusReady
+                        ? "mingle-btn-primary"
+                        : "mingle-btn-secondary cursor-not-allowed opacity-45"
+                    }`}
+                  >
+                    {saving ? "Saving…" : "Continue"}
+                  </motion.button>
+                </div>
+              </div>
+            )}
+
             {multiQuestion && multiKey && multiColumn && (
               <div>
                 <div
@@ -689,6 +953,16 @@ export function ProfileWizard() {
                   >
                     Back
                   </button>
+                  {multiKey === "workStyle" ? (
+                    <button
+                      type="button"
+                      onClick={skipWorkStyle}
+                      disabled={saving}
+                      className="mingle-btn-secondary disabled:opacity-50"
+                    >
+                      Skip
+                    </button>
+                  ) : null}
                   <motion.button
                     type="button"
                     onClick={() =>
@@ -713,7 +987,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <div>
                 <SkillFieldChips
                   selected={matchSkillField(profile.industry)}
@@ -784,7 +1058,7 @@ export function ProfileWizard() {
                             industry: nextProfile.industry,
                           },
                           nextProfile,
-                          5,
+                          6,
                         );
                       })();
                     }}
@@ -801,7 +1075,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 5 && (
+            {step === 6 && (
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-mingle-text-secondary">
                   Monthly salary in ILS. Optional. Capped at{" "}
@@ -848,7 +1122,7 @@ export function ProfileWizard() {
                       persistAndAdvance(
                         { salary_expectation: salaryExpectation },
                         { ...profile, salaryExpectation },
-                        6,
+                        7,
                       );
                     }}
                     disabled={saving}
@@ -860,7 +1134,7 @@ export function ProfileWizard() {
               </div>
             )}
 
-            {step === 6 && (
+            {step === 7 && (
               <div className="flex flex-col items-center">
                 <textarea dir="auto"
                   value={profile.beyondCv}
@@ -902,6 +1176,14 @@ export function ProfileWizard() {
                     className="mingle-btn-secondary disabled:opacity-50"
                   >
                     Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={skipBeyondCv}
+                    disabled={saving}
+                    className="mingle-btn-secondary disabled:opacity-50"
+                  >
+                    Skip
                   </button>
                   <motion.button
                     type="button"

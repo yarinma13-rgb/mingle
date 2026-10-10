@@ -28,12 +28,9 @@ export default function Root({ children }: { children: ReactNode }) {
   );
 }
 
+/* Boot background stays light — product default is light for all users.
+   Dark mode is applied after the app reads the user's saved preference. */
 const responsiveBackground = `
 body {
   background-color: #fff;
-}
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #000;
-  }
 }`;

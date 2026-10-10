@@ -34,7 +34,7 @@ export async function reviewMatchAction(formData: FormData) {
     if (/match_reviews|match_review_audit|schema cache/i.test(message)) {
       return {
         ok: false as const,
-        error: "Match reviews are not live yet. Run migration 0023.",
+        error: "Match reviews are not available yet. Please try again later.",
       };
     }
     return { ok: false as const, error: message };

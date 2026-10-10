@@ -15,7 +15,8 @@ export type OnboardingState = {
   answers: OnboardingAnswers;
 };
 
-const TOTAL_STEPS = 4;
+/** Active flow is 2 questions; step 3 = complete screen / done. */
+const TOTAL_STEPS = 3;
 
 export async function loadOnboardingState(
   supabase: SupabaseClient<Database>,

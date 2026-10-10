@@ -222,8 +222,14 @@ npm run dev
 רק `http://localhost:3000`. סודות ב-`.env.local` (gitignore). אין service role key בריפו.
 Placeholders ב-`.env.example`.
 
-אנליטיקה בסיסית (PostHog, אם יש מפתח): `signup`, `sign_in`, `profile_completed`,
-`connection_sent`, `mingle_created`, `message_sent`, `relationship_stage`.
+אנליטיקה (PostHog, אם יש מפתח): `signup`, `sign_in`, `profile_completed`,
+`onboarding_started`, `discover_viewed`, `match_card_viewed`, `board_stage_changed`,
+`connection_sent`, `mingle_created` (North Star), `message_sent`, `relationship_stage`.
+מדדים: `lib/analytics/metrics.ts`. דוח למייסדת כל 14 יום:
+`GET /api/cron/insights-report` (CRON_SECRET) — `lib/analytics/growth-report.ts`
+(Supabase snapshot + PostHog + nudges). הרצה ידנית: `npm run growth:report`.
+דוגמת פורמט: `docs/growth-reports/2026-09-16-sample.md`.
+Handoff: `docs/cursor-handoff-growth-learning-system.md`.
 
 ---
 

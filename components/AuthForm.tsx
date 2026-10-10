@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, startTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,87 +10,170 @@ import { motion } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { AuthVisualPanel } from "@/components/AuthVisualPanel";
 import { createClient } from "@/lib/supabase/client";
-import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import { authSchema, type AuthFormValues } from "@/lib/validation/auth";
+import {
+  COMPANY_WORK_EMAIL_MESSAGE,
+  isWorkEmail,
+} from "@/lib/auth/work-email";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { identifyUser, track } from "@/lib/analytics/track";
+import { reportInterestAttribution } from "@/lib/outbound-interest/client";
+import { reportReferralAttribution } from "@/lib/referrals/client";
+import {
+  reportTalentReferralAttribution,
+  reportTalentReferralSignupStarted,
+} from "@/lib/talent-referrals/client";
+import { reportCareerApplyAttribution } from "@/lib/careers/client";
 import type { UserType } from "@/lib/supabase/types";
-
-const PATH_COPY: Record<
-  UserType,
-  { eyebrow: string; headline: string; sub: string }
-> = {
-  talent: {
-    eyebrow: "Continuing as talent",
-    headline: "Welcome to mingle",
-    sub: "Get matched with roles that fit — free for talent.",
-  },
-  company: {
-    eyebrow: "Continuing as a company",
-    headline: "Welcome to mingle",
-    sub: "See the few people worth talking to, with clear reasons.",
-  },
-};
-
-const PATH_CONFIRM: Record<
-  UserType,
-  {
-    segmentLabel: string;
-    confirm: string;
-    switchTo: UserType;
-    switchLabel: string;
-  }
-> = {
-  talent: {
-    segmentLabel: "Talent",
-    confirm: "Confirm Talent",
-    switchTo: "company",
-    switchLabel: "Switch to Company",
-  },
-  company: {
-    segmentLabel: "Company",
-    confirm: "Confirm Company",
-    switchTo: "talent",
-    switchLabel: "Switch to Talent",
-  },
-};
-
-const SIGNIN_COPY = {
-  eyebrow: "Welcome back",
-  headline: "Sign in to mingle",
-  sub: "Pick up where you left off.",
-};
-
-const SIGNUP_GENERIC = {
-  eyebrow: "Get started — it’s free for talent",
-  headline: "Welcome to mingle",
-  sub: "No credit card needed. Choose how you’re joining.",
-};
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
 type AuthMode = "signup" | "signin";
+
+// Minimal shape of the bits of Google Identity Services (loaded via
+// https://accounts.google.com/gsi/client) that this file actually uses —
+// Google doesn't ship official types for it.
+type GoogleCodeClient = { requestCode: () => void };
+type GoogleCodeResponse = { code?: string; error?: string };
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initCodeClient: (config: {
+            client_id: string;
+            scope: string;
+            ux_mode: "popup";
+            callback: (response: GoogleCodeResponse) => void;
+          }) => GoogleCodeClient;
+        };
+      };
+    };
+  }
+}
 
 export function AuthForm({
   path: initialPath,
   initialMode = "signin",
+  initialError = null,
 }: {
   path: UserType | null;
   initialMode?: AuthMode;
+  initialError?: "work_email" | null;
 }) {
   const router = useRouter();
-  const supabase = createClient();
+  const { t, locale, dir } = useAppLocale();
+  const [supabase] = useState(() => createClient());
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  // Mirror AuthShell: signup without an explicit path starts as talent so the
-  // Continue button matches the default segment UI and is not silently disabled.
-  const [path, setPath] = useState<UserType | null>(
-    initialPath ?? (initialMode === "signup" ? "talent" : null),
+  // Stay neutral until the user taps Talent or Company (or arrives with ?path=).
+  const [path, setPath] = useState<UserType | null>(initialPath);
+  const [serverError, setServerError] = useState<string | null>(
+    initialError === "work_email" ? COMPANY_WORK_EMAIL_MESSAGE : null,
   );
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [confirmingPath, setConfirmingPath] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [deletionScheduledNotice, setDeletionScheduledNotice] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+
+  // Refs so the GIS callback (created once at init) always sees the latest
+  // selection — path/mode change on every toggle click, well after init.
+  const googleCodeClientRef = useRef<GoogleCodeClient | null>(null);
+  const pathForGoogleRef = useRef<UserType>(path ?? "talent");
+  useEffect(() => {
+    pathForGoogleRef.current = path ?? "talent";
+  }, [path]);
+
+  const initGoogleCodeClient = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || !window.google || googleCodeClientRef.current) return;
+    googleCodeClientRef.current = window.google.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: "openid email profile",
+      ux_mode: "popup",
+      callback: (response) => {
+        if (!response.code) {
+          setServerError(
+            response.error ? "Couldn't sign in with Google." : null,
+          );
+          setIsSubmitting(false);
+          return;
+        }
+        void handleGoogleCode(response.code);
+      },
+    });
+    setGoogleReady(true);
+  };
+
+  const handleGoogleCode = async (code: string) => {
+    try {
+      const exchangeRes = await fetch("/api/auth/google/login-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const exchangeJson = (await exchangeRes.json()) as {
+        idToken?: string;
+        error?: string;
+      };
+      if (!exchangeRes.ok || !exchangeJson.idToken) {
+        setServerError(exchangeJson.error ?? "Couldn't sign in with Google.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: exchangeJson.idToken,
+      });
+      if (error || !data.user) {
+        setServerError(error?.message ?? "Couldn't sign in with Google.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Metadata wins over the UI toggle — same rule as the old
+      // /auth/callback route: don't let a stray click flip an existing
+      // account's track.
+      const metaType = data.user.user_metadata?.user_type;
+      const resolvedPath: UserType =
+        metaType === "company" || metaType === "talent"
+          ? metaType
+          : pathForGoogleRef.current;
+
+      if (resolvedPath === "company" && !isWorkEmail(data.user.email ?? "")) {
+        await supabase.auth.signOut();
+        setServerError(COMPANY_WORK_EMAIL_MESSAGE);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (metaType !== resolvedPath) {
+        await supabase.auth.updateUser({ data: { user_type: resolvedPath } });
+      }
+
+      await goAfterAuth(data.user.id, resolvedPath);
+    } catch {
+      setServerError("Couldn't sign in with Google. Try again.");
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("deleted") === "1") {
+        queueMicrotask(() => setDeletionScheduledNotice(true));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const {
     register,
@@ -99,12 +183,15 @@ export function AuthForm({
   } = useForm<AuthFormValues>({ resolver: zodResolver(authSchema) });
 
   const goAfterAuth = async (userId: string, resolvedPath: UserType) => {
+    // destinationAfterAuth already reconciles the users row — avoid a second
+    // ensureUserProfile round-trip that made sign-in feel stuck.
+    let next: string;
     try {
-      await ensureUserProfile(
+      next = await destinationAfterAuth(
         supabase,
         userId,
-        getValues("email"),
         resolvedPath,
+        getValues("email"),
       );
     } catch (profileError) {
       setServerError(
@@ -115,18 +202,39 @@ export function AuthForm({
       setIsSubmitting(false);
       return;
     }
-    const next = await destinationAfterAuth(
-      supabase,
+    startTransition(() => {
+      router.push(next);
+      router.refresh();
+    });
+
+    // Fire after navigation kickoff — never block auth UX.
+    void reportInterestAttribution({
+      eventType: "signup",
+      userType: resolvedPath,
       userId,
-      resolvedPath,
-      getValues("email"),
-    );
-    router.push(next);
-    router.refresh();
+    });
+    if (resolvedPath === "talent") {
+      void reportReferralAttribution();
+      void reportTalentReferralAttribution();
+      void reportCareerApplyAttribution();
+    }
   };
+
+  useEffect(() => {
+    if (path !== "talent" && path !== null) return;
+    // Count unique visitors who reached auth with a stashed talent invite.
+    void reportTalentReferralSignupStarted();
+  }, [path]);
 
   const createAccount = async (values: AuthFormValues, selectedPath: UserType) => {
     setServerError(null);
+
+    if (selectedPath === "company" && !isWorkEmail(values.email)) {
+      setServerError(COMPANY_WORK_EMAIL_MESSAGE);
+      setConfirmingPath(false);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -144,7 +252,7 @@ export function AuthForm({
     if (!signUpData.session) {
       const existingAccount = (signUpData.user?.identities?.length ?? 0) === 0;
       if (existingAccount) {
-        setServerError("That email already has an account. Sign in instead.");
+        setServerError(t.auth.emailExists);
         setConfirmingPath(false);
         setMode("signin");
         setIsSubmitting(false);
@@ -158,6 +266,9 @@ export function AuthForm({
         { path: selectedPath, awaiting_confirmation: true },
         signUpData.user?.id,
       );
+      if (signUpData.user?.id) {
+        identifyUser(signUpData.user.id, { path: selectedPath, email: values.email });
+      }
       return;
     }
 
@@ -168,7 +279,7 @@ export function AuthForm({
       return;
     }
     track(AnalyticsEvent.signup, { path: selectedPath }, userId);
-    identifyUser(userId, { path: selectedPath });
+    identifyUser(userId, { path: selectedPath, email: values.email });
     await goAfterAuth(userId, selectedPath);
   };
 
@@ -202,13 +313,18 @@ export function AuthForm({
             : path ?? "talent";
 
       track(AnalyticsEvent.signIn, { path: resolvedPath }, data.user.id);
-      identifyUser(data.user.id, { path: resolvedPath });
+      identifyUser(data.user.id, { path: resolvedPath, email: data.user.email });
       await goAfterAuth(data.user.id, resolvedPath);
       return;
     }
 
     if (!path) {
-      setServerError("Choose talent or company to create your account.");
+      setServerError(t.auth.choosePath);
+      return;
+    }
+
+    if (path === "company" && !isWorkEmail(values.email)) {
+      setServerError(COMPANY_WORK_EMAIL_MESSAGE);
       return;
     }
 
@@ -219,22 +335,82 @@ export function AuthForm({
 
   const copy =
     mode === "signin"
-      ? SIGNIN_COPY
-      : path
-        ? PATH_COPY[path]
-        : SIGNUP_GENERIC;
+      ? {
+          eyebrow: t.auth.welcomeBack,
+          headline: t.auth.signInHeadline,
+          sub: t.auth.signInSub,
+        }
+      : path === "talent"
+        ? {
+            eyebrow: t.auth.talentEyebrow,
+            headline: t.auth.talentHeadline,
+            sub: t.auth.talentSub,
+          }
+        : path === "company"
+          ? {
+              eyebrow: t.auth.companyEyebrow,
+              headline: t.auth.companyHeadline,
+              sub: t.auth.companySub,
+            }
+          : {
+              eyebrow: t.auth.signupGenericEyebrow,
+              headline: t.auth.signupGenericHeadline,
+              sub: t.auth.signupGenericSub,
+            };
 
-  const confirmCopy = path ? PATH_CONFIRM[path] : null;
+  const confirmCopy = path
+    ? path === "talent"
+      ? {
+          segmentLabel: t.auth.segmentTalent,
+          confirm: t.auth.confirmTalent,
+          switchTo: "company" as const,
+          switchLabel: t.auth.switchToCompany,
+        }
+      : {
+          segmentLabel: t.auth.segmentCompany,
+          confirm: t.auth.confirmCompany,
+          switchTo: "talent" as const,
+          switchLabel: t.auth.switchToTalent,
+        }
+    : null;
+
+  const continueWithGoogle = () => {
+    if (mode === "signup" && !path) {
+      setServerError(t.auth.choosePathContinue);
+      return;
+    }
+    if (!googleCodeClientRef.current) {
+      setServerError(
+        googleReady
+          ? "Couldn't start Google sign-in. Try again."
+          : "Google sign-in is still loading — try again in a second.",
+      );
+      return;
+    }
+    setServerError(null);
+    setIsSubmitting(true);
+    // Sign-in can omit path (resolved after session). Signup always has path here.
+    track(AnalyticsEvent.authGoogleClicked, {
+      mode,
+      path: pathForGoogleRef.current,
+    });
+    // Opens Google's own popup — mingle.careers never redirects through
+    // Supabase's auth host for this, so Google shows "mingle.careers", not
+    // *.supabase.co. See docs/AUTH_GOOGLE_BRANDING.md.
+    googleCodeClientRef.current.requestCode();
+  };
 
   const formInner = awaitingConfirmation ? (
     <div className="flex w-full max-w-[400px] flex-col items-start text-left">
-      <MingleLogo variant="mark" size={44} className="mb-8" />
+      <div className="mb-8 flex w-full items-center justify-between gap-3">
+        <MingleLogo variant="mark" size={44} />
+        <LocaleGlobeButton />
+      </div>
       <h1 className="font-display text-[2rem] font-normal tracking-[-0.04em] text-mingle-text">
-        Check your email
+        {t.auth.checkEmailTitle}
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-mingle-text-secondary">
-        We sent a confirmation link to your inbox. Confirm your email, then come
-        back and continue.
+        {t.auth.checkEmailBody}
       </p>
     </div>
   ) : (
@@ -242,9 +418,19 @@ export function AuthForm({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex w-full max-w-[400px] flex-col"
+      className="relative flex w-full max-w-[400px] flex-col"
     >
-      <MingleLogo variant="mark" size={44} priority className="mb-8" />
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <MingleLogo variant="mark" size={44} priority />
+        <LocaleGlobeButton />
+      </div>
+      {deletionScheduledNotice ? (
+        <p className="mb-4 rounded-xl border border-mingle-warning/40 bg-mingle-warning/15 px-3 py-2 text-xs leading-relaxed text-mingle-text">
+          {locale === "he"
+            ? "תזמנו מחיקה בעוד 14 יום. התחברות מחדש בתוך התקופה תשחזר את החשבון והפרופיל."
+            : "Account deletion is scheduled in 14 days. Sign in again within that window to restore your profile."}
+        </p>
+      ) : null}
       <p className="text-sm font-normal text-mingle-text-secondary">{copy.eyebrow}</p>
       <h1 className="mt-2 font-display text-[2rem] font-normal leading-[1.15] tracking-[-0.04em] text-mingle-text sm:text-[2.25rem]">
         {copy.headline}
@@ -264,7 +450,7 @@ export function AuthForm({
                 : "text-mingle-text-secondary hover:text-mingle-text"
             }`}
           >
-            Talent
+            {t.auth.segmentTalent}
           </button>
           <button
             type="button"
@@ -275,7 +461,7 @@ export function AuthForm({
                 : "text-mingle-text-secondary hover:text-mingle-text"
             }`}
           >
-            Company
+            {t.auth.segmentCompany}
           </button>
         </div>
       ) : null}
@@ -288,13 +474,13 @@ export function AuthForm({
       >
         <div>
           <label htmlFor="email" className="sr-only">
-            Email
+            {t.auth.email}
           </label>
           <input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="Email"
+            placeholder={t.auth.email}
             {...register("email")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
@@ -305,13 +491,13 @@ export function AuthForm({
 
         <div>
           <label htmlFor="password" className="sr-only">
-            Password
+            {t.auth.password}
           </label>
           <input
             id="password"
             type="password"
             autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            placeholder="Password"
+            placeholder={t.auth.password}
             {...register("password")}
             className="w-full rounded-xl border border-mingle-border bg-mingle-white px-4 py-3.5 text-sm text-mingle-text placeholder:text-mingle-muted focus:border-mingle-blue focus:outline-none"
           />
@@ -351,11 +537,11 @@ export function AuthForm({
                 }}
                 className="mt-2 text-xs font-normal text-mingle-blue underline underline-offset-2 hover:text-mingle-text disabled:opacity-60"
               >
-                {resetBusy ? "Sending…" : "Forgot password"}
+                {resetBusy ? t.auth.sending : t.auth.forgotPassword}
               </button>
               {resetSent && (
                 <p className="mt-1.5 text-xs text-mingle-text-secondary">
-                  If that email is on mingle, we sent a reset link.
+                  {t.auth.resetSent}
                 </p>
               )}
             </>
@@ -368,7 +554,7 @@ export function AuthForm({
 
         {mode === "signup" && !path ? (
           <p className="text-sm text-mingle-pink" role="status">
-            Choose Talent or Company to continue.
+            {t.auth.choosePathContinue}
           </p>
         ) : null}
 
@@ -379,11 +565,29 @@ export function AuthForm({
         >
           {isSubmitting
             ? mode === "signup"
-              ? "Creating account…"
-              : "Signing in…"
+              ? t.auth.creating
+              : t.auth.signingIn
             : mode === "signup"
-              ? "Continue"
-              : "Sign in"}
+              ? t.auth.continue
+              : t.auth.signIn}
+        </button>
+
+        <div className="relative my-1 flex items-center gap-3">
+          <div className="h-px flex-1 bg-mingle-border" />
+          <span className="text-[11px] font-medium uppercase tracking-wide text-mingle-text-secondary">
+            {t.auth.or}
+          </span>
+          <div className="h-px flex-1 bg-mingle-border" />
+        </div>
+
+        <button
+          type="button"
+          disabled={isSubmitting || (mode === "signup" && !path)}
+          onClick={continueWithGoogle}
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-mingle-border bg-mingle-white px-6 py-3.5 text-sm font-normal text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+        >
+          <GoogleMark />
+          {t.auth.continueGoogle}
         </button>
       </form>
 
@@ -413,7 +617,12 @@ export function AuthForm({
       : "bg-[#f5f9ff] text-[#2563eb]";
 
   return (
-    <div className="relative flex min-h-screen flex-1 bg-mingle-white">
+    <div className="relative flex min-h-screen flex-1 bg-mingle-white" dir={dir} lang={locale}>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogleCodeClient}
+      />
       <section className="relative flex min-h-screen w-full flex-col lg:w-1/2">
         <div
           className={`flex flex-1 items-center justify-center px-6 py-12 sm:px-10 ${
@@ -427,7 +636,7 @@ export function AuthForm({
           <div className="border-t border-mingle-border px-6 py-5 text-center text-sm text-mingle-text-secondary sm:px-10">
             {mode === "signup" ? (
               <>
-                Already have an account?{" "}
+                {t.auth.haveAccount.split("?")[0]}?{" "}
                 <button
                   type="button"
                   onClick={() => {
@@ -437,23 +646,23 @@ export function AuthForm({
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
-                  Log in
+                  {t.auth.signIn}
                 </button>
               </>
             ) : (
               <>
-                Don&apos;t have an account?{" "}
+                {t.auth.needAccount.split("?")[0]}?{" "}
                 <button
                   type="button"
                   onClick={() => {
                     track(AnalyticsEvent.authModeToggled, { mode: "signup" });
                     setMode("signup");
-                    // Sign-in pages often have no path; default Talent so Continue works.
-                    setPath((current) => current ?? "talent");
+                    // Keep segment unset until they tap Talent or Company.
+                    setPath(null);
                   }}
                   className="font-medium text-mingle-blue underline underline-offset-2 hover:text-mingle-text"
                 >
-                  Sign up
+                  {locale === "he" ? "הרשמה" : "Sign up"}
                 </button>
               </>
             )}
@@ -566,5 +775,28 @@ export function AuthForm({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function GoogleMark() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.3 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.7-6.5 7.1l.1.1 6.2 5.2C36.9 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"
+      />
+    </svg>
   );
 }

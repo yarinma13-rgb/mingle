@@ -12,6 +12,8 @@ const SIZES = {
   lg: { box: "h-12 w-12", text: "text-sm" },
   xl: { box: "h-20 w-20", text: "text-xl" },
   hero: { box: "h-24 w-24", text: "text-xl" },
+  /** Soft square portrait used on company Discover / match mockups. */
+  portrait: { box: "h-36 w-36", text: "text-3xl" },
 } as const;
 
 const SHAPE = {
@@ -36,10 +38,15 @@ export function Avatar({
   const dim = SIZES[size];
   const radius = SHAPE[shape];
   const label = initials.trim() || "?";
+  const fit = shape === "soft" ? "object-contain" : "object-cover";
+  const plate =
+    shape === "soft"
+      ? "bg-[#0B0B0F] p-1.5 ring-1 ring-black/20"
+      : "bg-white ring-1 ring-black/[0.04]";
   return (
     <TalentPhotoImg
       photo={photo}
-      className={`${dim.box} shrink-0 ${radius} object-cover shadow-[0_8px_24px_rgba(45,27,78,0.08)] ring-1 ring-black/[0.04]`}
+      className={`${dim.box} shrink-0 ${radius} ${fit} ${plate} shadow-[0_8px_24px_rgba(45,27,78,0.08)]`}
       fallback={
         <div
           className={`flex ${dim.box} shrink-0 items-center justify-center ${radius} font-display font-bold text-white ${dim.text} ${avatarToneClass(gender)} shadow-[0_8px_24px_rgba(45,27,78,0.08)]`}

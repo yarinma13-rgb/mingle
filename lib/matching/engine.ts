@@ -1,7 +1,10 @@
 import type { ProfileState } from "@/lib/profile/persistence";
 import type { CompanyProfileState } from "@/lib/company-profile/persistence";
 import { overlapCanonical } from "@/lib/matching/synonyms";
+import { skillCoverageWithAdjacency } from "@/lib/matching/skill-adjacency";
+import { tierWeightsBySkill, type SkillRequirement } from "@/lib/matching/skill-requirement-tiers";
 import { applySalaryNudge } from "@/lib/matching/salary-nudge";
+import { applyTargetRoleNudge } from "@/lib/matching/target-role-nudge";
 
 // Deterministic weighted matching engine (PRODUCT_SPEC.md section 31,
 // weights overridden per explicit product decision — see below). No AI
@@ -9,13 +12,14 @@ import { applySalaryNudge } from "@/lib/matching/salary-nudge";
 //
 // Weights (sum to 100), overriding the spec's original example set:
 export const MATCH_WEIGHTS = {
-  careerGoals: 20,
-  motivations: 20,
-  workStyle: 18,
-  industry: 14,
-  experience: 13,
-  location: 8,
-  companyStage: 7,
+  careerGoals: 17,
+  motivations: 17,
+  workStyle: 15,
+  industry: 12,
+  experience: 11,
+  skills: 16,
+  location: 7,
+  companyStage: 5,
 } as const;
 
 export type MatchFactorKey = keyof typeof MATCH_WEIGHTS;
@@ -51,6 +55,17 @@ export type CompanyMatchInput = {
   /** Optional private role/company budget (ILS). Soft score nudge only. */
   salaryMin?: number | null;
   salaryMax?: number | null;
+  /** Optional open role title / department for soft target-role boost. */
+  roleTitle?: string | null;
+  roleDepartment?: string | null;
+  /** Required skills from an open role — primary skills signal for Role Fit. */
+  roleRequiredSkills?: string[] | null;
+  /**
+   * Optional MUST_HAVE/PREFERRED/TRANSFERABLE/etc tiering for the same
+   * skills (see lib/matching/skill-requirement-tiers.ts). When present,
+   * missing a MUST_HAVE skill costs more than missing a PREFERRED one.
+   */
+  roleSkillRequirements?: SkillRequirement[] | null;
 };
 
 function overlapFraction(a: string[], b: string[]): number {
@@ -82,6 +97,13 @@ const TALENT_COMMITMENT: Record<string, number> = {
 };
 
 const COMPANY_COMMITMENT: Record<string, number> = {
+  // Current company onboarding labels
+  "Hiring now": 1,
+  "Hiring soon": 0.65,
+  "Building a talent pipeline": 0.4,
+  "Exploring the market": 0.3,
+  "Networking with talent": 0.2,
+  // Legacy rows already saved in preferences
   Hiring: 1,
   "Future hiring": 0.6,
   "Talent discovery": 0.4,
@@ -177,20 +199,53 @@ function workStyleFactor(
   };
 }
 
+/** Soft industry compare: exact → contains → shared token → domain family → miss. */
+function industryOverlapFraction(a: string, b: string): number {
+  const left = a.trim().toLowerCase();
+  const right = b.trim().toLowerCase();
+  if (!left || !right) return 0;
+  if (left === right) return 1;
+  if (left.includes(right) || right.includes(left)) return 0.72;
+  const tokens = (value: string) =>
+    value
+      .split(/[\s/&,+\-_|]+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length > 2);
+  const leftTokens = new Set(tokens(left));
+  if (tokens(right).some((token) => leftTokens.has(token))) return 0.55;
+
+  // Adjacent domain families — inference only (never treated as equivalence).
+  const FAMILIES = [
+    ["saas", "b2b", "software", "fintech", "insurtech", "marketplace", "tech"],
+    ["health", "healthcare", "healthtech", "medtech", "biotech"],
+    ["ecommerce", "retail", "consumer", "d2c"],
+  ];
+  const inFamily = (value: string, family: string[]) =>
+    family.some((token) => value.includes(token));
+  for (const family of FAMILIES) {
+    if (inFamily(left, family) && inFamily(right, family)) return 0.5;
+  }
+  return 0;
+}
+
 function industryFactor(
   talent: TalentMatchInput,
   company: CompanyMatchInput,
 ): MatchFactor {
-  const t = talent.profile.industry.trim().toLowerCase();
-  const c = company.profile.industry.trim().toLowerCase();
-  const fraction = !t || !c ? 0 : t === c ? 1 : 0;
+  const t = talent.profile.industry.trim();
+  const c = company.profile.industry.trim();
+  const fraction = industryOverlapFraction(t, c);
   const verdict = verdictFromFraction(fraction);
   const detail =
     !t || !c
       ? "Industry isn't set on one side yet."
-      : t === c
-        ? `Same industry — ${company.profile.industry}.`
-        : `Different industries — ${talent.profile.industry || "not set"} vs ${company.profile.industry}.`;
+      : fraction >= 1
+        ? `Same industry — ${c}.`
+        : fraction >= 0.55
+          ? `Related industries — ${t} and ${c}.`
+          : fraction >= 0.45
+            ? `Potentially transferable industry context (inference, not equivalence) — ${t} and ${c}.`
+            : `Different industries — ${t || "not set"} vs ${c}.`;
   return {
     key: "industry",
     label: "Industry",
@@ -278,6 +333,80 @@ function locationFactor(
   };
 }
 
+
+function skillsFactor(
+  talent: TalentMatchInput,
+  company: CompanyMatchInput,
+): MatchFactor {
+  const talentSkills = talent.profile.skills;
+  const required = (company.roleRequiredSkills ?? [])
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (required.length === 0) {
+    return {
+      key: "skills",
+      label: "Skills",
+      weight: MATCH_WEIGHTS.skills,
+      fraction: 0.55,
+      verdict: "unknown",
+      detail:
+        "No role-required skills yet, so this stays a neutral Role Fit signal.",
+    };
+  }
+
+  if (talentSkills.length === 0) {
+    return {
+      key: "skills",
+      label: "Skills",
+      weight: MATCH_WEIGHTS.skills,
+      fraction: 0.15,
+      verdict: "not-aligned",
+      detail:
+        "Required skills are set on the role, but their profile doesn't list skills yet.",
+    };
+  }
+
+  const tierWeights = tierWeightsBySkill(company.roleSkillRequirements);
+  const { exact, adjacent, fraction } = skillCoverageWithAdjacency(
+    talentSkills,
+    required,
+    tierWeights.size > 0 ? tierWeights : undefined,
+  );
+  const verdict = verdictFromFraction(fraction);
+  const preview = exact.slice(0, 3).join(", ");
+  const adjacentPreview = adjacent
+    .slice(0, 2)
+    .map((hit) => `${hit.talentSkill} → ${hit.required}`)
+    .join("; ");
+
+  let detail: string;
+  if (exact.length === 0 && adjacent.length === 0) {
+    detail = `Little overlap with the role's required skills (${required.slice(0, 3).join(", ")}${required.length > 3 ? "…" : ""}).`;
+  } else if (exact.length === 0 && adjacent.length > 0) {
+    detail = `Potentially transferable skill overlap (inference, not equivalence): ${adjacentPreview}.`;
+  } else if (adjacent.length > 0) {
+    detail =
+      verdict === "aligned"
+        ? `Covers ${exact.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}. Potentially transferable additions: ${adjacentPreview}.`
+        : `Partial skill coverage — ${exact.length} of ${required.length} required${preview ? ` (${preview})` : ""}. Potentially transferable: ${adjacentPreview}.`;
+  } else {
+    detail =
+      verdict === "aligned"
+        ? `Covers ${exact.length} of ${required.length} required skills${preview ? `: ${preview}` : ""}.`
+        : `Partial skill coverage — ${exact.length} of ${required.length} required${preview ? ` (${preview})` : ""}.`;
+  }
+
+  return {
+    key: "skills",
+    label: "Skills",
+    weight: MATCH_WEIGHTS.skills,
+    fraction,
+    verdict,
+    detail,
+  };
+}
+
 function companyStageFactor(
   talent: TalentMatchInput,
   company: CompanyMatchInput,
@@ -339,6 +468,9 @@ function matchCacheKey(
     company.profile,
     company.salaryMin ?? null,
     company.salaryMax ?? null,
+    company.roleTitle ?? null,
+    company.roleDepartment ?? null,
+    company.roleRequiredSkills ?? null,
   ]);
 }
 
@@ -352,6 +484,7 @@ function computeMatchUncached(
     workStyleFactor(talent, company),
     industryFactor(talent, company),
     experienceFactor(talent, company),
+    skillsFactor(talent, company),
     locationFactor(talent, company),
     companyStageFactor(talent, company),
   ];
@@ -359,12 +492,18 @@ function computeMatchUncached(
   const base = Math.round(
     factors.reduce((sum, factor) => sum + factor.fraction * factor.weight, 0),
   );
-  const { score } = applySalaryNudge(
+  const { score: salaryScore } = applySalaryNudge(
     base,
     talent.salaryExpectation,
     company.salaryMin,
     company.salaryMax,
   );
+  const { score } = applyTargetRoleNudge(salaryScore, talent.profile.targetRole, [
+    company.roleTitle,
+    company.roleDepartment,
+    ...company.profile.lookingFor,
+    company.profile.industry,
+  ]);
 
   return { score, factors };
 }

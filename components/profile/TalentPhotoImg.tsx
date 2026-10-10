@@ -44,5 +44,13 @@ export function TalentPhotoImg({
     publicSrc ?? (signed && signed.photo === photo ? signed.url : null);
 
   if (!src) return fallback;
-  return <StorageImage src={src} className={className} sizes={sizes} />;
+  const fit = className?.includes("object-contain") ? "contain" : "cover";
+  return (
+    <StorageImage
+      src={src}
+      className={className}
+      sizes={sizes}
+      objectFit={fit}
+    />
+  );
 }

@@ -1,17 +1,27 @@
 import Link from "next/link";
+import {
+  BriefcaseIcon,
+  CompassIcon,
+  TargetIcon,
+} from "@/components/dashboard/icons";
 import { MingleChip } from "@/components/MingleChip";
 import type { CandidateDna } from "@/lib/matching/dna";
 
 function Group({
   title,
+  icon: Icon,
   children,
 }: {
   title: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h3 className="font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-purple">
+      <h3 className="flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-purple">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-mingle-lavender text-mingle-purple">
+          <Icon size={14} />
+        </span>
         {title}
       </h3>
       {children}
@@ -55,7 +65,7 @@ export function CandidateDnaPanel({
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <Group title="Professional capabilities">
+          <Group title="Professional capabilities" icon={BriefcaseIcon}>
             {dna.professional.length === 0 ? (
               <p className="text-xs text-mingle-text-secondary">Not set yet.</p>
             ) : (
@@ -71,7 +81,7 @@ export function CandidateDnaPanel({
               </dl>
             )}
           </Group>
-          <Group title="Preferences">
+          <Group title="Preferences" icon={CompassIcon}>
             {dna.preferences.length === 0 ? (
               <p className="text-xs text-mingle-text-secondary">Not set yet.</p>
             ) : (
@@ -88,7 +98,7 @@ export function CandidateDnaPanel({
               </dl>
             )}
           </Group>
-          <Group title="Motivation signals">
+          <Group title="Motivation signals" icon={TargetIcon}>
             {dna.motivations.length === 0 && dna.workStyle.length === 0 ? (
               <p className="text-xs text-mingle-text-secondary">Not set yet.</p>
             ) : (

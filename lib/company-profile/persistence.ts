@@ -31,7 +31,7 @@ export const EMPTY_COMPANY_PROFILE: CompanyProfileState = {
   lookingFor: [],
 };
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 function hasBasicInfo(p: CompanyProfileState) {
   return Boolean(
@@ -45,29 +45,25 @@ function hasReflection(p: CompanyProfileState) {
   );
 }
 
-/** Same approach as talent profiles: the furthest-incomplete step is
- * derived from which fields are filled, so there's no separate step
- * pointer to keep in sync. */
+/**
+ * Compressed company profile: identity → how we work → what we value
+ * (looking-for synced from values) → optional reflection. Looking-for as a
+ * separate multi was redundant with values / early onboarding talent types.
+ */
 export function resumeCompanyStep(p: CompanyProfileState): number {
   if (!hasBasicInfo(p)) return 1;
   if (p.workEnvironment.length === 0) return 2;
   if (p.values.length === 0) return 3;
-  if (p.lookingFor.length === 0) return 4;
-  if (!hasReflection(p)) return 5;
   return TOTAL_STEPS;
 }
 
-/** Six equally-weighted categories, mirroring the talent side: basic
- * info, logo, how we work, what we value, what we're looking for, and
- * the who-thrives-here / what-we're-building reflection. */
 export function companyProfileCompletion(p: CompanyProfileState): number {
+  // Reflection is optional — completion based on identity + culture signals.
   const categories = [
     hasBasicInfo(p),
     Boolean(p.logo),
     p.workEnvironment.length > 0,
     p.values.length > 0,
-    p.lookingFor.length > 0,
-    hasReflection(p),
   ];
   const done = categories.filter(Boolean).length;
   return Math.round((done / categories.length) * 100);

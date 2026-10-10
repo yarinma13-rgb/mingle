@@ -4,7 +4,7 @@ import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
 import Link from "next/link";
-import { Poppins } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
 import {
   LandingAudienceProvider,
@@ -19,16 +19,17 @@ import {
 } from "@/components/landing/LandingLocale";
 import "./landing.css";
 
-const poppins = Poppins({
-  // Poppins has no Hebrew glyphs in next/font; Latin + system Hebrew fallback.
+const figtree = Figtree({
+  // Figtree is Latin-first; Hebrew falls back to system UI on landing.
   subsets: ["latin", "latin-ext"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-landing-poppins",
+  variable: "--font-landing-figtree",
   display: "swap",
 });
 
 const SIGN_IN_HREF = "/auth";
-const GET_STARTED_HREF = "/auth?mode=signup&path=talent";
+// No default segment — user must pick Talent or Company on /auth.
+const GET_STARTED_HREF = "/auth?mode=signup";
 const DEMO_HREF = "/contact";
 
 function LandingPageInner() {
@@ -37,7 +38,7 @@ function LandingPageInner() {
 
   return (
     <div
-      className={`landing ${poppins.variable}`}
+      className={`landing ${figtree.variable}`}
       dir={t.dir}
       lang={locale}
       data-locale={locale}

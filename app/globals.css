@@ -1,79 +1,82 @@
 @import "tailwindcss";
 
 :root {
-  /* Official palette — sampled from the 2026 brand mark. Replaces
-     #E2378D / #7362E2 / #4D42DB. Source of truth for color is this file. */
-  --mingle-pink: #f65f7c;
-  --mingle-pink-deep: #d83a52;
-  --mingle-blue: #0073ea;
-  /* Midpoint of the mark's pink→blue overlap (violet, not a flat fill
-     in the asset). Use for chips/text. The blend itself is the
-     connection gradient — match / mingle moments only. */
-  --mingle-purple: #9d5cf2;
-  --mingle-indigo: #0073ea;
-  --mingle-cta: #0073ea;
+    /* Match mockup palette (sampled from product match UI comps) —
+     hotter rose pink, soft violet purple, bright royal blue. */
+  --mingle-pink: #e94d8a;
+  --mingle-pink-deep: #d63a78;
+  --mingle-blue: #4e73f5;
+  --mingle-purple: #8b53f5;
+  --mingle-indigo: #4e73f5;
+  --mingle-cta: #4e73f5;
   /* Saturated accents for icons and small highlights only — not
      backgrounds, not replacements for the brand tokens above. */
-  --mingle-accent-pink: #ea1e63;
-  --mingle-accent-magenta: #c42a9b;
-  --mingle-accent-purple: #7b2ff7;
-  --mingle-accent-violet: #5548e8;
-  --mingle-accent-blue: #3e6be0;
+  --mingle-accent-pink: #e94d8a;
+  --mingle-accent-magenta: #eb59a8;
+  --mingle-accent-purple: #8b53f5;
+  --mingle-accent-violet: #7e57f5;
+  --mingle-accent-blue: #4e78f4;
+  /* CTA / ring — pink → purple → blue, matching mockup buttons */
   --mingle-connection-gradient: linear-gradient(
-    135deg,
-    #ea1e63 0%,
-    #7b2ff7 48%,
-    #3e6be0 100%
+    90deg,
+    #eb59a8 0%,
+    #8b53f5 48%,
+    #4e73f5 100%
   );
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-light-pink: #fde8f1;
+  --mingle-light-purple: #efe8fe;
+  --mingle-light-blue: #e8eeff;
+  --mingle-gap-bg: #faf6f2;
+  --mingle-gap-accent: #c47a5a;
+  --mingle-background: #eff0fc;
+  --mingle-bg: #eff0fc;
+  --mingle-lavender: #efe8fe;
+  --mingle-product-bg: #eff0fc;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-success: #00ca72;
-  --mingle-warning: #ffcc00;
-  --mingle-error: #d83a52;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-success: #2f9d6a;
+  --mingle-warning: #d4a017;
+  --mingle-error: #c47a5a;
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
   --mingle-radius-sm: 6px;
   --mingle-radius: 10px;
   --mingle-radius-card: 16px;
   --mingle-radius-lg: 20px;
   --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
+      --mingle-nav-active-bg: var(--mingle-lavender);
   --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
+      --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
   --mingle-nav-divider: #e6e9ef;
-  --font-display: var(--font-poppins);
-  --font-sans: var(--font-poppins);
+  --font-display: var(--font-figtree);
+  --font-sans: var(--font-figtree);
   --font-hebrew: var(--font-rubik);
 }
 
 [data-theme="light"] {
-  --mingle-background: #f7f8fc;
-  --mingle-bg: #f7f8fc;
-  --mingle-lavender: #eef4fb;
-  --mingle-product-bg: #eef4fb;
+  --mingle-background: #eff0fc;
+  --mingle-bg: #eff0fc;
+  --mingle-lavender: #efe8fe;
+  --mingle-product-bg: #eff0fc;
   --mingle-sidebar-bg: #ffffff;
   --mingle-white: #ffffff;
   --mingle-surface: #ffffff;
-  --mingle-text: #252238;
-  --mingle-text-secondary: #77738a;
-  --mingle-text-muted: #a5a1b3;
-  --mingle-border: #d9e4f2;
-  --mingle-shadow: 0 4px 20px rgba(0, 115, 234, 0.08);
-  --mingle-mascot-backdrop: #f7f8fc;
-  --mingle-nav-active-bg: #eceff5;
-  --mingle-nav-hover-bg: #f3f4f8;
-  --mingle-nav-active: #323338;
+  --mingle-text: #1c1b2e;
+  --mingle-text-secondary: #65647e;
+  --mingle-text-muted: #8b8a9e;
+  --mingle-border: rgba(28, 27, 46, 0.08);
+  --mingle-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
+  --mingle-mascot-backdrop: #f4f1fa;
+  --mingle-nav-active-bg: var(--mingle-lavender);
+  --mingle-nav-hover-bg: #f8f6fc;
+  --mingle-nav-active: var(--mingle-purple);
   --mingle-nav-idle: #676879;
-  --mingle-nav-divider: #e6e9ef;
+  --mingle-nav-divider: rgba(28, 27, 46, 0.08);
 }
 
 /* Original dark product surface (#0F1420 family), mapped onto the
@@ -87,15 +90,16 @@
   --mingle-sidebar-bg: #171d2b;
   --mingle-white: #202738;
   --mingle-surface: #202738;
-  --mingle-text: #f3f5f9;
-  --mingle-text-secondary: #e1e4ea;
-  --mingle-text-muted: #9aa3b5;
-  --mingle-border: rgba(255, 255, 255, 0.1);
+  --mingle-text: #f7f8fb;
+  /* WCAG AA on #202738 / #0f1420 surfaces (~7:1 and ~4.8:1). */
+  --mingle-text-secondary: #c9ced8;
+  --mingle-text-muted: #a8b0c0;
+  --mingle-border: rgba(255, 255, 255, 0.16);
   --mingle-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   --mingle-mascot-backdrop: #01041e;
-  --mingle-nav-active-bg: rgba(255, 255, 255, 0.1);
+      --mingle-nav-active-bg: rgba(123, 47, 247, 0.18);
   --mingle-nav-hover-bg: rgba(255, 255, 255, 0.06);
-  --mingle-nav-active: #f3f5f9;
+      --mingle-nav-active: #c4b5fd;
   --mingle-nav-idle: #9aa3b5;
   --mingle-nav-divider: rgba(255, 255, 255, 0.1);
 }
@@ -132,8 +136,8 @@
   --color-mingle-nav-idle: var(--mingle-nav-idle);
   --color-mingle-nav-divider: var(--mingle-nav-divider);
 
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-hebrew: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-mingle: var(--mingle-shadow);
@@ -195,7 +199,7 @@ html[data-theme="dark"] .mingle-app-canvas::before {
 
 body {
   color: var(--mingle-text);
-  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
 }
 
@@ -241,6 +245,14 @@ button:disabled {
   --color-mingle-surface-elevated: var(--mingle-surface-elevated);
 }
 
+.mingle-card {
+  background: var(--mingle-surface);
+  border: 1px solid rgba(28, 27, 46, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(28, 27, 46, 0.06);
+}
+
 .mingle-card-interactive {
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
@@ -248,21 +260,58 @@ button:disabled {
   transform: translateY(-2px);
 }
 
+.mingle-input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+  padding: 0 14px;
+  font-size: 15px;
+  color: var(--mingle-text);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mingle-input::placeholder {
+  color: var(--mingle-text-secondary);
+}
+
+.mingle-input:focus {
+  outline: none;
+  border-color: var(--mingle-purple);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mingle-purple) 18%, transparent);
+}
 .mingle-btn-primary {
-  border-radius: 9999px;
-  background: var(--mingle-blue);
-  padding: 0.7rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
+  /* Solid CTA — keep brand gradient for marks/text, not every action. */
+  background: var(--mingle-cta);
+  padding: 0 1.5rem;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
-  transition: background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease,
+    filter 0.15s ease;
 }
 
 .mingle-btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 88%, black);
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--mingle-cta) 88%, #0f172a);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--mingle-cta) 28%, transparent);
 }
 
 .mingle-btn-primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--mingle-blue) 78%, black);
+  transform: translateY(0);
+  filter: brightness(0.96);
 }
 
 .mingle-btn-primary:disabled {
@@ -270,12 +319,17 @@ button:disabled {
 }
 
 .mingle-btn-secondary {
-  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
   border: 1px solid var(--mingle-border);
   background: var(--mingle-white);
-  padding: 0.7rem 1.5rem;
+  padding: 0 1.5rem;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--mingle-blue);
+  color: var(--mingle-text);
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -283,9 +337,32 @@ button:disabled {
 }
 
 .mingle-btn-secondary:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--mingle-blue) 35%, var(--mingle-border));
+  border-color: color-mix(in srgb, var(--mingle-purple) 35%, var(--mingle-border));
   background: var(--mingle-lavender);
-  box-shadow: 0 4px 16px rgba(0, 115, 234, 0.08);
+  box-shadow: 0 4px 16px rgba(123, 47, 247, 0.08);
+}
+
+.mingle-btn-tertiary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  padding: 0 0.75rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mingle-blue);
+  transition: background-color 0.15s ease;
+}
+
+.mingle-btn-tertiary:hover:not(:disabled) {
+  background: var(--mingle-lavender);
+}
+
+.mingle-btn-tertiary:disabled {
+  opacity: 0.45;
 }
 
 .mingle-chip {
@@ -293,12 +370,12 @@ button:disabled {
   align-items: center;
   border-radius: 9999px;
   background: var(--mingle-lavender);
-  padding: 0.25rem 0.7rem;
-  font-size: 11px;
+    padding: 0.625rem 0.875rem;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--mingle-blue);
-  transition:
+  color: var(--mingle-text);
+    transition:
     background-color 0.15s ease,
     color 0.15s ease,
     transform 0.15s ease;
@@ -307,6 +384,28 @@ button:disabled {
 .mingle-chip-pink {
   background: color-mix(in srgb, var(--mingle-pink) 14%, var(--mingle-lavender));
   color: var(--mingle-pink-deep);
+}
+
+.mingle-logo-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--mingle-border);
+  background: var(--mingle-white);
+}
+
+.mingle-btn-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.mingle-btn-primary:hover:not(:disabled) .mingle-btn-arrow {
+  transform: translateX(3px);
 }
 
 .profile-section {
@@ -321,23 +420,13 @@ button:disabled {
 
 [data-theme="dark"] .mingle-chip {
   background: color-mix(in srgb, var(--mingle-accent-blue) 22%, var(--mingle-surface));
-  color: #9db7ff;
-}
+}  
 
 [data-theme="dark"] .mingle-chip-pink {
   background: color-mix(in srgb, var(--mingle-pink) 22%, var(--mingle-surface));
   color: #ff8eab;
 }
 
-[data-theme="dark"] .mingle-btn-secondary {
-  background: var(--mingle-surface);
-  color: #8eb4ff;
-}
-
-[data-theme="dark"] .mingle-btn-secondary:hover:not(:disabled) {
-  background: var(--mingle-lavender);
-  box-shadow: var(--mingle-shadow);
-}
 
 [data-theme="dark"] .mingle-banner {
   background: linear-gradient(180deg, var(--mingle-product-bg), var(--mingle-lavender));
@@ -457,3 +546,101 @@ button:disabled {
     animation: none;
   }
 }
+
+
+/* dark wcag polish */
+[data-theme="dark"] .text-mingle-text-secondary,
+[data-theme="dark"] .text-mingle-muted {
+  color: var(--mingle-text-secondary);
+}
+[data-theme="dark"] .border-mingle-border {
+  border-color: var(--mingle-border);
+}
+
+/* Product demo (/demo) — full-bleed product surface for recording */
+.demo-page {
+  isolation: isolate;
+  min-height: 100dvh;
+  background: var(--mingle-surface, #fff);
+}
+
+/* Kill the marketing canvas gradient behind /demo — product only */
+body:has(.demo-page).mingle-app-canvas {
+  background: var(--mingle-surface, #fff) !important;
+}
+
+body:has(.demo-page).mingle-app-canvas::before {
+  content: none !important;
+  display: none !important;
+}
+
+.demo-experience {
+  --demo-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide OS cursor while autoplay runs — only the guided demo cursor remains. */
+.demo-experience.demo-playing,
+.demo-experience.demo-playing * {
+  cursor: none !important;
+}
+
+.demo-chrome {
+  transition: box-shadow 0.4s var(--demo-ease), border-color 0.4s var(--demo-ease);
+}
+
+.demo-highlight {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mingle-accent-purple) 22%, transparent);
+  background: color-mix(in srgb, var(--mingle-accent-purple) 4%, var(--mingle-surface));
+}
+
+.demo-camera {
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+}
+
+.demo-typed-line {
+  display: inline;
+  color: inherit;
+}
+
+.demo-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1em;
+  margin-left: 1px;
+  vertical-align: -0.12em;
+  background: var(--mingle-accent-blue, #3e6be0);
+  animation: demo-caret-blink 1s steps(1) infinite;
+}
+
+@keyframes demo-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.demo-caption {
+  letter-spacing: -0.015em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-experience * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .demo-caret {
+    animation: none;
+  }
+
+  .demo-experience.demo-playing,
+  .demo-experience.demo-playing * {
+    cursor: auto !important;
+  }
+}
+

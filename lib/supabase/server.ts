@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/types";
 
-export async function createClient() {
+/** One Supabase server client per React request (dedupes cookie work). */
+export const createClient = cache(async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -27,4 +29,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

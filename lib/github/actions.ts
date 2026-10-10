@@ -45,7 +45,7 @@ export async function saveTalentGithubUrlAction(rawUrl: string): Promise<
       return {
         ok: false,
         error:
-          "GitHub field is not live yet. Ask the founder to run migration 0030.",
+          "GitHub linking is not available yet. Please try again later.",
       };
     }
     return { ok: true, githubUrl: null, githubLogin: null, signal: null };
@@ -81,7 +81,7 @@ export async function saveTalentGithubUrlAction(rawUrl: string): Promise<
       return {
         ok: false,
         error:
-          "GitHub field is not live yet. Ask the founder to run migration 0030.",
+          "GitHub linking is not available yet. Please try again later.",
       };
     }
     return { ok: false, error: "Couldn't save GitHub link." };

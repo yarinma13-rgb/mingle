@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useColorScheme as useSystemScheme } from "react-native";
 import {
   THEME_STORAGE_KEY,
   themes,
@@ -26,20 +25,24 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const system = useSystemScheme();
   const [theme, setThemeState] = useState<ThemeName>("light");
   useEffect(() => {
     let alive = true;
     (async () => {
-      const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (!alive) return;
-      if (stored === "dark" || stored === "light") setThemeState(stored);
-      else if (system === "dark") setThemeState("dark");
+      try {
+        const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (!alive) return;
+        // Light default for all users; dark stays available via toggle (not OS).
+        if (stored === "dark" || stored === "light") setThemeState(stored);
+        else setThemeState("light");
+      } catch {
+        // ignore storage read errors
+      }
     })();
     return () => {
       alive = false;
     };
-  }, [system]);
+  }, []);
 
   const setTheme = useCallback((next: ThemeName) => {
     setThemeState(next);
@@ -55,7 +58,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [theme, setTheme, toggleTheme],
   );
 
-  // Always provide a theme — never blank the tree (white screen on web).
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );

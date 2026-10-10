@@ -34,7 +34,7 @@ export function SeePlansButton({
       }`}
     >
       <SparkleIcon size={compact ? 13 : 14} />
-      See plans
+      Plans soon
     </Link>
   );
 }

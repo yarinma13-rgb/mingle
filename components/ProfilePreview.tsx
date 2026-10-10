@@ -30,6 +30,7 @@ export function ProfilePreview({
   onPhotoChanged,
   onGenderChanged: _onGenderChanged,
   onEditStep,
+  onContinue,
 }: {
   profile: ProfileState;
   userId: string | null;
@@ -38,6 +39,8 @@ export function ProfilePreview({
   onPhotoChanged: (photo: string | null) => void;
   onGenderChanged: (gender: Gender) => void;
   onEditStep?: (step: number) => void;
+  /** When set, replaces the default dashboard link (e.g. invite step). */
+  onContinue?: () => void;
 }) {
   void _onGenderChanged;
   const initials = personInitials(profile.firstName, profile.lastName);
@@ -146,22 +149,49 @@ export function ProfilePreview({
         )}
 
         <ProfileSection
-          title="What drives me"
+          title="Search status"
           onEdit={onEditStep ? () => onEditStep(2) : undefined}
+        >
+          <p className="text-sm leading-relaxed text-mingle-text-secondary">
+            {[
+              profile.isEmployed === null
+                ? null
+                : profile.isEmployed
+                  ? profile.discreetSearch
+                    ? "Employed · Discreet search"
+                    : "Employed · Open search"
+                  : profile.discreetSearch
+                    ? "Not employed · Discreet search"
+                    : "Not employed",
+              profile.startAvailability
+                ? `Start: ${profile.startAvailability}`
+                : null,
+              profile.targetRole.trim()
+                ? `Target: ${profile.targetRole.trim()}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Not set yet"}
+          </p>
+        </ProfileSection>
+
+        <ProfileSection
+          title="What drives me"
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.drives} />
         </ProfileSection>
 
         <ProfileSection
           title="How I work"
-          onEdit={onEditStep ? () => onEditStep(3) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <ProfileChipRow items={profile.workStyle} />
         </ProfileSection>
 
         <ProfileSection
           title="What I'm looking for"
-          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.lookingFor} />
           {profile.maxCommuteKm ? (
@@ -212,12 +242,19 @@ export function ProfilePreview({
           </p>
         </ProfileSection>
 
-        <Link
-          href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Go to dashboard
-        </Link>
+      {onContinue ? (
+          <button
+            type="button"
+            onClick={onContinue}
+            className="mingle-btn-primary mt-2"
+          >
+            Continue
+          </button>
+        ) : (
+          <Link href="/dashboard" className="mingle-btn-primary mt-2">
+            Go to dashboard
+          </Link>
+        )}
       </motion.div>
     </div>
   );

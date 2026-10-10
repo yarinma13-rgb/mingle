@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "growth:report": "npx tsx scripts/growth-report.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -6,21 +6,31 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
+import { StatusChip } from "@/components/StatusChip";
 import { RoleBuilder } from "@/components/roles/RoleBuilder";
 import { useToast } from "@/components/toast/ToastProvider";
 import {
   employmentLabel,
+  requisitionStatusLabel,
   ROLE_STATUS_OPTIONS,
   statusLabel,
 } from "@/lib/roles/questions";
 import {
+  approveRoleRequisition,
   draftFromRole,
   EMPTY_ROLE_DRAFT,
   isMissingRolesTable,
+  submitRoleForApproval,
   updateCompanyRoleStatus,
   type RoleRecord,
 } from "@/lib/roles/persistence";
 import type { RoleStatus } from "@/lib/supabase/types";
+
+function requisitionChipTone(status: RoleRecord["requisitionStatus"]) {
+  if (status === "approved") return "green" as const;
+  if (status === "pending_approval") return "amber" as const;
+  return "slate" as const;
+}
 
 type FilterId = "all" | RoleStatus;
 
@@ -85,6 +95,23 @@ export function RolesScreen({
     }
   }
 
+  async function toggleRequisition(role: RoleRecord) {
+    try {
+      const updated =
+        role.requisitionStatus === "pending_approval"
+          ? await approveRoleRequisition(supabase, role.id, companyId)
+          : await submitRoleForApproval(supabase, role.id, companyId);
+      setRoles((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      toast(
+        `${updated.title} requisition is now ${requisitionStatusLabel(
+          updated.requisitionStatus,
+        ).toLowerCase()}`,
+      );
+    } catch {
+      toast("Could not update requisition status", "error");
+    }
+  }
+
   if (mode === "builder") {
     return (
       <RoleBuilder
@@ -113,7 +140,7 @@ export function RolesScreen({
     return (
       <EmptyState
         title="Roles are not live in the database yet"
-        body="Run supabase/migrations/0014_company_roles.sql in the Supabase SQL Editor, then refresh this page."
+        body="Roles are not available on this workspace yet. Please refresh later or contact support."
       />
     );
   }
@@ -125,11 +152,21 @@ export function RolesScreen({
           Open roles your team is hiring for. Candidates will not see these
           until you choose to share them.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/roles/paste" className="mingle-btn-primary text-xs">
-            Paste a job description
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/roles/paste"
+            className="mingle-btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold shadow-mingle"
+          >
+            <span aria-hidden className="text-base leading-none">
+              ✦
+            </span>
+            Paste a job description instead
           </Link>
-          <button type="button" onClick={openCreate} className="mingle-btn-secondary text-xs">
+          <button
+            type="button"
+            onClick={openCreate}
+            className="mingle-btn-secondary text-xs"
+          >
             Create role manually
           </button>
         </div>
@@ -165,7 +202,7 @@ export function RolesScreen({
             }
             actionHref={roles.length === 0 ? "/roles/paste" : "/roles/paste"}
             actionLabel={
-              roles.length === 0 ? "Paste a job description" : "Create a role"
+              roles.length === 0 ? "Paste a job description instead" : "Create a role"
             }
           />
           {roles.length > 0 ? (
@@ -199,23 +236,19 @@ export function RolesScreen({
                       .join(" · ")}
                   </p>
                 </div>
-                <MingleChip
-                  tone={
-                    role.status === "open"
-                      ? "green"
-                      : role.status === "paused"
-                        ? "amber"
-                        : "slate"
-                  }
-                >
-                  {statusLabel(role.status)}
-                </MingleChip>
+                <StatusChip
+                  kind={role.status === "open" ? "open" : role.status === "paused" ? "paused" : "closed"}
+                  label={statusLabel(role.status)}
+                />
               </div>
               <div className="flex flex-wrap gap-2">
                 {role.workModel ? <MingleChip>{role.workModel}</MingleChip> : null}
                 {role.requiredSkills.slice(0, 3).map((skill) => (
                   <MingleChip key={skill}>{skill}</MingleChip>
                 ))}
+                <MingleChip tone={requisitionChipTone(role.requisitionStatus)}>
+                  {requisitionStatusLabel(role.requisitionStatus)}
+                </MingleChip>
               </div>
               <div className="mt-auto flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -231,6 +264,15 @@ export function RolesScreen({
                     className="mingle-btn-secondary text-xs"
                   >
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void toggleRequisition(role)}
+                    className="mingle-btn-secondary text-xs"
+                  >
+                    {role.requisitionStatus === "pending_approval"
+                      ? "Approve requisition"
+                      : "Submit for approval"}
                   </button>
                 </div>
                 <label className="flex flex-wrap items-center gap-2 text-xs text-mingle-text-secondary">

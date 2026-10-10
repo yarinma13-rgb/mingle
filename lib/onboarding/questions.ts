@@ -2,13 +2,12 @@ export const ONBOARDING_INTRO = {
   talent: {
     eyebrow: "Your profile",
     headline: "Let's get to know you",
-    subtext: "A few sharp signals — not a long form.",
+    subtext: "Two sharp signals — skip anything that can wait.",
   },
   company: {
     eyebrow: "Company profile",
     headline: "Let's find the right people",
-    subtext:
-      "Tell us what kind of talent and relationships you're looking to build.",
+    subtext: "Two sharp signals that actually feed matching — skip what can wait.",
   },
 } as const;
 
@@ -17,11 +16,16 @@ export type OnboardingQuestion = {
   question: string;
   type: "single" | "multi";
   options: string[];
+  /** Non-essential steps can be skipped without inventing new IA. */
+  optional?: boolean;
 };
 
 /**
- * Talent preference questions. Values are curated to avoid near-duplicates
- * (e.g. Growth vs Career development) while keeping match signal.
+ * Compressed preference flow.
+ * Talent: required intent (q1) + optional company types (q3) — q3 feeds stage fit.
+ * Company: required intent (q1) + optional hiring priorities (q2) — q2 feeds
+ * culture_priorities (including Experience) so the experience weight is real.
+ * Skipped banks stay available for future prompts.
  */
 export const TALENT_QUESTIONS: OnboardingQuestion[] = [
   {
@@ -40,6 +44,7 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
     key: "q2",
     question: "What matters most in your next chapter?",
     type: "multi",
+    optional: true,
     options: [
       "Growth & learning",
       "Compensation",
@@ -57,6 +62,7 @@ export const TALENT_QUESTIONS: OnboardingQuestion[] = [
     key: "q3",
     question: "What type of companies interest you?",
     type: "multi",
+    optional: true,
     options: [
       "Startup",
       "Scale up",
@@ -80,68 +86,69 @@ export const COMPANY_QUESTIONS: OnboardingQuestion[] = [
     question: "What are you looking to connect about?",
     type: "single",
     options: [
-      "Hiring",
-      "Future hiring",
-      "Talent discovery",
-      "Networking",
-      "Building a talent community",
-      "Exploring partnerships",
+      "Hiring now",
+      "Hiring soon",
+      "Building a talent pipeline",
+      "Exploring the market",
+      "Networking with talent",
     ],
   },
   {
     key: "q2",
-    question: "What matters most when meeting great talent?",
+    question: "When you evaluate talent, what matters most?",
     type: "multi",
+    optional: true,
     options: [
-      "Skills",
       "Experience",
+      "Skills & craft",
+      "Potential & learning speed",
       "Culture fit",
-      "Potential",
-      "Motivation",
-      "Values",
+      "Ownership",
+      "Domain expertise",
       "Communication",
       "Leadership",
-      "Industry expertise",
-      "Ownership",
-      "Learning speed",
-      "Craft",
       "Reliability",
-      "Collaboration",
-      "Ambition",
-      "Domain depth",
-      "Coachability",
-      "Clarity",
+      "Motivation",
     ],
   },
   {
     key: "q3",
-    question: "What type of talent are you interested in?",
+    question: "Which domains are you hiring into?",
     type: "multi",
+    optional: true,
     options: [
       "Technology",
-      "Sales",
-      "Marketing",
-      "Customer success",
-      "Operations",
-      "Finance",
-      "HR",
-      "Management",
-      "Other",
       "Product",
       "Design",
       "Data",
-      "Legal",
-      "Support",
-      "Research",
-      "People ops",
+      "Sales",
+      "Marketing",
       "Growth",
-      "Founders",
+      "Customer success",
+      "Operations",
+      "Finance",
+      "HR / People",
+      "Legal",
+      "Construction",
+      "Infrastructure",
+      "Building supervision",
+      "Research",
+      "Leadership",
+      "Other",
     ],
   },
 ];
 
+/**
+ * Active flows only return questions that matter for matching.
+ * Talent: q1 + q3 (company types → stage fit).
+ * Company: q1 + q2 (hiring priorities → culture_priorities / Experience).
+ */
 export function questionsForType(type: "talent" | "company") {
-  return type === "company" ? COMPANY_QUESTIONS : TALENT_QUESTIONS;
+  if (type === "company") {
+    return [COMPANY_QUESTIONS[0], COMPANY_QUESTIONS[1]];
+  }
+  return [TALENT_QUESTIONS[0], TALENT_QUESTIONS[2]];
 }
 
 export function introForType(type: "talent" | "company") {

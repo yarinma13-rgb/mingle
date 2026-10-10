@@ -21,6 +21,7 @@ import {
 import type { InterviewRecord } from "@/lib/interviews/persistence";
 import type { InterviewProposal } from "@/lib/interviews/proposals";
 import { notifyPushMessage } from "@/lib/push/actions";
+import { scoreChipClass } from "@/lib/matching/score-tone";
 
 function SendIcon({ size = 18 }: { size?: number }) {
   return (
@@ -88,6 +89,7 @@ export function ConversationScreen({
   otherGender = null,
   otherUserId,
   whyConnected,
+  matchScore,
   initialMessages,
   connectionId,
   canScheduleInterview = false,
@@ -105,6 +107,7 @@ export function ConversationScreen({
   otherGender?: Gender | null;
   otherUserId: string;
   whyConnected: string;
+  matchScore?: number;
   initialMessages: MessageRow[];
   connectionId?: string;
   canScheduleInterview?: boolean;
@@ -188,6 +191,13 @@ export function ConversationScreen({
           </div>
         </Link>
         <div className="ml-auto flex min-w-0 shrink-0 items-center gap-3">
+                    {typeof matchScore === "number" ? (
+            <span
+              className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${scoreChipClass(matchScore)}`}
+            >
+              {matchScore}%
+            </span>
+          ) : null}
           {whyConnected ? (
             <p className="hidden max-w-[10rem] truncate text-xs text-mingle-text-secondary xl:block">
               {whyConnected}

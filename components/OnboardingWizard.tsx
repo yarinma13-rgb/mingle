@@ -3,7 +3,7 @@
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,8 +39,12 @@ import {
 import { destinationAfterAuth } from "@/lib/auth/destination";
 import { ensureUserProfile } from "@/lib/supabase/ensure-profile";
 import type { Database, UserType } from "@/lib/supabase/types";
+import {
+  LocaleGlobeButton,
+  useAppLocale,
+} from "@/components/i18n/AppLocaleProvider";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -104,13 +108,21 @@ async function fetchWizardData(
   try {
     const state = await loadOnboardingState(supabase, user.id, resolvedType);
     if (state.status === "completed") {
-      const next = await destinationAfterAuth(
-        supabase,
-        user.id,
-        resolvedType,
-        user.email,
-      );
-      return { kind: "redirect", to: next };
+      try {
+        const next = await destinationAfterAuth(
+          supabase,
+          user.id,
+          resolvedType,
+          user.email,
+        );
+        // Never bounce a completed profile back onto the spinner onboarding URL.
+        const safeNext = next.startsWith("/onboarding/")
+          ? "/dashboard"
+          : next;
+        return { kind: "redirect", to: safeNext };
+      } catch {
+        return { kind: "redirect", to: "/dashboard" };
+      }
     }
     const invite =
       resolvedType === "company"
@@ -131,6 +143,7 @@ async function fetchWizardData(
 
 export function OnboardingWizard({ path }: { path: UserType }) {
   const router = useRouter();
+  const { t, dir, locale } = useAppLocale();
   const [supabase] = useState(() => createClient());
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -145,11 +158,35 @@ export function OnboardingWizard({ path }: { path: UserType }) {
 
   // Always render from the reconciled DB type, never from the URL alone.
   const questions = questionsForType(resolvedType);
-  const intro = introForType(resolvedType);
+  const introBase = introForType(resolvedType);
+  const intro =
+    resolvedType === "company"
+      ? {
+          eyebrow: t.onboarding.companyEyebrow,
+          headline: t.onboarding.companyHeadline,
+          subtext: t.onboarding.companySub,
+        }
+      : {
+          eyebrow: t.onboarding.talentEyebrow,
+          headline: t.onboarding.talentHeadline,
+          subtext: t.onboarding.talentSub,
+        };
+  void introBase;
 
   const applyFetchResult = (result: FetchResult) => {
     if (result.kind === "redirect") {
-      router.replace(result.to);
+      const target = result.to;
+      const alreadyHere =
+        typeof window !== "undefined" &&
+        (window.location.pathname === target ||
+          window.location.pathname.startsWith(`${target}/`));
+      if (alreadyHere) {
+        // Avoid infinite spinner when routing returns to the same onboarding URL
+        // (e.g. destinationAfterAuth could not read status and bounced back).
+        setLoadState("error");
+        return;
+      }
+      router.replace(target);
       return;
     }
     if (result.kind === "error") {
@@ -164,13 +201,50 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     setLoadState("ready");
   };
 
+  const onboardingStartedSent = useRef(false);
+  const onboardingCompletedSent = useRef(false);
+  const latestProgressRef = useRef({ path: resolvedType, step });
+  useEffect(() => {
+    latestProgressRef.current = { path: resolvedType, step };
+  }, [resolvedType, step]);
+
+  useEffect(() => {
+    if (loadState !== "ready" || !resolvedType || onboardingStartedSent.current) {
+      return;
+    }
+    onboardingStartedSent.current = true;
+    track(AnalyticsEvent.onboardingStarted, { path: resolvedType, step });
+  }, [loadState, resolvedType, step]);
+
+  useEffect(() => {
+    return () => {
+      if (onboardingStartedSent.current && !onboardingCompletedSent.current) {
+        const { path, step: lastStep } = latestProgressRef.current;
+        if (path) {
+          track(AnalyticsEvent.onboardingAbandoned, { path, step: lastStep });
+        }
+      }
+    };
+  }, []);
+
   useEffect(() => {
     let active = true;
-    fetchWizardData(supabase, path).then((result) => {
-      if (active) applyFetchResult(result);
-    });
+    const timeout = window.setTimeout(() => {
+      if (active) setLoadState((prev) => (prev === "loading" ? "error" : prev));
+    }, 12_000);
+    fetchWizardData(supabase, path)
+      .then((result) => {
+        if (active) applyFetchResult(result);
+      })
+      .catch(() => {
+        if (active) setLoadState("error");
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
     return () => {
       active = false;
+      window.clearTimeout(timeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, supabase]);
@@ -217,7 +291,33 @@ export function OnboardingWizard({ path }: { path: UserType }) {
         step,
         question_key: currentQuestion.key,
       });
-      if (nextStep > 3) {
+      if (nextStep > questions.length) {
+        onboardingCompletedSent.current = true;
+        track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
+      }
+      setStep(nextStep);
+    } catch {
+      setSaveError("Couldn't save that. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (!userId || !currentQuestion?.optional) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const nextStep = step + 1;
+      await setOnboardingStep(supabase, userId, nextStep);
+      track(AnalyticsEvent.onboardingStepCompleted, {
+        path: resolvedType,
+        step,
+        question_key: currentQuestion.key,
+        skipped: true,
+      });
+      if (nextStep > questions.length) {
+        onboardingCompletedSent.current = true;
         track(AnalyticsEvent.onboardingCompleted, { path: resolvedType });
       }
       setStep(nextStep);
@@ -244,15 +344,18 @@ export function OnboardingWizard({ path }: { path: UserType }) {
     );
   }
 
-  if (step > 3 || !currentQuestion) {
+  if (step > questions.length || !currentQuestion) {
     return <OnboardingComplete path={resolvedType} />;
   }
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10">
+    <div className="flex min-h-screen flex-1 items-center justify-center px-6 py-16 sm:px-10" dir={dir} lang={locale}>
       <div className="w-full max-w-lg">
         <div className="mb-10 flex flex-col items-center text-center">
-          <MingleLogo variant="mark" size={44} className="mb-6" />
+          <div className="mb-6 flex w-full items-center justify-between gap-3">
+            <MingleLogo variant="mark" size={44} />
+            <LocaleGlobeButton />
+          </div>
           <ProgressBar step={step} total={TOTAL_STEPS} />
           <span className="mingle-gradient-text mt-5 font-display text-xs font-semibold uppercase tracking-[0.16em]">
             {intro.eyebrow}
@@ -371,9 +474,21 @@ export function OnboardingWizard({ path }: { path: UserType }) {
               disabled={saving}
               className="mingle-btn-secondary disabled:opacity-50"
             >
-              Back
+              {t.onboarding.back}
             </button>
           )}
+          {currentQuestion.optional ? (
+            <button
+              type="button"
+              onClick={() => {
+                void handleSkip();
+              }}
+              disabled={saving}
+              className="mingle-btn-secondary disabled:opacity-50"
+            >
+              {t.onboarding.skip}
+            </button>
+          ) : null}
           <motion.button
             type="button"
             onClick={handleContinue}
@@ -390,7 +505,7 @@ export function OnboardingWizard({ path }: { path: UserType }) {
                 : "mingle-btn-secondary cursor-not-allowed opacity-45"
             }`}
           >
-            {saving ? "Saving…" : "Continue"}
+            {saving ? (locale === "he" ? "שומרים…" : "Saving…") : t.onboarding.continue}
           </motion.button>
         </div>
       </div>

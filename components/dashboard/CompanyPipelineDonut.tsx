@@ -3,17 +3,9 @@ import { IconBadge } from "@/components/dashboard/IconBadge";
 import { ColumnsIcon } from "@/components/dashboard/icons";
 import {
   FUNNEL_STAGES,
+  FUNNEL_STAGE_COLORS,
   type CompanyFunnel,
 } from "@/lib/dashboard/funnel";
-
-const SEGMENT_COLORS = [
-  "var(--mingle-accent-pink)",
-  "var(--mingle-accent-purple)",
-  "var(--mingle-accent-blue)",
-  "var(--mingle-warning)",
-  "var(--mingle-success)",
-  "var(--mingle-purple)",
-];
 
 function polar(cx: number, cy: number, r: number, angle: number) {
   const rad = ((angle - 90) * Math.PI) / 180;
@@ -48,7 +40,7 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
       end: number;
       color: string;
     }[]
-  >((acc, stage, index) => {
+  >((acc, stage) => {
     const count = funnel.counts[stage.id];
     const sweep = total === 0 ? 0 : (count / total) * 360;
     const start = acc.length === 0 ? 0 : acc[acc.length - 1].end;
@@ -57,7 +49,7 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
       count,
       start,
       end: start + sweep,
-      color: SEGMENT_COLORS[index],
+      color: FUNNEL_STAGE_COLORS[stage.id],
     });
     return acc;
   }, []);
@@ -107,7 +99,12 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
                   stroke={slice.color}
                   strokeWidth="22"
                   strokeLinecap="butt"
-                />
+                >
+                  <title>
+                    {slice.stage.label}: {slice.count} (
+                    {Math.round((slice.count / total) * 100)}%)
+                  </title>
+                </path>
               ),
             )}
             <text
@@ -146,7 +143,12 @@ export function CompanyPipelineDonut({ funnel }: { funnel: CompanyFunnel }) {
                     {slice.stage.label}
                   </span>
                 </span>
-                <span className="font-medium text-mingle-text">{slice.count}</span>
+                <span className="font-medium text-mingle-text">
+                  {slice.count}{" "}
+                  <span className="font-normal text-mingle-text-secondary">
+                    ({Math.round((slice.count / total) * 100)}%)
+                  </span>
+                </span>
               </li>
             ))}
           </ul>

@@ -58,9 +58,9 @@ const TALENT_ITEMS: CommandItem[] = [
   },
   {
     id: "plans",
-    label: "See plans",
+    label: "Plans soon",
     href: "/coming-soon",
-    keywords: ["billing", "upgrade", "soon"],
+    keywords: ["billing", "upgrade", "soon", "plans"],
   },
 ];
 
@@ -133,9 +133,9 @@ const COMPANY_ITEMS: CommandItem[] = [
   },
   {
     id: "plans",
-    label: "See plans",
+    label: "Plans soon",
     href: "/coming-soon",
-    keywords: ["billing", "upgrade", "soon"],
+    keywords: ["billing", "upgrade", "soon", "plans"],
   },
 ];
 

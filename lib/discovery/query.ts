@@ -8,6 +8,10 @@ import {
   type CompanyMatchInput,
 } from "@/lib/matching/engine";
 import { buildMatchReport, emptyMatchReport } from "@/lib/matching/report";
+import {
+  parseSkillRequirements,
+  type SkillRequirement,
+} from "@/lib/matching/skill-requirement-tiers";
 import type { DiscoveryCard } from "@/components/discovery/DiscoveryScreen";
 import {
   DISCOVERY_PAGE_SIZE,
@@ -21,6 +25,19 @@ import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { companyInitials, personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { talentDisplayHeadline, talentDisplayMeta } from "@/lib/profile-detail/display";
+import { talentSearchStatusLabel } from "@/lib/profile/search-status";
+import {
+  companyHiringSignature,
+  domainsCompatible,
+  isDiscoverDomainExempt,
+  talentDomainSignature,
+} from "@/lib/discovery/domain-affinity";
+import { resolveTalentCvForViewer } from "@/lib/profile/cv-resolve";
+import {
+  employerDomainForExclusion,
+  isOwnEmployeeByDomain,
+  isOwnEmployeeByName,
+} from "@/lib/matching/employer-exclusion";
 
 export type DiscoveryLoadResult = {
   cards: DiscoveryCard[];
@@ -38,6 +55,12 @@ export async function loadDiscoveryPage(
     excludeUserIds?: string[];
     onlyUserIds?: string[];
     rankAll?: boolean;
+    roleTitle?: string | null;
+    roleDepartment?: string | null;
+    roleRequiredSkills?: string[] | null;
+    roleSkillRequirements?: SkillRequirement[] | null;
+    salaryMin?: number | null;
+    salaryMax?: number | null;
   } = {},
 ): Promise<DiscoveryLoadResult> {
   const page = filters.page;
@@ -73,7 +96,7 @@ export async function loadDiscoveryPage(
     if (workModel) query = query.contains("work_style", [workModel]);
     if (role) {
       query = query.or(
-        `current_job_title.ilike.%${role}%,headline.ilike.%${role}%`,
+        `current_job_title.ilike.%${role}%,headline.ilike.%${role}%,target_role.ilike.%${role}%`,
       );
     }
     if (filters.yearsMin != null) {
@@ -106,7 +129,7 @@ export async function loadDiscoveryPage(
         ? query.order("updated_at", { ascending: false }).limit(400)
         : query.order("updated_at", { ascending: false }).range(from, to);
 
-    const [ownInput, listed, viewerCompany] = await Promise.all([
+    const [ownInput, listed, viewerCompany, viewerAccount] = await Promise.all([
       loadCompanyMatchInput(supabase, viewer.id),
       listedQuery,
       supabase
@@ -114,6 +137,7 @@ export async function loadDiscoveryPage(
         .select("latitude, longitude")
         .eq("user_id", viewer.id)
         .maybeSingle(),
+      supabase.from("users").select("email").eq("id", viewer.id).maybeSingle(),
     ]);
     const { data, count, error } = listed;
     if (error) {
@@ -156,7 +180,107 @@ export async function loadDiscoveryPage(
       : { data: [] as never[] };
     const prefsByUser = new Map((prefRows ?? []).map((row) => [row.talent_id, row]));
 
-    const cards: DiscoveryCard[] = rowsForCards.map((row) => {
+    const talentIds = rowsForCards.map((row) => row.user_id);
+    let activeRows = rowsForCards;
+    if (talentIds.length > 0) {
+      const { data: deletionRows, error: deletionError } = await supabase
+        .from("users")
+        .select("id, deletion_requested_at")
+        .in("id", talentIds)
+        .not("deletion_requested_at", "is", null);
+      // Missing deletion columns (migration not applied) → show everyone.
+      if (!deletionError) {
+        const pendingDeletion = new Set(
+          (deletionRows ?? []).map((row) => row.id),
+        );
+        activeRows = rowsForCards.filter(
+          (row) => !pendingDeletion.has(row.user_id),
+        );
+      }
+    }
+
+    // Safety: never let a candidate appear as a match to their own current
+    // employer, so an employer browsing mingle can't discover one of their
+    // own employees quietly job-hunting. Applies unconditionally — not
+    // gated on the candidate's discreet-search flag. Two independent
+    // signals, either one excludes: verified work-email domain, and the
+    // candidate's self-reported current employer name (see
+    // lib/matching/employer-exclusion.ts).
+    const companyDomain = employerDomainForExclusion(viewerAccount.data?.email);
+    const companyNameForExclusion = ownInput?.profile.companyName ?? null;
+    if ((companyDomain || companyNameForExclusion) && activeRows.length > 0) {
+      const ownEmployeeIds = new Set(
+        activeRows
+          .filter((row) =>
+            isOwnEmployeeByName(row.current_employer, companyNameForExclusion),
+          )
+          .map((row) => row.user_id),
+      );
+      if (companyDomain) {
+        const { data: candidateEmailRows } = await supabase
+          .from("users")
+          .select("id, email")
+          .in(
+            "id",
+            activeRows.map((row) => row.user_id),
+          );
+        for (const row of candidateEmailRows ?? []) {
+          if (isOwnEmployeeByDomain(row.email, companyDomain)) {
+            ownEmployeeIds.add(row.id);
+          }
+        }
+      }
+      if (ownEmployeeIds.size > 0) {
+        activeRows = activeRows.filter(
+          (row) => !ownEmployeeIds.has(row.user_id),
+        );
+      }
+    }
+
+    // Domain affinity: companies only see talent in domains they hire for
+    // (or closely related). Exempt internal test company accounts.
+    if (
+      ownInput &&
+      !isDiscoverDomainExempt({
+        userId: viewer.id,
+        companyName: ownInput.profile.companyName,
+      })
+    ) {
+      const { data: openRoles } = await supabase
+        .from("roles")
+        .select("title, department")
+        .eq("company_id", viewer.id)
+        .eq("status", "open");
+      const hiringSig = companyHiringSignature({
+        industry: ownInput.profile.industry,
+        lookingFor: ownInput.profile.lookingFor,
+        roleTitles: [
+          ...(openRoles ?? []).map((role) => role.title),
+          scope.roleTitle,
+          ownInput.roleTitle,
+        ],
+        roleDepartments: [
+          ...(openRoles ?? []).map((role) => role.department),
+          scope.roleDepartment,
+          ownInput.roleDepartment,
+        ],
+      });
+      if (hiringSig.size > 0 && !hiringSig.has(-1)) {
+        activeRows = activeRows.filter((row) => {
+          const profile = toTalentProfile(row);
+          const talentSig = talentDomainSignature({
+            industry: profile.industry,
+            currentRole: profile.currentRole,
+            targetRole: profile.targetRole,
+            headline: profile.headline,
+            skills: profile.skills,
+          });
+          return domainsCompatible(hiringSig, talentSig);
+        });
+      }
+    }
+
+    const cards: DiscoveryCard[] = activeRows.map((row) => {
       const profile = toTalentProfile(row);
       const pref = prefsByUser.get(row.user_id);
       const talentInput: TalentMatchInput = {
@@ -165,11 +289,25 @@ export async function loadDiscoveryPage(
         companyTypes: pref?.company_types ?? [],
         salaryExpectation: profile.salaryExpectation,
       };
-      const result = ownInput
-        ? computeMatch(talentInput, ownInput)
+      const companyForMatch: CompanyMatchInput | null = ownInput
+        ? {
+            ...ownInput,
+            roleTitle: scope.roleTitle ?? ownInput.roleTitle ?? null,
+            roleDepartment:
+              scope.roleDepartment ?? ownInput.roleDepartment ?? null,
+            roleRequiredSkills:
+              scope.roleRequiredSkills ?? ownInput.roleRequiredSkills ?? null,
+            roleSkillRequirements:
+              scope.roleSkillRequirements ?? ownInput.roleSkillRequirements ?? null,
+            salaryMin: scope.salaryMin ?? ownInput.salaryMin ?? null,
+            salaryMax: scope.salaryMax ?? ownInput.salaryMax ?? null,
+          }
+        : null;
+      const result = companyForMatch
+        ? computeMatch(talentInput, companyForMatch)
         : { score: 0, factors: [] };
-      const report = ownInput
-        ? buildMatchReport(result, talentInput, ownInput, "company")
+      const report = companyForMatch
+        ? buildMatchReport(result, talentInput, companyForMatch, "company")
         : emptyMatchReport("company", result.score);
       const km = origin
         ? distanceKmBetween(origin, {
@@ -193,6 +331,13 @@ export async function loadDiscoveryPage(
             profile.headline,
             profile.currentRole,
           ) || null,
+          talentSearchStatusLabel({
+            isEmployed: profile.isEmployed,
+            discreetSearch: profile.discreetSearch,
+          }),
+          profile.targetRole.trim()
+            ? `Target: ${profile.targetRole.trim()}`
+            : null,
           wantsDistance && km != null ? `${Math.round(km)} km` : null,
         ]
           .filter(Boolean)
@@ -204,6 +349,9 @@ export async function loadDiscoveryPage(
         factors: result.factors,
         report,
         skills: profile.skills,
+        cvPath: profile.cvPath,
+        cvFileName: profile.cvFileName,
+        kind: "person" as const,
       };
     });
     cards.sort((a, b) => {
@@ -222,6 +370,20 @@ export async function loadDiscoveryPage(
       const resolved = card.photo ? photoUrls.get(card.photo) : null;
       if (resolved) card.photo = resolved;
     }
+    await Promise.all(
+      cards.map(async (card) => {
+        if (card.cvPath) return;
+        const recovered = await resolveTalentCvForViewer(
+          card.userId,
+          card.cvPath,
+          card.cvFileName,
+        );
+        if (recovered.cvPath) {
+          card.cvPath = recovered.cvPath;
+          card.cvFileName = recovered.cvFileName;
+        }
+      }),
+    );
     return {
       cards: rankAll
         ? cards
@@ -312,13 +474,98 @@ export async function loadDiscoveryPage(
   const prefsByUser = new Map((prefRows ?? []).map((row) => [row.company_id, row]));
   const distanceByUser = new Map<string, number | null>();
 
-  const cards: DiscoveryCard[] = rowsForCards.map((row) => {
+  const companyIdsForDeletion = rowsForCards.map((row) => row.user_id);
+  let companyRowsForCards = rowsForCards;
+  if (companyIdsForDeletion.length > 0) {
+    const { data: companyDeletionRows, error: companyDeletionError } =
+      await supabase
+        .from("users")
+        .select("id, deletion_requested_at")
+        .in("id", companyIdsForDeletion)
+        .not("deletion_requested_at", "is", null);
+    if (!companyDeletionError) {
+      const companyPendingDeletion = new Set(
+        (companyDeletionRows ?? []).map((row) => row.id),
+      );
+      companyRowsForCards = rowsForCards.filter(
+        (row) => !companyPendingDeletion.has(row.user_id),
+      );
+    }
+  }
+
+  // Preload freshest open role (incl. required skills) so Role Fit can score skills.
+  const { data: openRolesForMatch } = companyRowsForCards.length
+    ? await supabase
+        .from("roles")
+        .select(
+          "company_id, title, department, work_model, salary_min, salary_max, job_presentation, description, required_skills, skill_requirements, updated_at",
+        )
+        .in(
+          "company_id",
+          companyRowsForCards.map((row) => row.user_id),
+        )
+        .eq("status", "open")
+        .order("updated_at", { ascending: false })
+    : { data: [] as never[] };
+  type OpenRoleRow = {
+    company_id: string;
+    title: string;
+    department: string | null;
+    work_model: string | null;
+    salary_min: number | null;
+    salary_max: number | null;
+    job_presentation: string | null;
+    description: string | null;
+    required_skills: string[] | null;
+    skill_requirements?: unknown;
+  };
+  const roleByCompany = new Map<string, OpenRoleRow>();
+  for (const role of openRolesForMatch ?? []) {
+    if (!roleByCompany.has(role.company_id)) {
+      roleByCompany.set(role.company_id, role as OpenRoleRow);
+    }
+  }
+
+  // Domain affinity: talent only sees companies/roles in their search domain.
+  if (ownInput) {
+    const talentSig = talentDomainSignature({
+      industry: ownInput.profile.industry,
+      currentRole: ownInput.profile.currentRole,
+      targetRole: ownInput.profile.targetRole,
+      headline: ownInput.profile.headline,
+      skills: ownInput.profile.skills,
+    });
+    if (talentSig.size > 0 && !talentSig.has(-1)) {
+      companyRowsForCards = companyRowsForCards.filter((row) => {
+        const profile = toCompanyProfile(row);
+        const openRole = roleByCompany.get(row.user_id);
+        const companySig = companyHiringSignature({
+          industry: profile.industry,
+          lookingFor: profile.lookingFor,
+          roleTitles: [openRole?.title],
+          roleDepartments: [openRole?.department],
+        });
+        return domainsCompatible(talentSig, companySig);
+      });
+    }
+  }
+
+  const cards: DiscoveryCard[] = companyRowsForCards.map((row) => {
     const profile = toCompanyProfile(row);
     const pref = prefsByUser.get(row.user_id);
+    const openRole = roleByCompany.get(row.user_id);
     const companyInput: CompanyMatchInput = {
       profile,
       connectingAbout: pref?.hiring_needs ?? "",
       culturePriorities: pref?.culture_priorities ?? [],
+      roleTitle: openRole?.title ?? null,
+      roleDepartment: openRole?.department ?? null,
+      roleRequiredSkills: openRole?.required_skills ?? null,
+      roleSkillRequirements: openRole
+        ? parseSkillRequirements(openRole.skill_requirements)
+        : null,
+      salaryMin: openRole?.salary_min ?? null,
+      salaryMax: openRole?.salary_max ?? null,
     };
     const result = ownInput
       ? computeMatch(ownInput, companyInput)
@@ -333,23 +580,39 @@ export async function loadDiscoveryPage(
         })
       : null;
     distanceByUser.set(row.user_id, km);
+    const workModel = profile.workEnvironment[0] ?? null;
+    const locationLabel = [profile.location, workModel]
+      .filter(Boolean)
+      .join(", ");
+    const tags = [
+      ...profile.values,
+      ...profile.workEnvironment,
+    ].filter(Boolean).slice(0, 3);
+    const about =
+      profile.whoThrivesHere.trim() ||
+      profile.description.trim() ||
+      profile.mission.trim() ||
+      null;
+    const roleTitle =
+      profile.lookingFor[0] ??
+      (profile.industry ? `${profile.industry} roles` : "Open roles");
     return {
       userId: row.user_id,
       name: profile.companyName,
-      subtitle: profile.mission,
-      meta: [
-        profile.industry,
-        profile.location,
-        applyDistance && km != null ? `${Math.round(km)} km` : null,
-      ]
-        .filter(Boolean)
-        .join(" · "),
+      subtitle: roleTitle,
+      meta: locationLabel,
       initial: companyInitials(profile.companyName),
       photo: profile.logo,
       gender: null,
       score: result.score,
       factors: result.factors,
       report,
+      kind: "company" as const,
+      roleTitle,
+      locationLabel: locationLabel || null,
+      salaryLabel: null as string | null,
+      tags,
+      about: about ? about.slice(0, 160) : null,
     };
   });
   cards.sort((a, b) => {
@@ -360,6 +623,24 @@ export async function loadDiscoveryPage(
     }
     return b.score - a.score;
   });
+
+  // Attach role title / about from the open role. Salary amounts stay private —
+  // they only affect match % via applySalaryNudge, never Discover UI.
+  for (const card of cards) {
+    const role = roleByCompany.get(card.userId);
+    if (!role) continue;
+    card.roleTitle = role.title;
+    card.subtitle = role.title;
+    card.salaryLabel = null;
+    if (role.work_model) {
+      const base = card.locationLabel?.split(",")[0]?.trim() || card.locationLabel;
+      card.locationLabel = [base, role.work_model].filter(Boolean).join(", ");
+      card.meta = card.locationLabel ?? card.meta;
+    }
+    const roleAbout = (role.job_presentation || role.description || "").trim();
+    if (roleAbout) card.about = roleAbout.slice(0, 160);
+  }
+
   const photoUrls = await resolveTalentPhotoUrls(
     supabase,
     cards.map((card) => card.photo),
