@@ -63,6 +63,7 @@ const COMPANY_NAV: NavItem[] = [
   { label: "Pipeline", href: "/connections", icon: FunnelIcon },
   { label: "Board", href: "/board", icon: ColumnsIcon, dividerAfter: true },
   { label: "Interviews", href: "/interviews", icon: CalendarIcon },
+  { label: "Talent Exchange", href: "/talent-exchange", icon: CompassIcon },
   { label: "Team", href: "/team", icon: PeopleIcon },
   { label: "My profile", href: "/company-profile/build", icon: UserIcon },
   { label: "Settings", href: "/settings", icon: GearIcon },
