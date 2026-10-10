@@ -76,23 +76,6 @@ export function isMissingCareerPageFunction(
   );
 }
 
-export async function listCareerPages(
-  supabase: SupabaseClient<Database>,
-): Promise<{ slug: string }[]> {
-  const { data, error } = await supabase
-    .from("company_profiles")
-    .select("slug")
-    .not("slug", "is", null);
-  if (error) {
-    if (isMissingCareerPageFunction(error)) return [];
-    throw error;
-  }
-  return (data ?? [])
-    .map((row) => row.slug)
-    .filter((slug): slug is string => Boolean(slug))
-    .map((slug) => ({ slug }));
-}
-
 export async function loadCareerPage(
   supabase: SupabaseClient<Database>,
   slug: string,
@@ -147,7 +130,7 @@ export async function hasAppliedToRole(
   supabase: SupabaseClient<Database>,
   roleId: string,
   candidateId: string,
-): Promise<boolean> {
+): Promise<boolean> { 
   const { data, error } = await supabase
     .from("role_applications")
     .select("id")
@@ -165,7 +148,7 @@ export async function applyToRole(
   supabase: SupabaseClient<Database>,
   roleId: string,
   candidateId: string,
-): Promise<void> {
+): Promise<void> { 
   const { error } = await supabase.from("role_applications").upsert(
     { role_id: roleId, candidate_id: candidateId },
     { onConflict: "role_id,candidate_id", ignoreDuplicates: true },
