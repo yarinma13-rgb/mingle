@@ -17,7 +17,7 @@ import {
   StatusBadge,
 } from "@/src/components/ui";
 import {
-  fetchDiscoverCompanies,
+  fetchDiscoverCompaniesWithScores,
   loadMatchFeedbackMap,
   type MatchFeedbackAction,
 } from "@/src/lib/api";
@@ -32,6 +32,7 @@ type CompanyCard = {
   location: string | null;
   mission: string | null;
   description: string | null;
+  score: number;
 };
 
 export default function TalentDiscover() {
@@ -46,12 +47,13 @@ export default function TalentDiscover() {
   const router = useRouter();
 
   const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
       const [companies, map] = await Promise.all([
-        fetchDiscoverCompanies(),
-        user ? loadMatchFeedbackMap(user.id) : Promise.resolve({}),
+        fetchDiscoverCompaniesWithScores(user.id),
+        loadMatchFeedbackMap(user.id),
       ]);
       setItems(companies as CompanyCard[]);
       setFeedback(map);
@@ -99,8 +101,8 @@ export default function TalentDiscover() {
               />
             ) : null
           }
-          renderItem={({ item, index }) => {
-            const score = 85 - ((index * 7) % 40);
+          renderItem={({ item }) => {
+            const score = item.score;
             return (
               <View
                 style={{
