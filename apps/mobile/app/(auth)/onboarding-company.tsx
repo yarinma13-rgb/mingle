@@ -3,7 +3,7 @@ import { Alert, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { Button, Field, Screen, Subtitle, Title } from "@/src/components/ui";
-import { completeOnboarding } from "@/src/lib/api";
+import { completeOnboarding, saveCompanyName } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 
 export default function OnboardingCompany() {
@@ -16,6 +16,7 @@ export default function OnboardingCompany() {
     if (!user) return;
     setLoading(true);
     try {
+      await saveCompanyName(user.id, company);
       await completeOnboarding(user.id);
       await refreshProfile();
       router.replace("/(company)/dashboard");

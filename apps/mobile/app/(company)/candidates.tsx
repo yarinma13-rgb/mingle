@@ -17,7 +17,7 @@ import {
   StatusBadge,
 } from "@/src/components/ui";
 import {
-  fetchDiscoverCandidates,
+  fetchDiscoverCandidatesWithScores,
   loadMatchFeedbackMap,
   type MatchFeedbackAction,
 } from "@/src/lib/api";
@@ -32,6 +32,7 @@ type Candidate = {
   headline: string | null;
   location: string | null;
   current_job_title: string | null;
+  score: number;
 };
 
 export default function CompanyCandidates() {
@@ -46,12 +47,13 @@ export default function CompanyCandidates() {
   const router = useRouter();
 
   const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
       const [candidates, map] = await Promise.all([
-        fetchDiscoverCandidates(),
-        user ? loadMatchFeedbackMap(user.id) : Promise.resolve({}),
+        fetchDiscoverCandidatesWithScores(user.id),
+        loadMatchFeedbackMap(user.id),
       ]);
       setItems(candidates as Candidate[]);
       setFeedback(map);
@@ -99,8 +101,8 @@ export default function CompanyCandidates() {
               />
             ) : null
           }
-          renderItem={({ item, index }) => {
-            const score = 88 - ((index * 9) % 45);
+          renderItem={({ item }) => {
+            const score = item.score;
             const name =
               [item.first_name, item.last_name].filter(Boolean).join(" ") ||
               "Talent";
