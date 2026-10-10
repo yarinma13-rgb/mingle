@@ -11,6 +11,12 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function appOrigin(): string {
+  const raw =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://mingle.careers";
+  return raw.replace(/\/$/, "");
+}
+
 /**
  * Founder-approved Hebrew outreach body (updated 2026-09-20).
  * `link` re-embeds the same per-lead /r/[token] interest link inline, at the
@@ -52,7 +58,9 @@ export async function sendInterestFollowUpEmail(input: {
     const body = buildInterestFollowUpBody(input.payload, input.link);
   const subject = "רעיון קצר בקשר לגיוס אצלכם";
 
+  const heroImageUrl = `${appOrigin()}/brand/outreach-email-why-match.png`;
   const html = `<!doctype html><html lang="he" dir="rtl"><body style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#252238;padding:24px;direction:rtl;text-align:right;">
+<img src="${heroImageUrl}" alt="mingle — Why this match: skills &amp; experience align, culture &amp; work-style fit, career direction matches" width="480" height="220" style="display:block;max-width:100%;height:auto;border-radius:12px;margin-bottom:20px;" />
 <p style="white-space:pre-wrap;margin:0;">${escapeHtml(body)}</p>
 <p style="color:#77738a;font-size:12px;margin-top:28px;">mingle.careers</p>
 </body></html>`;
