@@ -168,6 +168,8 @@ export function Button({
       <Pressable
         onPress={onPress}
         disabled={disabled || loading}
+        accessibilityRole="button"
+        accessibilityLabel={label}
         style={({ pressed }) => ({
           opacity: disabled ? 0.5 : pressed ? 0.9 : 1,
           borderRadius: 999,
@@ -190,6 +192,8 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       style={({ pressed }) => ({
         opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
         borderRadius: 999,
@@ -218,6 +222,7 @@ export function Field(props: TextInputProps & { label?: string }) {
       {label ? <Label>{label}</Label> : null}
       <TextInput
         placeholderTextColor={colors.textMuted}
+        accessibilityLabel={label}
         {...rest}
         style={[
           {
