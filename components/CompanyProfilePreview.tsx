@@ -98,14 +98,14 @@ export function CompanyProfilePreview({
 
         <ProfileSection
           title="What we're looking for"
-          onEdit={onEditStep ? () => onEditStep(4) : undefined}
+          onEdit={onEditStep ? () => onEditStep(3) : undefined}
         >
           <ProfileChipRow items={profile.lookingFor} />
         </ProfileSection>
 
         <ProfileSection
           title="Who thrives here"
-          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.whoThrivesHere?.trim()
@@ -116,7 +116,7 @@ export function CompanyProfilePreview({
 
         <ProfileSection
           title="What we're building"
-          onEdit={onEditStep ? () => onEditStep(5) : undefined}
+          onEdit={onEditStep ? () => onEditStep(4) : undefined}
         >
           <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-mingle-text-secondary">
             {profile.description?.trim()
@@ -125,10 +125,7 @@ export function CompanyProfilePreview({
           </p>
         </ProfileSection>
 
-        <Link
-          href="/dashboard"
-          className="mt-2 rounded-full bg-mingle-cta px-8 py-3.5 text-center font-display text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
-        >
+      <Link href="/dashboard" className="mingle-btn-primary mt-2">
           Go to dashboard
         </Link>
       </motion.div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +22,10 @@ import {
   formatRediscoveryLabel,
   type RediscoveryBadge,
 } from "@/lib/matching/rediscovery";
+import { saveCandidateNoteAction } from "@/lib/notes/actions";
+import { MatchReportBody } from "@/components/matching/MatchReport";
+import { MatchScoreRing } from "@/components/matching/MatchScoreRing";
+import type { MatchReport } from "@/lib/matching/report";
 
 export type BoardCandidate = {
   connectionId: string;
@@ -31,6 +37,17 @@ export type BoardCandidate = {
   gender: Gender | null;
   timeline: RelationshipEventRow[];
   rediscovery?: (RediscoveryBadge & { roleTitle?: string }) | null;
+  note?: { notes: string; tags: string[] } | null;
+  /**
+   * Match Report against the role this connection originated from (best
+   * effort: matched by title from the "opportunity" timeline event, since
+   * connections aren't linked to a role by id — see board/page.tsx). Null
+   * when no originating role could be matched; the candidate simply shows
+   * no score rather than a misleading one.
+   */
+  matchReport?: MatchReport | null;
+  matchRoleTitle?: string | null;
+  matchRoleId?: string | null;
 };
 
 const BOARD_COLUMNS: { id: RelationshipStage; label: string; accent: string }[] = [
@@ -54,9 +71,12 @@ type PendingRegression = {
 
 export function CompanyBoardScreen({
   actorId,
+  companyId,
   candidates: initialCandidates,
 }: {
   actorId: string;
+  /** Workspace owner id — may differ from actorId for a team member. */
+  companyId: string;
   candidates: BoardCandidate[];
 }) {
   const toast = useToast();
@@ -66,6 +86,10 @@ export function CompanyBoardScreen({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<RelationshipStage | null>(null);
   const [pending, setPending] = useState<PendingRegression | null>(null);
+  const [noteEditorFor, setNoteEditorFor] = useState<BoardCandidate | null>(null);
+  const [noteDraft, setNoteDraft] = useState({ notes: "", tags: "" });
+  const [savingNote, setSavingNote] = useState(false);
+  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
 
   const grouped = useMemo(() => {
     const buckets = new Map<RelationshipStage, BoardCandidate[]>();
@@ -109,6 +133,11 @@ export function CompanyBoardScreen({
         return;
       }
       if (result === "unchanged") return;
+      track(AnalyticsEvent.boardStageChanged, {
+        from: latestStage(card.timeline),
+        to: target,
+        connection_id: card.connectionId,
+      });
       const timeline = await loadTimeline(supabase, card.connectionId);
       applyTimeline(card.connectionId, timeline);
     } catch {
@@ -131,6 +160,49 @@ export function CompanyBoardScreen({
     const { card, target } = pending;
     setPending(null);
     void moveCard(card, target, true);
+  };
+
+  const openNoteEditor = (card: BoardCandidate) => {
+    setNoteEditorFor(card);
+    setNoteDraft({
+      notes: card.note?.notes ?? "",
+      tags: (card.note?.tags ?? []).join(", "),
+    });
+  };
+
+  const saveNote = async () => {
+    if (!noteEditorFor) return;
+    setSavingNote(true);
+    const tags = noteDraft.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .slice(0, 10);
+    try {
+      const result = await saveCandidateNoteAction({
+        connectionId: noteEditorFor.connectionId,
+        notes: noteDraft.notes.trim(),
+        tags,
+      });
+      if (!result.ok) {
+        toast(result.error, "error");
+        return;
+      }
+      const connectionId = noteEditorFor.connectionId;
+      const notes = noteDraft.notes.trim();
+      setCandidates((prev) =>
+        prev.map((card) =>
+          card.connectionId === connectionId
+            ? { ...card, note: notes || tags.length ? { notes, tags } : null }
+            : card,
+        ),
+      );
+      setNoteEditorFor(null);
+    } catch {
+      toast("Couldn't save that note. Try again in a moment.", "error");
+    } finally {
+      setSavingNote(false);
+    }
   };
 
   if (candidates.length === 0) {
@@ -174,9 +246,9 @@ export function CompanyBoardScreen({
                   event.preventDefault();
                   handleDrop(column.id);
                 }}
-                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-all duration-200 ${
+                className={`flex w-64 shrink-0 flex-col rounded-2xl border bg-mingle-surface p-3 shadow-mingle transition-all duration-300 ease-out ${
                   isOver
-                    ? "scale-[1.01] border-mingle-cta bg-mingle-lavender/40 shadow-[0_12px_28px_rgba(0,115,234,0.14)]"
+                    ? "scale-[1.015] border-mingle-cta bg-mingle-lavender/40 shadow-[0_14px_32px_rgba(0,115,234,0.16)]"
                     : "border-mingle-border"
                 }`}
               >
@@ -208,9 +280,9 @@ export function CompanyBoardScreen({
                           setDraggingId(null);
                           setOverStage(null);
                         }}
-                        className={`rounded-xl border border-mingle-border bg-mingle-bg p-3 shadow-sm transition-shadow hover:shadow-mingle ${
+                        className={`rounded-xl border border-mingle-border bg-mingle-surface-elevated p-3 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-mingle ${
                           draggingId === card.connectionId
-                            ? "cursor-grabbing opacity-60"
+                            ? "cursor-grabbing scale-[1.02] opacity-70 shadow-[0_12px_28px_rgba(0,115,234,0.14)]"
                             : "cursor-grab"
                         } ${busyId === card.connectionId ? "pointer-events-none opacity-70" : ""}`}
                       >
@@ -257,6 +329,66 @@ export function CompanyBoardScreen({
                             ) : null}
                           </div>
                         </Link>
+                        {card.matchReport ? (
+                          <div className="mt-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedMatchId((current) =>
+                                  current === card.connectionId ? null : card.connectionId,
+                                )
+                              }
+                              className="flex w-full items-center justify-between gap-2 rounded-lg border border-mingle-border bg-mingle-bg/60 px-2 py-1.5 text-left hover:bg-mingle-lavender"
+                            >
+                              <span className="flex min-w-0 items-center gap-2">
+                                <MatchScoreRing score={card.matchReport.overall} size={26} />
+                                <span className="truncate text-[11px] font-semibold text-mingle-text">
+                                  {card.matchReport.overall}% match
+                                  {card.matchRoleTitle ? ` · ${card.matchRoleTitle}` : ""}
+                                </span>
+                              </span>
+                              <span className="shrink-0 text-[10px] text-mingle-text-secondary">
+                                {expandedMatchId === card.connectionId ? "Hide" : "View"}
+                              </span>
+                            </button>
+                            {expandedMatchId === card.connectionId ? (
+                              <div className="mt-2 rounded-lg border border-mingle-border bg-mingle-white p-2.5">
+                                <MatchReportBody
+                                  report={card.matchReport}
+                                  compact
+                                  matchIds={{
+                                    companyId,
+                                    candidateId: card.userId,
+                                    roleId: card.matchRoleId ?? null,
+                                  }}
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {card.note?.tags.length ? (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {card.note.tags.map((tag) => (
+                              <MingleChip key={tag} tone="slate" className="text-[10px]">
+                                {tag}
+                              </MingleChip>
+                            ))}
+                          </div>
+                        ) : null}
+                        {card.note?.notes ? (
+                          <p className="mt-2 line-clamp-2 text-[11px] leading-snug text-mingle-text-secondary">
+                            {card.note.notes}
+                          </p>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => openNoteEditor(card)}
+                          className="mt-2 text-[10px] font-semibold text-mingle-cta hover:underline"
+                        >
+                          {card.note?.notes || card.note?.tags.length
+                            ? "Edit note"
+                            : "+ Add note"}
+                        </button>
                         <div className="mt-3 flex items-center gap-2">
                           <label className="sr-only" htmlFor={`stage-${card.connectionId}`}>
                             Move {card.name}
@@ -335,6 +467,97 @@ export function CompanyBoardScreen({
                 className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-white"
               >
                 Move to {STAGE_LABEL[pending.target]}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {noteEditorFor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setNoteEditorFor(null)}
+        >
+          <div
+            role="dialog"
+            aria-labelledby="board-note-title"
+            className="w-full max-w-sm rounded-2xl border border-mingle-border bg-mingle-surface p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2
+              id="board-note-title"
+              className="font-display text-lg font-bold text-mingle-text"
+            >
+              Note for {noteEditorFor.name}
+            </h2>
+            <p className="mt-1 text-xs text-mingle-text-secondary">
+              Visible to your whole team.
+            </p>
+            {noteEditorFor.matchReport?.whatToValidate?.length ? (
+              <div className="mt-3 rounded-xl border border-mingle-border bg-mingle-bg/60 p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-mingle-text-secondary">
+                  From the match report — tap to add
+                </p>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {noteEditorFor.matchReport.whatToValidate.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() =>
+                        setNoteDraft((prev) => ({
+                          ...prev,
+                          notes: prev.notes ? `${prev.notes}\n• ${question}` : `• ${question}`,
+                        }))
+                      }
+                      className="rounded-lg px-1.5 py-1 text-left text-[11px] leading-snug text-mingle-text-secondary hover:bg-mingle-lavender hover:text-mingle-text"
+                    >
+                      + {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <label className="mt-4 block text-xs font-semibold text-mingle-text-secondary">
+              Note
+              <textarea
+                value={noteDraft.notes}
+                onChange={(event) =>
+                  setNoteDraft((prev) => ({ ...prev, notes: event.target.value }))
+                }
+                rows={4}
+                maxLength={2000}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm text-mingle-text"
+                placeholder="Strong culture fit, needs visa sponsorship…"
+              />
+            </label>
+            <label className="mt-3 block text-xs font-semibold text-mingle-text-secondary">
+              Tags (comma separated)
+              <input
+                value={noteDraft.tags}
+                onChange={(event) =>
+                  setNoteDraft((prev) => ({ ...prev, tags: event.target.value }))
+                }
+                maxLength={300}
+                className="mt-1 w-full rounded-xl border border-mingle-border bg-mingle-bg px-3 py-2 text-sm text-mingle-text"
+                placeholder="strong fit, visa sponsorship"
+              />
+            </label>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setNoteEditorFor(null)}
+                disabled={savingNote}
+                className="rounded-full bg-mingle-bg px-5 py-2.5 font-display text-sm font-semibold text-mingle-text-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void saveNote()}
+                disabled={savingNote}
+                className="rounded-full bg-mingle-cta px-5 py-2.5 font-display text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {savingNote ? "Saving…" : "Save note"}
               </button>
             </div>
           </div>

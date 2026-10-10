@@ -3,24 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Outfit, Manrope } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { MingleLogo } from "@/components/MingleLogo";
 import { TalentPathArt, CompanyPathArt } from "@/components/PathGlyph";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
-const welcomeDisplay = Outfit({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  display: "swap",
-});
-
-const welcomeBody = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
 
 type Path = "talent" | "company";
 
@@ -63,7 +51,7 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className={`${welcomeBody.className} relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-10 sm:py-16`}
+      className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 font-sans sm:px-10 sm:py-16"
     >
       <div
         aria-hidden
@@ -88,7 +76,7 @@ export function WelcomeScreen() {
             <MingleLogo variant="lockup" size={48} priority className="mb-10" />
 
             <h1
-              className={`${welcomeDisplay.className} text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]`}
+              className="font-display text-[1.85rem] font-bold leading-[1.12] tracking-[-0.04em] text-mingle-text sm:text-[2.75rem]"
             >
               The right people.{" "}
               <span className="mingle-gradient-text">Worth talking to.</span>
@@ -100,7 +88,7 @@ export function WelcomeScreen() {
             </p>
 
             <p
-              className={`${welcomeDisplay.className} mt-8 text-sm font-semibold tracking-[-0.02em] text-mingle-text`}
+              className="font-display mt-8 text-sm font-semibold tracking-[-0.02em] text-mingle-text"
             >
               Choose how you start
             </p>
@@ -124,7 +112,7 @@ export function WelcomeScreen() {
                       {card.eyebrow}
                     </span>
                     <span
-                      className={`${welcomeDisplay.className} mt-1.5 text-[1.05rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text`}
+                      className="font-display mt-1.5 text-[1.05rem] font-bold leading-snug tracking-[-0.03em] text-mingle-text"
                     >
                       {card.title}
                     </span>

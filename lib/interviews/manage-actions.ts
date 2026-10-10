@@ -25,6 +25,7 @@ import {
 } from "@/lib/messaging/persistence";
 import { notifyPushToUser } from "@/lib/push/actions";
 import { createClient } from "@/lib/supabase/server";
+import { isActiveCompanyMember } from "@/lib/team/persistence";
 import type { Database, InterviewLocationType } from "@/lib/supabase/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -59,10 +60,12 @@ async function requireConnectionParty(
   if (!connection || connection.status !== "accepted") {
     return { ok: false, error: "Connection not available." };
   }
-  if (
-    user.id !== connection.requester_id &&
-    user.id !== connection.recipient_id
-  ) {
+  const isLiteralParty =
+    user.id === connection.requester_id || user.id === connection.recipient_id;
+  const isTeammate =
+    !isLiteralParty &&
+    (await isActiveCompanyMember(supabase, user.id, interview.companyId));
+  if (!isLiteralParty && !isTeammate) {
     return {
       ok: false,
       error: "Only people in this conversation can do that.",
@@ -70,7 +73,7 @@ async function requireConnectionParty(
   }
 
   const otherUserId =
-    user.id === connection.requester_id
+    connection.requester_id === interview.companyId
       ? connection.recipient_id
       : connection.requester_id;
 
@@ -128,7 +131,7 @@ async function postInterviewNote(
 
 export async function cancelInterviewAction(input: {
   interviewId: string;
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+}): Promise<{ ok: true } | { ok: false; error: string }> { 
   const interviewId = input.interviewId?.trim();
   if (!interviewId) return { ok: false, error: "Missing interview." };
 
@@ -200,7 +203,7 @@ export async function rescheduleInterviewAction(input: {
 > {
   const parsed = rescheduleSchema.safeParse(input);
   if (!parsed.success) {
-    return {
+ return {
       ok: false,
       error: parsed.error.issues[0]?.message ?? "Check the new time.",
     };

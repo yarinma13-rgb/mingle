@@ -1,5 +1,9 @@
 import { WORK_MODEL_OPTIONS } from "@/lib/discovery/filters";
-import type { RoleEmploymentType, RoleStatus } from "@/lib/supabase/types";
+import type {
+  RequisitionStatus,
+  RoleEmploymentType,
+  RoleStatus,
+} from "@/lib/supabase/types";
 
 export { WORK_MODEL_OPTIONS };
 
@@ -10,11 +14,17 @@ export const ROLE_DEPARTMENT_OPTIONS = [
   "Data",
   "Sales",
   "Marketing",
+  "Growth",
   "Operations",
   "Customer success",
   "People",
+  "HR",
   "Finance",
+  "Legal",
   "Research",
+  "Construction",
+  "Infrastructure",
+  "Building supervision",
   "Leadership",
 ] as const;
 
@@ -47,6 +57,15 @@ export const ROLE_STATUS_OPTIONS: { value: RoleStatus; label: string }[] = [
   { value: "closed", label: "Closed" },
 ];
 
+export const REQUISITION_STATUS_OPTIONS: {
+  value: RequisitionStatus;
+  label: string;
+}[] = [
+  { value: "draft", label: "Draft" },
+  { value: "pending_approval", label: "Pending approval" },
+  { value: "approved", label: "Approved" },
+];
+
 export const ROLE_SKILL_OPTIONS = [
   "JavaScript",
   "TypeScript",
@@ -65,9 +84,18 @@ export const ROLE_SKILL_OPTIONS = [
   "Content",
   "Growth",
   "Brand",
+  "SEO",
+  "PPC",
   "People operations",
+  "Talent acquisition",
+  "Recruiting",
   "Project management",
   "Customer support",
+  "Site supervision",
+  "Building codes",
+  "Construction planning",
+  "Safety management",
+  "Infrastructure design",
 ] as const;
 
 export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
@@ -97,11 +125,20 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Account executive",
     "Sales development",
     "Customer success manager",
+    "Customer Success & Account Manager",
   ],
   Marketing: [
     "Marketing manager",
     "Content marketer",
     "Growth marketer",
+    "Product marketer",
+    "Brand manager",
+    "Performance marketer",
+  ],
+  Growth: [
+    "Growth manager",
+    "Growth marketer",
+    "Lifecycle manager",
   ],
   Operations: [
     "Operations manager",
@@ -109,7 +146,9 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Program manager",
   ],
   "Customer success": [
+    "Customer Success & Account Manager",
     "Customer success manager",
+    "Account manager",
     "Support lead",
   ],
   People: [
@@ -117,13 +156,39 @@ export const ROLE_TITLE_SUGGESTIONS: Record<string, string[]> = {
     "Recruiter",
     "People operations",
   ],
+  HR: [
+    "HR manager",
+    "Talent acquisition lead",
+    "HR business partner",
+    "People operations specialist",
+  ],
   Finance: [
     "Finance manager",
     "Controller",
   ],
+  Legal: [
+    "Legal counsel",
+    "Compliance manager",
+  ],
   Research: [
     "Researcher",
     "Research scientist",
+  ],
+  Construction: [
+    "Construction manager",
+    "Site manager",
+    "Project engineer",
+    "Quantity surveyor",
+  ],
+  Infrastructure: [
+    "Infrastructure engineer",
+    "Civil engineer",
+    "Utilities project manager",
+  ],
+  "Building supervision": [
+    "Building supervisor",
+    "Site supervisor",
+    "Construction inspector",
   ],
   Leadership: [
     "Engineering manager",
@@ -142,4 +207,11 @@ export function employmentLabel(value: string | null): string {
 
 export function statusLabel(value: RoleStatus): string {
   return ROLE_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value;
+}
+
+export function requisitionStatusLabel(value: RequisitionStatus): string {
+  return (
+    REQUISITION_STATUS_OPTIONS.find((option) => option.value === value)?.label ??
+    value
+  );
 }

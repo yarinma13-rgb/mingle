@@ -36,7 +36,7 @@ export function PushOptIn() {
         ) : null}
         {status === "error" ? (
           <p className="mt-1 text-xs text-mingle-warning">
-            Could not enable notifications. Run the push SQL migration and add VAPID keys.
+            Could not enable notifications right now. Please try again later.
           </p>
         ) : null}
       </div>

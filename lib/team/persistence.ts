@@ -127,3 +127,25 @@ export async function resolveCompanyWorkspaceId(
     .maybeSingle();
   return membership?.company_id ?? userId;
 }
+
+/**
+ * True if userId IS companyId, or is an active teammate on that
+ * workspace — the app-layer counterpart to the "team workspace manages
+ * …" RLS policies, for the handful of server actions that still gate
+ * explicitly on companyId equality instead of relying on RLS alone.
+ */
+export async function isActiveCompanyMember(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  companyId: string,
+): Promise<boolean> {
+  if (userId === companyId) return true;
+  const { data } = await supabase
+    .from("company_members")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("company_id", companyId)
+    .eq("status", "active")
+    .maybeSingle();
+  return Boolean(data);
+}

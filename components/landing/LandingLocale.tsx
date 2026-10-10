@@ -17,8 +17,15 @@ import {
   type LandingCopy,
   type LandingLocale,
 } from "@/lib/landing/copy";
-
-const STORAGE_KEY = "mingle.landing.locale";
+import {
+  hydrateAppLocaleFromStorage,
+  useAppLocaleOptional,
+} from "@/components/i18n/AppLocaleProvider";
+import {
+  readStoredLocale,
+  writeStoredLocale,
+  type AppLocale,
+} from "@/lib/i18n/locale";
 
 type LandingLocaleContextValue = {
   locale: LandingLocale;
@@ -32,16 +39,6 @@ const LandingLocaleContext = createContext<LandingLocaleContextValue | null>(
 
 const listeners = new Set<() => void>();
 let memoryLocale: LandingLocale = "en";
-
-function readStoredLocale(): LandingLocale {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "he" || stored === "en") return stored;
-  } catch {
-    /* ignore */
-  }
-  return "en";
-}
 
 function emit() {
   listeners.forEach((listener) => listener());
@@ -64,10 +61,10 @@ function getServerSnapshot(): LandingLocale {
 
 function writeLocale(next: LandingLocale) {
   memoryLocale = next;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, next);
-  } catch {
-    /* ignore */
+  writeStoredLocale(next as AppLocale);
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = next;
+    document.documentElement.dir = next === "he" ? "rtl" : "ltr";
   }
   emit();
 }
@@ -79,8 +76,8 @@ export function LandingLocaleProvider({ children }: { children: ReactNode }) {
     getServerSnapshot,
   );
 
-  // Hydrate from localStorage after mount (avoids SSR mismatch).
   useEffect(() => {
+    hydrateAppLocaleFromStorage();
     const stored = readStoredLocale();
     if (stored !== memoryLocale) {
       memoryLocale = stored;
@@ -118,6 +115,8 @@ export function useLandingLocale() {
 
 export function LandingLanguageSwitch() {
   const { locale, setLocale, t } = useLandingLocale();
+  // Keep app provider in sync when both trees mount.
+  const app = useAppLocaleOptional();
 
   return (
     <div className="landing-lang" role="group" aria-label={t.lang.aria}>
@@ -129,6 +128,7 @@ export function LandingLanguageSwitch() {
         onClick={() => {
           track(AnalyticsEvent.landingLocaleChanged, { locale: "en" });
           setLocale("en");
+          app.setLocale("en");
         }}
       >
         {t.lang.en}
@@ -141,6 +141,7 @@ export function LandingLanguageSwitch() {
         onClick={() => {
           track(AnalyticsEvent.landingLocaleChanged, { locale: "he" });
           setLocale("he");
+          app.setLocale("he");
         }}
       >
         {t.lang.he}

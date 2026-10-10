@@ -56,6 +56,15 @@ export const INDUSTRY_SUGGESTIONS = unique([
   "Legal",
   "Consulting",
   "Technology",
+  "HR",
+  "People ops",
+  "Marketing",
+  "Advertising",
+  "Construction",
+  "Infrastructure",
+  "Real estate",
+  "Building supervision",
+  "Civil engineering",
 ]);
 
 export const TITLE_SUGGESTIONS = unique([

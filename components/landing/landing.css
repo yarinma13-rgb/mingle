@@ -1,5 +1,4 @@
-/* monday.com inspired landing for mingle.
-   Soft white canvas, calmer Poppins, mutual match hero with orbiting confetti.
+/* mingle landing — soft canvas, Figtree typography, mutual match hero.
    Breakpoint: max-width 900px. */
 
 .landing {
@@ -18,9 +17,9 @@
   --ld-grey-soft: #f4f1fa;
   --ld-white: #ffffff;
   --ld-line: color-mix(in srgb, var(--ld-brand-purple) 12%, transparent);
-  --ld-display: var(--font-landing-poppins), var(--font-figtree), ui-sans-serif,
+  --ld-display: var(--font-landing-figtree), var(--font-figtree), ui-sans-serif,
     system-ui, sans-serif;
-  --ld-body: var(--font-landing-poppins), var(--font-figtree), ui-sans-serif,
+  --ld-body: var(--font-landing-figtree), var(--font-figtree), ui-sans-serif,
     system-ui, sans-serif;
   --ld-max: 1140px;
   --ld-pad: clamp(1.1rem, 4vw, 1.75rem);
@@ -1651,7 +1650,7 @@
 /* ── Monday-style type & pills ───────────────────────── */
 
 .landing {
-  font-family: var(--font-landing-poppins), "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--font-landing-figtree), "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 .landing-hero-title,

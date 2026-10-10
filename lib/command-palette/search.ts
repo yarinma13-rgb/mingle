@@ -2,6 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { CommandItem } from "@/lib/command-palette/items";
+import {
+  employerDomainForExclusion,
+  isOwnEmployeeByDomain,
+  isOwnEmployeeByName,
+} from "@/lib/matching/employer-exclusion";
 
 function sanitize(raw: string): string {
   return raw.trim().replace(/[%_,]/g, " ").slice(0, 80);
@@ -28,28 +33,72 @@ export async function searchCompanyCommandItems(
   if (account?.user_type !== "company") return [];
 
   const pattern = `%${needle}%`;
-  const [{ data: talents }, { data: roles }] = await Promise.all([
-    supabase
-      .from("talent_profiles")
-      .select("user_id, first_name, last_name, headline, current_job_title")
-      .or(
-        [
-          `first_name.ilike."${pattern}"`,
-          `last_name.ilike."${pattern}"`,
-          `headline.ilike."${pattern}"`,
-          `current_job_title.ilike."${pattern}"`,
-        ].join(","),
-      )
-      .limit(8),
-    supabase
-      .from("roles")
-      .select("id, title, department, status")
-      .eq("company_id", user.id)
-      .ilike("title", pattern)
-      .limit(8),
-  ]);
+  const [{ data: talents }, { data: roles }, { data: ownCompany }] =
+    await Promise.all([
+      supabase
+        .from("talent_profiles")
+        .select(
+          "user_id, first_name, last_name, headline, current_job_title, current_employer",
+        )
+        .or(
+          [
+            `first_name.ilike."${pattern}"`,
+            `last_name.ilike."${pattern}"`,
+            `headline.ilike."${pattern}"`,
+            `current_job_title.ilike."${pattern}"`,
+          ].join(","),
+        )
+        .limit(8),
+      supabase
+        .from("roles")
+        .select("id, title, department, status")
+        .eq("company_id", user.id)
+        .ilike("title", pattern)
+        .limit(8),
+      supabase
+        .from("company_profiles")
+        .select("company_name")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
-  const talentItems: CommandItem[] = (talents ?? []).map((row) => {
+  // Safety: never let a company find their own current employee through
+  // search either — same rule as Discover/Matches, see
+  // lib/matching/employer-exclusion.ts. Command palette search bypasses
+  // matching entirely, so it needs this check independently. Two signals,
+  // either one excludes: verified work-email domain, and the candidate's
+  // self-reported current employer name.
+  const companyDomain = employerDomainForExclusion(user.email);
+  const companyName = ownCompany?.company_name ?? null;
+  let visibleTalents = talents ?? [];
+  if ((companyDomain || companyName) && visibleTalents.length > 0) {
+    const ownEmployeeIds = new Set(
+      visibleTalents
+        .filter((row) => isOwnEmployeeByName(row.current_employer, companyName))
+        .map((row) => row.user_id),
+    );
+    if (companyDomain) {
+      const { data: candidateEmailRows } = await supabase
+        .from("users")
+        .select("id, email")
+        .in(
+          "id",
+          visibleTalents.map((row) => row.user_id),
+        );
+      for (const row of candidateEmailRows ?? []) {
+        if (isOwnEmployeeByDomain(row.email, companyDomain)) {
+          ownEmployeeIds.add(row.id);
+        }
+      }
+    }
+    if (ownEmployeeIds.size > 0) {
+      visibleTalents = visibleTalents.filter(
+        (row) => !ownEmployeeIds.has(row.user_id),
+      );
+    }
+  }
+
+  const talentItems: CommandItem[] = visibleTalents.map((row) => {
     const name = `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim() || "Talent";
     const detail =
       row.headline?.trim() || row.current_job_title?.trim() || "Candidate";

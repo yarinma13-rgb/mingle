@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { ContactSalesPage } from "@/components/landing/ContactSalesPage";
 import { appOrigin } from "@/lib/app-origin";
 import "@/components/landing/landing.css";
 
-const poppins = Poppins({
-  subsets: ["latin"],
+const figtree = Figtree({
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-landing-poppins",
+  variable: "--font-landing-figtree",
   display: "swap",
 });
 
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className={poppins.variable}>
+    <div className={figtree.variable}>
       <ContactSalesPage />
     </div>
   );

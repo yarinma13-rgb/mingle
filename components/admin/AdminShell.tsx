@@ -19,6 +19,9 @@ export function AdminShell({
           </h1>
         </div>
         <div className="flex flex-wrap gap-3 text-sm">
+          <Link href="/admin/growth" className="text-mingle-purple underline-offset-2 hover:underline">
+            Growth
+          </Link>
           <Link href="/admin/matches" className="text-mingle-purple underline-offset-2 hover:underline">
             Match review
           </Link>

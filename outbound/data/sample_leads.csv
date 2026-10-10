@@ -1,0 +1,9 @@
+Company,Contact Name,Contact Title,Email,LinkedIn URL,Open Role Found,Company Size,Has HR Function,Domain,Source,Status,Notes
+Northwind Labs,Maya Cohen,Head of Talent,,https://www.linkedin.com/in/example-maya,Product Designer,11-50,yes,northwindlabs.io,sample,new,Sole talent lead at small SaaS
+Bright Agency,Tom Levi,Founder & CEO,,https://www.linkedin.com/in/example-tom,Senior Frontend Engineer,51-200,no,brightagency.com,sample,new,No HR hire yet — founder owns recruiting
+Harbor Recruiting,Dana Weiss,Managing Partner,,https://www.linkedin.com/in/example-dana,Technical Recruiter,11-50,no,harborrecruiting.com,sample,new,Boutique shop — partner owns hiring
+Pixel Foundry,Ori Ben,Co-Founder,,https://www.linkedin.com/in/example-ori,Product Manager,1-10,no,pixelfoundry.co,sample,new,Early team no People hire
+Stackwright,Lior Hadad,People Ops Manager,,https://www.linkedin.com/in/example-lior,Backend Engineer,51-200,yes,stackwright.dev,sample,new,Lean people ops under 200
+Mega Retail Corp,Sam Admin,Office Manager,,,Cashier,10000+,yes,megaretail.example,sample,new,Enterprise non-ICP
+Enterprise SaaS Inc,Nina HR,VP Talent Acquisition,,,Platform Engineer,501-1000,yes,enterprisesaas.example,sample,new,HR but company too large
+Founder With TA,Alex Founder,CEO,,https://www.linkedin.com/in/example-alex,Mobile Engineer,11-50,yes,founderwithta.example,sample,new,has hr — founder not ICP

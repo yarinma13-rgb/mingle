@@ -7,10 +7,10 @@ import { MingleLogo } from "@/components/MingleLogo";
 // component and pose assets are kept, just not rendered here for now.
 
 const CONFETTI_COLORS = [
-  "#F65F7C",
+  "#EA1E63",
   "#D83A52",
-  "#9D5CF2",
-  "#0073EA",
+  "#7B2FF7",
+  "#3E6BE0",
 ];
 const CONFETTI_COUNT = 28;
 
@@ -70,11 +70,13 @@ function useConfettiSpecs(enabled: boolean): ConfettiSpec[] {
 export function MingleMomentOverlay({
   matchName,
   connectionId,
+  isFirstMatch = false,
   onClose,
 }: {
   matchName: string;
   matchUserId?: string;
   connectionId?: string;
+  isFirstMatch?: boolean;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -155,11 +157,13 @@ export function MingleMomentOverlay({
         </div>
 
         <h1 className="mt-6 max-w-full px-1 font-display text-3xl font-bold text-mingle-text sm:text-5xl">
-          It&rsquo;s a mingle
+          {isFirstMatch ? "This is my first mingle" : "It's a mingle"}
         </h1>
 
         <p className="mt-4 max-w-xs text-sm text-mingle-text-secondary">
-          You and {matchName} both want to get to know each other.
+          {isFirstMatch
+            ? `You and ${matchName} both want to get to know each other — your first mutual match on mingle.`
+            : `You and ${matchName} both want to get to know each other.`}
         </p>
 
         <button

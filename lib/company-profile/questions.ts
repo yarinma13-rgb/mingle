@@ -1,86 +1,64 @@
 export type CompanyMultiQuestion = {
-  key: "workEnvironment" | "values" | "lookingFor";
+  key: "workEnvironment" | "values";
   headline: string;
   subtext: string;
   options: string[];
 };
 
-// Options per PRODUCT_SPEC.md sections 21 and 43 — mirrors the talent
-// profile's depth: how we work, what we value, what we're looking for.
+/**
+ * Aligned with talent PROFILE_QUESTIONS vocabulary where possible so
+ * synonym overlap in matching is real, not accidental.
+ * Values also fill looking_for (one step, no double ask).
+ */
 export const COMPANY_QUESTIONS: CompanyMultiQuestion[] = [
   {
     key: "workEnvironment",
-    headline: "How you work",
-    subtext: "Team culture and leadership style.",
+    headline: "How your team works",
+    subtext: "Day-to-day style talent will feel. Optional — skip if the role says it.",
     options: [
+      "Collaborative",
+      "Independent",
       "Fast paced",
       "Structured",
       "Flexible",
-      "Remote friendly",
-      "Office based",
+      "Remote",
       "Hybrid",
-      "Data driven",
-      "Autonomous",
-      "Collaborative",
-      "Ownership driven",
-      "Mentorship heavy",
-      "Quiet focus",
-      "Customer facing",
-      "Experiment first",
-      "Process first",
+      "Office based",
+      "Async",
       "Async by default",
       "High ownership",
       "Cross functional",
+      "Mentorship heavy",
+      "Quiet focus",
+      "Customer facing",
+      "Creative",
+      "Data driven",
+      "Hands on",
+      "Strategic",
     ],
   },
   {
     key: "values",
-    headline: "What you value",
-    subtext: "The culture you offer.",
+    headline: "What you hire for",
+    subtext:
+      "Same vocabulary as talent drives — so match % is real, not decorative. Also becomes your “looking for” chips.",
     options: [
+      "Growth & learning",
+      "Meaningful impact",
       "Ownership",
-      "Curiosity",
-      "Transparency",
-      "Learning",
+      "Craft excellence",
+      "Strong leadership",
+      "Flexibility & balance",
+      "Stability",
+      "Great team & culture",
+      "Mission-driven work",
+      "Autonomy",
+      "New challenges",
       "Collaboration",
-      "Excellence",
-      "Integrity",
-      "Diversity",
+      "Transparency",
       "Innovation",
-      "Impact",
-      "Kindness",
-      "Accountability",
-      "Craft",
-      "Speed",
-      "Trust",
       "Inclusion",
-      "Ambition",
-      "Humility",
-    ],
-  },
-  {
-    key: "lookingFor",
-    headline: "What you're looking for",
-    subtext: "The kind of talent and roles you're hiring for.",
-    options: [
-      "Product roles",
-      "Engineering roles",
-      "Design roles",
-      "Data roles",
-      "Sales roles",
-      "Marketing roles",
-      "Operations roles",
-      "Leadership roles",
-      "Early career talent",
-      "Senior specialists",
-      "Customer success",
-      "People and culture",
-      "Finance",
-      "Legal",
-      "Research",
-      "Support",
-      "Growth",
-      "Founding team",
+      "Accountability",
     ],
   },
 ];

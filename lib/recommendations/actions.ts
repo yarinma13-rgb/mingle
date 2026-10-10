@@ -16,7 +16,7 @@ import {
 } from "@/lib/validation/recommendation";
 
 function missingTableMessage() {
-  return "Recommendations are not live yet. Ask the founder to run the SQL migration.";
+  return "Recommendations are not available yet. Please try again later.";
 }
 
 export async function requestRecommendation(input: {

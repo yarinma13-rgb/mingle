@@ -3,6 +3,20 @@ import type { ConnectionStatus, Database } from "@/lib/supabase/types";
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 import { assertConnectionSendAllowed } from "@/lib/rate-limit";
+import { markTalentReferralMatched } from "@/lib/talent-referrals/persistence";
+
+function noteReferralMatch(
+  supabase: SupabaseClient<Database>,
+  userId?: string,
+) {
+  void markTalentReferralMatched(supabase)
+    .then(() => {
+      track(AnalyticsEvent.talentReferralMatched, undefined, userId);
+    })
+    .catch(() => {
+      // Referral status must never break matching.
+    });
+}
 
 export type ConnectionRow = Database["public"]["Tables"]["connections"]["Row"];
 
@@ -10,7 +24,19 @@ export type SendConnectionResult =
   | { outcome: "sent" }
   | { outcome: "already-pending" }
   | { outcome: "already-connected" }
-  | { outcome: "mutual"; connection: ConnectionRow };
+  | { outcome: "mutual"; connection: ConnectionRow; isFirstMingle: boolean };
+
+async function countAcceptedConnections(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<number> {
+  const { count } = await supabase
+    .from("connections")
+    .select("id", { count: "exact", head: true })
+    .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`)
+    .eq("status", "accepted");
+  return count ?? 0;
+}
 
 /**
  * Sending a connection request when the other person already has a
@@ -55,8 +81,15 @@ export async function sendOrAcceptConnection(
         .select("*")
         .single();
       if (updateError) throw updateError;
-      track(AnalyticsEvent.mingleCreated, { connection_id: updated.id }, fromUserId);
-      return { outcome: "mutual", connection: updated };
+      const acceptedCount = await countAcceptedConnections(supabase, fromUserId);
+      const isFirstMingle = acceptedCount <= 1;
+      track(
+        AnalyticsEvent.mingleCreated,
+        { connection_id: updated.id, is_first_match: isFirstMingle },
+        fromUserId,
+      );
+      noteReferralMatch(supabase, fromUserId);
+      return { outcome: "mutual", connection: updated, isFirstMingle };
     }
     // Declined or cancelled — reactivate the same row as a fresh send
     // from whoever is acting now, rather than creating a second row.
@@ -86,7 +119,7 @@ export async function sendOrAcceptConnection(
 export async function acceptConnection(
   supabase: SupabaseClient<Database>,
   connectionId: string,
-): Promise<ConnectionRow> {
+): Promise<ConnectionRow & { isFirstMingle: boolean }> {
   const { data, error } = await supabase
     .from("connections")
     .update({ status: "accepted" })
@@ -94,8 +127,19 @@ export async function acceptConnection(
     .select("*")
     .single();
   if (error) throw error;
-  track(AnalyticsEvent.mingleCreated, { connection_id: data.id });
-  return data;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const viewerId = user?.id ?? data.requester_id;
+  const acceptedCount = await countAcceptedConnections(supabase, viewerId);
+  const isFirstMingle = acceptedCount <= 1;
+  track(AnalyticsEvent.mingleCreated, {
+    connection_id: data.id,
+    is_first_match: isFirstMingle,
+  });
+  noteReferralMatch(supabase);
+  return { ...data, isFirstMingle };
 }
 
 export async function declineConnection(
@@ -156,6 +200,19 @@ export async function loadOutgoingPending(
     .order("created_at", { ascending: false });
   if (error) return [];
   return data ?? [];
+}
+
+export async function loadConnectionAcceptanceRate(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+): Promise<{ rate: number; sentCount: number }> {
+  const { data, error } = await supabase
+    .from("connections")
+    .select("status")
+    .eq("requester_id", companyId);
+  if (error || !data || data.length === 0) return { rate: 0, sentCount: 0 };
+  const accepted = data.filter((row) => row.status === "accepted").length;
+  return { rate: Math.round((accepted / data.length) * 100), sentCount: data.length };
 }
 
 export async function loadAcceptedConnections(

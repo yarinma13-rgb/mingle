@@ -6,6 +6,7 @@ import {
   ROLE_TITLE_SUGGESTIONS,
 } from "@/lib/roles/questions";
 import { EMPTY_ROLE_DRAFT, type RoleDraft } from "@/lib/roles/persistence";
+import { heuristicSkillTiers } from "@/lib/matching/skill-requirement-tiers";
 
 const TITLE_LINE =
   /(?:job\s*title|role\s*title|position|title|תפקיד)\s*[:\-–]\s*(.+)/i;
@@ -68,6 +69,7 @@ export function extractRoleFromJd(
     employmentType: extractEmployment(haystack),
     workModel: extractWorkModel(haystack),
     requiredSkills: [...skills],
+    skillRequirements: heuristicSkillTiers(skills, text),
     description: text.slice(0, 1200),
     sourceJd: text,
     sourceUrl: sourceUrl.trim(),

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MingleChip } from "@/components/MingleChip";
+import { OpenTalentCvButton } from "@/components/profile/OpenTalentCvButton";
 import type { MatchFactor } from "@/lib/matching/engine";
 import type { RelationshipStage } from "@/lib/supabase/types";
 import type { RelationshipEventRow } from "@/lib/relationship/persistence";
@@ -77,6 +78,9 @@ export function RelationshipContextPanel({
   exploreFactors,
   stage,
   timeline,
+  otherUserId,
+  cvPath = null,
+  cvFileName = null,
 }: {
   connectionId: string;
   score: number;
@@ -84,6 +88,9 @@ export function RelationshipContextPanel({
   exploreFactors: MatchFactor[];
   stage: RelationshipStage;
   timeline: RelationshipEventRow[];
+  otherUserId?: string;
+  cvPath?: string | null;
+  cvFileName?: string | null;
 }) {
   return (
     <div className="flex w-full flex-col gap-5 rounded-2xl border border-mingle-border bg-mingle-surface p-5 shadow-mingle">
@@ -101,6 +108,30 @@ export function RelationshipContextPanel({
           <p className="text-xs text-mingle-text-secondary">Shared signals, not a score alone</p>
         </div>
       </div>
+
+      {cvPath || otherUserId ? (
+        <div className="flex flex-col gap-2 rounded-xl border border-mingle-border bg-mingle-bg px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mingle-text-secondary">
+            Candidate materials
+          </p>
+          {cvPath ? (
+            <OpenTalentCvButton
+              cvPath={cvPath}
+              cvFileName={cvFileName}
+              label={cvFileName?.trim() ? `Open CV · ${cvFileName}` : "Open CV"}
+              className="w-full rounded-full border border-mingle-border bg-mingle-white px-4 py-2 text-center font-display text-xs font-semibold text-mingle-text transition-colors hover:bg-mingle-lavender disabled:opacity-60"
+            />
+          ) : null}
+          {otherUserId ? (
+            <Link
+              href={`/profile/view/${otherUserId}`}
+              className="w-full rounded-full bg-mingle-cta px-4 py-2 text-center font-display text-xs font-semibold text-white"
+            >
+              View full profile
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="rounded-xl border border-mingle-border bg-mingle-bg px-3 py-3">
         <MingleChip>{STAGE_LABEL[stage]}</MingleChip>

@@ -321,7 +321,7 @@ export function ScheduleInterviewControls({
                 onClick={() =>
                   void (mode === "propose" ? submitPropose() : submitDirect())
                 }
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                                className="mingle-btn-primary disabled:opacity-60"
               >
                 {busy ? "Saving…" : mode === "propose" ? "Send slots" : "Book now"}
               </button>
@@ -555,7 +555,7 @@ export function UpcomingInterviewBanner({
                 type="button"
                 disabled={busy || !when}
                 onClick={() => void onReschedule()}
-                className="rounded-full bg-mingle-cta px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                                className="mingle-btn-primary disabled:opacity-60"
               >
                 {busy ? "Saving…" : "Save new time"}
               </button>

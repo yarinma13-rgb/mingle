@@ -11,6 +11,7 @@ export type RelationshipStage =
   | "relationship";
 
 export type RoleStatus = "open" | "paused" | "closed";
+export type RequisitionStatus = "draft" | "pending_approval" | "approved";
 export type RoleEmploymentType =
   | "full_time"
   | "part_time"
@@ -38,6 +39,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
           last_active_at: string;
+          deletion_requested_at: string | null;
+          deletion_scheduled_for: string | null;
+          acquisition_channel: string | null;
+          acquisition_source_raw: string | null;
         };
         Insert: {
           id: string;
@@ -46,6 +51,10 @@ export interface Database {
           onboarding_status?: OnboardingStatus;
           onboarding_step?: number;
           profile_completion?: number;
+          deletion_requested_at?: string | null;
+          deletion_scheduled_for?: string | null;
+          acquisition_channel?: string | null;
+          acquisition_source_raw?: string | null;
         };
         Update: {
           user_type?: UserType;
@@ -53,6 +62,26 @@ export interface Database {
           onboarding_step?: number;
           profile_completion?: number;
           last_active_at?: string;
+          deletion_requested_at?: string | null;
+          deletion_scheduled_for?: string | null;
+          acquisition_channel?: string | null;
+          acquisition_source_raw?: string | null;
+        };
+        Relationships: [];
+      };
+      growth_nudge_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          nudge_type: string;
+          sent_at: string;
+        };
+        Insert: {
+          user_id: string;
+          nudge_type: string;
+        };
+        Update: {
+          nudge_type?: string;
         };
         Relationships: [];
       };
@@ -131,6 +160,11 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           max_commute_km: number | null;
+          is_employed: boolean | null;
+          current_employer: string | null;
+          discreet_search: boolean;
+          start_availability: string | null;
+          target_role: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -161,6 +195,11 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          is_employed?: boolean | null;
+          current_employer?: string | null;
+          discreet_search?: boolean;
+          start_availability?: string | null;
+          target_role?: string | null;
         };
         Update: {
           first_name?: string | null;
@@ -188,6 +227,11 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           max_commute_km?: number | null;
+          is_employed?: boolean | null;
+          current_employer?: string | null;
+          discreet_search?: boolean;
+          start_availability?: string | null;
+          target_role?: string | null;
         };
         Relationships: [];
       };
@@ -209,6 +253,7 @@ export interface Database {
           looking_for: string[];
           latitude: number | null;
           longitude: number | null;
+          slug: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -228,6 +273,7 @@ export interface Database {
           looking_for?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          slug?: string | null;
         };
         Update: {
           company_name?: string | null;
@@ -244,6 +290,7 @@ export interface Database {
           looking_for?: string[];
           latitude?: number | null;
           longitude?: number | null;
+          slug?: string | null;
         };
         Relationships: [];
       };
@@ -321,6 +368,169 @@ export interface Database {
         };
         Relationships: [];
       };
+      candidate_notes: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          notes: string;
+          tags: string[];
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          connection_id: string;
+          company_id: string;
+          notes?: string;
+          tags?: string[];
+          updated_by?: string | null;
+        };
+        Update: {
+          notes?: string;
+          tags?: string[];
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      match_collaborators: {
+        Row: {
+          id: string;
+          connection_id: string;
+          company_id: string;
+          invited_user_id: string;
+          invited_by: string;
+          tone: string | null;
+          comment: string | null;
+          responded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          connection_id: string;
+          company_id: string;
+          invited_user_id: string;
+          invited_by: string;
+          tone?: string | null;
+          comment?: string | null;
+          responded_at?: string | null;
+        };
+        Update: {
+          tone?: string | null;
+          comment?: string | null;
+          responded_at?: string | null;
+        };
+        Relationships: [];
+      };
+      role_referrals: {
+        Row: {
+          id: string;
+          company_id: string;
+          role_id: string;
+          referrer_user_id: string;
+          referred_user_id: string | null;
+          status: string;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          company_id: string;
+          role_id: string;
+          referrer_user_id: string;
+          referred_user_id?: string | null;
+          status?: string;
+          paid_at?: string | null;
+        };
+        Update: {
+          referred_user_id?: string | null;
+          status?: string;
+          paid_at?: string | null;
+        };
+        Relationships: [];
+      };
+      talent_referral_codes: {
+        Row: {
+          user_id: string;
+          code: string;
+          share_count: number;
+          open_count: number;
+          signup_started_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          code: string;
+          share_count?: number;
+          open_count?: number;
+          signup_started_count?: number;
+        };
+        Update: {
+          code?: string;
+          share_count?: number;
+          open_count?: number;
+          signup_started_count?: number;
+        };
+        Relationships: [];
+      };
+      talent_referral_opens: {
+        Row: {
+          id: string;
+          code: string;
+          visitor_key: string;
+          created_at: string;
+        };
+        Insert: {
+          code: string;
+          visitor_key: string;
+          id?: string;
+        };
+        Update: {
+          code?: string;
+          visitor_key?: string;
+        };
+        Relationships: [];
+      };
+      talent_referral_attributions: {
+        Row: {
+          id: string;
+          referrer_user_id: string;
+          referred_user_id: string;
+          code: string;
+          status: string;
+          created_at: string;
+          profile_completed_at: string | null;
+          matched_at: string | null;
+        };
+        Insert: {
+          referrer_user_id: string;
+          referred_user_id: string;
+          code: string;
+          status?: string;
+          profile_completed_at?: string | null;
+          matched_at?: string | null;
+          id?: string;
+        };
+        Update: {
+          status?: string;
+          profile_completed_at?: string | null;
+          matched_at?: string | null;
+        };
+        Relationships: [];
+      };
+      role_applications: {
+        Row: {
+          id: string;
+          role_id: string;
+          candidate_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id: string;
+          candidate_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       match_reviews: {
         Row: {
           id: string;
@@ -385,6 +595,40 @@ export interface Database {
           actor_email?: string | null;
           action: string;
           note?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      matches: {
+        Row: {
+          id: string;
+          role_id: string | null;
+          company_id: string;
+          candidate_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id?: string | null;
+          company_id: string;
+          candidate_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      match_explanations: {
+        Row: {
+          id: string;
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
+          created_at: string;
+        };
+        Insert: {
+          match_id: string;
+          input_hash: string;
+          intelligence_json: Record<string, unknown>;
+          model_version: string;
         };
         Update: Record<string, never>;
         Relationships: [];
@@ -666,12 +910,20 @@ export interface Database {
           employment_type: RoleEmploymentType | null;
           work_model: string | null;
           required_skills: string[];
+          /** SkillRequirement[] (see lib/matching/skill-requirement-tiers.ts) stored as jsonb. */
+          skill_requirements: unknown;
           description: string | null;
           status: RoleStatus;
           salary_min: number | null;
           salary_max: number | null;
           source_jd: string | null;
           source_url: string | null;
+          company_presentation: string | null;
+          job_presentation: string | null;
+          responsibilities: string | null;
+          requirements: string | null;
+          quiet_signals: string[];
+          requisition_status: RequisitionStatus;
           created_at: string;
           updated_at: string;
         };
@@ -683,12 +935,19 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;
           salary_max?: number | null;
           source_jd?: string | null;
           source_url?: string | null;
+          company_presentation?: string | null;
+          job_presentation?: string | null;
+          responsibilities?: string | null;
+          requirements?: string | null;
+          quiet_signals?: string[];
+          requisition_status?: RequisitionStatus;
         };
         Update: {
           title?: string;
@@ -697,12 +956,19 @@ export interface Database {
           employment_type?: RoleEmploymentType | null;
           work_model?: string | null;
           required_skills?: string[];
+          skill_requirements?: unknown;
           description?: string | null;
           status?: RoleStatus;
           salary_min?: number | null;
           salary_max?: number | null;
           source_jd?: string | null;
           source_url?: string | null;
+          company_presentation?: string | null;
+          job_presentation?: string | null;
+          responsibilities?: string | null;
+          requirements?: string | null;
+          quiet_signals?: string[];
+          requisition_status?: RequisitionStatus;
         };
         Relationships: [];
       };
@@ -950,6 +1216,53 @@ export interface Database {
       claim_company_invite: {
         Args: Record<string, never>;
         Returns: { company_id: string; company_name: string }[];
+      };
+      claim_role_referral: {
+        Args: { p_referral_id: string };
+        Returns: undefined;
+      };
+      claim_talent_referral: {
+        Args: { p_code: string };
+        Returns: undefined;
+      };
+      record_talent_referral_open: {
+        Args: { p_code: string; p_visitor_key: string };
+        Returns: boolean;
+      };
+      bump_talent_referral_share: {
+        Args: { p_code: string };
+        Returns: undefined;
+      };
+      bump_talent_referral_signup_started: {
+        Args: { p_code: string; p_visitor_key: string };
+        Returns: undefined;
+      };
+      mark_talent_referral_profile_completed: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      mark_talent_referral_matched: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      career_page_by_slug: {
+        Args: { p_slug: string };
+        Returns: {
+          company_name: string;
+          logo: string | null;
+          mission: string | null;
+          industry: string | null;
+          location: string | null;
+          description: string | null;
+          roles: {
+            id: string;
+            title: string;
+            department: string | null;
+            employmentType: string | null;
+            workModel: string | null;
+            requiredSkills: string[];
+          }[];
+        }[];
       };
       list_related_push_subscriptions: {
         Args: { p_user_id: string };

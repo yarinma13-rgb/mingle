@@ -6,7 +6,7 @@ const STORAGE_KEY = "mingle.pilotTips.dismissed.v1";
 
 const TIPS = [
   "Complete your profile — Discover only surfaces people with enough signal.",
-  "On Discover, Skip is pink X and Interested is blue check.",
+  "On Discover, Skip and Interested start equal — the side you swipe toward lights up.",
   "Companies: open Board to drag relationships through stages.",
   "Turn on push in Settings once VAPID keys are live.",
 ] as const;

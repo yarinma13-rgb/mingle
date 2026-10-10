@@ -5,6 +5,10 @@ import { MingleChip } from "@/components/MingleChip";
 import { IconBadge } from "@/components/dashboard/IconBadge";
 import { CompanyPipelineFunnel } from "@/components/dashboard/CompanyPipelineFunnel";
 import { CompanyPipelineDonut } from "@/components/dashboard/CompanyPipelineDonut";
+import {
+  UpcomingInterviewsCard,
+  type UpcomingInterviewRow,
+} from "@/components/dashboard/UpcomingInterviewsCard";
 import type { CompanyFunnel } from "@/lib/dashboard/funnel";
 import { Avatar } from "@/components/Avatar";
 import type { Gender } from "@/lib/profile/avatar";
@@ -16,6 +20,9 @@ import {
   CompassIcon,
   BriefcaseIcon,
   CalendarIcon,
+  TargetIcon,
+  CheckCircleIcon,
+  ClockIcon,
 } from "@/components/dashboard/icons";
 
 export type CandidateRow = {
@@ -48,16 +55,31 @@ function ownProfileMissingLogoHint(completion: number): string {
   return "Finish your company profile so talent can find you.";
 }
 
+function sparkFrom(seed: number): number[] {
+  const base = Math.max(1, seed);
+  return [base * 0.4, base * 0.5, base * 0.62, base * 0.58, base * 0.8, base];
+}
+
 export function CompanyDashboard({
   profileCompletion,
   candidates,
   accountLabel,
   funnel,
+  activeRolesCount,
+  upcomingInterviews,
+  acceptanceRate,
+  interviewsHeldCount,
+  averageTimeToHireDays,
 }: {
   profileCompletion: number;
   candidates: CandidateRow[];
   accountLabel: string;
   funnel: CompanyFunnel;
+  activeRolesCount: number;
+  upcomingInterviews: UpcomingInterviewRow[];
+  acceptanceRate: number;
+  interviewsHeldCount: number;
+  averageTimeToHireDays: number | null;
 }) {
   const avgScore = candidates.length
     ? Math.round(
@@ -93,13 +115,22 @@ export function CompanyDashboard({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <KpiTile
           icon={GaugeIcon}
           label="Profile completion"
           value={`${profileCompletion}%`}
           accent="pink"
           href="/company-profile/build"
+          sparkline={sparkFrom(profileCompletion)}
+        />
+        <KpiTile
+          icon={BriefcaseIcon}
+          label="Active roles"
+          value={String(activeRolesCount)}
+          accent="magenta"
+          href="/roles"
+          sparkline={sparkFrom(activeRolesCount)}
         />
         <KpiTile
           icon={PeopleIcon}
@@ -107,6 +138,7 @@ export function CompanyDashboard({
           value={String(candidates.length)}
           accent="purple"
           href="/discover"
+          sparkline={sparkFrom(candidates.length)}
         />
         <KpiTile
           icon={CompassIcon}
@@ -114,6 +146,7 @@ export function CompanyDashboard({
           value={String(funnel.total)}
           accent="blue"
           href="/connections"
+          sparkline={sparkFrom(funnel.total)}
         />
         <KpiTile
           icon={MessageIcon}
@@ -121,6 +154,7 @@ export function CompanyDashboard({
           value={String(funnel.counts.in_conversation)}
           accent="success"
           href="/conversations"
+          sparkline={sparkFrom(funnel.counts.in_conversation)}
         />
         <KpiTile
           icon={BriefcaseIcon}
@@ -128,6 +162,35 @@ export function CompanyDashboard({
           value={String(funnel.counts.opportunity)}
           accent="waiting"
           href="/board"
+          sparkline={sparkFrom(funnel.counts.opportunity)}
+        />
+        <KpiTile
+          icon={TargetIcon}
+          label="Connection acceptance rate"
+          value={`${acceptanceRate}%`}
+          accent="violet"
+          href="/connections"
+          sparkline={sparkFrom(acceptanceRate)}
+        />
+        <KpiTile
+          icon={CheckCircleIcon}
+          label="Interviews scheduled/completed"
+          value={String(interviewsHeldCount)}
+          accent="blue"
+          href="/interviews"
+          sparkline={sparkFrom(interviewsHeldCount)}
+        />
+        <KpiTile
+          icon={ClockIcon}
+          label="Average time to hire"
+          value={
+            averageTimeToHireDays === null
+              ? "—"
+              : `${Math.round(averageTimeToHireDays)}d`
+          }
+          accent="success"
+          href="/board"
+          sparkline={sparkFrom(averageTimeToHireDays ?? 0)}
         />
       </div>
 
@@ -170,10 +233,7 @@ export function CompanyDashboard({
                 Upcoming interviews
               </h2>
             </div>
-            <p className="mt-3 text-xs text-mingle-text-secondary">
-              No interviews scheduled yet. This fills up once you start
-              connecting with candidates.
-            </p>
+            <UpcomingInterviewsCard interviews={upcomingInterviews} />
           </div>
       </div>
 

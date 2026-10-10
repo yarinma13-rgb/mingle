@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreIcon, XIcon } from "@/components/dashboard/icons";
+import { NavPendingIndicator } from "@/components/dashboard/NavPendingIndicator";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { isNavHrefActive } from "@/lib/dashboard/nav-active";
 import { Avatar } from "@/components/Avatar";
@@ -13,6 +14,7 @@ import { SeePlansButton } from "@/components/plans/SeePlansButton";
 
 type NavItem = {
   label: string;
+  shortLabel?: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
 };
@@ -37,6 +39,7 @@ export function MobileBottomNav({
   userPhoto = null,
   userSubtitle,
   profileHref,
+  avatarShape = "circle",
 }: {
   primaryItems: NavItem[];
   moreItems: NavItem[];
@@ -46,6 +49,7 @@ export function MobileBottomNav({
   userPhoto?: string | null;
   userSubtitle: string;
   profileHref: string;
+  avatarShape?: "circle" | "soft";
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -91,6 +95,7 @@ export function MobileBottomNav({
                 initials={userInitials}
                 gender={userGender}
                 size="md"
+                shape={avatarShape}
               />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-mingle-text">
@@ -174,34 +179,39 @@ export function MobileBottomNav({
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 border-t border-mingle-border bg-mingle-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex min-h-14 items-stretch gap-x-0.5 border-t border-mingle-border bg-mingle-surface px-1.5 pb-[env(safe-area-inset-bottom)] pt-1 md:hidden"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
           const active = isNavHrefActive(pathname, item.href);
+          const tabLabel = item.shortLabel ?? item.label;
           return (
             <Link
               key={item.label}
               href={item.href}
               prefetch
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+              aria-label={item.label}
+              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
                 active ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
               }`}
             >
-              <Icon size={20} />
-              {item.label}
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <NavPendingIndicator />
+                <Icon size={20} className="relative" />
+              </span>
+              <span className="max-w-full truncate">{tabLabel}</span>
             </Link>
           );
         })}
         <button
           type="button"
           onClick={() => setMoreOpen(true)}
-          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+          className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 py-2 text-center text-[10px] font-medium leading-none tracking-tight ${
             moreActive ? "text-mingle-accent-blue" : "text-mingle-text-secondary"
           }`}
         >
           <MoreIcon size={20} />
-          More
+          <span>More</span>
         </button>
       </nav>
     </>
