@@ -20,6 +20,46 @@ export type CareerPageData = {
   roles: CareerPageRole[];
 };
 
+export type CareerPageListing = {
+  slug: string;
+};
+
+/**
+ * Companies whose career page is actually worth listing in the sitemap —
+ * has a slug (every company_profiles row gets one via the auto-slug
+ * trigger in 0039_career_pages.sql) AND at least one open role, so the
+ * sitemap never points crawlers at a thin/empty page.
+ */
+export async function listCareerPages(
+  supabase: SupabaseClient<Database>,
+): Promise<CareerPageListing[]> {
+  // company_profiles and roles both reference users(id), not each other
+  // directly, so this is two queries + an in-memory intersect rather than
+  // a single PostgREST embed (no FK for it to auto-detect between them).
+  const [{ data: profiles, error: profilesError }, { data: openRoles, error: rolesError }] =
+    await Promise.all([
+      supabase
+        .from("company_profiles")
+        .select("user_id, slug")
+        .not("slug", "is", null),
+      supabase.from("roles").select("company_id").eq("status", "open"),
+    ]);
+  if (profilesError) throw profilesError;
+  if (rolesError) throw rolesError;
+
+  const companiesWithOpenRoles = new Set((openRoles ?? []).map((r) => r.company_id));
+
+  const seen = new Set<string>();
+  const listings: CareerPageListing[] = [];
+  for (const row of profiles ?? []) {
+    if (!row.slug || seen.has(row.slug)) continue;
+    if (!companiesWithOpenRoles.has(row.user_id)) continue;
+    seen.add(row.slug);
+    listings.push({ slug: row.slug });
+  }
+  return listings;
+}
+
 export function isMissingCareerPageFunction(
   error: { message?: string; code?: string } | null,
 ) {
