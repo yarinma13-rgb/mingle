@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -7,10 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import {
-  Body,
   EmptyState,
   Field,
   LoadingBlock,
@@ -67,9 +66,11 @@ export default function ConversationScreen() {
     }
   }, [id]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   async function onSend() {
     if (!user || !conversationId || !draft.trim()) return;

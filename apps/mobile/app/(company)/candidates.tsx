@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
+import { MatchActions } from "@/src/components/MatchActions";
 import {
   Body,
   EmptyState,
@@ -15,9 +16,14 @@ import {
   Screen,
   StatusBadge,
 } from "@/src/components/ui";
-import { fetchDiscoverCandidates } from "@/src/lib/api";
+import {
+  fetchDiscoverCandidates,
+  loadMatchFeedbackMap,
+  type MatchFeedbackAction,
+} from "@/src/lib/api";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { brand, scoreTone } from "@/src/theme/tokens";
+import { scoreTone } from "@/src/theme/tokens";
 
 type Candidate = {
   user_id: string;
@@ -29,7 +35,11 @@ type Candidate = {
 };
 
 export default function CompanyCandidates() {
+  const { user } = useAuth();
   const [items, setItems] = useState<Candidate[]>([]);
+  const [feedback, setFeedback] = useState<Record<string, MatchFeedbackAction>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { colors } = useTheme();
@@ -39,19 +49,26 @@ export default function CompanyCandidates() {
     setLoading(true);
     setError(null);
     try {
-      setItems((await fetchDiscoverCandidates()) as Candidate[]);
+      const [candidates, map] = await Promise.all([
+        fetchDiscoverCandidates(),
+        user ? loadMatchFeedbackMap(user.id) : Promise.resolve({}),
+      ]);
+      setItems(candidates as Candidate[]);
+      setFeedback(map);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
       void load();
     }, [load]),
   );
+
+  const visible = items.filter((item) => feedback[item.user_id] !== "not_fit");
 
   return (
     <Screen>
@@ -68,7 +85,7 @@ export default function CompanyCandidates() {
         </View>
       ) : (
         <FlatList
-          data={items}
+          data={visible}
           keyExtractor={(item) => item.user_id}
           contentContainerStyle={{ padding: 16, gap: 12 }}
           refreshControl={
@@ -88,8 +105,7 @@ export default function CompanyCandidates() {
               [item.first_name, item.last_name].filter(Boolean).join(" ") ||
               "Talent";
             return (
-              <Pressable
-                onPress={() => router.push(`/profile/view/${item.user_id}`)}
+              <View
                 style={{
                   backgroundColor: colors.surfaceElevated,
                   borderRadius: 16,
@@ -99,82 +115,74 @@ export default function CompanyCandidates() {
                   gap: 8,
                 }}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+                <Pressable
+                  onPress={() => router.push(`/profile/view/${item.user_id}`)}
                 >
-                  <Text
+                  <View
                     style={{
-                      fontFamily: "Poppins_700Bold",
-                      fontSize: 18,
-                      color: colors.text,
-                      flex: 1,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                     }}
                   >
-                    {name}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Poppins_700Bold",
-                      fontSize: 18,
-                      color: scoreTone(score),
-                    }}
-                  >
-                    {score}%
-                  </Text>
-                </View>
-                <StatusBadge
-                  label={
-                    score >= 70
-                      ? "Strong match"
-                      : score >= 45
-                        ? "Worth a look"
-                        : "Low overlap"
-                  }
-                  tone={
-                    score >= 70
-                      ? "success"
-                      : score >= 45
-                        ? "warning"
-                        : "danger"
-                  }
+                    <Text
+                      style={{
+                        fontFamily: "Poppins_700Bold",
+                        fontSize: 18,
+                        color: colors.text,
+                        flex: 1,
+                      }}
+                    >
+                      {name}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Poppins_700Bold",
+                        fontSize: 18,
+                        color: scoreTone(score),
+                      }}
+                    >
+                      {score}%
+                    </Text>
+                  </View>
+                  <StatusBadge
+                    label={
+                      score >= 70
+                        ? "Strong match"
+                        : score >= 45
+                          ? "Worth a look"
+                          : "Low overlap"
+                    }
+                    tone={
+                      score >= 70
+                        ? "success"
+                        : score >= 45
+                          ? "warning"
+                          : "danger"
+                    }
+                  />
+                  <Body muted>
+                    {[item.current_job_title || item.headline, item.location]
+                      .filter(Boolean)
+                      .join(" · ") || "Open profile for more detail"}
+                  </Body>
+                </Pressable>
+                <MatchActions
+                  actorId={user?.id}
+                  targetUserId={item.user_id}
+                  initialAction={feedback[item.user_id] ?? null}
+                  onDone={({ action }) => {
+                    setFeedback((prev) => ({
+                      ...prev,
+                      [item.user_id]: action,
+                    }));
+                  }}
                 />
-                <Body muted>
-                  {[item.current_job_title || item.headline, item.location]
-                    .filter(Boolean)
-                    .join(" · ") || "Profile details coming soon"}
-                </Body>
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                  <Chip label="Interested" color={brand.success} />
-                  <Chip label="Not a fit" color={brand.error} />
-                </View>
-              </Pressable>
+              </View>
             );
           }}
         />
       )}
     </Screen>
-  );
-}
-
-function Chip({ label, color }: { label: string; color: string }) {
-  return (
-    <View
-      style={{
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 999,
-        backgroundColor: `${color}22`,
-      }}
-    >
-      <Text
-        style={{ fontFamily: "Poppins_600SemiBold", fontSize: 12, color }}
-      >
-        {label}
-      </Text>
-    </View>
   );
 }

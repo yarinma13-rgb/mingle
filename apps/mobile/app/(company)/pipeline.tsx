@@ -5,7 +5,6 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
@@ -16,9 +15,13 @@ import {
   Screen,
   StatusBadge,
 } from "@/src/components/ui";
-import { fetchConnections, fetchRelationshipStage } from "@/src/lib/api";
+import {
+  fetchEnrichedConnections,
+  fetchRelationshipStage,
+} from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { brand } from "@/src/theme/tokens";
 
 const STAGES = [
   "connected",
@@ -30,7 +33,9 @@ const STAGES = [
   "relationship",
 ] as const;
 
-type Row = { id: string; status: string; stage?: string };
+type Row = Awaited<ReturnType<typeof fetchEnrichedConnections>>[number] & {
+  stage?: string;
+};
 
 export default function CompanyPipeline() {
   const { user } = useAuth();
@@ -44,9 +49,9 @@ export default function CompanyPipeline() {
     if (!user) return;
     setLoading(true);
     try {
-      const connections = (await fetchConnections(user.id)).filter(
-        (c: { status: string }) => c.status === "accepted",
-      ) as Row[];
+      const connections = (await fetchEnrichedConnections(user.id)).filter(
+        (c) => c.status === "accepted",
+      );
       const withStages = await Promise.all(
         connections.map(async (c) => ({
           ...c,
@@ -65,9 +70,7 @@ export default function CompanyPipeline() {
     }, [load]),
   );
 
-  const filtered = rows.filter(
-    (r) => (r.stage || "connected") === active,
-  );
+  const filtered = rows.filter((r) => (r.stage || "connected") === active);
 
   return (
     <Screen>
@@ -75,10 +78,17 @@ export default function CompanyPipeline() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, gap: 8 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          gap: 8,
+        }}
       >
         {STAGES.map((stage) => {
           const selected = stage === active;
+          const count = rows.filter(
+            (r) => (r.stage || "connected") === stage,
+          ).length;
           return (
             <Pressable
               key={stage}
@@ -105,6 +115,7 @@ export default function CompanyPipeline() {
                 }}
               >
                 {stage.replaceAll("_", " ")}
+                {count ? ` · ${count}` : ""}
               </Text>
             </Pressable>
           );
@@ -122,7 +133,9 @@ export default function CompanyPipeline() {
           !loading ? (
             <EmptyState
               title={`No one in ${active.replaceAll("_", " ")}`}
-              body="Drop a candidate here once the relationship reaches this stage."
+              body="Candidates land here once interest becomes mutual and the relationship moves forward."
+              actionLabel="Browse candidates"
+              onAction={() => router.push("/(company)/candidates")}
             />
           ) : null
         }
@@ -142,12 +155,22 @@ export default function CompanyPipeline() {
               style={{
                 fontFamily: "Poppins_600SemiBold",
                 color: colors.text,
+                fontSize: 16,
               }}
             >
-              Relationship · {item.id.slice(0, 8)}
+              {item.name}
             </Text>
+            {item.subtitle ? <Body muted>{item.subtitle}</Body> : null}
             <StatusBadge label={item.stage || "connected"} tone="info" />
-            <Body muted>Open chat & relationship path</Body>
+            <Text
+              style={{
+                fontFamily: "Poppins_500Medium",
+                color: brand.cta,
+                fontSize: 13,
+              }}
+            >
+              Open chat & relationship path →
+            </Text>
           </Pressable>
         )}
       />

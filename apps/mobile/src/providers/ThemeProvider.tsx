@@ -28,19 +28,13 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useSystemScheme();
   const [theme, setThemeState] = useState<ThemeName>("light");
-  const [ready, setReady] = useState(false);
-
   useEffect(() => {
     let alive = true;
     (async () => {
-      try {
-        const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (!alive) return;
-        if (stored === "dark" || stored === "light") setThemeState(stored);
-        else if (system === "dark") setThemeState("dark");
-      } finally {
-        if (alive) setReady(true);
-      }
+      const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      if (!alive) return;
+      if (stored === "dark" || stored === "light") setThemeState(stored);
+      else if (system === "dark") setThemeState("dark");
     })();
     return () => {
       alive = false;
