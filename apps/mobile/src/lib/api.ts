@@ -1087,6 +1087,14 @@ export async function fetchInterviewsForViewer(
   }));
 }
 
+export async function saveMobilePushToken(userId: string, expoPushToken: string) {
+  const { error } = await supabase.from("mobile_push_tokens").upsert(
+    { user_id: userId, expo_push_token: expoPushToken },
+    { onConflict: "expo_push_token" },
+  );
+  if (error) throw error;
+}
+
 export async function saveCompanyName(userId: string, name: string) {
   const { error } = await supabase.from("company_profiles").upsert(
     {
