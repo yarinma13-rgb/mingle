@@ -16,5 +16,15 @@
       "path": "/api/cron/weekly-digest",
       "schedule": "0 8 * * 1"
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/pitch",
+      "destination": "/pitch/index.html"
+    },
+    {
+      "source": "/pitch/",
+      "destination": "/pitch/index.html"
+    }
   ]
 }
