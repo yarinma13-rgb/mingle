@@ -15,10 +15,13 @@ import { loadTalentMatchInput, loadCompanyMatchInput } from "@/lib/matching/cont
 import { computeMatch, type CompanyMatchInput } from "@/lib/matching/engine";
 import { buildMatchReport, type MatchReport } from "@/lib/matching/report";
 import { getOrCreateMatchId } from "@/lib/matching/match-anchor";
+import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
 import type { RoleRecord } from "@/lib/roles/persistence";
+import type { CandidateVisibilityStatus } from "@/lib/talent-exchange/persistence";
 
 export type AnonymousCandidateCard = {
   matchId: string;
+  candidateId: string;
   roleTitle: string | null;
   seniority: string | null;
   yearsExperience: number | null;
@@ -28,6 +31,14 @@ export type AnonymousCandidateCard = {
   workModelPreference: string[];
   skills: string[];
   report: MatchReport;
+  /**
+   * Populated only when the candidate's visibility is
+   * 'open_to_opportunities' — Mode 3 shows basic identity directly at
+   * discovery time (name/photo only, per spec section 5's "Basic Profile"
+   * vs "Private Information" split). null for 'discoverable' (Mode 2,
+   * anonymous until mutual interest) by construction, never by omission.
+   */
+  identity: { name: string; photo: string | null } | null;
 };
 
 function bandedSalaryLabel(expectation: number | null): string | null {
@@ -44,12 +55,20 @@ export async function buildAnonymousCandidateCard(
   supabase: SupabaseClient<Database>,
   candidateId: string,
   role: RoleRecord,
+  visibilityStatus: CandidateVisibilityStatus,
 ): Promise<AnonymousCandidateCard | null> {
   const [talentInput, companyInput] = await Promise.all([
     loadTalentMatchInput(supabase, candidateId),
     loadCompanyMatchInput(supabase, role.companyId),
   ]);
   if (!talentInput || !companyInput) return null;
+
+  const identity =
+    visibilityStatus === "open_to_opportunities"
+      ? await loadDisplayInfoForUsers(supabase, [candidateId]).then(
+          (info) => info.get(candidateId) ?? null,
+        )
+      : null;
 
   const scopedCompanyInput: CompanyMatchInput = {
     ...companyInput,
@@ -74,6 +93,7 @@ export async function buildAnonymousCandidateCard(
 
   return {
     matchId,
+    candidateId,
     roleTitle: profile.currentRole || profile.targetRole || null,
     seniority: profile.currentRole || null,
     yearsExperience: profile.yearsExperience,
@@ -82,6 +102,7 @@ export async function buildAnonymousCandidateCard(
     salaryRangeLabel: bandedSalaryLabel(profile.salaryExpectation),
     workModelPreference: profile.lookingFor,
     skills: profile.skills,
+    identity: identity ? { name: identity.name, photo: identity.photo } : null,
     report,
   };
 }
