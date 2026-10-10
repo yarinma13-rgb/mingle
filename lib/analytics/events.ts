@@ -86,6 +86,12 @@ export const AnalyticsEvent = {
   talentReferralCtaClicked: "talent_referral_cta_clicked",
   talentReferralProfileCompleted: "talent_referral_profile_completed",
   talentReferralMatched: "talent_referral_matched",
+
+  // Post-rejection talent exchange
+  candidateVisibilityChanged: "candidate_visibility_changed",
+  talentExchangeOpportunitiesFound: "talent_exchange_opportunities_found",
+  talentExchangeCompanyInterested: "talent_exchange_company_interested",
+  talentExchangeCandidateResponded: "talent_exchange_candidate_responded",
 } as const;
 
 export type AnalyticsEventName =
