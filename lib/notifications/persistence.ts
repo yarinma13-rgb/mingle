@@ -19,6 +19,14 @@ export type NotificationItem =
       name: string;
       preview: string;
       createdAt: string;
+    }
+  | {
+      kind: "talent_exchange_interest";
+      id: string;
+      matchId: string;
+      companyName: string;
+      roleTitle: string | null;
+      createdAt: string;
     };
 
 // Deliberately derived live from connections/messages rather than a
@@ -103,7 +111,76 @@ export async function loadNotificationSummary(
     })
     .filter((item): item is NotificationItem => item !== null);
 
-  return [...connectionItems, ...unreadItems].sort(
+  const talentExchangeItems = await loadPendingTalentExchangeNotifications(supabase, userId);
+
+  return [...connectionItems, ...unreadItems, ...talentExchangeItems].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+}
+
+/**
+ * Companies that have expressed interest in this candidate via the
+ * post-rejection talent exchange, not yet responded to. Company identity
+ * is shown here deliberately — only the CANDIDATE stays anonymous to the
+ * company before mutual interest, not the other way around (the company
+ * already identified itself by expressing interest).
+ */
+async function loadPendingTalentExchangeNotifications(
+  supabase: SupabaseClient<Database>,
+  candidateId: string,
+): Promise<NotificationItem[]> {
+  const { data: matchRows } = await supabase
+    .from("matches")
+    .select("id, company_id, role_id")
+    .eq("candidate_id", candidateId);
+  if (!matchRows || matchRows.length === 0) return [];
+
+  const matchById = new Map(matchRows.map((row) => [row.id, row]));
+  const { data: interestRows } = await supabase
+    .from("talent_exchange_interest")
+    .select("match_id, created_at")
+    .in("match_id", matchRows.map((row) => row.id))
+    .eq("company_interested", true)
+    .is("candidate_interested", null);
+  if (!interestRows || interestRows.length === 0) return [];
+
+  const companyIds = [
+    ...new Set(
+      interestRows
+        .map((row) => matchById.get(row.match_id)?.company_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const roleIds = [
+    ...new Set(
+      interestRows
+        .map((row) => matchById.get(row.match_id)?.role_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+
+  const [companyInfo, { data: roleRows }] = await Promise.all([
+    loadDisplayInfoForUsers(supabase, companyIds),
+    roleIds.length > 0
+      ? supabase.from("roles").select("id, title").in("id", roleIds)
+      : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+  ]);
+  const roleTitleById = new Map((roleRows ?? []).map((row) => [row.id, row.title]));
+
+  return interestRows
+    .map((row): NotificationItem | null => {
+      const match = matchById.get(row.match_id);
+      if (!match) return null;
+      const companyName = companyInfo.get(match.company_id)?.name;
+      if (!companyName) return null;
+      return {
+        kind: "talent_exchange_interest",
+        id: row.match_id,
+        matchId: row.match_id,
+        companyName,
+        roleTitle: match.role_id ? roleTitleById.get(match.role_id) ?? null : null,
+        createdAt: row.created_at,
+      };
+    })
+    .filter((item): item is NotificationItem => item !== null);
 }
