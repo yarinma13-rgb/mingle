@@ -7,6 +7,8 @@ import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { PushOptIn } from "@/components/push/PushOptIn";
 import { GoogleCalendarConnectCard } from "@/components/interviews/ScheduleInterviewControls";
 import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
+import { CandidateVisibilityControl } from "@/components/settings/CandidateVisibilityControl";
+import type { CandidateVisibilityStatus } from "@/lib/talent-exchange/persistence";
 import {
   LocaleGlobeButton,
   useAppLocale,
@@ -17,6 +19,8 @@ type SettingsHubProps = {
   pathLabel: string;
   profileHref: string;
   isCompany: boolean;
+  candidateId: string;
+  visibilityStatus: CandidateVisibilityStatus | null;
 };
 
 export function SettingsHub({
@@ -24,6 +28,8 @@ export function SettingsHub({
   pathLabel,
   profileHref,
   isCompany,
+  candidateId,
+  visibilityStatus,
 }: SettingsHubProps) {
   const { t, dir, locale } = useAppLocale();
   const [query, setQuery] = useState("");
@@ -93,7 +99,7 @@ export function SettingsHub({
             title: t.settings.visibility,
             body: isCompany
               ? t.settings.visibilityCompany
-              : t.settings.visibilityTalent,
+              : t.settings.visibilityModeDiscoverableBody,
           },
         ],
       },
@@ -207,6 +213,14 @@ export function SettingsHub({
             {section.id === "workspace" ? (
               <div className="border-t border-mingle-border px-5 py-5">
                 <GoogleCalendarConnectCard />
+              </div>
+            ) : null}
+            {section.id === "privacy" && !isCompany && visibilityStatus ? (
+              <div className="border-t border-mingle-border px-5 py-5">
+                <CandidateVisibilityControl
+                  candidateId={candidateId}
+                  initialStatus={visibilityStatus}
+                />
               </div>
             ) : null}
           </section>

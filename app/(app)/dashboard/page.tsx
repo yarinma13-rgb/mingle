@@ -23,6 +23,8 @@ import { personInitials } from "@/lib/profile/avatar";
 import { resolveTalentPhotoUrls } from "@/lib/profile/photo";
 import { profileCompletion } from "@/lib/profile/persistence";
 import { AccountRestoredBanner } from "@/components/settings/AccountRestoredBanner";
+import { VisibilityPromptBanner } from "@/components/talent-exchange/VisibilityPromptBanner";
+import { loadPendingVisibilityPrompt } from "@/lib/talent-exchange/persistence";
 
 export default async function DashboardPage() {
   const { supabase, user, userRow } = await requireAppUser();
@@ -210,11 +212,18 @@ export default async function DashboardPage() {
   const companies = scoredCompanies.filter(
     (row): row is CompanyRow => row !== null,
   );
+  const visibilityPrompt = await loadPendingVisibilityPrompt(supabase, user.id);
 
   return (
     <>
       <AccountRestoredBanner />
       <DashboardHeading>Dashboard</DashboardHeading>
+      {visibilityPrompt ? (
+        <VisibilityPromptBanner
+          candidateId={user.id}
+          opportunityCount={visibilityPrompt.opportunityCount}
+        />
+      ) : null}
       <TalentDashboard
         profileCompletion={liveCompletion}
         companies={companies}

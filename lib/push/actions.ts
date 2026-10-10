@@ -113,3 +113,14 @@ export async function notifyPushConnection(targetUserId: string): Promise<void> 
     url: "/connections",
   });
 }
+
+export async function notifyPushCompanyInterest(
+  targetUserId: string,
+  matchId: string,
+): Promise<void> {
+  await notifyPushToUser(targetUserId, {
+    title: "mingle",
+    body: "A company is interested in your profile.",
+    url: `/talent-exchange/${matchId}`,
+  });
+}

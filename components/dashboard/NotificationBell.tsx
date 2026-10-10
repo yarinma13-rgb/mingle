@@ -17,13 +17,18 @@ function timeAgo(iso: string): string {
 
 function itemHref(item: NotificationItem): string {
   if (item.kind === "message") return `/conversations/${item.connectionId}`;
+  if (item.kind === "talent_exchange_interest") return `/talent-exchange/${item.matchId}`;
   return `/profile/view/${item.userId}`;
 }
 
 function itemText(item: NotificationItem): string {
-  return item.kind === "message"
-    ? `${item.name}: ${item.preview}`
-    : `${item.name} wants to connect`;
+  if (item.kind === "message") return `${item.name}: ${item.preview}`;
+  if (item.kind === "talent_exchange_interest") {
+    return item.roleTitle
+      ? `${item.companyName} is interested — ${item.roleTitle}`
+      : `${item.companyName} is interested in your profile`;
+  }
+  return `${item.name} wants to connect`;
 }
 
 export function NotificationBell({ userId }: { userId: string }) {

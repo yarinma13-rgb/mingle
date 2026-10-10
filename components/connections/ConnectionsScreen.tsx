@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { acceptConnection, declineConnection } from "@/lib/connections/persistence";
+import { acceptConnection } from "@/lib/connections/persistence";
+import { declineConnectionAndCheckOpportunities } from "@/lib/talent-exchange/persistence";
 import { notifyPushConnection } from "@/lib/push/actions";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusChip } from "@/components/StatusChip";
@@ -124,7 +125,7 @@ export function ConnectionsScreen({
   const handleDecline = async (row: ConnectionDisplayRow) => {
     setBusyId(row.connectionId);
     try {
-      await declineConnection(supabase, row.connectionId);
+      await declineConnectionAndCheckOpportunities(supabase, row.connectionId);
       setIncoming((prev) => prev.filter((r) => r.connectionId !== row.connectionId));
       toast("You passed on this request for now.");
     } catch {

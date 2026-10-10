@@ -5,7 +5,10 @@ import { track } from "@/lib/analytics/track";
 import { assertConnectionSendAllowed } from "@/lib/rate-limit";
 import { markTalentReferralMatched } from "@/lib/talent-referrals/persistence";
 
-function noteReferralMatch(
+// Exported so talent-exchange/persistence.ts can run the same
+// mutual-connection side effects when a Talent Exchange match resolves to
+// mutual, instead of duplicating this logic.
+export function noteReferralMatch(
   supabase: SupabaseClient<Database>,
   userId?: string,
 ) {
@@ -26,7 +29,8 @@ export type SendConnectionResult =
   | { outcome: "already-connected" }
   | { outcome: "mutual"; connection: ConnectionRow; isFirstMingle: boolean };
 
-async function countAcceptedConnections(
+// Exported for the same reason as noteReferralMatch above.
+export async function countAcceptedConnections(
   supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<number> {
