@@ -227,24 +227,27 @@ export async function loadCompanyRoles(
  */
 export async function loadOpenRolesAcrossOtherCompanies(
   supabase: SupabaseClient<Database>,
-  excludeCompanyId: string,
+  excludeCompanyId?: string,
 ): Promise<RoleRecord[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("roles")
     .select(ROLE_LIST_COLUMNS)
-    .eq("status", "open")
-    .neq("company_id", excludeCompanyId)
-    .order("created_at", { ascending: false });
+    .eq("status", "open");
+  if (excludeCompanyId) query = query.neq("company_id", excludeCompanyId);
+  const { data, error } = await query.order("created_at", { ascending: false });
   if (error) {
     if (/company_presentation|job_presentation|responsibilities|requirements|skill_requirements|schema cache|column/i.test(error.message)) {
-      const { data: fallback, error: fallbackError } = await supabase
+      let fallbackQuery = supabase
         .from("roles")
         .select(
           "id, company_id, title, department, seniority, employment_type, work_model, required_skills, description, status, salary_min, salary_max, source_jd, source_url, created_at, updated_at",
         )
-        .eq("status", "open")
-        .neq("company_id", excludeCompanyId)
-        .order("created_at", { ascending: false });
+        .eq("status", "open");
+      if (excludeCompanyId) fallbackQuery = fallbackQuery.neq("company_id", excludeCompanyId);
+      const { data: fallback, error: fallbackError } = await fallbackQuery.order(
+        "created_at",
+        { ascending: false },
+      );
       if (fallbackError) throw fallbackError;
       return (fallback ?? []).map((row) =>
         toRecord({
