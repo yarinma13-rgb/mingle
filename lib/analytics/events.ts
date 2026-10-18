@@ -18,6 +18,7 @@ export const AnalyticsEvent = {
   landingLocaleChanged: "landing_locale_changed",
   landingSectionViewed: "landing_section_viewed",
   landingNavClicked: "landing_nav_clicked",
+  demoRequested: "demo_requested",
 
   // Welcome path picker
   welcomePathSelected: "welcome_path_selected",

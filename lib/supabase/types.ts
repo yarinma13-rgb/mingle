@@ -791,6 +791,41 @@ export interface Database {
         };
         Relationships: [];
       };
+      demo_requests: {
+        Row: {
+          id: string;
+          created_at: string;
+          first_name: string;
+          last_name: string;
+          work_email: string;
+          job_title: string | null;
+          company_name: string;
+          company_size: string;
+          explore: string;
+          message: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          referrer: string | null;
+          status: string;
+        };
+        Insert: {
+          first_name: string;
+          last_name: string;
+          work_email: string;
+          job_title?: string | null;
+          company_name: string;
+          company_size: string;
+          explore: string;
+          message?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          referrer?: string | null;
+        };
+        Update: { status?: string };
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           id: string;
