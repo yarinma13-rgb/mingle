@@ -47,39 +47,71 @@ export default function WelcomeScreen() {
               backgroundColor: colors.surface,
             }}
           >
-            <Text style={{ color: colors.text, fontWeight: "600" }}>
+            <Text style={{ color: colors.text, fontFamily: "Poppins_600SemiBold", fontSize: 13 }}>
               {theme === "dark" ? "Light" : "Dark"}
             </Text>
           </Pressable>
         </View>
 
-        <View style={{ flex: 1, justifyContent: "center", gap: 16 }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 14 }}>
           <Image
             source={mingleMark}
             alt="mingle"
             accessibilityLabel="mingle"
-            style={{ width: 88, height: 88, borderRadius: 20 }}
+            style={{ width: 112, height: 112, borderRadius: 28 }}
           />
           <Text
             style={{
-              fontSize: 34,
-              fontWeight: "800",
+              fontFamily: "Poppins_700Bold",
+              fontSize: 40,
               color: colors.text,
-              letterSpacing: -0.5,
+              letterSpacing: -1,
+              marginTop: 8,
             }}
           >
             mingle
           </Text>
           <Text
             style={{
-              fontSize: 16,
-              lineHeight: 24,
-              color: colors.textSecondary,
+              fontFamily: "Poppins_600SemiBold",
+              fontSize: 18,
+              color: brand.accentPurple,
             }}
           >
-            Career relationships — not a job board. Match on values, work style,
+            Beyond the match.
+          </Text>
+          <Text
+            style={{
+              fontFamily: "Poppins_400Regular",
+              fontSize: 15,
+              lineHeight: 23,
+              color: colors.textSecondary,
+              textAlign: "center",
+              maxWidth: 320,
+            }}
+          >
+            Career relationships, not a job board. Match on values, work style
             and ambition.
           </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 10 }}>
+            {["Values", "Work style", "Ambition"].map((label) => (
+              <View
+                key={label}
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 999,
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 13, color: colors.text }}>
+                  {label}
+                </Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={{ gap: 12 }}>
@@ -91,7 +123,7 @@ export default function WelcomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={{ paddingVertical: 14, alignItems: "center" }}
               >
-                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                <Text style={{ color: "#fff", fontFamily: "Poppins_600SemiBold", fontSize: 16 }}>
                   Get started
                 </Text>
               </LinearGradient>
@@ -109,7 +141,7 @@ export default function WelcomeScreen() {
                 backgroundColor: colors.surface,
               }}
             >
-              <Text style={{ color: brand.cta, fontWeight: "700", fontSize: 16 }}>
+              <Text style={{ color: brand.cta, fontFamily: "Poppins_600SemiBold", fontSize: 16 }}>
                 I already have an account
               </Text>
             </Pressable>
