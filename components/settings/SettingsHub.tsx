@@ -99,7 +99,7 @@ export function SettingsHub({
             title: t.settings.visibility,
             body: isCompany
               ? t.settings.visibilityCompany
-              : t.settings.visibilityModeDiscoverableBody,
+              : t.settings.visibilityTalentIntro,
           },
         ],
       },

@@ -82,6 +82,7 @@ export type AppMessages = {
     visibilityModePrivateBody: string;
     visibilityModeDiscoverable: string;
     visibilityModeDiscoverableBody: string;
+    visibilityTalentIntro: string;
     visibilityModeOpen: string;
     visibilityModeOpenBody: string;
     visibilitySaved: string;
@@ -202,6 +203,7 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
         "Coming soon — your company profile is visible to talent on mingle today.",
       visibilityModePrivate: "Private",
       visibilityModePrivateBody: "Only you can discover opportunities.",
+      visibilityTalentIntro: "Choose who can discover you after a role doesn't work out.",
       visibilityModeDiscoverable: "Discoverable",
       visibilityModeDiscoverableBody:
         "Companies can discover an anonymous version of your profile.",
@@ -329,6 +331,7 @@ export const APP_MESSAGES: Record<AppLocale, AppMessages> = {
         "בקרוב — כרגע פרופיל החברה גלוי לטאלנט ב־mingle.",
       visibilityModePrivate: "פרטי",
       visibilityModePrivateBody: "רק אתם יכולים לגלות הזדמנויות.",
+      visibilityTalentIntro: "בחרו מי יכול לגלות אתכם אחרי שתפקיד לא מסתדר.",
       visibilityModeDiscoverable: "ניתן לגילוי",
       visibilityModeDiscoverableBody:
         "חברות יכולות לגלות גרסה אנונימית של הפרופיל שלכם.",
