@@ -7,12 +7,19 @@ export type AcquisitionBreakdownRow = {
   count: number;
 };
 
+export type CampaignBreakdownRow = {
+  campaign: string;
+  signups: number;
+  onboarded: number;
+};
+
 export type GrowthDashboardData = {
   snapshot: FunnelSnapshot;
   activationRate: number;
   referralSignups: number;
   returningUsers: number;
   acquisitionBreakdown: AcquisitionBreakdownRow[];
+  campaignBreakdown: CampaignBreakdownRow[];
 };
 
 const ALL_CHANNELS: (AcquisitionChannel | "unknown")[] = [
@@ -39,6 +46,7 @@ export async function loadGrowthDashboardData(
       referralSignups: 0,
       returningUsers: 0,
       acquisitionBreakdown: [],
+      campaignBreakdown: [],
     };
   }
 
@@ -83,11 +91,37 @@ export async function loadGrowthDashboardData(
     }),
   ).filter((row) => row.count > 0);
 
+  // Separate query: if migration 0049 isn't applied yet this errors alone and
+  // the channel breakdown above is unaffected.
+  const { data: campaignRows } = await admin
+    .from("users")
+    .select("acquisition_campaign, onboarding_status")
+    .not("acquisition_campaign", "is", null)
+    .gte("created_at", snapshot.start)
+    .lt("created_at", snapshot.end);
+
+  const campaigns = new Map<string, CampaignBreakdownRow>();
+  for (const row of campaignRows ?? []) {
+    if (!row.acquisition_campaign) continue;
+    const entry = campaigns.get(row.acquisition_campaign) ?? {
+      campaign: row.acquisition_campaign,
+      signups: 0,
+      onboarded: 0,
+    };
+    entry.signups += 1;
+    if (row.onboarding_status === "completed") entry.onboarded += 1;
+    campaigns.set(row.acquisition_campaign, entry);
+  }
+  const campaignBreakdown = [...campaigns.values()].sort(
+    (a, b) => b.signups - a.signups,
+  );
+
   return {
     snapshot,
     activationRate,
     referralSignups: referralSignups ?? 0,
     returningUsers: returningUsers ?? 0,
     acquisitionBreakdown,
+    campaignBreakdown,
   };
 }
