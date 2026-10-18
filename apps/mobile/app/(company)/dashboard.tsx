@@ -160,7 +160,7 @@ export default function CompanyDashboard() {
             onPress={() => router.push("/(company)/candidates")}
             style={{
               marginTop: 14,
-              backgroundColor: brand.cta,
+              backgroundColor: colors.primary,
               borderRadius: 999,
               paddingVertical: 12,
               alignItems: "center",

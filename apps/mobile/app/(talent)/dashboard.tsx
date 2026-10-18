@@ -139,7 +139,7 @@ export default function TalentDashboard() {
             onPress={() => router.push("/(talent)/discover")}
             style={{
               marginTop: 14,
-              backgroundColor: brand.cta,
+              backgroundColor: colors.primary,
               borderRadius: 999,
               paddingVertical: 12,
               alignItems: "center",

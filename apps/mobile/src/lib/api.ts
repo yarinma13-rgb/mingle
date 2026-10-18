@@ -363,7 +363,7 @@ export async function fetchDiscoverCompaniesWithScores(
     loadOwnTalentMatchInput(viewerId),
   ]);
   if (!ownInput || companies.length === 0) {
-    return companies.map((row) => ({ ...row, score: 50 }));
+    return companies.map((row) => ({ ...row, score: 50, reasons: [] as string[] }));
   }
   const prefMap = await loadCompanyPreferencesMap(
     companies.map((row) => row.user_id),
@@ -381,8 +381,13 @@ export async function fetchDiscoverCompaniesWithScores(
       connectingAbout: pref?.connectingAbout ?? "",
       culturePriorities: pref?.culturePriorities ?? [],
     };
-    const { score } = computeMatch(ownInput, companyInput);
-    return { ...row, score };
+    const { score, factors } = computeMatch(ownInput, companyInput);
+    const reasons = factors
+      .filter((factor) => factor.verdict === "aligned")
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 3)
+      .map((factor) => factor.label);
+    return { ...row, score, reasons };
   });
 }
 

@@ -36,6 +36,12 @@ export type ThemeColors = {
   navActive: string;
   navIdle: string;
   navDivider: string;
+  /** Navy app-bar / hero surface from the approved mockups (both themes). */
+  header: string;
+  headerText: string;
+  /** Solid primary action colour (mockups: deep navy light, indigo dark). */
+  primary: string;
+  onPrimary: string;
 };
 
 export const themes: Record<ThemeName, ThemeColors> = {
@@ -53,6 +59,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     navActive: "#323338",
     navIdle: "#676879",
     navDivider: "#E6E9EF",
+    header: "#161C2C",
+    headerText: "#FFFFFF",
+    primary: "#0B0F6E",
+    onPrimary: "#FFFFFF",
   },
   dark: {
     background: "#0F1420",
@@ -68,6 +78,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     navActive: "#F3F5F9",
     navIdle: "#9AA3B5",
     navDivider: "rgba(255,255,255,0.10)",
+    header: "#161C2C",
+    headerText: "#FFFFFF",
+    primary: "#4043CD",
+    onPrimary: "#FFFFFF",
   },
 };
 

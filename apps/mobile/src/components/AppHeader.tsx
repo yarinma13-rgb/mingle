@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { ThemeToggle } from "@/src/components/ui";
 
 export function AppHeader({
   title,
@@ -14,47 +14,55 @@ export function AppHeader({
   right?: React.ReactNode;
 }) {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   return (
     <View
       style={{
-        paddingTop: insets.top + 8,
+        paddingTop: insets.top + 10,
         paddingHorizontal: 16,
-        paddingBottom: 12,
-        backgroundColor: colors.productBg,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.navDivider,
+        paddingBottom: 14,
+        backgroundColor: colors.header,
         flexDirection: "row",
         alignItems: "center",
         gap: 12,
       }}
     >
       {showBack ? (
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text
-            style={{
-              fontFamily: "Poppins_600SemiBold",
-              fontSize: 16,
-              color: colors.text,
-            }}
-          >
-            ←
-          </Text>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.headerText} />
         </Pressable>
       ) : null}
       <Text
         style={{
           flex: 1,
-          fontFamily: "Poppins_700Bold",
-          fontSize: 18,
-          color: colors.text,
+          fontFamily: "Poppins_600SemiBold",
+          fontSize: 20,
+          color: colors.headerText,
         }}
       >
         {title}
       </Text>
-      {right ?? <ThemeToggle />}
+      {right ?? (
+        <Pressable
+          onPress={toggleTheme}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle theme"
+        >
+          <Ionicons
+            name={theme === "dark" ? "sunny-outline" : "moon-outline"}
+            size={22}
+            color={colors.headerText}
+          />
+        </Pressable>
+      )}
     </View>
   );
 }

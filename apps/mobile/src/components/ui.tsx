@@ -8,9 +8,8 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { brand } from "@/src/theme/tokens";
+import { brand, scoreTone } from "@/src/theme/tokens";
 
 export function Screen({
   children,
@@ -163,31 +162,6 @@ export function Button({
     </Text>
   );
 
-  if (isPrimary) {
-    return (
-      <Pressable
-        onPress={onPress}
-        disabled={disabled || loading}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        style={({ pressed }) => ({
-          opacity: disabled ? 0.5 : pressed ? 0.9 : 1,
-          borderRadius: 999,
-          overflow: "hidden",
-        })}
-      >
-        <LinearGradient
-          colors={[brand.accentPink, brand.accentPurple, brand.accentBlue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.btn}
-        >
-          {content}
-        </LinearGradient>
-      </Pressable>
-    );
-  }
-
   return (
     <Pressable
       onPress={onPress}
@@ -196,16 +170,18 @@ export function Button({
       accessibilityLabel={label}
       style={({ pressed }) => ({
         opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
-        borderRadius: 999,
-        paddingVertical: 14,
+        borderRadius: 14,
+        paddingVertical: 15,
         paddingHorizontal: 20,
         alignItems: "center",
-        backgroundColor: isDanger
-          ? brand.error
-          : isGhost
-            ? "transparent"
-            : colors.surface,
-        borderWidth: isGhost ? 0 : StyleSheet.hairlineWidth,
+        backgroundColor: isPrimary
+          ? colors.primary
+          : isDanger
+            ? brand.error
+            : isGhost
+              ? "transparent"
+              : colors.surface,
+        borderWidth: isGhost || isPrimary ? 0 : StyleSheet.hairlineWidth,
         borderColor: colors.border,
       })}
     >
@@ -383,13 +359,37 @@ export function ThemeToggle() {
   );
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-});
+/** Circular match indicator from the Discover mockups: tone-coloured ring
+ *  with the percentage centred. (Full progress arc would need SVG; a solid
+ *  ring keeps this dependency-free.) */
+export function ScoreRing({ score, size = 52 }: { score: number; size?: number }) {
+  const { colors } = useTheme();
+  const tone = scoreTone(score);
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        borderWidth: 4,
+        borderColor: tone,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.surfaceElevated,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "Poppins_700Bold",
+          fontSize: size * 0.27,
+          color: colors.text,
+        }}
+      >
+        {score}%
+      </Text>
+    </View>
+  );
+}
 
 /** Alias used by screens */
 

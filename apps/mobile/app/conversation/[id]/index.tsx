@@ -9,12 +9,12 @@ import {
 } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
+import { RelationshipStepper } from "@/src/components/RelationshipStepper";
 import {
   EmptyState,
   Field,
   LoadingBlock,
   Screen,
-  StatusBadge,
 } from "@/src/components/ui";
 import {
   ensureConversation,
@@ -27,7 +27,6 @@ import {
 } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { brand } from "@/src/theme/tokens";
 
 export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -117,6 +116,9 @@ export default function ConversationScreen() {
   return (
     <Screen>
       <AppHeader title="Conversation" showBack />
+      <View style={{ paddingHorizontal: 16, paddingTop: 14 }}>
+        <RelationshipStepper stage={stage} />
+      </View>
       <View
         style={{
           paddingHorizontal: 16,
@@ -158,7 +160,6 @@ export default function ConversationScreen() {
             </Pressable>
           ),
         )}
-        <StatusBadge label={stage.replaceAll("_", " ")} tone="info" />
       </View>
 
       {loading ? <LoadingBlock /> : null}
@@ -196,7 +197,7 @@ export default function ConversationScreen() {
                   style={{
                     alignSelf: mine ? "flex-end" : "flex-start",
                     maxWidth: "80%",
-                    backgroundColor: mine ? brand.cta : colors.surfaceElevated,
+                    backgroundColor: mine ? colors.primary : colors.surfaceElevated,
                     borderRadius: 16,
                     paddingHorizontal: 12,
                     paddingVertical: 10,
@@ -236,7 +237,7 @@ export default function ConversationScreen() {
               onPress={onSend}
               disabled={sending || !draft.trim()}
               style={{
-                backgroundColor: brand.cta,
+                backgroundColor: colors.primary,
                 borderRadius: 999,
                 paddingHorizontal: 16,
                 paddingVertical: 12,

@@ -14,6 +14,7 @@ import {
 } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { brand } from "@/src/theme/tokens";
 
 const CHOICES: {
   choice: DecisionChoice;
@@ -47,6 +48,15 @@ const CHOICES: {
     confirmed: "You're staying connected, at your own pace.",
   },
 ];
+
+// Left-edge accent per choice, echoing the Decision mockup (primary action
+// strongest, "not a fit" softest) without changing the non-binary wording.
+const DECISION_ACCENT: Record<DecisionChoice, string> = {
+  move_forward: brand.accentViolet,
+  keep_relationship: brand.accentBlue,
+  stay_connected: brand.accentPurple,
+  not_right_fit: "#FBB5A4",
+};
 
 export default function ConversationDecisionTab() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -166,9 +176,11 @@ export default function ConversationDecisionTab() {
               disabled={saving}
               style={({ pressed }) => ({
                 backgroundColor: colors.surfaceElevated,
-                borderRadius: 16,
+                borderRadius: 14,
                 borderWidth: 1,
+                borderLeftWidth: 4,
                 borderColor: colors.border,
+                borderLeftColor: DECISION_ACCENT[option.choice],
                 padding: 16,
                 gap: 4,
                 opacity: saving ? 0.6 : pressed ? 0.85 : 1,

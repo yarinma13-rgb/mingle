@@ -32,7 +32,7 @@ export default function CompanyTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: brand.cta,
+        tabBarActiveTintColor: brand.accentViolet,
         tabBarInactiveTintColor: colors.navIdle,
         tabBarStyle: {
           backgroundColor: colors.surface,
