@@ -78,7 +78,7 @@ export default async function TalentExchangeMatchPage({
         companyName={companyName}
         roleTitle={roleRow?.title ?? null}
         report={report}
-        alreadyResponded={interest.candidate_interested !== null}
+        alreadyResponded={interest.status !== "pending"}
         status={interest.status}
       />
     </>
