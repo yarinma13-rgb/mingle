@@ -1129,3 +1129,96 @@ export async function createRole(input: {
   if (error) throw error;
   return data;
 }
+
+// --- "Fit" step: drives / work style (talent) and values / environment
+// (company). These four columns feed 38%+ of the match score, so they get
+// their own chip-based screen instead of free-text. ---
+
+export type FitKind = "talent" | "company";
+
+export type FitDraft = {
+  primary: string[];
+  secondary: string[];
+  /** 0–100, share of the core profile fields that are filled in. */
+  completeness: number;
+};
+
+export async function loadFit(userId: string, kind: FitKind): Promise<FitDraft> {
+  if (kind === "talent") {
+    const { data, error } = await supabase
+      .from("talent_profiles")
+      .select(
+        "first_name, headline, location, current_job_title, industry, skills, beyond_cv, drives, work_style",
+      )
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw error;
+    const filled = [
+      data?.first_name,
+      data?.headline,
+      data?.location,
+      data?.current_job_title,
+      data?.industry,
+      data?.beyond_cv,
+      (data?.skills ?? []).length > 0,
+      (data?.drives ?? []).length > 0,
+      (data?.work_style ?? []).length > 0,
+    ].filter(Boolean).length;
+    return {
+      primary: data?.drives ?? [],
+      secondary: data?.work_style ?? [],
+      completeness: Math.round((filled / 9) * 100),
+    };
+  }
+  const { data, error } = await supabase
+    .from("company_profiles")
+    .select(
+      "company_name, industry, location, mission, description, company_stage, company_size, values, work_environment",
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  const filled = [
+    data?.company_name,
+    data?.industry,
+    data?.location,
+    data?.mission,
+    data?.description,
+    data?.company_stage,
+    data?.company_size,
+    (data?.values ?? []).length > 0,
+    (data?.work_environment ?? []).length > 0,
+  ].filter(Boolean).length;
+  return {
+    primary: data?.values ?? [],
+    secondary: data?.work_environment ?? [],
+    completeness: Math.round((filled / 9) * 100),
+  };
+}
+
+export async function saveFit(
+  userId: string,
+  kind: FitKind,
+  primary: string[],
+  secondary: string[],
+) {
+  const { error } =
+    kind === "talent"
+      ? await supabase
+          .from("talent_profiles")
+          .upsert(
+            { user_id: userId, drives: primary, work_style: secondary },
+            { onConflict: "user_id" },
+          )
+      : await supabase.from("company_profiles").upsert(
+          {
+            user_id: userId,
+            values: primary,
+            // Same as web: company values also fill looking_for.
+            looking_for: primary,
+            work_environment: secondary,
+          },
+          { onConflict: "user_id" },
+        );
+  if (error) throw error;
+}

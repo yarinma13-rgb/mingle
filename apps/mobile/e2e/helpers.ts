@@ -53,13 +53,21 @@ export async function signIn(page: Page, email: string) {
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 
+/** Onboarding now lands on the chip-based "fit" screen; the golden path
+ *  skips it (it's optional) and continues to the dashboard. */
+async function skipFitStep(page: Page) {
+  await page.waitForURL(/\/fit/, { timeout: 30_000 });
+  await page.getByRole("button", { name: "Skip for now" }).click();
+  await page.waitForURL(/\/discover|\/candidates|\/dashboard/, { timeout: 30_000 });
+}
+
 export async function completeTalentOnboarding(page: Page) {
   await expect(page.getByText("What are you aiming for?")).toBeVisible({
     timeout: 30_000,
   });
   await page.getByLabel("Career goal").fill("Lead product design at a growth-stage startup");
   await page.getByRole("button", { name: "Continue to mingle" }).click();
-  await page.waitForURL(/\/\(talent\)\/dashboard|\/dashboard/, { timeout: 30_000 });
+  await skipFitStep(page);
 }
 
 export async function completeCompanyOnboarding(page: Page, companyName: string) {
@@ -68,7 +76,7 @@ export async function completeCompanyOnboarding(page: Page, companyName: string)
   });
   await page.getByLabel("Company name").fill(companyName);
   await page.getByRole("button", { name: "Continue to mingle" }).click();
-  await page.waitForURL(/\/\(company\)\/dashboard|\/dashboard/, { timeout: 30_000 });
+  await skipFitStep(page);
 }
 
 export async function completeTalentProfile(

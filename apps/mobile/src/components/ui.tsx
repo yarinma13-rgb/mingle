@@ -362,9 +362,17 @@ export function ThemeToggle() {
 /** Circular match indicator from the Discover mockups: tone-coloured ring
  *  with the percentage centred. (Full progress arc would need SVG; a solid
  *  ring keeps this dependency-free.) */
-export function ScoreRing({ score, size = 52 }: { score: number; size?: number }) {
+export function ScoreRing({
+  score,
+  size = 52,
+  color,
+}: {
+  score: number;
+  size?: number;
+  color?: string;
+}) {
   const { colors } = useTheme();
-  const tone = scoreTone(score);
+  const tone = color ?? scoreTone(score);
   return (
     <View
       style={{
@@ -394,3 +402,54 @@ export function ScoreRing({ score, size = 52 }: { score: number; size?: number }
 /** Alias used by screens */
 
 
+
+/** Multi-select chips (mockups: "What drives you?" / "How I work"). */
+export function ChipPicker({
+  options,
+  selected,
+  onChange,
+  max,
+}: {
+  options: string[];
+  selected: string[];
+  onChange: (next: string[]) => void;
+  max?: number;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+      {options.map((option) => {
+        const on = selected.includes(option);
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            onPress={() => {
+              if (on) onChange(selected.filter((s) => s !== option));
+              else if (!max || selected.length < max) onChange([...selected, option]);
+            }}
+            style={{
+              paddingHorizontal: 14,
+              paddingVertical: 9,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: on ? colors.primary : colors.border,
+              backgroundColor: on ? colors.primary : colors.surfaceElevated,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Poppins_500Medium",
+                fontSize: 13,
+                color: on ? colors.onPrimary : colors.text,
+              }}
+            >
+              {option}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}

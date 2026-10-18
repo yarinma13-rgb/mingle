@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { Button, Field, Screen, Subtitle, Title } from "@/src/components/ui";
 import { completeOnboarding, saveCompanyName } from "@/src/lib/api";
@@ -19,7 +19,7 @@ export default function OnboardingCompany() {
       await saveCompanyName(user.id, company);
       await completeOnboarding(user.id);
       await refreshProfile();
-      router.replace("/(company)/dashboard");
+      router.replace("/company-profile/fit" as Href);
     } catch (e) {
       Alert.alert(
         "Could not finish onboarding",

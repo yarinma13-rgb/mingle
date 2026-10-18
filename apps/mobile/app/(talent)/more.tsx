@@ -1,11 +1,12 @@
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { Body, Screen, ThemeToggle } from "@/src/components/ui";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
 
 const LINKS = [
+  { label: "Your fit", href: "/profile/fit" },
   { label: "My profile", href: "/profile/build" },
   { label: "Saved", href: "/saved" },
   { label: "Interviews", href: "/interviews" },
@@ -28,7 +29,7 @@ export default function TalentMore() {
         {LINKS.map((link) => (
           <Pressable
             key={link.href}
-            onPress={() => router.push(link.href)}
+            onPress={() => router.push(link.href as Href)}
             style={{
               backgroundColor: colors.surfaceElevated,
               borderRadius: 12,
