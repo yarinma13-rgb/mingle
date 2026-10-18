@@ -43,6 +43,7 @@ export interface Database {
           deletion_scheduled_for: string | null;
           acquisition_channel: string | null;
           acquisition_source_raw: string | null;
+          acquisition_campaign: string | null;
         };
         Insert: {
           id: string;
@@ -55,6 +56,7 @@ export interface Database {
           deletion_scheduled_for?: string | null;
           acquisition_channel?: string | null;
           acquisition_source_raw?: string | null;
+          acquisition_campaign?: string | null;
         };
         Update: {
           user_type?: UserType;
@@ -66,6 +68,7 @@ export interface Database {
           deletion_scheduled_for?: string | null;
           acquisition_channel?: string | null;
           acquisition_source_raw?: string | null;
+          acquisition_campaign?: string | null;
         };
         Relationships: [];
       };

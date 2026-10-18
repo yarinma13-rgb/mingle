@@ -92,6 +92,14 @@ export function IdentifySession() {
                 acquisition_source_raw: raw,
               })
               .eq("id", user.id);
+            if (attribution?.utmCampaign) {
+              // Separate statement: if migration 0049 isn't applied yet this
+              // fails alone and can't take down the channel write above.
+              await supabase
+                .from("users")
+                .update({ acquisition_campaign: attribution.utmCampaign })
+                .eq("id", user.id);
+            }
           }
         }
 

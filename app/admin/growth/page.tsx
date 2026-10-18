@@ -25,6 +25,10 @@ const CHANNEL_LABELS: Record<string, string> = {
   unknown: "Unknown (before this shipped)",
 };
 
+function pct(part: number, whole: number): string {
+  return whole > 0 ? `${Math.round((part / whole) * 100)}%` : "—";
+}
+
 export default async function AdminGrowthPage() {
   await requireAdmin();
   const data = await loadGrowthDashboardData(14);
@@ -97,6 +101,34 @@ export default async function AdminGrowthPage() {
         />
       </div>
 
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <KpiTile
+          icon={CheckCircleIcon}
+          label="Signup → onboarding"
+          value={pct(snapshot.current.onboardingComplete, snapshot.current.signups)}
+          accent="success"
+          href="/admin/growth"
+        />
+        <KpiTile
+          icon={TargetIcon}
+          label="Connection → match"
+          value={pct(snapshot.current.minglesCreated, snapshot.current.connectionsSent)}
+          accent="violet"
+          href="/admin/growth"
+        />
+        <KpiTile
+          icon={ClockIcon}
+          label="Messages per match"
+          value={
+            snapshot.current.minglesCreated > 0
+              ? (snapshot.current.messagesSent / snapshot.current.minglesCreated).toFixed(1)
+              : "—"
+          }
+          accent="blue"
+          href="/admin/growth"
+        />
+      </div>
+
       <div className="rounded-2xl border border-mingle-border bg-mingle-white p-5">
         <h2 className="font-display text-sm font-semibold text-mingle-text">
           Acquisition source
@@ -120,6 +152,35 @@ export default async function AdminGrowthPage() {
                 </span>
                 <span className="font-display font-semibold text-mingle-text">
                   {row.count}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="rounded-2xl border border-mingle-border bg-mingle-white p-5">
+        <h2 className="font-display text-sm font-semibold text-mingle-text">
+          Campaigns
+        </h2>
+        <p className="mt-0.5 text-xs text-mingle-text-secondary">
+          Signups and onboarding completions by utm_campaign. Tracked from
+          signups after this shipped; earlier users and untagged traffic are
+          not listed.
+        </p>
+        {data.campaignBreakdown.length === 0 ? (
+          <p className="mt-3 text-sm text-mingle-text-secondary">
+            No tagged campaign signups in this window.
+          </p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-2">
+            {data.campaignBreakdown.map((row) => (
+              <li
+                key={row.campaign}
+                className="flex items-center justify-between gap-3 rounded-lg border border-mingle-border px-3 py-2 text-sm"
+              >
+                <span className="break-all text-mingle-text">{row.campaign}</span>
+                <span className="shrink-0 font-display font-semibold text-mingle-text">
+                  {row.signups} signups · {row.onboarded} onboarded
                 </span>
               </li>
             ))}
