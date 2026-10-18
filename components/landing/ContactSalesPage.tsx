@@ -3,6 +3,9 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { MingleLogo } from "@/components/MingleLogo";
+import { submitDemoRequest } from "@/app/contact/actions";
+import { AnalyticsEvent } from "@/lib/analytics/events";
+import { getFirstTouchAttribution, track } from "@/lib/analytics/track";
 
 const COMPANY_SIZES = [
   "1–19",
@@ -30,6 +33,7 @@ type FormState = {
   companySize: string;
   explore: string;
   message: string;
+  website: string;
 };
 
 const EMPTY: FormState = {
@@ -41,12 +45,14 @@ const EMPTY: FormState = {
   companySize: "",
   explore: "",
   message: "",
+  website: "",
 };
 
 export function ContactSalesPage() {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -54,10 +60,32 @@ export function ContactSalesPage() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    setSubmitting(false);
-    setSubmitted(true);
+    try {
+      const attribution = await getFirstTouchAttribution();
+      const result = await submitDemoRequest({
+        ...form,
+        utmSource: attribution?.utmSource,
+        utmMedium: attribution?.utmMedium,
+        utmCampaign: attribution?.utmCampaign,
+        referrer: attribution?.referrer,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      track(AnalyticsEvent.demoRequested, {
+        company_size: form.companySize,
+        explore: form.explore,
+        has_message: form.message.trim().length > 0,
+      });
+      setSubmitted(true);
+    } catch {
+      setError("We couldn't send your request. Please try again in a moment.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -235,6 +263,28 @@ export function ContactSalesPage() {
                     onChange={(e) => update("message", e.target.value)}
                   />
                 </label>
+
+                <div
+                  aria-hidden="true"
+                  style={{ position: "absolute", left: "-9999px", height: 0, overflow: "hidden" }}
+                >
+                  <label>
+                    <span>Website</span>
+                    <input
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.website}
+                      onChange={(e) => update("website", e.target.value)}
+                    />
+                  </label>
+                </div>
+
+                {error ? (
+                  <p role="alert" className="contact-legal">
+                    {error}
+                  </p>
+                ) : null}
 
                 <button
                   type="submit"
