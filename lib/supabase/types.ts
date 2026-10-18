@@ -633,6 +633,63 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      candidate_visibility: {
+        Row: {
+          candidate_id: string;
+          status: "private" | "discoverable" | "open_to_opportunities";
+          updated_at: string;
+        };
+        Insert: {
+          candidate_id: string;
+          status?: "private" | "discoverable" | "open_to_opportunities";
+        };
+        Update: {
+          status?: "private" | "discoverable" | "open_to_opportunities";
+        };
+        Relationships: [];
+      };
+      visibility_audit_log: {
+        Row: {
+          id: string;
+          candidate_id: string;
+          previous_status: string | null;
+          new_status: string;
+          source: "post_rejection_flow" | "privacy_settings";
+          consent_version: string;
+          created_at: string;
+        };
+        Insert: {
+          candidate_id: string;
+          previous_status?: string | null;
+          new_status: string;
+          source: "post_rejection_flow" | "privacy_settings";
+          consent_version?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      talent_exchange_interest: {
+        Row: {
+          match_id: string;
+          company_interested: boolean;
+          candidate_interested: boolean | null;
+          status: "pending" | "mutual" | "candidate_declined";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          match_id: string;
+          company_interested?: boolean;
+          candidate_interested?: boolean | null;
+          status?: "pending" | "mutual" | "candidate_declined";
+        };
+        Update: {
+          company_interested?: boolean;
+          candidate_interested?: boolean | null;
+          status?: "pending" | "mutual" | "candidate_declined";
+        };
+        Relationships: [];
+      };
       model_versions: {
         Row: {
           id: string;
