@@ -215,35 +215,68 @@ async function resolveTalentExchangeMutual(
   candidateId: string,
   companyId: string,
 ): Promise<boolean> {
+  // The candidate is the acting session here, and connections RLS only lets
+  // you insert a row where YOU are the requester — so the candidate is the
+  // requester, not the company. Reuses an existing row for the pair (either
+  // direction) instead of inserting a second, same as sendOrAcceptConnection.
+  const { data: existing, error: lookupError } = await supabase
+    .from("connections")
+    .select("id, status")
+    .or(
+      `and(requester_id.eq.${candidateId},recipient_id.eq.${companyId}),and(requester_id.eq.${companyId},recipient_id.eq.${candidateId})`,
+    )
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+
+  let connectionId: string;
+  let alreadyAccepted = false;
+  if (existing) {
+    connectionId = existing.id;
+    alreadyAccepted = existing.status === "accepted";
+    if (!alreadyAccepted) {
+      const { error: updateError } = await supabase
+        .from("connections")
+        .update({ status: "accepted" })
+        .eq("id", existing.id);
+      if (updateError) throw updateError;
+    }
+  } else {
+    const { data: created, error: insertError } = await supabase
+      .from("connections")
+      .insert({
+        requester_id: candidateId,
+        recipient_id: companyId,
+        status: "accepted",
+      })
+      .select("id")
+      .single();
+    if (insertError) throw insertError;
+    connectionId = created.id;
+  }
+
+  // Only after the connection exists: a failure above leaves the interest
+  // row 'pending' so the candidate can simply retry, instead of a "mutual"
+  // status with no connection behind it.
   const { error: statusError } = await supabase
     .from("talent_exchange_interest")
     .update({ status: "mutual" })
     .eq("match_id", matchId);
   if (statusError) throw statusError;
 
-  const { data: connection, error: connectionError } = await supabase
-    .from("connections")
-    .insert({
-      requester_id: companyId,
-      recipient_id: candidateId,
-      status: "accepted",
-    })
-    .select("id")
-    .single();
-  if (connectionError) throw connectionError;
-
   const acceptedCount = await countAcceptedConnections(supabase, candidateId);
   const isFirstMingle = acceptedCount <= 1;
-  track(
-    AnalyticsEvent.mingleCreated,
-    {
-      connection_id: connection.id,
-      is_first_match: isFirstMingle,
-      source: "talent_exchange",
-    },
-    candidateId,
-  );
-  noteReferralMatch(supabase, candidateId);
+  if (!alreadyAccepted) {
+    track(
+      AnalyticsEvent.mingleCreated,
+      {
+        connection_id: connectionId,
+        is_first_match: isFirstMingle,
+        source: "talent_exchange",
+      },
+      candidateId,
+    );
+    noteReferralMatch(supabase, candidateId);
+  }
 
   return isFirstMingle;
 }
