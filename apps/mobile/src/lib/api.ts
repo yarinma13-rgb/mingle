@@ -1222,3 +1222,232 @@ export async function saveFit(
         );
   if (error) throw error;
 }
+
+// --- Relationship extras (migration 0048): questions, experience
+// timeline, feedback, post-hire check-ins. All scoped to one connection. ---
+
+export type ConnectionQuestion = {
+  id: string;
+  connection_id: string;
+  asker_id: string;
+  question: string;
+  answer: string | null;
+  answered_by: string | null;
+  answered_at: string | null;
+  created_at: string;
+};
+
+export async function fetchConnectionQuestions(
+  connectionId: string,
+): Promise<ConnectionQuestion[]> {
+  const { data, error } = await supabase
+    .from("connection_questions")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ConnectionQuestion[];
+}
+
+export async function askConnectionQuestion(
+  connectionId: string,
+  askerId: string,
+  question: string,
+) {
+  const { error } = await supabase.from("connection_questions").insert({
+    connection_id: connectionId,
+    asker_id: askerId,
+    question: question.trim(),
+  });
+  if (error) throw error;
+}
+
+export async function answerConnectionQuestion(
+  questionId: string,
+  answererId: string,
+  answer: string,
+) {
+  const { error } = await supabase
+    .from("connection_questions")
+    .update({
+      answer: answer.trim(),
+      answered_by: answererId,
+      answered_at: new Date().toISOString(),
+    })
+    .eq("id", questionId);
+  if (error) throw error;
+}
+
+export type ExperienceKind =
+  | "meet_manager"
+  | "team_session"
+  | "role_simulation"
+  | "ask_anything"
+  | "custom";
+
+export type ConnectionExperience = {
+  id: string;
+  connection_id: string;
+  kind: ExperienceKind;
+  title: string;
+  position: number;
+  done: boolean;
+  created_by: string;
+};
+
+export async function fetchConnectionExperiences(
+  connectionId: string,
+): Promise<ConnectionExperience[]> {
+  const { data, error } = await supabase
+    .from("connection_experiences")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ConnectionExperience[];
+}
+
+export async function addConnectionExperience(
+  connectionId: string,
+  userId: string,
+  kind: ExperienceKind,
+  title: string,
+  position: number,
+) {
+  const { error } = await supabase.from("connection_experiences").insert({
+    connection_id: connectionId,
+    created_by: userId,
+    kind,
+    title: title.trim(),
+    position,
+  });
+  if (error) throw error;
+}
+
+export async function setConnectionExperienceDone(id: string, done: boolean) {
+  const { error } = await supabase
+    .from("connection_experiences")
+    .update({ done })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteConnectionExperience(id: string) {
+  const { error } = await supabase
+    .from("connection_experiences")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
+/** Swaps two steps' positions (move up / move down). */
+export async function swapConnectionExperiences(
+  a: ConnectionExperience,
+  b: ConnectionExperience,
+) {
+  const [first, second] = await Promise.all([
+    supabase
+      .from("connection_experiences")
+      .update({ position: b.position })
+      .eq("id", a.id),
+    supabase
+      .from("connection_experiences")
+      .update({ position: a.position })
+      .eq("id", b.id),
+  ]);
+  if (first.error) throw first.error;
+  if (second.error) throw second.error;
+}
+
+export type ConnectionFeedback = {
+  id: string;
+  connection_id: string;
+  author_id: string;
+  experience_id: string | null;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
+export async function fetchConnectionFeedback(
+  connectionId: string,
+): Promise<ConnectionFeedback[]> {
+  const { data, error } = await supabase
+    .from("connection_feedback")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ConnectionFeedback[];
+}
+
+export async function giveConnectionFeedback(input: {
+  connectionId: string;
+  authorId: string;
+  experienceId: string | null;
+  rating: number;
+  comment: string;
+}) {
+  const { error } = await supabase.from("connection_feedback").insert({
+    connection_id: input.connectionId,
+    author_id: input.authorId,
+    experience_id: input.experienceId,
+    rating: input.rating,
+    comment: input.comment.trim() || null,
+  });
+  if (error) throw error;
+}
+
+export type PostHireCheckin = {
+  id: string;
+  connection_id: string;
+  author_id: string;
+  day_mark: 30 | 60 | 90;
+  expectations_rating: number;
+  relationship_rating: number;
+  note: string | null;
+  created_at: string;
+};
+
+export async function fetchPostHireCheckins(
+  connectionId: string,
+): Promise<PostHireCheckin[]> {
+  const { data, error } = await supabase
+    .from("post_hire_checkins")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("day_mark", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as PostHireCheckin[];
+}
+
+export async function addPostHireCheckin(input: {
+  connectionId: string;
+  authorId: string;
+  dayMark: 30 | 60 | 90;
+  expectations: number;
+  relationship: number;
+  note: string;
+}) {
+  const { error } = await supabase.from("post_hire_checkins").insert({
+    connection_id: input.connectionId,
+    author_id: input.authorId,
+    day_mark: input.dayMark,
+    expectations_rating: input.expectations,
+    relationship_rating: input.relationship,
+    note: input.note.trim() || null,
+  });
+  if (error) throw error;
+}
+
+/** Share of the maximum rating across every check-in rating, as a whole
+ *  percent. Null when nobody has checked in yet — never a made-up number. */
+export function alignmentScore(checkins: PostHireCheckin[]): number | null {
+  if (checkins.length === 0) return null;
+  const total = checkins.reduce(
+    (sum, c) => sum + c.expectations_rating + c.relationship_rating,
+    0,
+  );
+  return Math.round((total / (checkins.length * 10)) * 100);
+}

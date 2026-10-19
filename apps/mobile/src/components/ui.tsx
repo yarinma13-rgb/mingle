@@ -8,6 +8,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { brand, scoreTone } from "@/src/theme/tokens";
 
@@ -448,6 +449,44 @@ export function ChipPicker({
               {option}
             </Text>
           </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** 1–5 star input (mockups: "How did it feel?"). Read-only when no onChange. */
+export function StarRating({
+  value,
+  onChange,
+  size = 28,
+}: {
+  value: number;
+  onChange?: (next: number) => void;
+  size?: number;
+}) {
+  return (
+    <View style={{ flexDirection: "row", gap: 6 }}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const star = (
+          <Ionicons
+            name={n <= value ? "star" : "star-outline"}
+            size={size}
+            color={brand.accentPink}
+          />
+        );
+        return onChange ? (
+          <Pressable
+            key={n}
+            onPress={() => onChange(n)}
+            accessibilityRole="button"
+            accessibilityLabel={`${n} star${n === 1 ? "" : "s"}`}
+            hitSlop={4}
+          >
+            {star}
+          </Pressable>
+        ) : (
+          <View key={n}>{star}</View>
         );
       })}
     </View>

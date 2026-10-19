@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { RelationshipStepper } from "@/src/components/RelationshipStepper";
 import {
@@ -128,14 +128,14 @@ export default function ConversationScreen() {
           flexWrap: "wrap",
         }}
       >
-        {(["chat", "explore", "opportunity", "decision"] as const).map(
+        {(["chat", "explore", "opportunity", "decision", "questions", "experience", "feedback", "check-in"] as const).map(
           (tab) => (
             <Pressable
               key={tab}
               onPress={() =>
                 tab === "chat"
                   ? undefined
-                  : router.push(`/conversation/${id}/${tab}`)
+                  : router.push(`/conversation/${id}/${tab}` as Href)
               }
               style={{
                 paddingHorizontal: 12,
