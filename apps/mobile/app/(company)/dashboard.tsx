@@ -6,6 +6,7 @@ import {
   Body,
   Card,
   EmptyState,
+  KpiTile,
   LoadingBlock,
   Screen,
   StatusBadge,
@@ -65,7 +66,7 @@ export default function CompanyDashboard() {
           <Body muted>Company profile</Body>
           <Text
             style={{
-              fontFamily: "Poppins_700Bold",
+              fontFamily: "Figtree_700Bold",
               fontSize: 32,
               color: scoreTone(completion),
               marginTop: 4,
@@ -86,7 +87,7 @@ export default function CompanyDashboard() {
             onPress={() => router.push("/company-profile/build")}
             style={{ marginTop: 12 }}
           >
-            <Text style={{ fontFamily: "Poppins_600SemiBold", color: brand.cta }}>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", color: brand.cta }}>
               Edit company profile →
             </Text>
           </Pressable>
@@ -96,59 +97,34 @@ export default function CompanyDashboard() {
           <LoadingBlock />
         ) : (
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {[
-              {
-                label: "Connections",
-                value: stats.connections,
-                href: "/(company)/conversations",
-              },
-              {
-                label: "Chats",
-                value: stats.conversations,
-                href: "/(company)/conversations",
-              },
-              { label: "Saved", value: stats.saved, href: "/saved" },
-            ].map((kpi) => (
-              <Pressable
-                key={kpi.label}
-                onPress={() => router.push(kpi.href as never)}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.border,
-                  borderWidth: 1,
-                  borderRadius: 16,
-                  padding: 14,
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: "Poppins_700Bold",
-                    fontSize: 22,
-                    color: colors.text,
-                  }}
-                >
-                  {kpi.value}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "Poppins_400Regular",
-                    fontSize: 11,
-                    color: colors.textMuted,
-                    marginTop: 4,
-                  }}
-                >
-                  {kpi.label}
-                </Text>
-              </Pressable>
-            ))}
+            <KpiTile
+              label="Connections"
+              value={stats.connections}
+              icon="people"
+              tint={brand.purple}
+              onPress={() => router.push("/(company)/conversations")}
+            />
+            <KpiTile
+              label="Chats"
+              value={stats.conversations}
+              icon="chatbubble"
+              tint={brand.pink}
+              onPress={() => router.push("/(company)/conversations")}
+            />
+            <KpiTile
+              label="Saved"
+              value={stats.saved}
+              icon="bookmark"
+              tint={brand.blue}
+              onPress={() => router.push("/saved")}
+            />
           </View>
         )}
 
         <Card>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               fontSize: 16,
               color: colors.text,
             }}
@@ -161,12 +137,12 @@ export default function CompanyDashboard() {
             style={{
               marginTop: 14,
               backgroundColor: colors.primary,
-              borderRadius: 999,
-              paddingVertical: 12,
+              borderRadius: 12,
+              paddingVertical: 13,
               alignItems: "center",
             }}
           >
-            <Text style={{ fontFamily: "Poppins_600SemiBold", color: "#fff" }}>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", color: "#fff" }}>
               Open Candidates
             </Text>
           </Pressable>

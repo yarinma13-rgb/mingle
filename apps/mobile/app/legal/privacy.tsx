@@ -102,7 +102,7 @@ export default function PrivacyScreen() {
             {section.heading ? (
               <Text
                 style={{
-                  fontFamily: "Poppins_700Bold",
+                  fontFamily: "Figtree_700Bold",
                   fontSize: 16,
                   color: colors.text,
                 }}

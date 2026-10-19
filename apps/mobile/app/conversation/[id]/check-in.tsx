@@ -103,7 +103,7 @@ export default function ConversationCheckIn() {
             ) : (
               <>
                 <ScoreRing score={score} size={110} color={brand.accentViolet} />
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.text }}>
+                <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 14, color: colors.text }}>
                   Alignment score
                 </Text>
                 <Body muted>From {checkins.length} check-in{checkins.length === 1 ? "" : "s"} across both sides.</Body>
@@ -130,7 +130,7 @@ export default function ConversationCheckIn() {
                       opacity: done ? 0.45 : 1,
                     }}
                   >
-                    <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: on && !done ? colors.onPrimary : colors.text }}>
+                    <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: on && !done ? colors.onPrimary : colors.text }}>
                       {m} days{done ? " ✓" : ""}
                     </Text>
                   </Pressable>
@@ -141,11 +141,11 @@ export default function ConversationCheckIn() {
               <Body muted>You've completed all three check-ins. Thank you.</Body>
             ) : (
               <>
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>
+                <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>
                   Did reality match expectations?
                 </Text>
                 <StarRating value={expectations} onChange={setExpectations} />
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>
+                <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>
                   How is the relationship going?
                 </Text>
                 <StarRating value={relationship} onChange={setRelationship} />
@@ -162,7 +162,7 @@ export default function ConversationCheckIn() {
 
           {checkins.map((c) => (
             <Card key={c.id} style={{ gap: 6 }}>
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>
+              <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>
                 {c.day_mark} days · {c.author_id === user?.id ? "You" : "Them"}
               </Text>
               <StarRating value={Math.round((c.expectations_rating + c.relationship_rating) / 2)} size={14} />

@@ -96,18 +96,18 @@ export default function TeamScreen() {
         {loading && members.length === 0 ? <LoadingBlock /> : null}
 
         <Card style={{ gap: 12 }}>
-          <Text style={{ fontFamily: "Poppins_700Bold", fontSize: 15, color: colors.text }}>
+          <Text style={{ fontFamily: "Figtree_700Bold", fontSize: 15, color: colors.text }}>
             Members
           </Text>
           <View>
-            <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.text }}>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 14, color: colors.text }}>
               {profile?.email}
             </Text>
             <Body muted>You · Account holder</Body>
           </View>
           {members.map((member) => (
             <View key={member.id}>
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.text }}>
+              <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 14, color: colors.text }}>
                 {member.email}
               </Text>
               <Body muted>

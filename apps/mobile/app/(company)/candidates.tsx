@@ -129,7 +129,7 @@ export default function CompanyCandidates() {
                   >
                     <Text
                       style={{
-                        fontFamily: "Poppins_700Bold",
+                        fontFamily: "Figtree_700Bold",
                         fontSize: 18,
                         color: colors.text,
                         flex: 1,
@@ -139,7 +139,7 @@ export default function CompanyCandidates() {
                     </Text>
                     <Text
                       style={{
-                        fontFamily: "Poppins_700Bold",
+                        fontFamily: "Figtree_700Bold",
                         fontSize: 18,
                         color: scoreTone(score),
                       }}

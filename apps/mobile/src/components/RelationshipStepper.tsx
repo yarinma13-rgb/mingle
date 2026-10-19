@@ -66,7 +66,7 @@ export function RelationshipStepper({ stage }: { stage: string }) {
             </View>
             <Text
               style={{
-                fontFamily: done ? "Poppins_600SemiBold" : "Poppins_400Regular",
+                fontFamily: done ? "Figtree_600SemiBold" : "Figtree_400Regular",
                 fontSize: 11,
                 color: done ? colors.text : colors.textMuted,
               }}

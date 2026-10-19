@@ -40,7 +40,7 @@ export default function TalentMore() {
           >
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: colors.text,
               }}
             >
@@ -65,7 +65,7 @@ export default function TalentMore() {
         >
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               color: colors.textSecondary,
             }}
           >

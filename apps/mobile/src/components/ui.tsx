@@ -44,6 +44,12 @@ export function Card({
           borderWidth: StyleSheet.hairlineWidth,
           borderRadius: 16,
           padding: 16,
+          // web: --mingle-shadow 0 8px 30px rgba(28,27,46,.06)
+          shadowColor: "#1C1B2E",
+          shadowOpacity: 0.06,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 6 },
+          elevation: 2,
         },
         style,
       ]}
@@ -58,7 +64,7 @@ export function Title({ children }: { children: React.ReactNode }) {
   return (
     <Text
       style={{
-        fontFamily: "Poppins_700Bold",
+        fontFamily: "Figtree_700Bold",
         fontSize: 28,
         color: colors.text,
         letterSpacing: -0.5,
@@ -74,7 +80,7 @@ export function Subtitle({ children }: { children: React.ReactNode }) {
   return (
     <Text
       style={{
-        fontFamily: "Poppins_400Regular",
+        fontFamily: "Figtree_400Regular",
         fontSize: 15,
         lineHeight: 22,
         color: colors.textSecondary,
@@ -97,7 +103,7 @@ export function Body({
   return (
     <Text
       style={{
-        fontFamily: "Poppins_400Regular",
+        fontFamily: "Figtree_400Regular",
         fontSize: 14,
         lineHeight: 20,
         color: muted ? colors.textMuted : colors.text,
@@ -113,7 +119,7 @@ export function Label({ children }: { children: React.ReactNode }) {
   return (
     <Text
       style={{
-        fontFamily: "Poppins_600SemiBold",
+        fontFamily: "Figtree_600SemiBold",
         fontSize: 12,
         letterSpacing: 0.4,
         textTransform: "uppercase",
@@ -149,7 +155,7 @@ export function Button({
   ) : (
     <Text
       style={{
-        fontFamily: "Poppins_600SemiBold",
+        fontFamily: "Figtree_600SemiBold",
         fontSize: 15,
         color:
           isPrimary || isDanger
@@ -171,8 +177,8 @@ export function Button({
       accessibilityLabel={label}
       style={({ pressed }) => ({
         opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
-        borderRadius: 14,
-        paddingVertical: 15,
+        borderRadius: 12,
+        paddingVertical: 14,
         paddingHorizontal: 20,
         alignItems: "center",
         backgroundColor: isPrimary
@@ -203,7 +209,7 @@ export function Field(props: TextInputProps & { label?: string }) {
         {...rest}
         style={[
           {
-            fontFamily: "Poppins_400Regular",
+            fontFamily: "Figtree_400Regular",
             fontSize: 16,
             color: colors.text,
             backgroundColor: colors.surface,
@@ -236,7 +242,7 @@ export function EmptyState({
     <Card style={{ alignItems: "center", gap: 8, paddingVertical: 28 }}>
       <Text
         style={{
-          fontFamily: "Poppins_700Bold",
+          fontFamily: "Figtree_700Bold",
           fontSize: 18,
           color: colors.text,
           textAlign: "center",
@@ -246,7 +252,7 @@ export function EmptyState({
       </Text>
       <Text
         style={{
-          fontFamily: "Poppins_400Regular",
+          fontFamily: "Figtree_400Regular",
           fontSize: 14,
           lineHeight: 20,
           color: colors.textSecondary,
@@ -303,7 +309,7 @@ export function StatusBadge({
       />
       <Text
         style={{
-          fontFamily: "Poppins_500Medium",
+          fontFamily: "Figtree_500Medium",
           fontSize: 12,
           color: colors.text,
         }}
@@ -322,7 +328,7 @@ export function LoadingBlock() {
       <Text
         style={{
           marginTop: 12,
-          fontFamily: "Poppins_400Regular",
+          fontFamily: "Figtree_400Regular",
           color: colors.textMuted,
         }}
       >
@@ -349,7 +355,7 @@ export function ThemeToggle() {
     >
       <Text
         style={{
-          fontFamily: "Poppins_500Medium",
+          fontFamily: "Figtree_500Medium",
           fontSize: 12,
           color: colors.text,
         }}
@@ -389,7 +395,7 @@ export function ScoreRing({
     >
       <Text
         style={{
-          fontFamily: "Poppins_700Bold",
+          fontFamily: "Figtree_700Bold",
           fontSize: size * 0.27,
           color: colors.text,
         }}
@@ -441,7 +447,7 @@ export function ChipPicker({
           >
             <Text
               style={{
-                fontFamily: "Poppins_500Medium",
+                fontFamily: "Figtree_500Medium",
                 fontSize: 13,
                 color: on ? colors.onPrimary : colors.text,
               }}
@@ -490,5 +496,63 @@ export function StarRating({
         );
       })}
     </View>
+  );
+}
+
+/** Dashboard stat card: coloured icon tile + big number + label, like the
+ *  KPI row on the web dashboard. */
+export function KpiTile({
+  label,
+  value,
+  icon,
+  tint,
+  onPress,
+}: {
+  label: string;
+  value: number;
+  icon: keyof typeof Ionicons.glyphMap;
+  tint: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      style={{
+        flex: 1,
+        backgroundColor: colors.surfaceElevated,
+        borderColor: colors.border,
+        borderWidth: StyleSheet.hairlineWidth,
+        borderRadius: 16,
+        padding: 14,
+        gap: 8,
+        shadowColor: "#1C1B2E",
+        shadowOpacity: 0.06,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 2,
+      }}
+    >
+      <View
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          backgroundColor: tint,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Ionicons name={icon} size={18} color="#FFFFFF" />
+      </View>
+      <Text style={{ fontFamily: "Figtree_700Bold", fontSize: 24, color: colors.text }}>
+        {value}
+      </Text>
+      <Text style={{ fontFamily: "Figtree_400Regular", fontSize: 12, color: colors.textMuted }}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }

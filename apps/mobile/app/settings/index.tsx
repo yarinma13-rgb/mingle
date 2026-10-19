@@ -75,7 +75,7 @@ export default function SettingsScreen() {
           <Body muted>Signed in as</Body>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               color: colors.text,
               marginTop: 6,
             }}
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
             <View style={{ flex: 1, paddingRight: 12 }}>
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   color: colors.text,
                 }}
               >
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
           <View>
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: colors.text,
               }}
             >
@@ -133,7 +133,7 @@ export default function SettingsScreen() {
         <Card>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               color: colors.text,
               marginBottom: 8,
             }}
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
         <Pressable onPress={() => router.push("/settings/support")}>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               color: brand.cta,
             }}
           >

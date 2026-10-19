@@ -24,6 +24,8 @@ export function AppHeader({
         paddingHorizontal: 16,
         paddingBottom: 14,
         backgroundColor: colors.header,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.navDivider,
         flexDirection: "row",
         alignItems: "center",
         gap: 12,
@@ -42,7 +44,7 @@ export function AppHeader({
       <Text
         style={{
           flex: 1,
-          fontFamily: "Poppins_600SemiBold",
+          fontFamily: "Figtree_600SemiBold",
           fontSize: 20,
           color: colors.headerText,
         }}

@@ -149,7 +149,7 @@ export default function ConversationScreen() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_500Medium",
+                  fontFamily: "Figtree_500Medium",
                   fontSize: 12,
                   color: colors.text,
                   textTransform: "capitalize",
@@ -205,7 +205,7 @@ export default function ConversationScreen() {
                 >
                   <Text
                     style={{
-                      fontFamily: "Poppins_400Regular",
+                      fontFamily: "Figtree_400Regular",
                       color: mine ? "#fff" : colors.text,
                     }}
                   >
@@ -247,7 +247,7 @@ export default function ConversationScreen() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   color: "#fff",
                 }}
               >

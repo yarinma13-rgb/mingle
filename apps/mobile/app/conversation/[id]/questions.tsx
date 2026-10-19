@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { brand } from "@/src/theme/tokens";
 
 // Prompts from the "Ask us anything" mockup.
 const SUGGESTIONS = [
@@ -108,14 +109,14 @@ export default function ConversationQuestions() {
                 <Card key={item.id} style={{ gap: 10 }}>
                   <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
                     <Ionicons name="help-circle" size={20} color={colors.textMuted} />
-                    <Text style={{ flex: 1, fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.text }}>
+                    <Text style={{ flex: 1, fontFamily: "Figtree_600SemiBold", fontSize: 14, color: colors.text }}>
                       {item.question}
                     </Text>
                   </View>
                   {item.answer ? (
                     <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
-                      <Ionicons name="chatbubble-ellipses" size={18} color="#7B2FF7" />
-                      <Text style={{ flex: 1, fontFamily: "Poppins_400Regular", fontSize: 14, color: colors.text }}>
+                      <Ionicons name="chatbubble-ellipses" size={18} color={brand.purple} />
+                      <Text style={{ flex: 1, fontFamily: "Figtree_400Regular", fontSize: 14, color: colors.text }}>
                         {item.answer}
                       </Text>
                     </View>
@@ -137,7 +138,7 @@ export default function ConversationQuestions() {
             })}
 
             <Card style={{ gap: 10 }}>
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>
+              <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>
                 Ask a question
               </Text>
               <View style={{ gap: 8 }}>
@@ -154,7 +155,7 @@ export default function ConversationQuestions() {
                       backgroundColor: colors.lavender,
                     }}
                   >
-                    <Text style={{ flex: 1, fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.text }}>
+                    <Text style={{ flex: 1, fontFamily: "Figtree_400Regular", fontSize: 13, color: colors.text }}>
                       {s}
                     </Text>
                     <Ionicons name="chatbubble-outline" size={16} color={colors.textMuted} />

@@ -11,9 +11,9 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { colors, toggleTheme, theme } = useTheme();
   const dark = theme === "dark";
-  const bg = dark ? colors.header : "#FFFFFF";
-  const fg = dark ? "#FFFFFF" : colors.text;
-  const sub = dark ? "rgba(255,255,255,0.72)" : colors.textSecondary;
+  const bg = colors.background;
+  const fg = colors.text;
+  const sub = colors.textSecondary;
 
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
@@ -49,7 +49,7 @@ export default function WelcomeScreen() {
           />
           <Text
             style={{
-              fontFamily: "Poppins_700Bold",
+              fontFamily: "Figtree_700Bold",
               fontSize: 42,
               color: fg,
               letterSpacing: -1,
@@ -60,16 +60,16 @@ export default function WelcomeScreen() {
           </Text>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               fontSize: 17,
-              color: dark ? "#B79CFF" : "#7B2FF7",
+              color: colors.navActive,
             }}
           >
             Beyond the match.
           </Text>
           <Text
             style={{
-              fontFamily: "Poppins_400Regular",
+              fontFamily: "Figtree_400Regular",
               fontSize: 14,
               color: sub,
               textAlign: "center",
@@ -85,13 +85,13 @@ export default function WelcomeScreen() {
             <Pressable
               accessibilityRole="button"
               style={{
-                borderRadius: 14,
-                paddingVertical: 16,
+                borderRadius: 12,
+                paddingVertical: 15,
                 alignItems: "center",
                 backgroundColor: colors.primary,
               }}
             >
-              <Text style={{ color: "#fff", fontFamily: "Poppins_600SemiBold", fontSize: 16 }}>
+              <Text style={{ color: "#fff", fontFamily: "Figtree_600SemiBold", fontSize: 16 }}>
                 Get started
               </Text>
             </Pressable>
@@ -104,8 +104,8 @@ export default function WelcomeScreen() {
             >
               <Text
                 style={{
-                  color: dark ? "#FFFFFF" : colors.primary,
-                  fontFamily: "Poppins_600SemiBold",
+                  color: colors.primary,
+                  fontFamily: "Figtree_600SemiBold",
                   fontSize: 15,
                 }}
               >

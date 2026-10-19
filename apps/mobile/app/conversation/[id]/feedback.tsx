@@ -81,7 +81,7 @@ export default function ConversationFeedback() {
           </View>
 
           <Card style={{ gap: 12 }}>
-            <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>About</Text>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>About</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {[{ id: null as string | null, title: "Overall" }, ...steps].map((option) => {
                 const on = target === option.id;
@@ -96,7 +96,7 @@ export default function ConversationFeedback() {
                       backgroundColor: on ? colors.primary : colors.lavender,
                     }}
                   >
-                    <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 12, color: on ? colors.onPrimary : colors.text }}>
+                    <Text style={{ fontFamily: "Figtree_500Medium", fontSize: 12, color: on ? colors.onPrimary : colors.text }}>
                       {option.title}
                     </Text>
                   </Pressable>
@@ -115,14 +115,14 @@ export default function ConversationFeedback() {
           </Card>
 
           {feedback.length > 0 ? (
-            <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text, marginTop: 4 }}>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text, marginTop: 4 }}>
               So far
             </Text>
           ) : null}
           {feedback.map((item) => (
             <Card key={item.id} style={{ gap: 6 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>
+                <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>
                   {titleFor(item.experience_id)} · {item.author_id === user?.id ? "You" : "Them"}
                 </Text>
                 <StarRating value={item.rating} size={14} />

@@ -97,17 +97,17 @@ export function MatchActions({
           end={{ x: 1, y: 1 }}
           style={{ borderRadius: 14, padding: 14, gap: 2 }}
         >
-          <Text style={{ fontFamily: "Poppins_700Bold", fontSize: 16, color: "#fff" }}>
+          <Text style={{ fontFamily: "Figtree_700Bold", fontSize: 16, color: "#fff" }}>
             It&apos;s a MINGLE!
           </Text>
-          <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: "#fff" }}>
+          <Text style={{ fontFamily: "Figtree_400Regular", fontSize: 13, color: "#fff" }}>
             You both showed interest.
           </Text>
         </LinearGradient>
       ) : note ? (
         <Text
           style={{
-            fontFamily: "Poppins_400Regular",
+            fontFamily: "Figtree_400Regular",
             fontSize: 12,
             color: brand.cta,
           }}
@@ -146,7 +146,7 @@ function ActionChip({
     >
       <Text
         style={{
-          fontFamily: "Poppins_600SemiBold",
+          fontFamily: "Figtree_600SemiBold",
           fontSize: 12,
           color: active ? "#fff" : color,
         }}

@@ -1,11 +1,11 @@
 import { Stack } from "expo-router";
 import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
   useFonts,
-} from "@expo-google-fonts/poppins";
+} from "@expo-google-fonts/figtree";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -16,10 +16,10 @@ export { ErrorBoundary } from "expo-router";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
   });
   if (!fontsLoaded) return null;
   return (

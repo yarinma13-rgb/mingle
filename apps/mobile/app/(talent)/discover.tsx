@@ -127,7 +127,7 @@ export default function TalentDiscover() {
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text
                       style={{
-                        fontFamily: "Poppins_700Bold",
+                        fontFamily: "Figtree_700Bold",
                         fontSize: 18,
                         color: colors.text,
                       }}
@@ -136,7 +136,7 @@ export default function TalentDiscover() {
                     </Text>
                     <Text
                       style={{
-                        fontFamily: "Poppins_600SemiBold",
+                        fontFamily: "Figtree_600SemiBold",
                         fontSize: 11,
                         letterSpacing: 0.6,
                         color: colors.textMuted,
@@ -155,7 +155,7 @@ export default function TalentDiscover() {
                   <View style={{ gap: 6, marginTop: 4 }}>
                     <Text
                       style={{
-                        fontFamily: "Poppins_600SemiBold",
+                        fontFamily: "Figtree_600SemiBold",
                         fontSize: 13,
                         color: colors.text,
                       }}

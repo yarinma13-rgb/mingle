@@ -103,7 +103,7 @@ export default function RolesScreen() {
         <Pressable onPress={() => router.push("/roles/paste")}>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               color: brand.cta,
               marginTop: 4,
             }}
@@ -152,7 +152,7 @@ export default function RolesScreen() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   color: colors.text,
                   fontSize: 16,
                 }}

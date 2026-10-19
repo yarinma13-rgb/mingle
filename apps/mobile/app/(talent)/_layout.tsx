@@ -16,7 +16,7 @@ function TabLabel({
   return (
     <Text
       style={{
-        fontFamily: focused ? "Poppins_600SemiBold" : "Poppins_400Regular",
+        fontFamily: focused ? "Figtree_600SemiBold" : "Figtree_400Regular",
         fontSize: 11,
         color: String(color),
       }}
@@ -32,7 +32,7 @@ export default function TalentTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: brand.accentViolet,
+        tabBarActiveTintColor: colors.navActive,
         tabBarInactiveTintColor: colors.navIdle,
         tabBarStyle: {
           backgroundColor: colors.surface,

@@ -134,7 +134,7 @@ export default function ConversationExploreTab() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   fontSize: 15,
                   color: colors.text,
                 }}

@@ -15,7 +15,7 @@ export default function SupportScreen() {
           <Pressable onPress={() => void Linking.openURL("mailto:hello@mingle.careers")}>
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: brand.cta,
                 marginTop: 6,
               }}

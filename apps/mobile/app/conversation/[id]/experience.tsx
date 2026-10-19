@@ -108,7 +108,7 @@ export default function ConversationExperience() {
               <Text
                 style={{
                   flex: 1,
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   fontSize: 14,
                   color: colors.text,
                   textDecorationLine: item.done ? "line-through" : "none",
@@ -147,7 +147,7 @@ export default function ConversationExperience() {
           ))}
 
           <Card style={{ gap: 10 }}>
-            <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}>Add a step</Text>
+            <Text style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}>Add a step</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {PRESETS.map((preset) => (
                 <Pressable
@@ -168,7 +168,7 @@ export default function ConversationExperience() {
                   }}
                 >
                   <Ionicons name={preset.icon} size={14} color={colors.text} />
-                  <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 12, color: colors.text }}>
+                  <Text style={{ fontFamily: "Figtree_500Medium", fontSize: 12, color: colors.text }}>
                     {preset.title}
                   </Text>
                 </Pressable>

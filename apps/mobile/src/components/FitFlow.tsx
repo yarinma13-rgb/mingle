@@ -139,13 +139,13 @@ export function FitFlow({ kind }: { kind: FitKind }) {
           ].map((group) => (
             <Card key={group.label} style={{ alignSelf: "stretch", gap: 10 }}>
               <Text
-                style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.text }}
+                style={{ fontFamily: "Figtree_600SemiBold", fontSize: 13, color: colors.text }}
               >
                 {group.label}
               </Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                 {group.items.length === 0 ? (
-                  <Text style={{ fontFamily: "Poppins_400Regular", color: colors.textMuted }}>
+                  <Text style={{ fontFamily: "Figtree_400Regular", color: colors.textMuted }}>
                     Nothing picked yet
                   </Text>
                 ) : (
@@ -165,7 +165,7 @@ export function FitFlow({ kind }: { kind: FitKind }) {
                       <Ionicons name="checkmark-circle" size={14} color={brand.success} />
                       <Text
                         style={{
-                          fontFamily: "Poppins_500Medium",
+                          fontFamily: "Figtree_500Medium",
                           fontSize: 12,
                           color: colors.text,
                         }}

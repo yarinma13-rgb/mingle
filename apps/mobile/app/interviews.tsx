@@ -85,7 +85,7 @@ export default function InterviewsScreen() {
         <View style={{ gap: 12 }}>
           {items.map((interview) => (
             <Card key={interview.id} style={{ gap: 6 }}>
-              <Text style={{ fontFamily: "Poppins_700Bold", fontSize: 15 }}>
+              <Text style={{ fontFamily: "Figtree_700Bold", fontSize: 15 }}>
                 {interview.otherName}
               </Text>
               <Body muted>

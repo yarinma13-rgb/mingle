@@ -94,7 +94,7 @@ export default function TermsScreen() {
           <View key={section.heading} style={{ gap: 8 }}>
             <Text
               style={{
-                fontFamily: "Poppins_700Bold",
+                fontFamily: "Figtree_700Bold",
                 fontSize: 16,
                 color: colors.text,
               }}

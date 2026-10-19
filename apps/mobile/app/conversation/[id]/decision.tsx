@@ -55,7 +55,7 @@ const DECISION_ACCENT: Record<DecisionChoice, string> = {
   move_forward: brand.accentViolet,
   keep_relationship: brand.accentBlue,
   stay_connected: brand.accentPurple,
-  not_right_fit: "#FBB5A4",
+  not_right_fit: brand.error,
 };
 
 export default function ConversationDecisionTab() {
@@ -146,7 +146,7 @@ export default function ConversationDecisionTab() {
           <Card style={{ alignItems: "center", gap: 6, paddingVertical: 24 }}>
             <Text
               style={{
-                fontFamily: "Poppins_700Bold",
+                fontFamily: "Figtree_700Bold",
                 fontSize: 16,
                 color: colors.text,
               }}
@@ -188,7 +188,7 @@ export default function ConversationDecisionTab() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   fontSize: 15,
                   color: colors.text,
                 }}
