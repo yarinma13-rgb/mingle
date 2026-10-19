@@ -1,4 +1,5 @@
 import { posthogHost, posthogKey } from "@/lib/monitoring/env";
+import { resolveConsent, subscribeConsent } from "@/lib/analytics/consent";
 import type { AnalyticsEventName } from "@/lib/analytics/events";
 
 type EventProps = Record<string, string | number | boolean | null | undefined>;
@@ -35,6 +36,8 @@ async function capture(
 
   try {
     if (typeof window !== "undefined") {
+      await initPosthogBrowser();
+      if (!posthogStarted) return;
       const posthog = (await import("posthog-js")).default;
       posthog.capture(event, props);
       return;
@@ -56,31 +59,58 @@ async function capture(
 /**
  * Browser bootstrap. Enables pageviews, autocapture, heatmaps,
  * and masked session recording when the PostHog project allows it.
+ *
+ * PostHog only starts once the visitor's consent state is "granted" (see
+ * lib/analytics/consent.ts): immediately outside the EU/EEA/UK/CH, after an
+ * explicit Accept inside them. Events fired before that are dropped, not queued.
  */
-let browserInitialized = false;
+let posthogStarted = false;
+let initPromise: Promise<void> | null = null;
 
-export async function initPosthogBrowser(): Promise<void> {
-  const key = posthogKey();
-  if (!key || typeof window === "undefined" || browserInitialized) return;
-  try {
-    const posthog = (await import("posthog-js")).default;
-    browserInitialized = true;
-    posthog.init(key, {
-      api_host: posthogHost(),
-      person_profiles: "identified_only",
-      capture_pageview: true,
-      capture_pageleave: true,
-      autocapture: true,
-      capture_heatmaps: true,
-      session_recording: {
-        maskAllInputs: true,
-        maskTextSelector: "[data-ph-mask]",
-      },
-      persistence: "localStorage+cookie",
-    });
-  } catch {
-    // Missing key or blocked network is a no-op.
-  }
+async function startPosthog(key: string): Promise<void> {
+  if (posthogStarted) return;
+  const posthog = (await import("posthog-js")).default;
+  posthog.init(key, {
+    api_host: posthogHost(),
+    person_profiles: "identified_only",
+    capture_pageview: true,
+    capture_pageleave: true,
+    autocapture: true,
+    capture_heatmaps: true,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: "[data-ph-mask]",
+    },
+    persistence: "localStorage+cookie",
+  });
+  posthogStarted = true;
+}
+
+export function initPosthogBrowser(): Promise<void> {
+  initPromise ??= (async () => {
+    const key = posthogKey();
+    if (!key || typeof window === "undefined") return;
+    try {
+      subscribeConsent((state) => {
+        void (async () => {
+          try {
+            if (state === "granted") {
+              if (!posthogStarted) await startPosthog(key);
+              else (await import("posthog-js")).default.opt_in_capturing();
+            } else if (posthogStarted) {
+              (await import("posthog-js")).default.opt_out_capturing();
+            }
+          } catch {
+            // Consent changes must never take down the product.
+          }
+        })();
+      });
+      if ((await resolveConsent()) === "granted") await startPosthog(key);
+    } catch {
+      // Missing key or blocked network is a no-op.
+    }
+  })();
+  return initPromise;
 }
 
 export type FirstTouchAttribution = {
@@ -100,6 +130,8 @@ export type FirstTouchAttribution = {
 export async function getFirstTouchAttribution(): Promise<FirstTouchAttribution | null> {
   if (!posthogKey() || typeof window === "undefined") return null;
   try {
+    await initPosthogBrowser();
+    if (!posthogStarted) return null;
     const mod = await import("posthog-js");
     const posthog = mod.default;
     return {
@@ -123,9 +155,10 @@ export async function getFirstTouchAttribution(): Promise<FirstTouchAttribution 
  */
 export function identifyUser(userId: string, traits?: EventProps): void {
   if (!posthogKey() || typeof window === "undefined") return;
-  void import("posthog-js")
-    .then(async (mod) => {
-      const posthog = mod.default;
+  void initPosthogBrowser()
+    .then(async () => {
+      if (!posthogStarted) return;
+      const posthog = (await import("posthog-js")).default;
       const attribution = await getFirstTouchAttribution();
       posthog.identify(
         userId,
@@ -144,6 +177,7 @@ export function identifyUser(userId: string, traits?: EventProps): void {
 
 export function resetAnalytics(): void {
   if (!posthogKey() || typeof window === "undefined") return;
+  if (!posthogStarted) return;
   void import("posthog-js")
     .then((mod) => {
       mod.default.reset();

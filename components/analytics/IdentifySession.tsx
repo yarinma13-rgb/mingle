@@ -8,6 +8,7 @@ import { reportInterestAttribution } from "@/lib/outbound-interest/client";
 import { reportTalentReferralAttribution } from "@/lib/talent-referrals/client";
 import { readStashedReferralId } from "@/lib/referrals/client";
 import { mapAcquisitionChannel } from "@/lib/analytics/acquisition-channel";
+import { resolveConsent } from "@/lib/analytics/consent";
 import type { UserType } from "@/lib/supabase/types";
 
 const STORAGE_KEY = "mingle_ph_identified_user_id";
@@ -65,7 +66,10 @@ export function IdentifySession() {
           window.sessionStorage.setItem(RETURNING_SESSION_FLAG_KEY, "1");
         }
 
-        if (alreadyIdentified !== user.id) {
+        // Identify + first-touch attribution only once the visitor has consented
+        // (or consent isn't required); otherwise retry on a later page load.
+        const consent = await resolveConsent();
+        if (consent === "granted" && alreadyIdentified !== user.id) {
           identifyUser(user.id, {
             email: user.email,
             user_type: userType || undefined,

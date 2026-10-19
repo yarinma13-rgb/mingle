@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalShell } from "@/components/LegalShell";
+import { CookieSettingsButton } from "@/components/analytics/CookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — mingle",
@@ -36,6 +37,15 @@ export default function PrivacyPage() {
         </li>
         <li>
           technical data: session cookies required to keep you signed in
+        </li>
+        <li>
+          analytics data, only where you allow it or consent is not required:
+          pages viewed, clicks, device and browser type, approximate country,
+          campaign (UTM) tags from the link you arrived with, and masked
+          session recordings (typed text is not recorded). We use PostHog,
+          hosted in the EU, for this. Visitors in the EU/EEA, UK and
+          Switzerland are asked first.{" "}
+          <CookieSettingsButton />
         </li>
       </ul>
       <p>

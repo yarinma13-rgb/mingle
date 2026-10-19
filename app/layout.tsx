@@ -4,6 +4,7 @@ import { Figtree, Rubik } from "next/font/google";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { CommandPaletteProvider } from "@/components/command-palette/CommandPaletteProvider";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { ConsentBanner } from "@/components/analytics/ConsentBanner";
 import { IdentifySession } from "@/components/analytics/IdentifySession";
 import { NotificationOpenBeacon } from "@/components/analytics/NotificationOpenBeacon";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="mingle-app-canvas min-h-full flex flex-col font-sans text-mingle-text">
         <AppErrorBoundary>
           <IdentifySession />
+          <ConsentBanner />
           <ThemeProvider>
             <AppLocaleProvider>
               <ToastProvider>
