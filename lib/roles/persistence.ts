@@ -451,6 +451,31 @@ export async function updateCompanyRoleStatus(
   return toRecord(data);
 }
 
+/**
+ * Permanently deletes a role. Everything that references roles cascades or
+ * sets null (applications, referrals, admin match reviews, rediscovered
+ * matches go; the matches anchor keeps its row with role_id null), and
+ * candidates already in the pipeline are untouched since connections aren't
+ * tied to a role. Throws when nothing was deleted (not the owner, already
+ * gone) so the UI never reports a delete that didn't happen.
+ */
+export async function deleteCompanyRole(
+  supabase: SupabaseClient<Database>,
+  roleId: string,
+  companyId: string,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("roles")
+    .delete()
+    .eq("id", roleId)
+    .eq("company_id", companyId)
+    .select("id");
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error("Role was not deleted");
+  }
+}
+
 export async function loadCompanyRole(
   supabase: SupabaseClient<Database>,
   roleId: string,

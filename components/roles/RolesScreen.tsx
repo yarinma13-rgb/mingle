@@ -17,6 +17,7 @@ import {
 } from "@/lib/roles/questions";
 import {
   approveRoleRequisition,
+  deleteCompanyRole,
   draftFromRole,
   EMPTY_ROLE_DRAFT,
   isMissingRolesTable,
@@ -54,6 +55,8 @@ export function RolesScreen({
     startInBuilder ? "builder" : "list",
   );
   const [editing, setEditing] = useState<RoleRecord | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<RoleRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const visible = useMemo(
     () => (filter === "all" ? roles : roles.filter((role) => role.status === filter)),
@@ -92,6 +95,23 @@ export function RolesScreen({
           : "Could not update status",
         "error",
       );
+    }
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteCompanyRole(supabase, pendingDelete.id, companyId);
+      const removed = pendingDelete;
+      setRoles((prev) => prev.filter((item) => item.id !== removed.id));
+      setPendingDelete(null);
+      toast(`${removed.title} was deleted`);
+      router.refresh();
+    } catch {
+      toast("Could not delete this role", "error");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -274,6 +294,13 @@ export function RolesScreen({
                       ? "Approve requisition"
                       : "Submit for approval"}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(role)}
+                    className="rounded-full border border-mingle-error/40 bg-mingle-error/10 px-3 py-1.5 text-xs font-semibold text-mingle-error transition-colors hover:bg-mingle-error/15"
+                  >
+                    Delete
+                  </button>
                 </div>
                 <label className="flex flex-wrap items-center gap-2 text-xs text-mingle-text-secondary">
                   <span className="font-medium text-mingle-text">Status</span>
@@ -297,6 +324,48 @@ export function RolesScreen({
           ))}
         </div>
       )}
+
+      {pendingDelete ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-role-title"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-mingle-border bg-mingle-white p-6 shadow-xl">
+            <h3
+              id="delete-role-title"
+              className="font-display text-lg font-semibold text-mingle-text"
+            >
+              Delete &ldquo;{pendingDelete.title}&rdquo;?
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-mingle-text-secondary">
+              This permanently removes the role, along with its applications
+              and referrals. Candidates already in your pipeline stay there. If
+              you might hire for it again, set the status to Closed instead.
+              This can&apos;t be undone.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setPendingDelete(null)}
+                className="rounded-full border border-mingle-border bg-mingle-white px-4 py-2.5 text-sm font-semibold text-mingle-text"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => void confirmDelete()}
+                className="rounded-full bg-mingle-error px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {deleting ? "Deleting…" : "Delete role"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
