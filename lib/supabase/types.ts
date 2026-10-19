@@ -257,6 +257,7 @@ export interface Database {
           latitude: number | null;
           longitude: number | null;
           slug: string | null;
+          public_page_hidden: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -277,6 +278,7 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           slug?: string | null;
+          public_page_hidden?: boolean;
         };
         Update: {
           company_name?: string | null;
@@ -294,6 +296,7 @@ export interface Database {
           latitude?: number | null;
           longitude?: number | null;
           slug?: string | null;
+          public_page_hidden?: boolean;
         };
         Relationships: [];
       };

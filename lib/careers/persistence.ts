@@ -36,16 +36,32 @@ export async function listCareerPages(
   // company_profiles and roles both reference users(id), not each other
   // directly, so this is two queries + an in-memory intersect rather than
   // a single PostgREST embed (no FK for it to auto-detect between them).
-  const [{ data: profiles, error: profilesError }, { data: openRoles, error: rolesError }] =
+  const [profilesResult, { data: openRoles, error: rolesError }] =
     await Promise.all([
       supabase
         .from("company_profiles")
-        .select("user_id, slug")
+        .select("user_id, slug, public_page_hidden")
         .not("slug", "is", null),
       supabase.from("roles").select("company_id").eq("status", "open"),
     ]);
-  if (profilesError) throw profilesError;
   if (rolesError) throw rolesError;
+
+  let profiles: Array<{
+    user_id: string;
+    slug: string | null;
+    public_page_hidden?: boolean;
+  }> | null = profilesResult.data;
+  if (profilesResult.error) {
+    // 42703 = column missing: migration 0050 isn't applied yet, so fall back
+    // to the previous behavior instead of breaking the whole sitemap.
+    if (profilesResult.error.code !== "42703") throw profilesResult.error;
+    const fallback = await supabase
+      .from("company_profiles")
+      .select("user_id, slug")
+      .not("slug", "is", null);
+    if (fallback.error) throw fallback.error;
+    profiles = fallback.data;
+  }
 
   const companiesWithOpenRoles = new Set((openRoles ?? []).map((r) => r.company_id));
 
@@ -53,6 +69,7 @@ export async function listCareerPages(
   const listings: CareerPageListing[] = [];
   for (const row of profiles ?? []) {
     if (!row.slug || seen.has(row.slug)) continue;
+    if (row.public_page_hidden) continue;
     if (!companiesWithOpenRoles.has(row.user_id)) continue;
     seen.add(row.slug);
     listings.push({ slug: row.slug });
