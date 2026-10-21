@@ -1362,6 +1362,10 @@ export interface Database {
           }[];
         }[];
       };
+      list_career_pages: {
+        Args: Record<string, never>;
+        Returns: { slug: string }[];
+      };
       list_related_push_subscriptions: {
         Args: { p_user_id: string };
         Returns: { endpoint: string; p256dh: string; auth: string }[];
