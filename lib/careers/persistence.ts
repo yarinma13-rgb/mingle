@@ -33,6 +33,19 @@ export type CareerPageListing = {
 export async function listCareerPages(
   supabase: SupabaseClient<Database>,
 ): Promise<CareerPageListing[]> {
+  // Prefer the security-definer RPC: direct table reads return nothing for an
+  // anonymous crawler under RLS. Fall back to the table query if migration
+  // 0051 isn't applied yet.
+  const { data, error } = await supabase.rpc("list_career_pages");
+  if (!error && data) {
+    return data.map((row) => ({ slug: row.slug }));
+  }
+  return listCareerPagesFromTables(supabase);
+}
+
+async function listCareerPagesFromTables(
+  supabase: SupabaseClient<Database>,
+): Promise<CareerPageListing[]> {
   // company_profiles and roles both reference users(id), not each other
   // directly, so this is two queries + an in-memory intersect rather than
   // a single PostgREST embed (no FK for it to auto-detect between them).
