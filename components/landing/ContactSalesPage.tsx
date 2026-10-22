@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MingleLogo } from "@/components/MingleLogo";
 import { submitDemoRequest } from "@/app/contact/actions";
 import { AnalyticsEvent } from "@/lib/analytics/events";
+import { trackMetaEvent } from "@/lib/analytics/meta-pixel";
 import { getFirstTouchAttribution, track } from "@/lib/analytics/track";
 
 const COMPANY_SIZES = [
@@ -79,6 +80,10 @@ export function ContactSalesPage() {
         company_size: form.companySize,
         explore: form.explore,
         has_message: form.message.trim().length > 0,
+      });
+      void trackMetaEvent("Lead", {
+        eventId: `lead-${crypto.randomUUID()}`,
+        email: form.workEmail,
       });
       setSubmitted(true);
     } catch {
