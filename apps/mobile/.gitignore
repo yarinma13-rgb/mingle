@@ -3,6 +3,11 @@
 # dependencies
 node_modules/
 
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
 # Expo
 .expo/
 dist/

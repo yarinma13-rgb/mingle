@@ -80,7 +80,7 @@ export default function TalentConversations() {
           >
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: colors.text,
                 fontSize: 16,
               }}
@@ -91,7 +91,7 @@ export default function TalentConversations() {
             <StatusBadge label="Connected" tone="success" />
             <Text
               style={{
-                fontFamily: "Poppins_500Medium",
+                fontFamily: "Figtree_500Medium",
                 color: brand.cta,
                 fontSize: 13,
               }}

@@ -6,6 +6,7 @@ import {
   Body,
   Card,
   EmptyState,
+  KpiTile,
   LoadingBlock,
   Screen,
   StatusBadge,
@@ -65,7 +66,7 @@ export default function TalentDashboard() {
           <Body muted>Profile completion</Body>
           <Text
             style={{
-              fontFamily: "Poppins_700Bold",
+              fontFamily: "Figtree_700Bold",
               fontSize: 32,
               color: scoreTone(completion),
               marginTop: 4,
@@ -88,7 +89,7 @@ export default function TalentDashboard() {
           >
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: brand.cta,
               }}
             >
@@ -101,23 +102,26 @@ export default function TalentDashboard() {
           <LoadingBlock />
         ) : (
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <Kpi
+            <KpiTile
               label="Connections"
               value={stats.connections}
+              icon="people"
+              tint={brand.purple}
               onPress={() => router.push("/(talent)/connections")}
-              colors={colors}
             />
-            <Kpi
+            <KpiTile
               label="Chats"
               value={stats.conversations}
+              icon="chatbubble"
+              tint={brand.pink}
               onPress={() => router.push("/(talent)/conversations")}
-              colors={colors}
             />
-            <Kpi
+            <KpiTile
               label="Saved"
               value={stats.saved}
+              icon="bookmark"
+              tint={brand.blue}
               onPress={() => router.push("/saved")}
-              colors={colors}
             />
           </View>
         )}
@@ -125,7 +129,7 @@ export default function TalentDashboard() {
         <Card>
           <Text
             style={{
-              fontFamily: "Poppins_600SemiBold",
+              fontFamily: "Figtree_600SemiBold",
               fontSize: 16,
               color: colors.text,
             }}
@@ -139,15 +143,15 @@ export default function TalentDashboard() {
             onPress={() => router.push("/(talent)/discover")}
             style={{
               marginTop: 14,
-              backgroundColor: brand.cta,
-              borderRadius: 999,
-              paddingVertical: 12,
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              paddingVertical: 13,
               alignItems: "center",
             }}
           >
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: "#fff",
               }}
             >
@@ -166,56 +170,5 @@ export default function TalentDashboard() {
         ) : null}
       </ScrollView>
     </Screen>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  onPress,
-  colors,
-}: {
-  label: string;
-  value: number;
-  onPress: () => void;
-  colors: {
-    surfaceElevated: string;
-    border: string;
-    text: string;
-    textMuted: string;
-  };
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flex: 1,
-        backgroundColor: colors.surfaceElevated,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: 16,
-        padding: 14,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: "Poppins_700Bold",
-          fontSize: 22,
-          color: colors.text,
-        }}
-      >
-        {value}
-      </Text>
-      <Text
-        style={{
-          fontFamily: "Poppins_400Regular",
-          fontSize: 11,
-          color: colors.textMuted,
-          marginTop: 4,
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
   );
 }

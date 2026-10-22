@@ -1,29 +1,30 @@
 import { useCallback, useState } from "react";
 import {
   FlatList,
-  Pressable,
   RefreshControl,
   Text,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AppHeader } from "@/src/components/AppHeader";
 import { MatchActions } from "@/src/components/MatchActions";
 import {
   Body,
+  Button,
   EmptyState,
   LoadingBlock,
   Screen,
-  StatusBadge,
+  ScoreRing,
 } from "@/src/components/ui";
 import {
-  fetchDiscoverCompanies,
+  fetchDiscoverCompaniesWithScores,
   loadMatchFeedbackMap,
   type MatchFeedbackAction,
 } from "@/src/lib/api";
 import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import { scoreTone } from "@/src/theme/tokens";
+import { brand } from "@/src/theme/tokens";
 
 type CompanyCard = {
   user_id: string;
@@ -32,6 +33,8 @@ type CompanyCard = {
   location: string | null;
   mission: string | null;
   description: string | null;
+  score: number;
+  reasons: string[];
 };
 
 export default function TalentDiscover() {
@@ -46,12 +49,13 @@ export default function TalentDiscover() {
   const router = useRouter();
 
   const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
       const [companies, map] = await Promise.all([
-        fetchDiscoverCompanies(),
-        user ? loadMatchFeedbackMap(user.id) : Promise.resolve({}),
+        fetchDiscoverCompaniesWithScores(user.id),
+        loadMatchFeedbackMap(user.id),
       ]);
       setItems(companies as CompanyCard[]);
       setFeedback(map);
@@ -99,71 +103,87 @@ export default function TalentDiscover() {
               />
             ) : null
           }
-          renderItem={({ item, index }) => {
-            const score = 85 - ((index * 7) % 40);
+          renderItem={({ item }) => {
+            const score = item.score;
             return (
               <View
                 style={{
                   backgroundColor: colors.surfaceElevated,
-                  borderRadius: 16,
+                  borderRadius: 20,
                   borderWidth: 1,
                   borderColor: colors.border,
                   padding: 16,
                   gap: 8,
                 }}
               >
-                <Pressable
-                  onPress={() => router.push(`/profile/view/${item.user_id}`)}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
                 >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <View style={{ flex: 1, gap: 2 }}>
                     <Text
                       style={{
-                        fontFamily: "Poppins_700Bold",
+                        fontFamily: "Figtree_700Bold",
                         fontSize: 18,
                         color: colors.text,
-                        flex: 1,
                       }}
                     >
                       {item.company_name || "Company"}
                     </Text>
                     <Text
                       style={{
-                        fontFamily: "Poppins_700Bold",
-                        fontSize: 18,
-                        color: scoreTone(score),
+                        fontFamily: "Figtree_600SemiBold",
+                        fontSize: 11,
+                        letterSpacing: 0.6,
+                        color: colors.textMuted,
                       }}
                     >
-                      {score}%
+                      MINGLE FIT
                     </Text>
+                    <Body muted>
+                      {[item.industry, item.location].filter(Boolean).join(" · ") ||
+                        "Open profile for more detail"}
+                    </Body>
                   </View>
-                  <StatusBadge
-                    label={
-                      score >= 70
-                        ? "Strong match"
-                        : score >= 45
-                          ? "Worth a look"
-                          : "Low overlap"
-                    }
-                    tone={
-                      score >= 70
-                        ? "success"
-                        : score >= 45
-                          ? "warning"
-                          : "danger"
-                    }
+                  <ScoreRing score={score} />
+                </View>
+                {item.reasons.length > 0 ? (
+                  <View style={{ gap: 6, marginTop: 4 }}>
+                    <Text
+                      style={{
+                        fontFamily: "Figtree_600SemiBold",
+                        fontSize: 13,
+                        color: colors.text,
+                      }}
+                    >
+                      Match reasons
+                    </Text>
+                    {item.reasons.map((reason) => (
+                      <View
+                        key={reason}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={16}
+                          color={brand.success}
+                        />
+                        <Body>{reason}</Body>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+                {item.mission ? <Body muted>{item.mission}</Body> : null}
+                <View style={{ marginTop: 6 }}>
+                  <Button
+                    label="Explore match"
+                    onPress={() => router.push(`/profile/view/${item.user_id}`)}
                   />
-                  <Body muted>
-                    {[item.industry, item.location].filter(Boolean).join(" · ") ||
-                      "Open profile for more detail"}
-                  </Body>
-                  {item.mission ? <Body>{item.mission}</Body> : null}
-                </Pressable>
+                </View>
                 <MatchActions
                   actorId={user?.id}
                   targetUserId={item.user_id}

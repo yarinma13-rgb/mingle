@@ -25,6 +25,20 @@ export const metadata: Metadata = {
     url: `${appOrigin()}/contact`,
     siteName: "mingle",
     type: "website",
+    images: [
+      {
+        url: `${appOrigin()}/welcome/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "mingle — Post a job. Get the right people. Understand why.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [`${appOrigin()}/welcome/opengraph-image`],
   },
 };
 

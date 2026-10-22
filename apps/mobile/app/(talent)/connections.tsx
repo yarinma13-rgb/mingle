@@ -127,7 +127,7 @@ export default function TalentConnections() {
             >
               <Text
                 style={{
-                  fontFamily: "Poppins_600SemiBold",
+                  fontFamily: "Figtree_600SemiBold",
                   color: colors.text,
                   fontSize: 16,
                 }}
@@ -159,7 +159,7 @@ export default function TalentConnections() {
                   >
                     <Text
                       style={{
-                        fontFamily: "Poppins_600SemiBold",
+                        fontFamily: "Figtree_600SemiBold",
                         color: brand.success,
                       }}
                     >
@@ -172,7 +172,7 @@ export default function TalentConnections() {
                   >
                     <Text
                       style={{
-                        fontFamily: "Poppins_600SemiBold",
+                        fontFamily: "Figtree_600SemiBold",
                         color: brand.error,
                       }}
                     >
@@ -184,7 +184,7 @@ export default function TalentConnections() {
               {item.status === "accepted" ? (
                 <Text
                   style={{
-                    fontFamily: "Poppins_500Medium",
+                    fontFamily: "Figtree_500Medium",
                     color: brand.cta,
                     fontSize: 13,
                   }}

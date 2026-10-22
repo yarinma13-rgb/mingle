@@ -1,5 +1,10 @@
 import { supabase } from "@/src/lib/supabase";
 import type { ConnectionStatus, UserType } from "@/src/types/models";
+import {
+  computeMatch,
+  type CompanyMatchInput,
+  type TalentMatchInput,
+} from "@/src/lib/matchEngine";
 
 export type MatchFeedbackAction = "interested" | "not_fit";
 
@@ -123,6 +128,16 @@ export async function fetchEnrichedConnections(userId: string) {
   });
 }
 
+export async function fetchConnectionById(connectionId: string) {
+  const { data, error } = await supabase
+    .from("connections")
+    .select("id, requester_id, recipient_id, status")
+    .eq("id", connectionId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchConversationForConnection(connectionId: string) {
   const { data, error } = await supabase
     .from("conversations")
@@ -143,6 +158,53 @@ export async function ensureConversation(connectionId: string) {
     .single();
   if (error) throw error;
   return data;
+}
+
+export type MessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+};
+
+/** Ported from lib/messaging/persistence.ts (web) — Supabase Realtime on
+ *  the messages table, filtered to this conversation. Returns an
+ *  unsubscribe function; call it from a useFocusEffect/useEffect cleanup. */
+export function subscribeToMessages(
+  conversationId: string,
+  onInsert: (message: MessageRow) => void,
+) {
+  const channel = supabase
+    .channel(`conversation-${conversationId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => onInsert(payload.new as MessageRow),
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+export async function markConversationRead(
+  conversationId: string,
+  viewerId: string,
+) {
+  const { error } = await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .neq("sender_id", viewerId)
+    .is("read_at", null);
+  if (error) throw error;
 }
 
 export async function fetchMessages(conversationId: string) {
@@ -172,7 +234,7 @@ export async function fetchDiscoverCandidates(limit = 24) {
   const { data, error } = await supabase
     .from("talent_profiles")
     .select(
-      "user_id, first_name, last_name, headline, location, years_experience, skills, current_job_title, looking_for, drives",
+      "user_id, first_name, last_name, headline, location, years_experience, skills, current_job_title, looking_for, drives, work_style, industry",
     )
     .limit(limit);
   if (error) throw error;
@@ -183,11 +245,185 @@ export async function fetchDiscoverCompanies(limit = 24) {
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "user_id, company_name, industry, location, mission, description, values, looking_for",
+      "user_id, company_name, industry, location, mission, description, values, looking_for, work_environment, company_stage",
     )
     .limit(limit);
   if (error) throw error;
   return data ?? [];
+}
+
+/** Own match input — the signed-in talent's profile + preferences, used
+ *  to score companies in Discover. Null when the profile row doesn't
+ *  exist yet (e.g. mid-onboarding). */
+export async function loadOwnTalentMatchInput(
+  userId: string,
+): Promise<TalentMatchInput | null> {
+  const [{ data: profile }, { data: pref }] = await Promise.all([
+    supabase
+      .from("talent_profiles")
+      .select("drives, work_style, industry, location, years_experience")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("talent_preferences")
+      .select("career_goals, company_types")
+      .eq("talent_id", userId)
+      .maybeSingle(),
+  ]);
+  if (!profile) return null;
+  return {
+    profile: {
+      drives: profile.drives ?? [],
+      workStyle: profile.work_style ?? [],
+      industry: profile.industry ?? "",
+      location: profile.location ?? "",
+      yearsExperience: profile.years_experience,
+    },
+    careerGoal: pref?.career_goals ?? "",
+    companyTypes: pref?.company_types ?? [],
+  };
+}
+
+/** Own match input — the signed-in company's profile + preferences, used
+ *  to score candidates in Candidates. Null when the profile row doesn't
+ *  exist yet. */
+export async function loadOwnCompanyMatchInput(
+  userId: string,
+): Promise<CompanyMatchInput | null> {
+  const [{ data: profile }, { data: pref }] = await Promise.all([
+    supabase
+      .from("company_profiles")
+      .select("values, work_environment, industry, location, company_stage")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("company_preferences")
+      .select("hiring_needs, culture_priorities")
+      .eq("company_id", userId)
+      .maybeSingle(),
+  ]);
+  if (!profile) return null;
+  return {
+    profile: {
+      values: profile.values ?? [],
+      workEnvironment: profile.work_environment ?? [],
+      industry: profile.industry ?? "",
+      location: profile.location ?? "",
+      companyStage: profile.company_stage ?? "",
+    },
+    connectingAbout: pref?.hiring_needs ?? "",
+    culturePriorities: pref?.culture_priorities ?? [],
+  };
+}
+
+async function loadTalentPreferencesMap(talentIds: string[]) {
+  const map = new Map<string, { careerGoal: string; companyTypes: string[] }>();
+  if (talentIds.length === 0) return map;
+  const { data } = await supabase
+    .from("talent_preferences")
+    .select("talent_id, career_goals, company_types")
+    .in("talent_id", talentIds);
+  for (const row of data ?? []) {
+    map.set(row.talent_id, {
+      careerGoal: row.career_goals ?? "",
+      companyTypes: row.company_types ?? [],
+    });
+  }
+  return map;
+}
+
+async function loadCompanyPreferencesMap(companyIds: string[]) {
+  const map = new Map<
+    string,
+    { connectingAbout: string; culturePriorities: string[] }
+  >();
+  if (companyIds.length === 0) return map;
+  const { data } = await supabase
+    .from("company_preferences")
+    .select("company_id, hiring_needs, culture_priorities")
+    .in("company_id", companyIds);
+  for (const row of data ?? []) {
+    map.set(row.company_id, {
+      connectingAbout: row.hiring_needs ?? "",
+      culturePriorities: row.culture_priorities ?? [],
+    });
+  }
+  return map;
+}
+
+/** Discover companies for a talent viewer, each with a real computed
+ *  match score (see src/lib/matchEngine.ts) instead of a fake one. Falls
+ *  back to a neutral 50 when the viewer's own profile isn't loaded yet. */
+export async function fetchDiscoverCompaniesWithScores(
+  viewerId: string,
+  limit = 24,
+) {
+  const [companies, ownInput] = await Promise.all([
+    fetchDiscoverCompanies(limit),
+    loadOwnTalentMatchInput(viewerId),
+  ]);
+  if (!ownInput || companies.length === 0) {
+    return companies.map((row) => ({ ...row, score: 50, reasons: [] as string[] }));
+  }
+  const prefMap = await loadCompanyPreferencesMap(
+    companies.map((row) => row.user_id),
+  );
+  return companies.map((row) => {
+    const pref = prefMap.get(row.user_id);
+    const companyInput: CompanyMatchInput = {
+      profile: {
+        values: row.values ?? [],
+        workEnvironment: row.work_environment ?? [],
+        industry: row.industry ?? "",
+        location: row.location ?? "",
+        companyStage: row.company_stage ?? "",
+      },
+      connectingAbout: pref?.connectingAbout ?? "",
+      culturePriorities: pref?.culturePriorities ?? [],
+    };
+    const { score, factors } = computeMatch(ownInput, companyInput);
+    const reasons = factors
+      .filter((factor) => factor.verdict === "aligned")
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 3)
+      .map((factor) => factor.label);
+    return { ...row, score, reasons };
+  });
+}
+
+/** Discover candidates for a company viewer, each with a real computed
+ *  match score instead of a fake one. Falls back to a neutral 50 when the
+ *  viewer's own profile isn't loaded yet. */
+export async function fetchDiscoverCandidatesWithScores(
+  viewerId: string,
+  limit = 24,
+) {
+  const [candidates, ownInput] = await Promise.all([
+    fetchDiscoverCandidates(limit),
+    loadOwnCompanyMatchInput(viewerId),
+  ]);
+  if (!ownInput || candidates.length === 0) {
+    return candidates.map((row) => ({ ...row, score: 50 }));
+  }
+  const prefMap = await loadTalentPreferencesMap(
+    candidates.map((row) => row.user_id),
+  );
+  return candidates.map((row) => {
+    const pref = prefMap.get(row.user_id);
+    const talentInput: TalentMatchInput = {
+      profile: {
+        drives: row.drives ?? [],
+        workStyle: row.work_style ?? [],
+        industry: row.industry ?? "",
+        location: row.location ?? "",
+        yearsExperience: row.years_experience,
+      },
+      careerGoal: pref?.careerGoal ?? "",
+      companyTypes: pref?.companyTypes ?? [],
+    };
+    const { score } = computeMatch(talentInput, ownInput);
+    return { ...row, score };
+  });
 }
 
 export async function fetchRoles(companyId: string) {
@@ -210,6 +446,117 @@ export async function fetchRelationshipStage(connectionId: string) {
     .maybeSingle();
   if (error) throw error;
   return (data?.stage as string | undefined) ?? "connected";
+}
+
+// --- Relationship timeline (Explore / Opportunity / Decision tabs) ---
+// Ported from lib/relationship/persistence.ts (web) — same stages, same
+// "furthest stage reached, not just most recent" rule for ensureStageAtLeast.
+
+export type RelationshipStage =
+  | "connected"
+  | "exploring"
+  | "in_conversation"
+  | "interview_booked"
+  | "opportunity"
+  | "decision"
+  | "relationship";
+
+export type RelationshipEvent = {
+  id: string;
+  connection_id: string;
+  stage: RelationshipStage;
+  actor_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+const STAGE_RANK: Record<RelationshipStage, number> = {
+  connected: 0,
+  exploring: 1,
+  in_conversation: 2,
+  interview_booked: 3,
+  opportunity: 4,
+  decision: 5,
+  relationship: 6,
+};
+
+export function currentStage(timeline: RelationshipEvent[]): RelationshipStage {
+  return timeline.reduce<RelationshipStage>(
+    (furthest, event) =>
+      STAGE_RANK[event.stage] > STAGE_RANK[furthest] ? event.stage : furthest,
+    "connected",
+  );
+}
+
+export async function loadRelationshipTimeline(
+  connectionId: string,
+): Promise<RelationshipEvent[]> {
+  const { data, error } = await supabase
+    .from("relationship_events")
+    .select("id, connection_id, stage, actor_id, metadata, created_at")
+    .eq("connection_id", connectionId)
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return (data ?? []) as RelationshipEvent[];
+}
+
+async function recordRelationshipEvent(
+  connectionId: string,
+  stage: RelationshipStage,
+  actorId?: string,
+  metadata?: Record<string, unknown>,
+) {
+  const { error } = await supabase.from("relationship_events").insert({
+    connection_id: connectionId,
+    stage,
+    actor_id: actorId ?? null,
+    metadata: metadata ?? {},
+  });
+  if (error) throw error;
+}
+
+/** Records a stage only if it isn't already the furthest stage reached —
+ *  re-visiting a tab never creates duplicate or out-of-order entries. */
+export async function ensureStageAtLeast(
+  connectionId: string,
+  stage: RelationshipStage,
+  timeline: RelationshipEvent[],
+  actorId?: string,
+  metadata?: Record<string, unknown>,
+): Promise<boolean> {
+  if (STAGE_RANK[stage] <= STAGE_RANK[currentStage(timeline)]) return false;
+  await recordRelationshipEvent(connectionId, stage, actorId, metadata);
+  return true;
+}
+
+export async function createOpportunity(
+  connectionId: string,
+  timeline: RelationshipEvent[],
+  actorId: string,
+  details: { role: string; context: string },
+): Promise<boolean> {
+  return ensureStageAtLeast(connectionId, "opportunity", timeline, actorId, details);
+}
+
+export type DecisionChoice =
+  | "move_forward"
+  | "keep_relationship"
+  | "not_right_fit"
+  | "stay_connected";
+
+const POSITIVE_DECISIONS: DecisionChoice[] = ["move_forward", "keep_relationship"];
+
+/** Always logs a "decision" event; a positive choice also logs a
+ *  "relationship" event right after, matching the web timeline. */
+export async function recordDecision(
+  connectionId: string,
+  actorId: string,
+  choice: DecisionChoice,
+): Promise<void> {
+  await recordRelationshipEvent(connectionId, "decision", actorId, { choice });
+  if (POSITIVE_DECISIONS.includes(choice)) {
+    await recordRelationshipEvent(connectionId, "relationship", actorId, { choice });
+  }
 }
 
 export async function loadMatchFeedbackMap(
@@ -622,6 +969,148 @@ export async function saveTalentCareerGoal(userId: string, goal: string) {
   if (error) throw error;
 }
 
+export type TeamMemberRole = "owner" | "hr" | "team_lead" | "member";
+
+export type TeamMember = {
+  id: string;
+  email: string;
+  role: TeamMemberRole;
+  status: "invited" | "active";
+};
+
+/** Ported from lib/team/persistence.ts (web) — read + minimal invite
+ *  only; role editing and the pending-invite claim flow stay web-only
+ *  for now. */
+export async function fetchTeamMembers(companyId: string): Promise<TeamMember[]> {
+  const { data, error } = await supabase
+    .from("company_members")
+    .select("id, email, role, status")
+    .eq("company_id", companyId)
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return data ?? [];
+}
+
+export async function inviteTeammate(
+  companyId: string,
+  invitedBy: string,
+  email: string,
+) {
+  const { error } = await supabase.from("company_members").insert({
+    company_id: companyId,
+    email: email.trim().toLowerCase(),
+    role: "member",
+    invited_by: invitedBy,
+    status: "invited",
+  });
+  if (error) throw error;
+}
+
+export type InterviewItem = {
+  id: string;
+  connectionId: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  locationType: "video" | "in_person";
+  status: "scheduled" | "completed" | "cancelled";
+  notes: string | null;
+  otherName: string;
+};
+
+/** Ported from app/interviews/page.tsx (web, company-only there) —
+ *  extended to talent viewers too since mobile links "Interviews" from
+ *  both tab bars. Talent side has no company_id to filter by, so it goes
+ *  through the viewer's accepted connections instead. Read-only: no
+ *  scheduling UI here (that needs the web's Google Calendar flow). */
+export async function fetchInterviewsForViewer(
+  userId: string,
+  userType: UserType,
+): Promise<InterviewItem[]> {
+  const columns =
+    "id, connection_id, scheduled_at, duration_minutes, location_type, status, notes";
+  let rows: {
+    id: string;
+    connection_id: string;
+    scheduled_at: string;
+    duration_minutes: number;
+    location_type: "video" | "in_person";
+    status: "scheduled" | "completed" | "cancelled";
+    notes: string | null;
+  }[] = [];
+
+  if (userType === "company") {
+    const { data, error } = await supabase
+      .from("interviews")
+      .select(columns)
+      .eq("company_id", userId)
+      .order("scheduled_at", { ascending: true });
+    if (error) return [];
+    rows = data ?? [];
+  } else {
+    const connections = await fetchConnections(userId);
+    const connectionIds = connections
+      .filter((c) => c.status === "accepted")
+      .map((c) => c.id);
+    if (connectionIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from("interviews")
+      .select(columns)
+      .in("connection_id", connectionIds)
+      .order("scheduled_at", { ascending: true });
+    if (error) return [];
+    rows = data ?? [];
+  }
+
+  if (rows.length === 0) return [];
+
+  const connectionIds = [...new Set(rows.map((row) => row.connection_id))];
+  const { data: connections } = await supabase
+    .from("connections")
+    .select("id, requester_id, recipient_id")
+    .in("id", connectionIds);
+  const otherIds = (connections ?? []).map((row) =>
+    row.requester_id === userId ? row.recipient_id : row.requester_id,
+  );
+  const display = await loadDisplayInfoForUsers(otherIds);
+  const fallbackName = userType === "company" ? "Candidate" : "Company";
+  const nameByConnection = new Map<string, string>();
+  for (const row of connections ?? []) {
+    const otherId =
+      row.requester_id === userId ? row.recipient_id : row.requester_id;
+    nameByConnection.set(row.id, display.get(otherId)?.name ?? fallbackName);
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    connectionId: row.connection_id,
+    scheduledAt: row.scheduled_at,
+    durationMinutes: row.duration_minutes,
+    locationType: row.location_type,
+    status: row.status,
+    notes: row.notes,
+    otherName: nameByConnection.get(row.connection_id) ?? fallbackName,
+  }));
+}
+
+export async function saveMobilePushToken(userId: string, expoPushToken: string) {
+  const { error } = await supabase.from("mobile_push_tokens").upsert(
+    { user_id: userId, expo_push_token: expoPushToken },
+    { onConflict: "expo_push_token" },
+  );
+  if (error) throw error;
+}
+
+export async function saveCompanyName(userId: string, name: string) {
+  const { error } = await supabase.from("company_profiles").upsert(
+    {
+      user_id: userId,
+      company_name: name.trim() || null,
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) throw error;
+}
+
 export async function createRole(input: {
   companyId: string;
   title: string;
@@ -639,4 +1128,326 @@ export async function createRole(input: {
     .single();
   if (error) throw error;
   return data;
+}
+
+// --- "Fit" step: drives / work style (talent) and values / environment
+// (company). These four columns feed 38%+ of the match score, so they get
+// their own chip-based screen instead of free-text. ---
+
+export type FitKind = "talent" | "company";
+
+export type FitDraft = {
+  primary: string[];
+  secondary: string[];
+  /** 0–100, share of the core profile fields that are filled in. */
+  completeness: number;
+};
+
+export async function loadFit(userId: string, kind: FitKind): Promise<FitDraft> {
+  if (kind === "talent") {
+    const { data, error } = await supabase
+      .from("talent_profiles")
+      .select(
+        "first_name, headline, location, current_job_title, industry, skills, beyond_cv, drives, work_style",
+      )
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw error;
+    const filled = [
+      data?.first_name,
+      data?.headline,
+      data?.location,
+      data?.current_job_title,
+      data?.industry,
+      data?.beyond_cv,
+      (data?.skills ?? []).length > 0,
+      (data?.drives ?? []).length > 0,
+      (data?.work_style ?? []).length > 0,
+    ].filter(Boolean).length;
+    return {
+      primary: data?.drives ?? [],
+      secondary: data?.work_style ?? [],
+      completeness: Math.round((filled / 9) * 100),
+    };
+  }
+  const { data, error } = await supabase
+    .from("company_profiles")
+    .select(
+      "company_name, industry, location, mission, description, company_stage, company_size, values, work_environment",
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  const filled = [
+    data?.company_name,
+    data?.industry,
+    data?.location,
+    data?.mission,
+    data?.description,
+    data?.company_stage,
+    data?.company_size,
+    (data?.values ?? []).length > 0,
+    (data?.work_environment ?? []).length > 0,
+  ].filter(Boolean).length;
+  return {
+    primary: data?.values ?? [],
+    secondary: data?.work_environment ?? [],
+    completeness: Math.round((filled / 9) * 100),
+  };
+}
+
+export async function saveFit(
+  userId: string,
+  kind: FitKind,
+  primary: string[],
+  secondary: string[],
+) {
+  const { error } =
+    kind === "talent"
+      ? await supabase
+          .from("talent_profiles")
+          .upsert(
+            { user_id: userId, drives: primary, work_style: secondary },
+            { onConflict: "user_id" },
+          )
+      : await supabase.from("company_profiles").upsert(
+          {
+            user_id: userId,
+            values: primary,
+            // Same as web: company values also fill looking_for.
+            looking_for: primary,
+            work_environment: secondary,
+          },
+          { onConflict: "user_id" },
+        );
+  if (error) throw error;
+}
+
+// --- Relationship extras (migration 0048): questions, experience
+// timeline, feedback, post-hire check-ins. All scoped to one connection. ---
+
+export type ConnectionQuestion = {
+  id: string;
+  connection_id: string;
+  asker_id: string;
+  question: string;
+  answer: string | null;
+  answered_by: string | null;
+  answered_at: string | null;
+  created_at: string;
+};
+
+export async function fetchConnectionQuestions(
+  connectionId: string,
+): Promise<ConnectionQuestion[]> {
+  const { data, error } = await supabase
+    .from("connection_questions")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ConnectionQuestion[];
+}
+
+export async function askConnectionQuestion(
+  connectionId: string,
+  askerId: string,
+  question: string,
+) {
+  const { error } = await supabase.from("connection_questions").insert({
+    connection_id: connectionId,
+    asker_id: askerId,
+    question: question.trim(),
+  });
+  if (error) throw error;
+}
+
+export async function answerConnectionQuestion(
+  questionId: string,
+  answererId: string,
+  answer: string,
+) {
+  const { error } = await supabase
+    .from("connection_questions")
+    .update({
+      answer: answer.trim(),
+      answered_by: answererId,
+      answered_at: new Date().toISOString(),
+    })
+    .eq("id", questionId);
+  if (error) throw error;
+}
+
+export type ExperienceKind =
+  | "meet_manager"
+  | "team_session"
+  | "role_simulation"
+  | "ask_anything"
+  | "custom";
+
+export type ConnectionExperience = {
+  id: string;
+  connection_id: string;
+  kind: ExperienceKind;
+  title: string;
+  position: number;
+  done: boolean;
+  created_by: string;
+};
+
+export async function fetchConnectionExperiences(
+  connectionId: string,
+): Promise<ConnectionExperience[]> {
+  const { data, error } = await supabase
+    .from("connection_experiences")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ConnectionExperience[];
+}
+
+export async function addConnectionExperience(
+  connectionId: string,
+  userId: string,
+  kind: ExperienceKind,
+  title: string,
+  position: number,
+) {
+  const { error } = await supabase.from("connection_experiences").insert({
+    connection_id: connectionId,
+    created_by: userId,
+    kind,
+    title: title.trim(),
+    position,
+  });
+  if (error) throw error;
+}
+
+export async function setConnectionExperienceDone(id: string, done: boolean) {
+  const { error } = await supabase
+    .from("connection_experiences")
+    .update({ done })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteConnectionExperience(id: string) {
+  const { error } = await supabase
+    .from("connection_experiences")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
+/** Swaps two steps' positions (move up / move down). */
+export async function swapConnectionExperiences(
+  a: ConnectionExperience,
+  b: ConnectionExperience,
+) {
+  const [first, second] = await Promise.all([
+    supabase
+      .from("connection_experiences")
+      .update({ position: b.position })
+      .eq("id", a.id),
+    supabase
+      .from("connection_experiences")
+      .update({ position: a.position })
+      .eq("id", b.id),
+  ]);
+  if (first.error) throw first.error;
+  if (second.error) throw second.error;
+}
+
+export type ConnectionFeedback = {
+  id: string;
+  connection_id: string;
+  author_id: string;
+  experience_id: string | null;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
+export async function fetchConnectionFeedback(
+  connectionId: string,
+): Promise<ConnectionFeedback[]> {
+  const { data, error } = await supabase
+    .from("connection_feedback")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ConnectionFeedback[];
+}
+
+export async function giveConnectionFeedback(input: {
+  connectionId: string;
+  authorId: string;
+  experienceId: string | null;
+  rating: number;
+  comment: string;
+}) {
+  const { error } = await supabase.from("connection_feedback").insert({
+    connection_id: input.connectionId,
+    author_id: input.authorId,
+    experience_id: input.experienceId,
+    rating: input.rating,
+    comment: input.comment.trim() || null,
+  });
+  if (error) throw error;
+}
+
+export type PostHireCheckin = {
+  id: string;
+  connection_id: string;
+  author_id: string;
+  day_mark: 30 | 60 | 90;
+  expectations_rating: number;
+  relationship_rating: number;
+  note: string | null;
+  created_at: string;
+};
+
+export async function fetchPostHireCheckins(
+  connectionId: string,
+): Promise<PostHireCheckin[]> {
+  const { data, error } = await supabase
+    .from("post_hire_checkins")
+    .select("*")
+    .eq("connection_id", connectionId)
+    .order("day_mark", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as PostHireCheckin[];
+}
+
+export async function addPostHireCheckin(input: {
+  connectionId: string;
+  authorId: string;
+  dayMark: 30 | 60 | 90;
+  expectations: number;
+  relationship: number;
+  note: string;
+}) {
+  const { error } = await supabase.from("post_hire_checkins").insert({
+    connection_id: input.connectionId,
+    author_id: input.authorId,
+    day_mark: input.dayMark,
+    expectations_rating: input.expectations,
+    relationship_rating: input.relationship,
+    note: input.note.trim() || null,
+  });
+  if (error) throw error;
+}
+
+/** Share of the maximum rating across every check-in rating, as a whole
+ *  percent. Null when nobody has checked in yet — never a made-up number. */
+export function alignmentScore(checkins: PostHireCheckin[]): number | null {
+  if (checkins.length === 0) return null;
+  const total = checkins.reduce(
+    (sum, c) => sum + c.expectations_rating + c.relationship_rating,
+    0,
+  );
+  return Math.round((total / (checkins.length * 10)) * 100);
 }

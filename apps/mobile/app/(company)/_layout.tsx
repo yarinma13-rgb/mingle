@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
 import { useTheme } from "@/src/providers/ThemeProvider";
@@ -15,7 +16,7 @@ function TabLabel({
   return (
     <Text
       style={{
-        fontFamily: focused ? "Poppins_600SemiBold" : "Poppins_400Regular",
+        fontFamily: focused ? "Figtree_600SemiBold" : "Figtree_400Regular",
         fontSize: 11,
         color: String(color),
       }}
@@ -31,7 +32,7 @@ export default function CompanyTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: brand.cta,
+        tabBarActiveTintColor: colors.navActive,
         tabBarInactiveTintColor: colors.navIdle,
         tabBarStyle: {
           backgroundColor: colors.surface,
@@ -42,6 +43,9 @@ export default function CompanyTabs() {
       <Tabs.Screen
         name="dashboard"
         options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
           title: "Home",
           tabBarLabel: ({ focused, color }) => (
             <TabLabel label="Home" focused={focused} color={color} />
@@ -51,6 +55,9 @@ export default function CompanyTabs() {
       <Tabs.Screen
         name="candidates"
         options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
+          ),
           title: "Candidates",
           tabBarLabel: ({ focused, color }) => (
             <TabLabel label="Candidates" focused={focused} color={color} />
@@ -60,6 +67,9 @@ export default function CompanyTabs() {
       <Tabs.Screen
         name="pipeline"
         options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="albums" size={size} color={color} />
+          ),
           title: "Board",
           tabBarLabel: ({ focused, color }) => (
             <TabLabel label="Board" focused={focused} color={color} />
@@ -69,6 +79,9 @@ export default function CompanyTabs() {
       <Tabs.Screen
         name="conversations/index"
         options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
           title: "Chat",
           tabBarLabel: ({ focused, color }) => (
             <TabLabel label="Chat" focused={focused} color={color} />
@@ -78,6 +91,9 @@ export default function CompanyTabs() {
       <Tabs.Screen
         name="more"
         options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ellipsis-horizontal" size={size} color={color} />
+          ),
           title: "More",
           tabBarLabel: ({ focused, color }) => (
             <TabLabel label="More" focused={focused} color={color} />

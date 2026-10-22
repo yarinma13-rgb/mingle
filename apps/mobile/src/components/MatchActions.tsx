@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   expressInterest,
   markNotFit,
@@ -29,6 +30,7 @@ export function MatchActions({
   );
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [mutual, setMutual] = useState(false);
 
   async function onInterested() {
     if (!actorId || action === "interested" || busy) return;
@@ -44,6 +46,7 @@ export function MatchActions({
             ? "Already connected."
             : "Marked interested.";
       setNote(msg);
+      setMutual(connection.outcome === "mutual");
       onDone?.({ action: "interested", connection });
     } catch (e) {
       setNote(e instanceof Error ? e.message : "Couldn't save that.");
@@ -87,10 +90,24 @@ export function MatchActions({
         />
         {busy ? <ActivityIndicator color={brand.cta} /> : null}
       </View>
-      {note ? (
+      {note && mutual ? (
+        <LinearGradient
+          colors={[brand.accentPink, brand.accentPurple]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ borderRadius: 14, padding: 14, gap: 2 }}
+        >
+          <Text style={{ fontFamily: "Figtree_700Bold", fontSize: 16, color: "#fff" }}>
+            It&apos;s a MINGLE!
+          </Text>
+          <Text style={{ fontFamily: "Figtree_400Regular", fontSize: 13, color: "#fff" }}>
+            You both showed interest.
+          </Text>
+        </LinearGradient>
+      ) : note ? (
         <Text
           style={{
-            fontFamily: "Poppins_400Regular",
+            fontFamily: "Figtree_400Regular",
             fontSize: 12,
             color: brand.cta,
           }}
@@ -129,7 +146,7 @@ function ActionChip({
     >
       <Text
         style={{
-          fontFamily: "Poppins_600SemiBold",
+          fontFamily: "Figtree_600SemiBold",
           fontSize: 12,
           color: active ? "#fff" : color,
         }}

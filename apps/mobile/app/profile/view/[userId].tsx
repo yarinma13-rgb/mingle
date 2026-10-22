@@ -97,7 +97,7 @@ export default function ProfileViewScreen() {
                 <Text
                   key={line}
                   style={{
-                    fontFamily: "Poppins_500Medium",
+                    fontFamily: "Figtree_500Medium",
                     color: colors.text,
                     marginTop: 6,
                   }}
@@ -140,7 +140,7 @@ export default function ProfileViewScreen() {
                   >
                     <Text
                       style={{
-                        fontFamily: "Poppins_500Medium",
+                        fontFamily: "Figtree_500Medium",
                         fontSize: 12,
                         color: colors.text,
                       }}

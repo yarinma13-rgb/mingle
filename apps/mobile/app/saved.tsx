@@ -108,7 +108,7 @@ export default function SavedScreen() {
               >
                 <Text
                   style={{
-                    fontFamily: "Poppins_600SemiBold",
+                    fontFamily: "Figtree_600SemiBold",
                     fontSize: 16,
                     color: colors.text,
                   }}
@@ -131,7 +131,7 @@ export default function SavedScreen() {
                 <Pressable onPress={() => void remove(item.userId)}>
                   <Text
                     style={{
-                      fontFamily: "Poppins_600SemiBold",
+                      fontFamily: "Figtree_600SemiBold",
                       color: brand.error,
                       fontSize: 13,
                     }}

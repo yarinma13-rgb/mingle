@@ -76,7 +76,7 @@ function PathCard(props: {
       >
         <Text
           style={{
-            fontFamily: "Poppins_700Bold",
+            fontFamily: "Figtree_700Bold",
             fontSize: 22,
             color: props.textColor,
           }}
@@ -85,7 +85,7 @@ function PathCard(props: {
         </Text>
         <Text
           style={{
-            fontFamily: "Poppins_400Regular",
+            fontFamily: "Figtree_400Regular",
             fontSize: 14,
             lineHeight: 20,
             color: props.textColor,

@@ -107,8 +107,8 @@ export default function CompanyPipeline() {
               <Text
                 style={{
                   fontFamily: selected
-                    ? "Poppins_600SemiBold"
-                    : "Poppins_400Regular",
+                    ? "Figtree_600SemiBold"
+                    : "Figtree_400Regular",
                   fontSize: 12,
                   color: colors.text,
                   textTransform: "capitalize",
@@ -153,7 +153,7 @@ export default function CompanyPipeline() {
           >
             <Text
               style={{
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Figtree_600SemiBold",
                 color: colors.text,
                 fontSize: 16,
               }}
@@ -164,7 +164,7 @@ export default function CompanyPipeline() {
             <StatusBadge label={item.stage || "connected"} tone="info" />
             <Text
               style={{
-                fontFamily: "Poppins_500Medium",
+                fontFamily: "Figtree_500Medium",
                 color: brand.cta,
                 fontSize: 13,
               }}
