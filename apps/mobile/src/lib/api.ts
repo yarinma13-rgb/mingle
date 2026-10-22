@@ -762,6 +762,27 @@ export async function fetchSavedProfiles(userId: string) {
     .filter((row): row is DisplayInfo => Boolean(row));
 }
 
+/** Merges tag lists, dropping repeats (case-insensitive) before the display limit. */
+function uniqueTags(
+  lists: Array<string[] | null | undefined>,
+  limit = 8,
+): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const list of lists) {
+    for (const raw of list ?? []) {
+      const tag = raw?.trim();
+      if (!tag) continue;
+      const key = tag.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(tag);
+      if (result.length >= limit) return result;
+    }
+  }
+  return result;
+}
+
 export async function fetchProfileView(userId: string): Promise<ProfileView> {
   const { data: userRow } = await supabase
     .from("users")
@@ -787,10 +808,7 @@ export async function fetchProfileView(userId: string): Promise<ProfileView> {
       subtitle: data?.mission || data?.industry || "",
       location: data?.location ?? null,
       about: data?.description || data?.who_thrives_here || null,
-      tags: [
-        ...(data?.values ?? []),
-        ...(data?.looking_for ?? []),
-      ].slice(0, 8),
+      tags: uniqueTags([data?.values, data?.looking_for]),
       meta: [
         data?.industry,
         data?.company_stage,
@@ -819,11 +837,7 @@ export async function fetchProfileView(userId: string): Promise<ProfileView> {
     subtitle: data?.headline || data?.current_job_title || "",
     location: data?.location ?? null,
     about: data?.beyond_cv || null,
-    tags: [
-      ...(data?.skills ?? []),
-      ...(data?.drives ?? []),
-      ...(data?.looking_for ?? []),
-    ].slice(0, 8),
+    tags: uniqueTags([data?.skills, data?.drives, data?.looking_for]),
     meta: [
       data?.current_job_title,
       data?.years_experience != null
