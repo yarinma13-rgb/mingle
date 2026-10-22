@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPurchasablePlan } from "@/lib/billing/plans";
-import { regionForCountry, TRIAL_DAYS } from "@/lib/billing/pricing";
+import { REGION_PRICING, regionForCountry, TRIAL_DAYS } from "@/lib/billing/pricing";
 import { appBaseUrl, getStripe, priceIdForPlan } from "@/lib/billing/stripe";
 
 /**
@@ -42,11 +42,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Choose Core, Plus or Max." }, { status: 400 });
   }
   const country = typeof body.country === "string" ? body.country.trim().toUpperCase() : "";
-  if (!regionForCountry(country)) {
-    return NextResponse.json(
-      { error: "Pricing for your country isn't available yet — please contact us." },
-      { status: 400 },
-    );
+  const region = regionForCountry(country);
+  if (!region) {
+    return NextResponse.json({ error: "Choose your country." }, { status: 400 });
   }
   const priceId = priceIdForPlan(body.plan);
   if (!priceId) {
@@ -92,6 +90,8 @@ export async function POST(request: Request) {
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
+    // One Price per plan carries ils/usd/eur currency_options; this picks the region's.
+    currency: REGION_PRICING[region].currency,
     customer: customerId,
     client_reference_id: user.id,
     line_items: [

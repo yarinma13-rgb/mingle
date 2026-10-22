@@ -2,16 +2,22 @@
  * Fixed price list per region (not live FX conversion). Amounts are monthly,
  * in major currency units, EXCLUDING VAT/sales tax (added at checkout).
  *
- * Only Israel is priced so far. Other regions are deliberately absent — we
- * don't invent prices; a country with no entry is not purchasable yet and the
- * UI shows "contact us" until the numbers are added here AND as currency
- * options on the Stripe Prices.
+ * Israel is the base list (ILS). USD and EUR are the ILS prices converted at
+ * the ECB reference rate of 2026-10-21 (1 ILS = 0.3235 USD = 0.28797 EUR) and
+ * rounded to the nearest 5:
+ *   core 790 ILS  = 255.6 USD / 227.5 EUR  -> 255 / 230
+ *   plus 1490 ILS = 482.0 USD / 429.1 EUR  -> 480 / 430
+ *   max 2490 ILS  = 805.5 USD / 717.1 EUR  -> 805 / 715
+ * Re-run this conversion (and update the Stripe Prices' currency_options to
+ * match) whenever the list should follow the exchange rate.
+ *
+ * Eurozone countries pay in EUR; every other country (US, UK, ...) pays in USD.
  */
 
 import type { PurchasablePlanId } from "@/lib/billing/plans";
 
-export type RegionId = "IL";
-export type Currency = "ils";
+export type RegionId = "IL" | "EUR" | "ROW";
+export type Currency = "ils" | "eur" | "usd";
 
 type RegionPricing = {
   currency: Currency;
@@ -20,23 +26,25 @@ type RegionPricing = {
 };
 
 export const REGION_PRICING: Record<RegionId, RegionPricing> = {
-  IL: {
-    currency: "ils",
-    symbol: "₪",
-    monthly: { core: 790, plus: 1490, max: 2490 },
-  },
+  IL: { currency: "ils", symbol: "₪", monthly: { core: 790, plus: 1490, max: 2490 } },
+  EUR: { currency: "eur", symbol: "€", monthly: { core: 230, plus: 430, max: 715 } },
+  ROW: { currency: "usd", symbol: "$", monthly: { core: 255, plus: 480, max: 805 } },
 };
 
-const COUNTRY_TO_REGION: Record<string, RegionId> = {
-  IL: "IL",
-};
+const EUROZONE = new Set([
+  "AT", "BE", "BG", "HR", "CY", "EE", "FI", "FR", "DE", "GR", "IE", "IT",
+  "LV", "LT", "LU", "MT", "NL", "PT", "SK", "SI", "ES",
+]);
 
 /** 2 months free; card is collected up front and charged after the trial. */
 export const TRIAL_DAYS = 60;
 
 export function regionForCountry(countryCode: string | null | undefined): RegionId | null {
-  if (!countryCode) return null;
-  return COUNTRY_TO_REGION[countryCode.trim().toUpperCase()] ?? null;
+  const code = countryCode?.trim().toUpperCase();
+  if (!code || !/^[A-Z]{2}$/.test(code)) return null;
+  if (code === "IL") return "IL";
+  if (EUROZONE.has(code)) return "EUR";
+  return "ROW";
 }
 
 export function priceFor(
