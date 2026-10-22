@@ -1,5 +1,6 @@
 "use server";
 
+import { planLimitMessageFor } from "@/lib/billing/errors";
 import { sendTeamInviteEmail } from "@/lib/email/team-invite";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -65,6 +66,8 @@ export async function inviteTeammateAction(input: {
         error: "Team invites are not available yet. Please try again later.",
       };
     }
+    const limitMessage = planLimitMessageFor(error);
+    if (limitMessage) return { ok: false, error: limitMessage };
     const message =
       error && typeof error === "object" && "message" in error
         ? String((error as { message?: string }).message).toLowerCase()

@@ -1,5 +1,6 @@
 "use client";
 
+import { planLimitMessageFor } from "@/lib/billing/errors";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -217,9 +218,10 @@ export function PasteJobScreen({ companyId }: { companyId: string }) {
           : null,
       );
       toast(
-        missing
-          ? "Run the roles migrations in Supabase first, including 0031."
-          : "Could not save this role. Try again.",
+        planLimitMessageFor(caught) ??
+          (missing
+            ? "Run the roles migrations in Supabase first, including 0031."
+            : "Could not save this role. Try again."),
         "error",
       );
     }

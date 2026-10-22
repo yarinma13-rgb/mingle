@@ -9,6 +9,8 @@ import {
   type Gender,
 } from "@/lib/profile/avatar";
 import type { Database, UserType } from "@/lib/supabase/types";
+import { billingEnabled, loadCompanyBilling } from "@/lib/billing/access";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 
 export type ShellChrome = {
   userName: string;
@@ -61,6 +63,8 @@ export async function loadShellChrome(
  */
 export const requireAppUser = cache(async function requireAppUser(opts?: {
   userType?: UserType;
+  /** Only the billing pages themselves, so they can't redirect to themselves. */
+  skipBillingGate?: boolean;
 }) {
   const supabase = await createClient();
   const {
@@ -85,6 +89,20 @@ export const requireAppUser = cache(async function requireAppUser(opts?: {
 
   const accountLabel = user.email?.split("@")[0] ?? "You";
   const isCompany = userRow.user_type === "company";
+
+  // New companies must pick a plan (card on file, 60-day trial) before using
+  // the product; a lapsed plan lands on the billing page. Skipped entirely
+  // while Stripe isn't configured, and for grandfathered/legacy companies.
+  if (isCompany && !opts?.skipBillingGate && billingEnabled()) {
+    const workspaceId = await resolveCompanyWorkspaceId(supabase, user.id);
+    const billing = await loadCompanyBilling(supabase, workspaceId);
+    if (billing.state === "none" || (billing.state === "ok" && billing.status === "incomplete")) {
+      redirect("/billing/start");
+    }
+    if (billing.state === "ok" && !billing.hasAccess) {
+      redirect("/billing");
+    }
+  }
 
   return {
     supabase,

@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { UpgradeLock } from "@/components/billing/UpgradeLock";
+import { companyHasFeature } from "@/lib/billing/access";
 import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
 import { TalentExchangeScreen } from "@/components/talent-exchange/TalentExchangeScreen";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
@@ -11,6 +13,18 @@ export default async function TalentExchangePage() {
   if (userRow.user_type !== "company") redirect("/dashboard");
 
   const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
+  if (!(await companyHasFeature(supabase, companyId, "talent_exchange"))) {
+    return (
+      <>
+        <DashboardHeading>Talent Exchange</DashboardHeading>
+        <UpgradeLock
+          title="Talent Exchange"
+          body="Discover anonymous candidates who opted in elsewhere and match your open roles, and reach out only when they're interested too."
+          planLabel="Max"
+        />
+      </>
+    );
+  }
   const matches = await findTalentExchangeCandidatesForCompany(supabase, companyId);
 
   const cards = (

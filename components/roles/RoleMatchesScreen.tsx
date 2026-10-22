@@ -56,6 +56,7 @@ function ResultCard({
   onPass,
   compareChecked,
   onToggleCompare,
+  compareLocked = false,
 }: {
   card: DiscoveryCard;
   rank: number;
@@ -67,6 +68,7 @@ function ResultCard({
   onPass: (userId: string) => void;
   compareChecked: boolean;
   onToggleCompare: (userId: string) => void;
+  compareLocked?: boolean;
 }) {
   const toast = useToast();
   const [supabase] = useState(() => createClient());
@@ -184,16 +186,26 @@ function ResultCard({
           </span>
         </Link>
 
-        <label className="flex shrink-0 items-center gap-1.5 self-start text-[11px] font-medium text-mingle-text-secondary">
-          <input
-            type="checkbox"
-            checked={compareChecked}
-            onChange={() => onToggleCompare(card.userId)}
-            className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
-            onClick={(e) => e.stopPropagation()}
-          />
-          Compare
-        </label>
+        {compareLocked ? (
+          <Link
+            href="/billing"
+            className="shrink-0 self-start text-[11px] font-medium text-mingle-purple hover:underline"
+            title="Comparing candidates is included in Plus and above"
+          >
+            Compare · Plus
+          </Link>
+        ) : (
+          <label className="flex shrink-0 items-center gap-1.5 self-start text-[11px] font-medium text-mingle-text-secondary">
+            <input
+              type="checkbox"
+              checked={compareChecked}
+              onChange={() => onToggleCompare(card.userId)}
+              className="h-3.5 w-3.5 rounded border-mingle-border accent-mingle-cta"
+              onClick={(e) => e.stopPropagation()}
+            />
+            Compare
+          </label>
+        )}
       </div>
 
       <div className="mt-2 flex justify-end">
@@ -238,6 +250,7 @@ export function RoleMatchesScreen({
   viewerId,
   feedbackByUser,
   rediscoveryByUser = {},
+  canCompare = true,
   filters,
 }: {
   roleId: string;
@@ -247,6 +260,7 @@ export function RoleMatchesScreen({
   viewerId: string;
   feedbackByUser: Record<string, MatchFeedbackAction>;
   rediscoveryByUser?: Record<string, RediscoveryBadge>;
+  canCompare?: boolean;
   filters: React.ReactNode;
 }) {
   const router = useRouter();
@@ -342,6 +356,7 @@ export function RoleMatchesScreen({
                 onPass={persistPass}
                 compareChecked={compareIds.includes(card.userId)}
                 onToggleCompare={toggleCompare}
+                compareLocked={!canCompare}
               />
             ))}
           </div>
