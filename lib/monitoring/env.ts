@@ -8,7 +8,7 @@ export function sentryDsn(): string | undefined {
  * PostHog project (they inflated pageviews with localhost traffic). Denylist
  * rather than allowlist so a missing env var can never silence production.
  */
-function isNonProductionRuntime(): boolean {
+export function isNonProductionRuntime(): boolean {
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
     return (
@@ -27,6 +27,13 @@ function isNonProductionRuntime(): boolean {
 export function posthogKey(): string | undefined {
   if (isNonProductionRuntime()) return undefined;
   const value = process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim();
+  return value ? value : undefined;
+}
+
+/** Public Meta Pixel id (not a secret). Off on localhost and preview hosts. */
+export function metaPixelId(): string | undefined {
+  if (isNonProductionRuntime()) return undefined;
+  const value = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   return value ? value : undefined;
 }
 

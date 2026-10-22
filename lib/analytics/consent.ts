@@ -1,4 +1,4 @@
-import { posthogKey } from "@/lib/monitoring/env";
+import { metaPixelId, posthogKey } from "@/lib/monitoring/env";
 
 export type ConsentState = "granted" | "denied" | "pending";
 
@@ -29,7 +29,9 @@ function notRequiredRecently(): boolean {
 }
 
 async function decide(): Promise<ConsentState> {
-  if (typeof window === "undefined" || !posthogKey()) return "denied";
+  if (typeof window === "undefined" || (!posthogKey() && !metaPixelId())) {
+    return "denied";
+  }
 
   const stored = readStored();
   if (stored) return stored;

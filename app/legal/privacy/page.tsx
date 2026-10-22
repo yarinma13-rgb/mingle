@@ -44,7 +44,10 @@ export default function PrivacyPage() {
           campaign (UTM) tags from the link you arrived with, and masked
           session recordings (typed text is not recorded). We use PostHog,
           hosted in the EU, for this. Visitors in the EU/EEA, UK and
-          Switzerland are asked first.{" "}
+          Switzerland are asked first. If you arrive from an ad, we also report
+          sign-ups and demo requests to Meta (Pixel and Conversions API) to
+          measure and improve our advertising; your email is hashed before it
+          is sent.{" "}
           <CookieSettingsButton />
         </li>
       </ul>

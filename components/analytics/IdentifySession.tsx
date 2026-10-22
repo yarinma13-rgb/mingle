@@ -9,6 +9,7 @@ import { reportTalentReferralAttribution } from "@/lib/talent-referrals/client";
 import { readStashedReferralId } from "@/lib/referrals/client";
 import { mapAcquisitionChannel } from "@/lib/analytics/acquisition-channel";
 import { resolveConsent } from "@/lib/analytics/consent";
+import { trackMetaEvent } from "@/lib/analytics/meta-pixel";
 import type { UserType } from "@/lib/supabase/types";
 
 const STORAGE_KEY = "mingle_ph_identified_user_id";
@@ -69,6 +70,21 @@ export function IdentifySession() {
         // Identify + first-touch attribution only once the visitor has consented
         // (or consent isn't required); otherwise retry on a later page load.
         const consent = await resolveConsent();
+        const REGISTRATION_KEY = "mingle_meta_registration_sent";
+        const isNewAccount =
+          profile?.created_at &&
+          Date.now() - new Date(profile.created_at).getTime() < 15 * 60 * 1000;
+        if (
+          consent === "granted" &&
+          isNewAccount &&
+          window.localStorage.getItem(REGISTRATION_KEY) !== user.id
+        ) {
+          window.localStorage.setItem(REGISTRATION_KEY, user.id);
+          void trackMetaEvent("CompleteRegistration", {
+            eventId: `reg-${user.id}`,
+            email: user.email ?? undefined,
+          });
+        }
         if (consent === "granted" && alreadyIdentified !== user.id) {
           identifyUser(user.id, {
             email: user.email,

@@ -29,8 +29,9 @@ export function ConsentBanner() {
       className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-xl flex-col gap-3 rounded-2xl border border-mingle-border bg-mingle-white p-4 shadow-mingle sm:flex-row sm:items-center sm:gap-4"
     >
       <p className="flex-1 text-sm leading-relaxed text-mingle-text-secondary">
-        We use analytics cookies to understand how mingle is used and make it
-        better. They stay off unless you accept. See our{" "}
+        We use analytics and advertising-measurement cookies to understand how
+        mingle is used and which ads work. They stay off unless you accept. See
+        our{" "}
         <Link href="/legal/privacy" className="underline">
           Privacy Policy
         </Link>
