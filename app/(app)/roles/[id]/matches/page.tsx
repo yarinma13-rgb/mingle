@@ -3,6 +3,7 @@ import {
   DiscoveryFiltersForm,
 } from "@/components/discovery/DiscoveryFilters";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { companyHasFeature } from "@/lib/billing/access";
 import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { parseDiscoveryFilters } from "@/lib/discovery/filters";
 import { loadDiscoveryPage } from "@/lib/discovery/query";
@@ -93,6 +94,7 @@ export default async function RoleMatchesPage({
     <RoleMatchesScreen
       roleId={role.id}
       roleTitle={role.title}
+      canCompare={await companyHasFeature(supabase, companyId, "candidate_comparison")}
       requiredSkills={role.requiredSkills}
       cards={cards}
       rediscoveryByUser={rediscoveryByUser}

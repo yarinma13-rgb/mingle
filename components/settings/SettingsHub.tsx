@@ -129,6 +129,13 @@ export function SettingsHub({
                   href: "/team",
                   action: t.shell.team,
                 },
+                {
+                  id: "billing",
+                  title: "Plan & billing",
+                  body: "See your plan, usage and billing details.",
+                  href: "/billing",
+                  action: "Open billing",
+                },
               ],
             },
           ]

@@ -84,6 +84,52 @@ export default function TermsPage() {
         participating. We do not mediate employment disputes.
       </p>
 
+      <h2>Subscriptions and billing (companies)</h2>
+      <p>
+        Company accounts use a paid subscription (Core, Plus, or Max; Enterprise
+        by agreement). When you choose a plan you provide a payment card, which
+        is handled by our payment processor, Stripe. We never see or store your
+        full card number.
+      </p>
+      <ul className="list-disc space-y-2 ps-5">
+        <li>
+          <strong>Free trial.</strong> New subscriptions start with a 60-day
+          free trial. Your card is saved but not charged during the trial. We
+          email you about 7 days before the first charge.
+        </li>
+        <li>
+          <strong>Price and renewal.</strong> After the trial the subscription
+          renews monthly at the price shown when you chose your plan, in the
+          currency of your billing country. Listed prices exclude VAT or sales
+          tax, which is added where required.
+        </li>
+        <li>
+          <strong>Limits.</strong> Each plan includes a number of active jobs
+          and team members. At the limit you cannot add more until you upgrade
+          or free up capacity; we do not delete your data.
+        </li>
+        <li>
+          <strong>Cancelling.</strong> You can cancel or change plan at any
+          time from the billing page. If you cancel before the trial ends you
+          are not charged. Otherwise cancellation takes effect at the end of
+          the current billing period, and charges already made are not refunded
+          unless required by law.
+        </li>
+        <li>
+          <strong>Failed payments.</strong> If a payment fails we retry, and may
+          restrict access to paid features until it is resolved.
+        </li>
+        <li>
+          <strong>Billing country.</strong> We may check that your billing
+          address matches the country you selected and correct the price if it
+          does not.
+        </li>
+        <li>
+          <strong>Price changes.</strong> We will tell you in advance before a
+          price change takes effect for your subscription.
+        </li>
+      </ul>
+
       <h2>Disclaimer</h2>
       <p>
         The Service is provided as is during the pilot. To the fullest extent
@@ -97,8 +143,9 @@ export default function TermsPage() {
         To the fullest extent allowed by law we are not liable for lost
         profits, lost opportunity, or indirect damages arising from your use
         of mingle. Our total liability for claims related to the Service is
-        limited to zero because the pilot is offered without charge, unless a
-        mandatory law says otherwise.
+        limited to the fees you paid us in the 3 months before the claim (zero for
+        accounts without a paid subscription), unless a mandatory law says
+        otherwise.
       </p>
 
       <h2>Changes</h2>

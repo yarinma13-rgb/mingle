@@ -2,12 +2,31 @@ import Link from "next/link";
 import { DashboardHeading } from "@/components/dashboard/DashboardHeading";
 import { EmptyState } from "@/components/EmptyState";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
+import { UpgradeLock } from "@/components/billing/UpgradeLock";
+import { companyHasFeature } from "@/lib/billing/access";
+import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { Avatar } from "@/components/Avatar";
 
 export default async function SavedPage() {
   const { supabase, user, isCompany } = await requireAppUser();
+
+  if (isCompany) {
+    const companyId = await resolveCompanyWorkspaceId(supabase, user.id);
+    if (!(await companyHasFeature(supabase, companyId, "talent_pool"))) {
+      return (
+        <>
+          <DashboardHeading>Saved</DashboardHeading>
+          <UpgradeLock
+            title="Talent pool"
+            body="Save candidates and come back to them across roles."
+            planLabel="Plus"
+          />
+        </>
+      );
+    }
+  }
 
   const savedIds = await loadSavedUserIds(supabase, user.id);
   const display = await loadDisplayInfoForUsers(supabase, savedIds);

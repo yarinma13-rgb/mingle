@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { planLimitMessageFor } from "@/lib/billing/errors";
 import { EmptyState } from "@/components/EmptyState";
 import { MingleChip } from "@/components/MingleChip";
 import { StatusChip } from "@/components/StatusChip";
@@ -90,9 +91,8 @@ export function RolesScreen({
         caught && typeof caught === "object" ? (caught as { message?: string; code?: string }) : null,
       );
       toast(
-        missing
-          ? "Run the roles migration in Supabase first"
-          : "Could not update status",
+        planLimitMessageFor(caught) ??
+          (missing ? "Run the roles migration in Supabase first" : "Could not update status"),
         "error",
       );
     }

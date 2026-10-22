@@ -1,5 +1,6 @@
 "use client";
 
+import { planLimitMessageFor } from "@/lib/billing/errors";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -166,9 +167,10 @@ export function RoleBuilder({
         caught && typeof caught === "object" ? (caught as { message?: string; code?: string }) : null,
       );
       setError(
-        missing
-          ? "Roles are not available on this workspace yet. Please try again later."
-          : "Could not save this role. Try again.",
+        planLimitMessageFor(caught) ??
+          (missing
+            ? "Roles are not available on this workspace yet. Please try again later."
+            : "Could not save this role. Try again."),
       );
     } finally {
       setSaving(false);
