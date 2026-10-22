@@ -639,6 +639,57 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      company_subscriptions: {
+        Row: {
+          company_id: string;
+          plan: "core" | "plus" | "max";
+          status: "incomplete" | "trialing" | "active" | "past_due" | "canceled" | "unpaid";
+          billing_country: string | null;
+          currency: string | null;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          trial_ends_at: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          grandfathered: boolean;
+          needs_review: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          company_id: string;
+          plan: "core" | "plus" | "max";
+          status: "incomplete" | "trialing" | "active" | "past_due" | "canceled" | "unpaid";
+          billing_country?: string | null;
+          currency?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          trial_ends_at?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          grandfathered?: boolean;
+          needs_review?: boolean;
+        };
+        Update: {
+          plan?: "core" | "plus" | "max";
+          status?: "incomplete" | "trialing" | "active" | "past_due" | "canceled" | "unpaid";
+          billing_country?: string | null;
+          currency?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          trial_ends_at?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          grandfathered?: boolean;
+          needs_review?: boolean;
+        };
+        Relationships: [];
+      };
+      stripe_webhook_events: {
+        Row: { event_id: string; type: string; processed_at: string };
+        Insert: { event_id: string; type: string };
+        Update: { type?: string };
+        Relationships: [];
+      };
       candidate_visibility: {
         Row: {
           candidate_id: string;
