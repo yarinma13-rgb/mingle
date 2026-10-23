@@ -47,7 +47,8 @@ export default function PrivacyPage() {
           Switzerland are asked first. If you arrive from an ad, we also report
           sign-ups and demo requests to Meta (Pixel and Conversions API) to
           measure and improve our advertising; your email is hashed before it
-          is sent.{" "}
+          is sent. Sign-up and sign-in pages also run a Cloudflare Turnstile
+          check to keep automated bots out.{" "}
           <CookieSettingsButton />
         </li>
       </ul>

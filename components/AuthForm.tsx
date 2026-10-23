@@ -3,6 +3,7 @@
 import { useState, startTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
+import { TurnstileWidget, turnstileSiteKey } from "@/components/auth/TurnstileWidget";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,6 +75,12 @@ export function AuthForm({
     initialError === "work_email" ? COMPANY_WORK_EMAIL_MESSAGE : null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const captchaBlocked =
+    Boolean(turnstileSiteKey()) && !captchaToken && !captchaUnavailable;
+  const refreshCaptcha = () => setCaptchaResetKey((key) => key + 1);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [confirmingPath, setConfirmingPath] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -240,12 +247,16 @@ export function AuthForm({
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
-      options: { data: { user_type: selectedPath } },
+      options: {
+        data: { user_type: selectedPath },
+        captchaToken: captchaToken ?? undefined,
+      },
     });
 
     if (signUpError) {
       setServerError(signUpError.message);
       setIsSubmitting(false);
+      refreshCaptcha();
       return;
     }
 
@@ -292,10 +303,12 @@ export function AuthForm({
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
+        options: { captchaToken: captchaToken ?? undefined },
       });
       if (error || !data.user) {
         setServerError(error?.message ?? "Couldn't sign in.");
         setIsSubmitting(false);
+        refreshCaptcha();
         return;
       }
 
@@ -526,9 +539,11 @@ export function AuthForm({
                     email,
                     {
                       redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+                      captchaToken: captchaToken ?? undefined,
                     },
                   );
                   setResetBusy(false);
+                  refreshCaptcha();
                   if (error) {
                     setServerError(error.message);
                     return;
@@ -558,9 +573,15 @@ export function AuthForm({
           </p>
         ) : null}
 
+        <TurnstileWidget
+          onToken={setCaptchaToken}
+          onUnavailable={() => setCaptchaUnavailable(true)}
+          resetKey={captchaResetKey}
+        />
+
         <button
           type="submit"
-          disabled={isSubmitting || (mode === "signup" && !path)}
+          disabled={isSubmitting || captchaBlocked || (mode === "signup" && !path)}
           className="mt-1 rounded-full bg-mingle-accent-blue px-6 py-3.5 text-sm font-normal text-white transition-opacity hover:opacity-95 disabled:opacity-60"
         >
           {isSubmitting
