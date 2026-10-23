@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { PURCHASABLE_PLANS, type PurchasablePlanId } from "@/lib/billing/plans";
 import { priceFor, regionForCountry, TRIAL_DAYS } from "@/lib/billing/pricing";
 
+/** Enterprise is sales-led: "Talk to us" books a call on the founder's calendar. */
+const ENTERPRISE_BOOKING_URL = "https://calendly.com/yarinma13/30min";
+
 const COUNTRY_CODES = [
   "IL", "US", "GB", "CA", "AU", "NZ", "IE", "DE", "FR", "ES", "IT", "NL", "BE", "AT", "PT",
   "FI", "GR", "LU", "MT", "CY", "EE", "LV", "LT", "SK", "SI", "HR", "BG", "SE", "DK", "NO",
@@ -221,7 +224,12 @@ export function PlanPicker({ defaultCountry }: { defaultCountry: string }) {
               </li>
             ))}
           </ul>
-          <a href="/contact" className="mingle-btn-secondary w-full text-center">
+          <a
+            href={ENTERPRISE_BOOKING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mingle-btn-secondary w-full text-center"
+          >
             Talk to us
           </a>
         </article>
