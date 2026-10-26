@@ -25,6 +25,33 @@ export type CompanyMemberStatus = "invited" | "active";
 export type InterviewLocationType = "video" | "in_person";
 export type InterviewStatus = "scheduled" | "completed" | "cancelled";
 
+export type ExternalSourceType =
+  | "greenhouse"
+  | "lever"
+  | "ashby"
+  | "workable"
+  | "smartrecruiters"
+  | "jsonld_sitemap";
+export type ExternalCollectionBasis =
+  | "public_api"
+  | "public_feed"
+  | "structured_data"
+  | "written_permission";
+export type ExternalSourceStatus = "active" | "paused" | "removed";
+export type ExternalJobStatus =
+  | "discovered"
+  | "pending_review"
+  | "published"
+  | "rejected"
+  | "paused"
+  | "expired"
+  | "removed";
+export type ExternalTakedownStatus =
+  | "pending_verification"
+  | "needs_review"
+  | "completed"
+  | "rejected";
+
 export interface Database {
   public: {
     Tables: {
@@ -1121,6 +1148,340 @@ export interface Database {
         };
         Relationships: [];
       };
+      external_jobs_settings: {
+        Row: {
+          id: boolean;
+          crawling_enabled: boolean;
+          auto_publish_enabled: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: boolean;
+          crawling_enabled?: boolean;
+          auto_publish_enabled?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          crawling_enabled?: boolean;
+          auto_publish_enabled?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      external_job_sources: {
+        Row: {
+          id: string;
+          company_name: string;
+          careers_url: string;
+          source_type: ExternalSourceType;
+          source_key: string;
+          collection_basis: ExternalCollectionBasis;
+          terms_reviewed_at: string | null;
+          terms_reviewed_by: string | null;
+          permission_notes: string | null;
+          allowed_apply_hosts: string[];
+          company_domains: string[];
+          logo_url: string | null;
+          logo_permission: boolean;
+          is_official_partner: boolean;
+          status: ExternalSourceStatus;
+          publishing_paused: boolean;
+          publishing_paused_reason: string | null;
+          crawl_interval_hours: number;
+          min_request_interval_ms: number;
+          robots_allowed: boolean | null;
+          robots_checked_at: string | null;
+          last_crawled_at: string | null;
+          last_success_at: string | null;
+          last_error: string | null;
+          consecutive_failures: number;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          company_name: string;
+          careers_url: string;
+          source_type: ExternalSourceType;
+          source_key: string;
+          collection_basis: ExternalCollectionBasis;
+          terms_reviewed_at?: string | null;
+          terms_reviewed_by?: string | null;
+          permission_notes?: string | null;
+          allowed_apply_hosts?: string[];
+          company_domains?: string[];
+          logo_url?: string | null;
+          logo_permission?: boolean;
+          is_official_partner?: boolean;
+          status?: ExternalSourceStatus;
+          publishing_paused?: boolean;
+          publishing_paused_reason?: string | null;
+          crawl_interval_hours?: number;
+          min_request_interval_ms?: number;
+          created_by?: string | null;
+        };
+        Update: {
+          company_name?: string;
+          careers_url?: string;
+          collection_basis?: ExternalCollectionBasis;
+          terms_reviewed_at?: string | null;
+          terms_reviewed_by?: string | null;
+          permission_notes?: string | null;
+          allowed_apply_hosts?: string[];
+          company_domains?: string[];
+          logo_url?: string | null;
+          logo_permission?: boolean;
+          is_official_partner?: boolean;
+          status?: ExternalSourceStatus;
+          publishing_paused?: boolean;
+          publishing_paused_reason?: string | null;
+          crawl_interval_hours?: number;
+          min_request_interval_ms?: number;
+          robots_allowed?: boolean | null;
+          robots_checked_at?: string | null;
+          last_crawled_at?: string | null;
+          last_success_at?: string | null;
+          last_error?: string | null;
+          consecutive_failures?: number;
+        };
+        Relationships: [];
+      };
+      external_jobs: {
+        Row: {
+          id: string;
+          source_id: string;
+          external_id: string;
+          fingerprint: string;
+          content_hash: string;
+          status: ExternalJobStatus;
+          status_reason: string | null;
+          company_name: string;
+          title: string;
+          location: string | null;
+          work_model: string | null;
+          employment_type: string | null;
+          seniority: string | null;
+          department: string | null;
+          category: string | null;
+          source_language: string | null;
+          summary: string | null;
+          responsibilities: string[];
+          requirements: string[];
+          nice_to_have: string[];
+          tags: string[];
+          apply_url: string;
+          source_url: string;
+          /** ValidationCheck[] (see lib/external-jobs/validate.ts). */
+          validation: unknown;
+          ai_model: string | null;
+          manually_edited: boolean;
+          source_posted_at: string | null;
+          source_updated_at: string | null;
+          first_seen_at: string;
+          last_seen_at: string;
+          last_verified_at: string | null;
+          verify_failures: number;
+          processed_at: string | null;
+          published_at: string | null;
+          expired_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          source_id: string;
+          external_id: string;
+          fingerprint: string;
+          content_hash: string;
+          status?: ExternalJobStatus;
+          status_reason?: string | null;
+          company_name: string;
+          title: string;
+          location?: string | null;
+          work_model?: string | null;
+          employment_type?: string | null;
+          seniority?: string | null;
+          department?: string | null;
+          category?: string | null;
+          source_language?: string | null;
+          summary?: string | null;
+          responsibilities?: string[];
+          requirements?: string[];
+          nice_to_have?: string[];
+          tags?: string[];
+          apply_url: string;
+          source_url: string;
+          validation?: unknown;
+          ai_model?: string | null;
+          source_posted_at?: string | null;
+          source_updated_at?: string | null;
+          last_seen_at?: string;
+        };
+        Update: {
+          fingerprint?: string;
+          content_hash?: string;
+          status?: ExternalJobStatus;
+          status_reason?: string | null;
+          company_name?: string;
+          title?: string;
+          location?: string | null;
+          work_model?: string | null;
+          employment_type?: string | null;
+          seniority?: string | null;
+          department?: string | null;
+          category?: string | null;
+          source_language?: string | null;
+          summary?: string | null;
+          responsibilities?: string[];
+          requirements?: string[];
+          nice_to_have?: string[];
+          tags?: string[];
+          apply_url?: string;
+          source_url?: string;
+          validation?: unknown;
+          ai_model?: string | null;
+          manually_edited?: boolean;
+          source_posted_at?: string | null;
+          source_updated_at?: string | null;
+          last_seen_at?: string;
+          last_verified_at?: string | null;
+          verify_failures?: number;
+          processed_at?: string | null;
+          published_at?: string | null;
+          expired_at?: string | null;
+        };
+        Relationships: [];
+      };
+      external_job_snapshots: {
+        Row: {
+          job_id: string;
+          source_text: string;
+          source_payload: unknown;
+          fetched_at: string;
+        };
+        Insert: {
+          job_id: string;
+          source_text: string;
+          source_payload?: unknown;
+          fetched_at?: string;
+        };
+        Update: {
+          source_text?: string;
+          source_payload?: unknown;
+          fetched_at?: string;
+        };
+        Relationships: [];
+      };
+      external_crawl_runs: {
+        Row: {
+          id: string;
+          trigger: string;
+          started_at: string;
+          finished_at: string | null;
+          stats: Record<string, number>;
+          errors: unknown;
+        };
+        Insert: {
+          trigger?: string;
+        };
+        Update: {
+          finished_at?: string | null;
+          stats?: Record<string, number>;
+          errors?: unknown;
+        };
+        Relationships: [];
+      };
+      external_job_events: {
+        Row: {
+          id: number;
+          job_id: string | null;
+          source_id: string | null;
+          run_id: string | null;
+          kind: string;
+          message: string | null;
+          detail: unknown;
+          actor: string;
+          created_at: string;
+        };
+        Insert: {
+          job_id?: string | null;
+          source_id?: string | null;
+          run_id?: string | null;
+          kind: string;
+          message?: string | null;
+          detail?: unknown;
+          actor?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      external_job_engagement: {
+        Row: {
+          id: number;
+          job_id: string;
+          kind: "view" | "apply_click" | "save";
+          user_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          job_id: string;
+          kind: "view" | "apply_click" | "save";
+          user_id?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      external_job_saves: {
+        Row: {
+          user_id: string;
+          job_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          job_id: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      external_job_takedowns: {
+        Row: {
+          id: string;
+          company_name: string;
+          requester_name: string | null;
+          requester_email: string;
+          job_id: string | null;
+          source_id: string | null;
+          scope: "job" | "company";
+          reason: string | null;
+          token_hash: string;
+          status: ExternalTakedownStatus;
+          verified_at: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          company_name: string;
+          requester_name?: string | null;
+          requester_email: string;
+          job_id?: string | null;
+          source_id?: string | null;
+          scope?: "job" | "company";
+          reason?: string | null;
+          token_hash: string;
+          status?: ExternalTakedownStatus;
+        };
+        Update: {
+          status?: ExternalTakedownStatus;
+          verified_at?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Relationships: [];
+      };
       recommendations: {
         Row: {
           id: string;
@@ -1416,6 +1777,21 @@ export interface Database {
       list_career_pages: {
         Args: Record<string, never>;
         Returns: { slug: string }[];
+      };
+      list_open_mingle_roles: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          title: string;
+          department: string | null;
+          employment_type: string | null;
+          work_model: string | null;
+          required_skills: string[] | null;
+          company_name: string | null;
+          company_slug: string;
+          company_location: string | null;
+          created_at: string;
+        }[];
       };
       list_related_push_subscriptions: {
         Args: { p_user_id: string };

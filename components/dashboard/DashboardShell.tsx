@@ -90,6 +90,7 @@ const TALENT_NAV: NavItem[] = [
     icon: MessageIcon,
     dividerAfter: true,
   },
+  { label: "Jobs", href: "/jobs", icon: BriefcaseIcon },
   { label: "Saved", href: "/saved", icon: BookmarkIcon },
   { label: "My profile", href: "/profile/build", icon: UserIcon },
   { label: "Settings", href: "/settings", icon: GearIcon },

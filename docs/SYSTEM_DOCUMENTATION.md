@@ -78,6 +78,10 @@ Board לחברה, Sentry/PostHog, תיקוני מובייל, smoke test ב-Playw
 
 אין שכבת קאש, אין תור. Realtime רק להודעות. Google OAuth לא מוגדר ב-Supabase.
 
+**External Opportunities** (`0053_external_jobs.sql`): מנוע יומי שאוסף משרות מאתרי קריירה
+רשמיים דרך APIs/structured data מאושרים, מנסח מחדש ב-AI, מאמת ומפרסם ב-`/jobs`. נפרד
+לגמרי מ-`roles`. ניהול ב-`/admin/external-jobs`. פירוט מלא: `docs/EXTERNAL_JOBS.md`.
+
 ---
 
 ## 4. פיצ'רים והחלטות הנדסיות

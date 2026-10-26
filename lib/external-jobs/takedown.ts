@@ -1,0 +1,202 @@
+import { randomBytes } from "node:crypto";
+import { Resend } from "resend";
+import { z } from "zod";
+import { appOrigin } from "@/lib/app-origin";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEngineAlert } from "@/lib/external-jobs/alerts";
+import { logEvent, type AdminDb } from "@/lib/external-jobs/store";
+import { hostMatchesAny, hostOf, normalizeForKey, sha256 } from "@/lib/external-jobs/text";
+import type { ExternalSourceRow } from "@/lib/external-jobs/types";
+
+/*
+ * Company removal requests (spec §5, rule 9). A request is verified by
+ * proving control of an email address on the company's own domain: the
+ * engine emails a one-time link, and clicking it removes the job(s) at once
+ * and stops collection for a company-wide request. Requests from other
+ * domains go to an admin queue instead of being executed automatically.
+ */
+
+export const takedownSchema = z.object({
+  companyName: z.string().trim().min(2).max(120),
+  requesterName: z.string().trim().max(120).optional().default(""),
+  requesterEmail: z.string().trim().toLowerCase().email().max(200),
+  jobId: z.string().uuid().optional().or(z.literal("")).default(""),
+  scope: z.enum(["job", "company"]),
+  reason: z.string().trim().max(2000).optional().default(""),
+});
+
+export type TakedownInput = z.infer<typeof takedownSchema>;
+
+function sourceDomains(source: ExternalSourceRow): string[] {
+  const careers = hostOf(source.careers_url);
+  return [...source.company_domains, ...(careers ? [careers] : [])];
+}
+
+async function matchingSources(db: AdminDb, companyName: string, jobId: string) {
+  if (jobId) {
+    const { data: job } = await db
+      .from("external_jobs")
+      .select("source_id")
+      .eq("id", jobId)
+      .maybeSingle();
+    if (!job) return [];
+    const { data } = await db.from("external_job_sources").select("*").eq("id", job.source_id);
+    return data ?? [];
+  }
+  const { data } = await db.from("external_job_sources").select("*").neq("status", "removed");
+  return (data ?? []).filter(
+    (s) => normalizeForKey(s.company_name) === normalizeForKey(companyName),
+  );
+}
+
+export async function createTakedownRequest(
+  input: TakedownInput,
+): Promise<{ ok: true; verificationSent: boolean } | { ok: false; error: string }> {
+  const db = createAdminClient();
+  if (!db) return { ok: false, error: "Removal requests are temporarily unavailable. Email support@mingle.careers." };
+
+  const scope = input.jobId ? input.scope : "company";
+  const sources = await matchingSources(db, input.companyName, input.jobId);
+  const emailDomain = input.requesterEmail.split("@")[1] ?? "";
+  const verifiable = sources.find((s) => hostMatchesAny(emailDomain, sourceDomains(s)));
+
+  const token = randomBytes(24).toString("base64url");
+  const { data: row, error } = await db
+    .from("external_job_takedowns")
+    .insert({
+      company_name: input.companyName,
+      requester_name: input.requesterName || null,
+      requester_email: input.requesterEmail,
+      job_id: input.jobId || null,
+      source_id: verifiable?.id ?? sources[0]?.id ?? null,
+      scope,
+      reason: input.reason || null,
+      token_hash: sha256(token),
+      status: verifiable ? "pending_verification" : "needs_review",
+    })
+    .select("id")
+    .single();
+  if (error || !row) return { ok: false, error: "Could not save the request. Please try again." };
+
+  await logEvent(db, {
+    kind: "takedown_requested",
+    jobId: input.jobId || null,
+    sourceId: verifiable?.id ?? null,
+    message: `${input.companyName} (${input.requesterEmail}) · ${scope}`,
+    actor: input.requesterEmail,
+  });
+
+  if (!verifiable) {
+    await sendEngineAlert(`Removal request needs review: ${input.companyName}`, [
+      `${input.requesterEmail} asked to remove ${scope === "job" ? `job ${input.jobId}` : "all jobs"}.`,
+      "The email domain does not match the company's recorded domains, so it was not executed automatically.",
+      input.reason ? `Reason: ${input.reason}` : "",
+    ]);
+    return { ok: true, verificationSent: false };
+  }
+
+  const link = `${appOrigin()}/api/external-jobs/takedown/verify?id=${row.id}&token=${token}`;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) {
+    await db.from("external_job_takedowns").update({ status: "needs_review" }).eq("id", row.id);
+    await sendEngineAlert(`Removal request needs review: ${input.companyName}`, [
+      "RESEND_API_KEY is not configured, so no verification email could be sent.",
+    ]);
+    return { ok: true, verificationSent: false };
+  }
+  try {
+    await new Resend(apiKey).emails.send({
+      from: "mingle <noreply@mingle.careers>",
+      to: input.requesterEmail,
+      subject: "Confirm your job removal request on mingle",
+      text: `We received a request to remove ${
+        scope === "job" ? "a job listing" : `all job listings for ${input.companyName}`
+      } from mingle.\n\nConfirm the removal (takes effect immediately):\n${link}\n\nIf you did not make this request, ignore this email.`,
+    });
+  } catch {
+    await db.from("external_job_takedowns").update({ status: "needs_review" }).eq("id", row.id);
+    return { ok: true, verificationSent: false };
+  }
+  return { ok: true, verificationSent: true };
+}
+
+/** Removes the job(s) a takedown covers. Used by the verify link and by admins. */
+export async function executeTakedown(
+  db: AdminDb,
+  takedownId: string,
+  actor: string,
+): Promise<{ removed: number }> {
+  const { data: request } = await db
+    .from("external_job_takedowns")
+    .select("*")
+    .eq("id", takedownId)
+    .maybeSingle();
+  if (!request) return { removed: 0 };
+  const nowIso = new Date().toISOString();
+  let removed = 0;
+
+  if (request.scope === "job" && request.job_id) {
+    const { data } = await db
+      .from("external_jobs")
+      .update({ status: "removed", status_reason: `Removed at the company's request (${request.requester_email}).` })
+      .eq("id", request.job_id)
+      .select("id");
+    removed = data?.length ?? 0;
+  } else {
+    const sources = await matchingSources(db, request.company_name, "");
+    for (const source of sources) {
+      const { data } = await db
+        .from("external_jobs")
+        .update({ status: "removed", status_reason: `Removed at the company's request (${request.requester_email}).` })
+        .eq("source_id", source.id)
+        .in("status", ["discovered", "pending_review", "published", "paused"])
+        .select("id");
+      removed += data?.length ?? 0;
+      await db
+        .from("external_job_sources")
+        .update({
+          status: "removed",
+          publishing_paused: true,
+          publishing_paused_reason: "Company requested removal",
+          permission_notes: `${source.permission_notes ? `${source.permission_notes}\n` : ""}${nowIso.slice(0, 10)}: company requested removal of all listings (${request.requester_email}). Do not re-add without written permission.`,
+        })
+        .eq("id", source.id);
+    }
+  }
+
+  await db
+    .from("external_job_takedowns")
+    .update({ status: "completed", resolved_at: nowIso, resolved_by: actor })
+    .eq("id", takedownId);
+  await logEvent(db, {
+    kind: "takedown_completed",
+    jobId: request.job_id,
+    sourceId: request.source_id,
+    message: `${removed} job(s) removed for ${request.company_name}`,
+    actor,
+  });
+  return { removed };
+}
+
+export async function verifyTakedown(
+  id: string,
+  token: string,
+): Promise<{ ok: boolean; removed: number }> {
+  const db = createAdminClient();
+  if (!db) return { ok: false, removed: 0 };
+  const { data: request } = await db
+    .from("external_job_takedowns")
+    .select("id, token_hash, status, requester_email")
+    .eq("id", id)
+    .maybeSingle();
+  if (!request || request.token_hash !== sha256(token)) return { ok: false, removed: 0 };
+  if (request.status === "completed") return { ok: true, removed: 0 };
+  if (request.status !== "pending_verification") return { ok: false, removed: 0 };
+
+  await db
+    .from("external_job_takedowns")
+    .update({ verified_at: new Date().toISOString() })
+    .eq("id", id);
+  const { removed } = await executeTakedown(db, id, request.requester_email);
+  return { ok: true, removed };
+}
