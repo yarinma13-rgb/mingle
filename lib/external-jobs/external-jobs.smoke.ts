@@ -5,7 +5,7 @@
  */
 import { greenhouse, lever } from "@/lib/external-jobs/connectors/ats";
 import { extractJobPostings, postingToRawJob, sitemapLocations } from "@/lib/external-jobs/connectors/jsonld";
-import { PoliteFetcher, SourceAccessDenied } from "@/lib/external-jobs/http";
+import { PoliteFetcher, SourceAccessDenied, SourceTransientError } from "@/lib/external-jobs/http";
 import { recommendJob } from "@/lib/external-jobs/recommend";
 import { parseRobots } from "@/lib/external-jobs/robots";
 import { supportedTags } from "@/lib/external-jobs/pipeline";
@@ -208,6 +208,8 @@ async function run() {
     calls.push(url);
     const ua = new Headers(init?.headers).get("user-agent") ?? "";
     expect(ua.startsWith("MingleJobsBot"), "http: identifies itself");
+    if (url === "https://dead.test/robots.txt") throw new TypeError("fetch failed");
+    if (url === "https://down.test/robots.txt") return new Response("oops", { status: 503 });
     if (url.endsWith("/robots.txt")) {
       return new Response(url.includes("blocked.test") ? "User-agent: *\nDisallow: /" : "User-agent: *\nAllow: /", { status: 200 });
     }
@@ -236,6 +238,16 @@ async function run() {
       () => expect(false, "http: robots-disallowed request must throw"),
       (e) => expect(e instanceof SourceAccessDenied && e.reason === "robots", "http: robots blocks"),
     );
+    for (const host of ["dead.test", "down.test"]) {
+      const status = await fetcher.robotsStatus(`https://${host}/jobs`);
+      expect(status.state === "unreachable", `http: ${host} robots is unreachable, not disallowed`);
+      await fetcher.get(`https://${host}/jobs`).then(
+        () => expect(false, `http: ${host} must not be fetched without robots.txt`),
+        (e) => expect(e instanceof SourceTransientError, `http: ${host} outage is transient, not a ban`),
+      );
+    }
+    expect((await fetcher.robotsStatus("https://blocked.test/x")).state === "disallowed", "http: real disallow reported");
+    expect(!calls.some((c) => c.startsWith("https://dead.test/jobs") || c.startsWith("https://down.test/jobs")), "http: nothing fetched past unreadable robots");
     await fetcher.get("https://ok.test/forbidden").then(
       () => expect(false, "http: 403 must throw"),
       (e) => expect(e instanceof SourceAccessDenied && e.reason === "forbidden", "http: 403 not bypassed"),

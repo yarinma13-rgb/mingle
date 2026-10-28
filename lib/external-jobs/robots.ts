@@ -10,6 +10,11 @@ export type RobotsPolicy = {
   isAllowed(path: string): boolean;
   /** Seconds, if the matching group sets Crawl-delay. */
   crawlDelay: number | null;
+  /**
+   * Set when robots.txt could not be read (network error / 5xx). Nothing may
+   * be fetched, but this is an outage, not the site forbidding us.
+   */
+  unreachable?: string;
 };
 
 export function parseRobots(body: string, userAgentToken: string): RobotsPolicy {
@@ -85,4 +90,6 @@ function matches(pattern: string, path: string): boolean {
 }
 
 export const ALLOW_ALL: RobotsPolicy = { isAllowed: () => true, crawlDelay: null };
-export const DISALLOW_ALL: RobotsPolicy = { isAllowed: () => false, crawlDelay: null };
+export function unreachableRobots(reason: string): RobotsPolicy {
+  return { isAllowed: () => false, crawlDelay: null, unreachable: reason };
+}

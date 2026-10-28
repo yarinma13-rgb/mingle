@@ -1,4 +1,4 @@
-import { ALLOW_ALL, DISALLOW_ALL, parseRobots, type RobotsPolicy } from "@/lib/external-jobs/robots";
+import { ALLOW_ALL, parseRobots, unreachableRobots, type RobotsPolicy } from "@/lib/external-jobs/robots";
 import { CRAWLER_ROBOTS_TOKEN, CRAWLER_USER_AGENT } from "@/lib/external-jobs/types";
 
 /**
@@ -92,10 +92,13 @@ export class PoliteFetcher {
       // RFC 9309: 4xx means "no restrictions"; 5xx / unreachable means
       // assume full disallow until it can be read.
       if (response.status >= 400 && response.status < 500) return ALLOW_ALL;
-      if (!response.ok) return DISALLOW_ALL;
+      if (!response.ok) return unreachableRobots(`robots.txt returned ${response.status}`);
       return parseRobots(await response.text(), CRAWLER_ROBOTS_TOKEN);
-    } catch {
-      return DISALLOW_ALL;
+    } catch (error) {
+      const cause = (error as { cause?: { message?: string } })?.cause?.message;
+      return unreachableRobots(
+        `robots.txt unreachable (${cause ?? (error instanceof Error ? error.message : "network error")})`,
+      );
     }
   }
 
@@ -103,6 +106,19 @@ export class PoliteFetcher {
     const url = new URL(rawUrl);
     const policy = await this.robotsFor(url);
     return policy.isAllowed(url.pathname + url.search);
+  }
+
+  /**
+   * "allowed" / "disallowed" by robots.txt, or "unreachable" when it could
+   * not be read (treated as a temporary failure, never as a ban).
+   */
+  async robotsStatus(rawUrl: string): Promise<
+    { state: "allowed" | "disallowed" } | { state: "unreachable"; reason: string }
+  > {
+    const url = new URL(rawUrl);
+    const policy = await this.robotsFor(url);
+    if (policy.unreachable) return { state: "unreachable", reason: `${url.host}: ${policy.unreachable}` };
+    return { state: policy.isAllowed(url.pathname + url.search) ? "allowed" : "disallowed" };
   }
 
   private async throttle(host: string, crawlDelaySeconds: number | null) {
@@ -119,6 +135,9 @@ export class PoliteFetcher {
       throw new SourceAccessDenied("forbidden", `Unsupported protocol for ${rawUrl}`);
     }
     const policy = await this.robotsFor(url);
+    if (policy.unreachable) {
+      throw new SourceTransientError(`${url.host}: ${policy.unreachable}; not fetching until it can be read`);
+    }
     if (!policy.isAllowed(url.pathname + url.search)) {
       throw new SourceAccessDenied("robots", `robots.txt disallows ${url.pathname}`);
     }

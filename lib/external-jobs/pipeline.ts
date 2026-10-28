@@ -191,7 +191,14 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
   }
 
   const endpoint = connector.endpoint(source);
-  const robotsAllowed = await fetcher.isAllowed(endpoint).catch(() => false);
+  const robots = await fetcher.robotsStatus(endpoint);
+  if (robots.state === "unreachable") {
+    // An outage, not a ban: count a failure and try again next run.
+    await failSource(ctx, source, robots.reason, { pauseSource: false });
+    ctx.stats.requests += fetcher.requests;
+    return;
+  }
+  const robotsAllowed = robots.state === "allowed";
   await db
     .from("external_job_sources")
     .update({ robots_allowed: robotsAllowed, robots_checked_at: nowIso })
@@ -441,11 +448,16 @@ export async function checkApplyLink(
     ? " Listed with this URL by the company's official job-board API in this crawl."
     : "";
   try {
-    if (!(await fetcher.isAllowed(url))) {
+    const robots = await fetcher.robotsStatus(url);
+    if (robots.state !== "allowed") {
+      const why =
+        robots.state === "unreachable"
+          ? `Could not read robots.txt for the apply page (${robots.reason}).`
+          : "robots.txt disallows fetching the apply page.";
       return {
         ok: listedByOfficialApi,
         gone: false,
-        detail: `robots.txt disallows fetching the apply page.${evidence || " Could not verify."}`,
+        detail: `${why}${evidence || " Could not verify."}`,
       };
     }
     const page = await fetcher.get(url, { accept: "text/html" });
