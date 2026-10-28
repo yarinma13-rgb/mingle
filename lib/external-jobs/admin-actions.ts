@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/access";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hardPublishChecks, runExternalJobsCrawl, UNVERIFIABLE_PREFIX } from "@/lib/external-jobs/pipeline";
+import { sendEngineAlert } from "@/lib/external-jobs/alerts";
 import { logEvent } from "@/lib/external-jobs/store";
 import { executeTakedown } from "@/lib/external-jobs/takedown";
 import { hostOf, jobFingerprint } from "@/lib/external-jobs/text";
@@ -177,16 +179,19 @@ export async function crawlNowAction(formData: FormData) {
   await adminContext();
   const sourceId = String(formData.get("sourceId") ?? "") || undefined;
   const back = returnTo(formData, `${BASE}?tab=sources`);
-  // Server actions share the request time limit: keep a manual run short.
-  const summary = await runExternalJobsCrawl({ trigger: "manual", sourceId, budgetMs: 50_000 });
-  revalidatePath(BASE);
-  if (summary.skipped) redirectWith(back, summary.skipped);
-  const s = summary.stats;
+  // A crawl takes minutes; waiting for it in the click times out. Run it after
+  // the response (up to the page's maxDuration) and show progress in the run
+  // list instead.
+  after(async () => {
+    try {
+      await runExternalJobsCrawl({ trigger: "manual", sourceId, budgetMs: 240_000 });
+    } catch (error) {
+      await sendEngineAlert("Manual crawl crashed", [error instanceof Error ? error.message : String(error)]);
+    }
+  });
   redirectWith(
     back,
-    `Crawl done: ${s.jobsSeen} seen, ${s.discovered} new, ${s.published} published, ${s.updated} updated, ${s.pendingReview} to review, ${s.expired} expired${
-      s.deferred ? `, ${s.deferred} deferred to next run` : ""
-    }${summary.errors.length ? `, ${summary.errors.length} error(s)` : ""}.`,
+    "Crawl started in the background. Refresh in 2–4 minutes: results show under Analytics → Recent crawl runs, and jobs appear in Published / Pending Review.",
   );
 }
 

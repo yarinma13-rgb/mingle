@@ -30,6 +30,12 @@ import type { ExternalJobStatus } from "@/lib/supabase/types";
  */
 
 const PENDING_HASH = "pending";
+/** status_reason prefix for jobs the AI could not process; retried every run. */
+export const AI_ERROR_PREFIX = "AI processing failed:";
+/** Stop calling the AI for the rest of a run after this many failures in a row. */
+const MAX_CONSECUTIVE_AI_ERRORS = 3;
+/** A run that started this recently and hasn't finished blocks a new one. */
+const RUN_LOCK_MS = 6 * 60_000;
 /** Jobs absent from a complete official feed this many checks in a row are expired. */
 const EXPIRE_AFTER_MISSES = 3;
 /** Auto-pause a source's publishing when this share of processed jobs fails checks. */
@@ -61,6 +67,7 @@ export type RunStats = {
   expired: number;
   paused: number;
   deferred: number;
+  aiErrors: number;
   requests: number;
 };
 
@@ -85,6 +92,7 @@ function emptyStats(): RunStats {
     expired: 0,
     paused: 0,
     deferred: 0,
+    aiErrors: 0,
     requests: 0,
   };
 }
@@ -110,6 +118,8 @@ type RunContext = {
   errors: RunSummary["errors"];
   deadline: number;
   aiLeft: number;
+  aiErrorsInARow: number;
+  aiErrorAlerted: boolean;
 };
 
 export async function runExternalJobsCrawl(opts: {
@@ -129,6 +139,17 @@ export async function runExternalJobsCrawl(opts: {
     return { runId: null, skipped: "Crawling is paused in the admin dashboard.", stats, errors: [] };
   }
 
+  // Two runs on the same source would race on inserts: allow one at a time.
+  const { data: running } = await db
+    .from("external_crawl_runs")
+    .select("id")
+    .is("finished_at", null)
+    .gte("started_at", new Date(Date.now() - RUN_LOCK_MS).toISOString())
+    .limit(1);
+  if (running?.length) {
+    return { runId: null, skipped: "Another crawl is already running. Try again in a few minutes.", stats, errors: [] };
+  }
+
   const { data: run } = await db
     .from("external_crawl_runs")
     .insert({ trigger: opts.trigger })
@@ -142,6 +163,8 @@ export async function runExternalJobsCrawl(opts: {
     errors: [],
     deadline: Date.now() + (opts.budgetMs ?? 240_000),
     aiLeft: aiBudget(),
+    aiErrorsInARow: 0,
+    aiErrorAlerted: false,
   };
   await logEvent(db, { kind: "crawl_started", runId: ctx.runId, message: opts.trigger });
 
@@ -329,7 +352,10 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       continue;
     }
 
-    if (row.content_hash === hash) {
+    // Jobs the AI failed on are retried even if the source didn't change.
+    const retryAi = row.status === "pending_review" && Boolean(row.status_reason?.startsWith(AI_ERROR_PREFIX));
+
+    if (row.content_hash === hash && !retryAi) {
       if (row.status === "paused" && row.status_reason?.startsWith(UNVERIFIABLE_PREFIX)) {
         const canPublish = ctx.settings.autoPublishEnabled && !source.publishing_paused;
         await db
@@ -347,7 +373,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       continue;
     }
 
-    if (row.manually_edited && row.content_hash !== PENDING_HASH) {
+    if (row.manually_edited && row.content_hash !== PENDING_HASH && !retryAi) {
       // Never silently overwrite an admin's edit: send it back for review.
       await db
         .from("external_jobs")
@@ -371,7 +397,9 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     }
 
     const outcome = await processJob(ctx, source, row, raw, hash, fetcher);
-    processedHere += 1;
+    // An AI outage says nothing about this source's jobs: it doesn't count
+    // toward pausing the source.
+    if (outcome !== "ai_error") processedHere += 1;
     if (outcome === "failed") failedHere += 1;
   }
 
@@ -553,7 +581,7 @@ export function supportedTags(tags: string[], raw: RawJob, category: string): st
   });
 }
 
-type ProcessOutcome = "published" | "failed" | "rejected";
+type ProcessOutcome = "published" | "failed" | "rejected" | "ai_error";
 
 async function processJob(
   ctx: RunContext,
@@ -580,25 +608,41 @@ async function processJob(
       processed.tags = supportedTags(processed.tags, raw, processed.category);
       factCheck = await factCheckJob(raw, processed);
     } catch (error) {
+      // Either call failing means the content wasn't verified: treat both alike.
+      processed = null;
       aiError = error instanceof Error ? error.message : "AI processing failed";
     }
   }
 
   if (!processed) {
+    // Not published, not a content problem: keep the hash pending so the next
+    // run retries it, and stop hammering a broken AI for the rest of this run.
     await db
       .from("external_jobs")
       .update({
-        status: "pending_review",
-        status_reason: `AI processing failed: ${aiError}`.slice(0, 500),
+        status: row.status === "published" ? "published" : "pending_review",
+        status_reason: row.status === "published" ? row.status_reason : `${AI_ERROR_PREFIX} ${aiError}`.slice(0, 500),
         last_seen_at: nowIso,
         processed_at: nowIso,
-        content_hash: hash,
+        content_hash: PENDING_HASH,
       })
       .eq("id", row.id);
-    ctx.stats.pendingReview += 1;
+    ctx.stats.aiErrors += 1;
     await logEvent(db, { kind: "ai_error", jobId: row.id, sourceId: source.id, runId: ctx.runId, message: aiError });
-    return "failed";
+    ctx.aiErrorsInARow += 1;
+    if (ctx.aiErrorsInARow >= MAX_CONSECUTIVE_AI_ERRORS) {
+      ctx.aiLeft = 0;
+      if (!ctx.aiErrorAlerted) {
+        ctx.aiErrorAlerted = true;
+        await sendEngineAlert("AI processing is failing", [
+          `${ctx.aiErrorsInARow} AI calls failed in a row (model ${externalJobsModel()}). Processing stopped for this run; jobs will be retried next run.`,
+          `Last error: ${aiError}`,
+        ]);
+      }
+    }
+    return "ai_error";
   }
+  ctx.aiErrorsInARow = 0;
 
   const fingerprint = jobFingerprint(processed);
   const duplicate = await findDuplicate(db, row.id, fingerprint, processed.companyName, processed.title);

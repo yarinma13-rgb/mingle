@@ -1,4 +1,4 @@
-import { geminiApiKey, geminiGenerateJson } from "@/lib/ai/gemini";
+import { DEFAULT_GEMINI_MODEL, geminiApiKey, geminiGenerateJson } from "@/lib/ai/gemini";
 import { cleanList } from "@/lib/external-jobs/text";
 import {
   EMPLOYMENT_TYPES,
@@ -12,7 +12,11 @@ import {
 } from "@/lib/external-jobs/types";
 
 export function externalJobsModel(): string {
-  return process.env.EXTERNAL_JOBS_GEMINI_MODEL?.trim() || "gemini-2.0-flash";
+  return (
+    process.env.EXTERNAL_JOBS_GEMINI_MODEL?.trim() ||
+    process.env.GEMINI_MODEL?.trim() ||
+    DEFAULT_GEMINI_MODEL
+  );
 }
 
 export function aiAvailable(): boolean {

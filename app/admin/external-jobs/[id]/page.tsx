@@ -10,6 +10,9 @@ import { EMPLOYMENT_LABELS } from "@/lib/external-jobs/candidate";
 import { parseChecks } from "@/lib/external-jobs/validate";
 import { EXTERNAL_JOB_DISCLAIMER, JOB_CATEGORIES, WORK_MODELS } from "@/lib/external-jobs/types";
 
+// Server actions on this page (Crawl now runs in after()) get up to 5 minutes.
+export const maxDuration = 300;
+
 function one(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value ?? "").trim();
 }

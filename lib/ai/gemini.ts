@@ -3,7 +3,9 @@
  * No SDK dependency — fetch only, following other server env patterns in the repo.
  */
 
-const DEFAULT_MODEL = "gemini-2.0-flash";
+// gemini-2.0-flash was shut down on 2026-06-01; Google's recommended
+// replacement has no shutdown date announced. Override with GEMINI_MODEL.
+export const DEFAULT_GEMINI_MODEL = "gemini-3.6-flash";
 
 export function geminiApiKey(): string | null {
   const key =
@@ -39,7 +41,7 @@ export async function geminiGenerateJson<T>(input: {
     );
   }
 
-  const model = input.model ?? DEFAULT_MODEL;
+  const model = input.model ?? (process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
 
   const response = await fetch(url, {

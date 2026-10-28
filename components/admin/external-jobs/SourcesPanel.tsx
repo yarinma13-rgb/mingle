@@ -78,7 +78,7 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
 
       <Panel
         title={`Sources (${sources.length})`}
-        actions={<ActionButton action={crawlNowAction} fields={{ returnTo: BACK }} label="Crawl all due sources now" pendingLabel="Crawling… (up to a minute)" />}
+        actions={<ActionButton action={crawlNowAction} fields={{ returnTo: BACK }} label="Crawl all due sources now" pendingLabel="Starting…" />}
       >
         {sources.length === 0 ? (
           <p className="text-sm text-mingle-text-secondary">No sources yet.</p>
@@ -112,7 +112,7 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
                   <div className="flex flex-wrap gap-2">
                     {s.status === "active" ? (
                       <>
-                        <ActionButton action={crawlNowAction} fields={{ sourceId: s.id, returnTo: BACK }} label="Crawl now" pendingLabel="Crawling… (up to a minute)" />
+                        <ActionButton action={crawlNowAction} fields={{ sourceId: s.id, returnTo: BACK }} label="Crawl now" pendingLabel="Starting…" />
                         <ActionButton action={updateSourceAction} fields={{ sourceId: s.id, op: "pause", returnTo: BACK }} label="Pause crawling" />
                       </>
                     ) : (

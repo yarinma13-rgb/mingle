@@ -40,6 +40,9 @@ const TABS: Array<[string, string]> = [
   ["takedowns", "Removal requests"],
 ];
 
+// Server actions on this page (Crawl now runs in after()) get up to 5 minutes.
+export const maxDuration = 300;
+
 function one(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value ?? "").trim();
 }
@@ -224,7 +227,7 @@ async function OverviewTab({ db }: { db: Db }) {
           ) : (
             <table className="w-full text-left text-xs">
               <thead className="text-mingle-text-secondary">
-                <tr><th className="py-1">Started</th><th>Seen</th><th>New</th><th>Pub.</th><th>Review</th><th>Exp.</th><th>Errors</th></tr>
+                <tr><th className="py-1">Started</th><th>Seen</th><th>New</th><th>Pub.</th><th>Review</th><th>Exp.</th><th>AI fail</th><th>Errors</th></tr>
               </thead>
               <tbody>
                 {o.runs.map((r) => (
@@ -235,6 +238,7 @@ async function OverviewTab({ db }: { db: Db }) {
                     <td>{(r.stats.published ?? 0) + (r.stats.updated ?? 0)}</td>
                     <td>{r.stats.pendingReview ?? 0}</td>
                     <td>{r.stats.expired ?? 0}</td>
+                    <td className={r.stats.aiErrors ? "text-mingle-error" : ""}>{r.stats.aiErrors ?? 0}</td>
                     <td className={r.errorCount ? "text-mingle-error" : ""}>{r.errorCount}</td>
                   </tr>
                 ))}
