@@ -76,6 +76,8 @@ export default async function ExternalJobsAdminPage({ searchParams }: PageProps<
         </p>
       ) : null}
 
+      <EnvChecklist />
+
       {!db ? (
         <p className="text-sm text-mingle-error">
           SUPABASE_SERVICE_ROLE_KEY is not configured. The engine and this dashboard need it.
@@ -96,6 +98,48 @@ export default async function ExternalJobsAdminPage({ searchParams }: PageProps<
 }
 
 type Db = NonNullable<ReturnType<typeof adminDbOrNull>>;
+
+/**
+ * Which settings this deployment can see (names only, never values), so a
+ * missing or wrongly-scoped Vercel variable is obvious. Hidden once all set.
+ */
+function EnvChecklist() {
+  const vars: Array<[string, boolean, string]> = [
+    ["NEXT_PUBLIC_SUPABASE_URL", true, "database address"],
+    ["SUPABASE_SERVICE_ROLE_KEY", true, "engine and dashboard"],
+    ["GEMINI_API_KEY", true, "AI rewrite; without it nothing is published"],
+    ["CRON_SECRET", true, "daily crawl"],
+    ["RESEND_API_KEY", false, "alert and removal emails"],
+  ];
+  const rows = vars.map(([name, required, purpose]) => ({
+    name,
+    required,
+    purpose,
+    present: Boolean(process.env[name]?.trim()),
+  }));
+  if (rows.every((r) => r.present || !r.required)) return null;
+  return (
+    <Panel title={`Settings this deployment sees (${process.env.VERCEL_ENV ?? "local"})`}>
+      <ul className="flex flex-col gap-1 text-xs">
+        {rows.map((r) => (
+          <li key={r.name} className="flex gap-2">
+            <span className={r.present ? "text-mingle-success" : r.required ? "text-mingle-error" : "text-mingle-text-secondary"}>
+              {r.present ? "✓" : "✗"}
+            </span>
+            <code>{r.name}</code>
+            <span className="text-mingle-text-secondary">
+              {r.purpose}
+              {!r.present && !r.required ? " (optional)" : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-mingle-text-secondary">
+        Missing here but set in Vercel? Check the variable is enabled for this environment, then redeploy this deployment.
+      </p>
+    </Panel>
+  );
+}
 
 async function OverviewTab({ db }: { db: Db }) {
   const o = await loadOverview(db);
