@@ -84,7 +84,9 @@ type LeverPosting = {
 
 export const lever: Connector = {
   endpoint: (source) =>
-    `https://api.lever.co/v0/postings/${encodeURIComponent(source.source_key)}?mode=json`,
+    // limit = cap + 1 so we can tell whether the list is complete. Big boards
+    // (Palantir: ~6MB unpaginated) would otherwise be one huge response.
+    `https://api.lever.co/v0/postings/${encodeURIComponent(source.source_key)}?mode=json&limit=${MAX_JOBS_PER_SOURCE + 1}`,
   async list(source, fetcher) {
     const { status, data } = await fetcher.getJson<LeverPosting[]>(this.endpoint(source));
     requireOk(status, data, "Lever");

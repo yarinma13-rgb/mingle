@@ -34,7 +34,8 @@ export type FetchResult = {
 };
 
 const TIMEOUT_MS = 15_000;
-const MAX_BODY_BYTES = 4_000_000;
+// Large ATS boards return several MB of JSON in one response.
+const MAX_BODY_BYTES = 15_000_000;
 const MAX_ATTEMPTS = 3;
 const MAX_RETRY_AFTER_MS = 60_000;
 const MAX_REDIRECTS = 5;
@@ -99,6 +100,8 @@ export class PoliteFetcher {
       this.requests += 1;
       // RFC 9309: 4xx means "no restrictions"; 5xx / unreachable means
       // assume full disallow until it can be read.
+      // 429 is "slow down", not "no robots.txt": treat it like a 5xx.
+      if (response.status === 429) return unreachableRobots("robots.txt rate-limited (429)");
       if (response.status >= 400 && response.status < 500) return ALLOW_ALL;
       if (!response.ok) return unreachableRobots(`robots.txt returned ${response.status}`);
       return parseRobots(await response.text(), CRAWLER_ROBOTS_TOKEN);
@@ -151,7 +154,12 @@ export class PoliteFetcher {
       }
 
       const buffer = await response.arrayBuffer();
-      const body = new TextDecoder().decode(buffer.slice(0, MAX_BODY_BYTES));
+      if (buffer.byteLength > MAX_BODY_BYTES) {
+        throw new SourceTransientError(
+          `${url.host} response is too large (${Math.round(buffer.byteLength / 1_000_000)}MB, max ${MAX_BODY_BYTES / 1_000_000}MB).`,
+        );
+      }
+      const body = new TextDecoder().decode(buffer);
       const contentType = response.headers.get("content-type") ?? "";
       if (contentType.includes("html") && looksLikeBotChallenge(body)) {
         throw new SourceAccessDenied(

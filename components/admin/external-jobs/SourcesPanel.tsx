@@ -1,5 +1,5 @@
 import { crawlNowAction, addSourceAction, updateSourceAction } from "@/lib/external-jobs/admin-actions";
-import { SOURCE_TYPE_LABELS, type ExternalSourceRow } from "@/lib/external-jobs/types";
+import { SOURCE_TYPE_LABELS, UNAVAILABLE_SOURCE_TYPES, type ExternalSourceRow } from "@/lib/external-jobs/types";
 import { ActionButton, inputClass, Panel, StatusPill, when } from "@/components/admin/external-jobs/ui";
 
 const BACK = "/admin/external-jobs?tab=sources";
@@ -9,7 +9,6 @@ const KEY_HELP: Record<string, string> = {
   lever: "site name (jobs.lever.co/<site>)",
   ashby: "job board name (jobs.ashbyhq.com/<name>)",
   workable: "account subdomain (apply.workable.com/<account>)",
-  smartrecruiters: "company identifier (jobs.smartrecruiters.com/<id>)",
   jsonld_sitemap: "full sitemap URL on the careers domain",
 };
 
@@ -29,7 +28,9 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
           <label className="flex flex-col gap-1 text-xs">
             Collection method
             <select name="sourceType" className={inputClass} defaultValue="greenhouse">
-              {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
+              {Object.entries(SOURCE_TYPE_LABELS)
+                .filter(([value]) => !UNAVAILABLE_SOURCE_TYPES.includes(value as ExternalSourceRow["source_type"]))
+                .map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>

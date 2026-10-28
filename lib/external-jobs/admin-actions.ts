@@ -12,6 +12,8 @@ import { hostOf, jobFingerprint } from "@/lib/external-jobs/text";
 import {
   EMPLOYMENT_TYPES,
   JOB_CATEGORIES,
+  SOURCE_TYPE_LABELS,
+  UNAVAILABLE_SOURCE_TYPES,
   WORK_MODELS,
 } from "@/lib/external-jobs/types";
 
@@ -63,6 +65,9 @@ export async function addSourceAction(formData: FormData) {
     redirectWith(`${BASE}?tab=sources`, parsed.error.issues.map((i) => i.message).join("; "));
   }
   const input = parsed.data;
+  if (UNAVAILABLE_SOURCE_TYPES.includes(input.sourceType)) {
+    redirectWith(`${BASE}?tab=sources`, `${SOURCE_TYPE_LABELS[input.sourceType]} can't be used: its robots.txt disallows collection.`);
+  }
   if (input.sourceType === "jsonld_sitemap") {
     const sitemapHost = hostOf(input.sourceKey);
     if (!sitemapHost || sitemapHost !== hostOf(input.careersUrl)) {

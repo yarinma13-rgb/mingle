@@ -47,6 +47,13 @@ export const EMPLOYMENT_TYPES = [
 ] as const;
 export type ExternalEmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
+/**
+ * Methods that can't be used right now and are hidden from "Add source".
+ * SmartRecruiters' robots.txt (checked 2026-10-28) disallows its API for
+ * every crawler except LinkedInBot, so the engine would always refuse it.
+ */
+export const UNAVAILABLE_SOURCE_TYPES: ExternalSourceType[] = ["smartrecruiters"];
+
 export const SOURCE_TYPE_LABELS: Record<ExternalSourceType, string> = {
   greenhouse: "Greenhouse Job Board API",
   lever: "Lever Postings API",
