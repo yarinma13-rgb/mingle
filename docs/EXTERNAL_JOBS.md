@@ -108,7 +108,14 @@ AI Processing Logs · Removal requests. עמוד משרה: טקסט מקור מ�
 3. להוסיף מקור ב־Sources ולסמן את אישור תנאי השימוש — רק אחרי בדיקה אמיתית של התנאים.
 4. "Crawl now" או לחכות ל־cron.
 
-בדיקות: `npx --yes tsx lib/external-jobs/external-jobs.smoke.ts` (רשת מדומה).
+בדיקות (רשת ומסד נתונים מדומים):
+- `npx --yes tsx lib/external-jobs/external-jobs.smoke.ts`: לוגיקה טהורה ו־HTTP.
+- `npx --yes tsx lib/external-jobs/pipeline.smoke.ts`: הריצה המלאה מקצה לקצה (AI לא זמין → חוזר,
+  פרסום, ריצה ללא שינויים, משרה שנסגרה, נעילת ריצה).
+
+ביצועים: בכל ריצה הרישום מול מסד הנתונים נעשה בכמה שאילתות מרוכזות, ה־AI מעבד 4 משרות
+במקביל (`EXTERNAL_JOBS_AI_CONCURRENCY`), כל קריאת AI מוגבלת ל־45 שניות, וסיכום הריצה נשמר
+תוך כדי, כך שגם ריצה שנקטעה מציגה מה הספיקה.
 
 ## בדיקה מול מקורות אמיתיים (2026-10-28)
 

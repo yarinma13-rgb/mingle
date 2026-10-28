@@ -33,6 +33,8 @@ export async function geminiGenerateJson<T>(input: {
   system: string;
   user: string;
   model?: string;
+  /** Abort the request after this long (default 60s). */
+  timeoutMs?: number;
 }): Promise<T> {
   const key = geminiApiKey();
   if (!key) {
@@ -46,6 +48,7 @@ export async function geminiGenerateJson<T>(input: {
 
   const response = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(input.timeoutMs ?? 60_000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       systemInstruction: {

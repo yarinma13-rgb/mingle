@@ -24,6 +24,8 @@ export function aiAvailable(): boolean {
 }
 
 const MAX_SOURCE_CHARS = 14_000;
+/** One slow AI call must not eat the whole run. */
+const AI_TIMEOUT_MS = 45_000;
 
 function sourceBlock(job: RawJob): string {
   return [
@@ -108,6 +110,7 @@ export async function rewriteJob(job: RawJob): Promise<ProcessedJob> {
     system: REWRITE_SYSTEM,
     user: sourceBlock(job),
     model: externalJobsModel(),
+    timeoutMs: AI_TIMEOUT_MS,
   });
 
   return {
@@ -155,6 +158,7 @@ export async function factCheckJob(job: RawJob, processed: ProcessedJob): Promis
     system: FACT_CHECK_SYSTEM,
     user: `ORIGINAL POSTING:\n${sourceBlock(job)}\n\nREWRITE:\n${rewrite}`,
     model: externalJobsModel(),
+    timeoutMs: AI_TIMEOUT_MS,
   });
   return {
     unsupportedClaims: cleanList(out.unsupportedClaims, 20),

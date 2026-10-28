@@ -8,7 +8,7 @@ import {
   SourceAccessDenied,
   SourceTransientError,
 } from "@/lib/external-jobs/http";
-import { loadSettings, logEvent, type AdminDb, type EngineSettings } from "@/lib/external-jobs/store";
+import { loadSettings, logEvent, logEvents, type AdminDb, type EngineSettings } from "@/lib/external-jobs/store";
 import {
   jobFingerprint,
   normalizeForKey,
@@ -102,6 +102,32 @@ function aiBudget(): number {
   return Number.isFinite(value) && value > 0 ? value : 30;
 }
 
+function aiConcurrency(): number {
+  const value = Number.parseInt(process.env.EXTERNAL_JOBS_AI_CONCURRENCY ?? "", 10);
+  return Number.isFinite(value) && value > 0 ? Math.min(value, 8) : 4;
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+/**
+ * Save the run's counters as it goes, so a run the platform cuts off still
+ * shows what it did. Throttled to one write every few seconds.
+ */
+async function saveRunProgress(ctx: RunContext, force = false): Promise<void> {
+  if (!ctx.runId) return;
+  const now = Date.now();
+  if (!force && now - ctx.lastProgressSave < 3000) return;
+  ctx.lastProgressSave = now;
+  await ctx.db
+    .from("external_crawl_runs")
+    .update({ stats: ctx.stats as unknown as Record<string, number>, errors: ctx.errors })
+    .eq("id", ctx.runId);
+}
+
 function isDue(source: ExternalSourceRow, now: number): boolean {
   if (!source.last_crawled_at) return true;
   // 1h slack so a daily cron that drifts a few minutes still picks it up.
@@ -120,6 +146,7 @@ type RunContext = {
   aiLeft: number;
   aiErrorsInARow: number;
   aiErrorAlerted: boolean;
+  lastProgressSave: number;
 };
 
 export async function runExternalJobsCrawl(opts: {
@@ -127,9 +154,11 @@ export async function runExternalJobsCrawl(opts: {
   sourceId?: string;
   /** Stop starting new work after this many ms (serverless time limit). */
   budgetMs?: number;
+  /** Tests inject an in-memory client; production uses the service role. */
+  db?: AdminDb;
 }): Promise<RunSummary> {
   const stats = emptyStats();
-  const db = createAdminClient();
+  const db = opts.db ?? createAdminClient();
   if (!db) {
     return { runId: null, skipped: "SUPABASE_SERVICE_ROLE_KEY not configured", stats, errors: [] };
   }
@@ -165,6 +194,7 @@ export async function runExternalJobsCrawl(opts: {
     aiLeft: aiBudget(),
     aiErrorsInARow: 0,
     aiErrorAlerted: false,
+    lastProgressSave: 0,
   };
   await logEvent(db, { kind: "crawl_started", runId: ctx.runId, message: opts.trigger });
 
@@ -264,91 +294,120 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     .eq("source_id", source.id)
     .in("status", ACTIVE_STATUSES);
   const existing = new Map((existingRows ?? []).map((row) => [row.external_id, row]));
+
+  const unique: RawJob[] = [];
   const seen = new Set<string>();
-
-  let processedHere = 0;
-  let failedHere = 0;
-
   for (const raw of result.jobs) {
     if (seen.has(raw.externalId)) continue;
     seen.add(raw.externalId);
-    const hash = rawContentHash(raw);
-    let row: ExternalJobRow | undefined = existing.get(raw.externalId);
+    unique.push(raw);
+  }
 
-    if (!row) {
-      // A job we expired/removed/rejected before keeps its decision.
-      const { data: prior } = await db
+  // --- Pass 1: bookkeeping in a handful of bulk queries ---------------------
+  // (One query per job used to eat most of the run's time limit.)
+  const rows = new Map<string, ExternalJobRow>();
+  for (const raw of unique) {
+    const row = existing.get(raw.externalId);
+    if (row) rows.set(raw.externalId, row);
+  }
+
+  // Jobs we decided on before (rejected/removed) keep that decision; an
+  // expired job that is listed again is processed again.
+  const unknown = unique.filter((raw) => !rows.has(raw.externalId));
+  const priors = new Map<string, { id: string; status: ExternalJobStatus }>();
+  for (const ids of chunk(unknown.map((raw) => raw.externalId), 200)) {
+    const { data } = await db
+      .from("external_jobs")
+      .select("id, status, external_id")
+      .eq("source_id", source.id)
+      .in("external_id", ids);
+    for (const prior of data ?? []) priors.set(prior.external_id, prior);
+  }
+
+  const toInsert: RawJob[] = [];
+  for (const raw of unknown) {
+    const prior = priors.get(raw.externalId);
+    if (!prior) {
+      toInsert.push(raw);
+    } else if (prior.status === "expired") {
+      const { data: reopened } = await db
         .from("external_jobs")
-        .select("id, status")
-        .eq("source_id", source.id)
-        .eq("external_id", raw.externalId)
-        .maybeSingle();
-      if (prior) {
-        if (prior.status === "expired") {
-          // Re-opened on the source: process again like a new job.
-          const { data: reopened } = await db
-            .from("external_jobs")
-            .update({ status: "discovered", status_reason: "Re-opened on source", expired_at: null, content_hash: PENDING_HASH })
-            .eq("id", prior.id)
-            .select("*")
-            .single();
-          row = reopened ?? undefined;
-        } else {
-          continue;
-        }
-      } else {
-        const { data: inserted, error } = await db
-          .from("external_jobs")
-          .insert({
-            source_id: source.id,
-            external_id: raw.externalId,
-            fingerprint: jobFingerprint(raw),
-            content_hash: PENDING_HASH,
-            status: "discovered",
-            company_name: raw.companyName,
-            title: raw.title,
-            location: raw.location,
-            work_model: raw.workModelHint,
-            employment_type: raw.employmentTypeHint,
-            department: raw.department,
-            apply_url: raw.applyUrl,
-            source_url: raw.sourceUrl,
-            source_posted_at: raw.postedAt,
-            source_updated_at: raw.updatedAt,
-          })
-          .select("*")
-          .single();
-        if (error || !inserted) {
-          ctx.errors.push({ sourceId: source.id, company: source.company_name, message: error?.message ?? "insert failed" });
-          continue;
-        }
-        row = inserted;
-        ctx.stats.discovered += 1;
-        await logEvent(db, {
-          kind: "discovered",
-          jobId: row.id,
-          sourceId: source.id,
-          runId: ctx.runId,
-          message: raw.title,
-        });
-      }
+        .update({ status: "discovered", status_reason: "Re-opened on source", expired_at: null, content_hash: PENDING_HASH })
+        .eq("id", prior.id)
+        .select("*")
+        .single();
+      if (reopened) rows.set(raw.externalId, reopened);
     }
+  }
+
+  for (const batch of chunk(toInsert, 100)) {
+    const { data: inserted, error } = await db
+      .from("external_jobs")
+      .insert(
+        batch.map((raw) => ({
+          source_id: source.id,
+          external_id: raw.externalId,
+          fingerprint: jobFingerprint(raw),
+          content_hash: PENDING_HASH,
+          status: "discovered" as const,
+          company_name: raw.companyName,
+          title: raw.title,
+          location: raw.location,
+          work_model: raw.workModelHint,
+          employment_type: raw.employmentTypeHint,
+          department: raw.department,
+          apply_url: raw.applyUrl,
+          source_url: raw.sourceUrl,
+          source_posted_at: raw.postedAt,
+          source_updated_at: raw.updatedAt,
+        })),
+      )
+      .select("*");
+    if (error) {
+      ctx.errors.push({ sourceId: source.id, company: source.company_name, message: `insert failed: ${error.message}` });
+      continue;
+    }
+    for (const row of inserted ?? []) rows.set(row.external_id, row);
+    ctx.stats.discovered += inserted?.length ?? 0;
+    await logEvents(
+      db,
+      (inserted ?? []).map((row) => ({
+        kind: "discovered" as const,
+        jobId: row.id,
+        sourceId: source.id,
+        runId: ctx.runId,
+        message: row.title,
+      })),
+    );
+  }
+
+  const rawById = new Map(unique.map((raw) => [raw.externalId, raw]));
+  for (const batch of chunk([...rows.values()], 50)) {
+    await db.from("external_job_snapshots").upsert(
+      batch.map((row) => {
+        const raw = rawById.get(row.external_id)!;
+        return { job_id: row.id, source_text: raw.text, source_payload: raw.payload, fetched_at: nowIso };
+      }),
+    );
+  }
+
+  // Seen in the official feed: it's open. Clear any verification misses.
+  const touch = {
+    last_seen_at: nowIso,
+    last_verified_at: nowIso,
+    verify_failures: 0,
+  };
+  const touchIds: string[] = [];
+  const toProcess: Array<{ row: ExternalJobRow; raw: RawJob; hash: string }> = [];
+
+  for (const raw of unique) {
+    const row = rows.get(raw.externalId);
     if (!row) continue;
-
-    await db
-      .from("external_job_snapshots")
-      .upsert({ job_id: row.id, source_text: raw.text, source_payload: raw.payload, fetched_at: nowIso });
-
-    // Seen in the official feed: it's open. Clear any verification misses.
-    const touch = {
-      last_seen_at: nowIso,
-      last_verified_at: nowIso,
-      verify_failures: 0,
-    };
+    const hash = rawContentHash(raw);
 
     if (isAdminHidden(row)) {
       // Hidden by an admin: keep tracking availability, never touch content or status.
-      await db.from("external_jobs").update(touch).eq("id", row.id);
+      touchIds.push(row.id);
       continue;
     }
 
@@ -368,7 +427,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
           .eq("id", row.id);
         await logEvent(db, { kind: "resumed", jobId: row.id, sourceId: source.id, runId: ctx.runId, message: "Availability confirmed again" });
       } else {
-        await db.from("external_jobs").update(touch).eq("id", row.id);
+        touchIds.push(row.id);
       }
       continue;
     }
@@ -389,18 +448,38 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       continue;
     }
 
-    if (ctx.aiLeft <= 0 || Date.now() > ctx.deadline) {
-      // Leave content_hash stale so the next run picks it up.
-      await db.from("external_jobs").update(touch).eq("id", row.id);
-      ctx.stats.deferred += 1;
-      continue;
-    }
+    toProcess.push({ row, raw, hash });
+  }
 
-    const outcome = await processJob(ctx, source, row, raw, hash, fetcher);
-    // An AI outage says nothing about this source's jobs: it doesn't count
-    // toward pausing the source.
-    if (outcome !== "ai_error") processedHere += 1;
-    if (outcome === "failed") failedHere += 1;
+  for (const ids of chunk(touchIds, 200)) {
+    await db.from("external_jobs").update(touch).in("id", ids);
+  }
+  await saveRunProgress(ctx);
+
+  // --- Pass 2: AI processing, a few jobs at a time --------------------------
+  let processedHere = 0;
+  let failedHere = 0;
+  let next = 0;
+  const worker = async () => {
+    for (;;) {
+      if (ctx.aiLeft <= 0 || Date.now() > ctx.deadline) return;
+      const item = toProcess[next++];
+      if (!item) return;
+      const outcome = await processJob(ctx, source, item.row, item.raw, item.hash, fetcher);
+      // An AI outage says nothing about this source's jobs: it doesn't count
+      // toward pausing the source.
+      if (outcome !== "ai_error") processedHere += 1;
+      if (outcome === "failed") failedHere += 1;
+      await saveRunProgress(ctx);
+    }
+  };
+  await Promise.all(Array.from({ length: aiConcurrency() }, worker));
+
+  // Not reached this run: leave content_hash stale so the next run picks them up.
+  const deferred = toProcess.slice(next);
+  ctx.stats.deferred += deferred.length;
+  for (const ids of chunk(deferred.map((item) => item.row.id), 200)) {
+    await db.from("external_jobs").update(touch).in("id", ids);
   }
 
   // --- Monitoring: jobs that disappeared from the source -------------------

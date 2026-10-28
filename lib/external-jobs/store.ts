@@ -75,3 +75,31 @@ export async function logEvent(
     // Logging must never break the pipeline.
   }
 }
+
+/** Many events in one insert (e.g. a batch of newly discovered jobs). Never throws. */
+export async function logEvents(
+  db: AdminDb,
+  events: Array<{
+    kind: EventKind;
+    jobId?: string | null;
+    sourceId?: string | null;
+    runId?: string | null;
+    message?: string | null;
+  }>,
+): Promise<void> {
+  if (!events.length) return;
+  try {
+    await db.from("external_job_events").insert(
+      events.map((event) => ({
+        kind: event.kind,
+        job_id: event.jobId ?? null,
+        source_id: event.sourceId ?? null,
+        run_id: event.runId ?? null,
+        message: event.message ?? null,
+        actor: "system",
+      })),
+    );
+  } catch {
+    // Logging must never break the pipeline.
+  }
+}
