@@ -101,7 +101,7 @@ export async function loadJobsFeed(
   if (filters.origin !== "mingle") {
     let query = db
       .from("external_jobs")
-      .select("id, title, company_name, location, work_model, employment_type, category, tags, published_at, updated_at")
+      .select("id, title, company_name, location, work_model, employment_type, category, tags, published_at, source_posted_at")
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(300);
@@ -136,7 +136,8 @@ export async function loadJobsFeed(
         category: job.category,
         tags: job.tags,
         href: `/jobs/${job.id}`,
-        date: job.updated_at ?? job.published_at ?? "",
+        // Posting date on the source, not updated_at: every crawl bumps that.
+        date: job.source_posted_at ?? job.published_at ?? "",
         score: rec.score,
         reasons: rec.reasons,
         saved: saved.has(job.id),

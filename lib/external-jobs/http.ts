@@ -37,6 +37,7 @@ const TIMEOUT_MS = 15_000;
 const MAX_BODY_BYTES = 4_000_000;
 const MAX_ATTEMPTS = 3;
 const MAX_RETRY_AFTER_MS = 60_000;
+const MAX_REDIRECTS = 5;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -62,12 +63,19 @@ export function looksLikeLoginWall(body: string, finalUrl: string): boolean {
 
 export class PoliteFetcher {
   private readonly minIntervalMs: number;
+  private readonly deadline: number | null;
   private readonly robots = new Map<string, Promise<RobotsPolicy>>();
   private readonly nextSlot = new Map<string, number>();
   requests = 0;
 
-  constructor(opts: { minIntervalMs: number }) {
+  constructor(opts: { minIntervalMs: number; deadline?: number }) {
     this.minIntervalMs = opts.minIntervalMs;
+    this.deadline = opts.deadline ?? null;
+  }
+
+  /** True once the run's time budget is spent; connectors stop paging and report an incomplete list. */
+  outOfTime(): boolean {
+    return this.deadline != null && Date.now() > this.deadline;
   }
 
   async robotsFor(url: URL): Promise<RobotsPolicy> {
@@ -130,29 +138,60 @@ export class PoliteFetcher {
   }
 
   async get(rawUrl: string, opts?: { accept?: string }): Promise<FetchResult> {
-    const url = new URL(rawUrl);
+    // Redirects are followed by hand so robots.txt and the rate limit apply
+    // to every hop, including a redirect to another host.
+    let url = new URL(rawUrl);
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      const response = await this.fetchOne(url, opts?.accept);
+      const location = response.headers.get("location");
+      if (response.status >= 300 && response.status < 400 && location) {
+        await response.body?.cancel();
+        url = new URL(location, url);
+        continue;
+      }
+
+      const buffer = await response.arrayBuffer();
+      const body = new TextDecoder().decode(buffer.slice(0, MAX_BODY_BYTES));
+      const contentType = response.headers.get("content-type") ?? "";
+      if (contentType.includes("html") && looksLikeBotChallenge(body)) {
+        throw new SourceAccessDenied(
+          "challenge",
+          `${url.host} served a bot challenge / CAPTCHA. Collection stopped; it is never bypassed.`,
+        );
+      }
+      if (contentType.includes("html") && looksLikeLoginWall(body, url.toString())) {
+        throw new SourceAccessDenied("login", `${url.host} requires a login. Not collected.`);
+      }
+      return { status: response.status, url: url.toString(), body, contentType };
+    }
+    throw new SourceTransientError(`Too many redirects from ${rawUrl}`);
+  }
+
+  /** One request (no redirect following), with robots check, throttle and retries. */
+  private async fetchOne(url: URL, accept: string | undefined): Promise<Response> {
     if (url.protocol !== "https:" && url.protocol !== "http:") {
-      throw new SourceAccessDenied("forbidden", `Unsupported protocol for ${rawUrl}`);
+      throw new SourceAccessDenied("forbidden", `Unsupported protocol for ${url.toString()}`);
     }
     const policy = await this.robotsFor(url);
     if (policy.unreachable) {
       throw new SourceTransientError(`${url.host}: ${policy.unreachable}; not fetching until it can be read`);
     }
     if (!policy.isAllowed(url.pathname + url.search)) {
-      throw new SourceAccessDenied("robots", `robots.txt disallows ${url.pathname}`);
+      throw new SourceAccessDenied("robots", `robots.txt disallows ${url.host}${url.pathname}`);
     }
 
     let lastError = "";
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      if (attempt > 1 && this.outOfTime()) break;
       await this.throttle(url.host, policy.crawlDelay);
       let response: Response;
       try {
         response = await fetch(url, {
           headers: {
             "User-Agent": CRAWLER_USER_AGENT,
-            Accept: opts?.accept ?? "application/json, text/html;q=0.9, */*;q=0.5",
+            Accept: accept ?? "application/json, text/html;q=0.9, */*;q=0.5",
           },
-          redirect: "follow",
+          redirect: "manual",
           signal: AbortSignal.timeout(TIMEOUT_MS),
         });
         this.requests += 1;
@@ -170,6 +209,7 @@ export class PoliteFetcher {
       }
       if (response.status === 429 || response.status >= 500) {
         lastError = `${url.host} responded ${response.status}`;
+        await response.body?.cancel();
         const retryAfter = Number.parseInt(response.headers.get("retry-after") ?? "", 10);
         const wait = Number.isFinite(retryAfter)
           ? Math.min(retryAfter * 1000, MAX_RETRY_AFTER_MS)
@@ -178,20 +218,7 @@ export class PoliteFetcher {
         this.nextSlot.set(url.host, Date.now() + wait);
         continue;
       }
-
-      const buffer = await response.arrayBuffer();
-      const body = new TextDecoder().decode(buffer.slice(0, MAX_BODY_BYTES));
-      const contentType = response.headers.get("content-type") ?? "";
-      if (contentType.includes("html") && looksLikeBotChallenge(body)) {
-        throw new SourceAccessDenied(
-          "challenge",
-          `${url.host} served a bot challenge / CAPTCHA. Collection stopped; it is never bypassed.`,
-        );
-      }
-      if (contentType.includes("html") && looksLikeLoginWall(body, response.url)) {
-        throw new SourceAccessDenied("login", `${url.host} requires a login. Not collected.`);
-      }
-      return { status: response.status, url: response.url || url.toString(), body, contentType };
+      return response;
     }
     throw new SourceTransientError(lastError || `Could not reach ${url.host}`);
   }

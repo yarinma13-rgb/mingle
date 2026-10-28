@@ -176,9 +176,10 @@ export function validateJob(input: {
   );
 
   const misleading = [...(factCheck?.misleading ?? [])];
-  if (impliesPartnership(output)) misleading.push("Implies a partnership with mingle.");
-  if (source.is_official_partner === false && /\bpartner/i.test(processed.summary)) {
-    misleading.push("Summary mentions a partnership that is not recorded.");
+  // Only a claimed relationship with mingle is misleading; "partner with the
+  // design team" is ordinary job wording.
+  if (!source.is_official_partner && impliesPartnership(output)) {
+    misleading.push("Implies a partnership with mingle.");
   }
   checks.push(
     check(

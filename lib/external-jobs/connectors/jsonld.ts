@@ -156,7 +156,7 @@ export const jsonldSitemap: Connector = {
     const jobs: RawJob[] = [];
     let visited = 0;
     for (const url of candidates) {
-      if (visited >= MAX_PAGES_PER_RUN) break;
+      if (visited >= MAX_PAGES_PER_RUN || fetcher.outOfTime()) break;
       if (!(await fetcher.isAllowed(url))) continue;
       visited += 1;
       const page = await fetcher.get(url, { accept: "text/html" });

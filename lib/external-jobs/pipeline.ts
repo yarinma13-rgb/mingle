@@ -37,6 +37,17 @@ const FAILURE_PAUSE_RATIO = 0.5;
 const FAILURE_PAUSE_MIN_JOBS = 4;
 const ACTIVE_STATUSES: ExternalJobStatus[] = ["discovered", "pending_review", "published", "paused"];
 
+/**
+ * Prefix of status_reason for jobs the engine itself hid because it could not
+ * verify them; the engine may un-hide those. Any other paused job was hidden
+ * by an admin and stays hidden until an admin acts.
+ */
+export const UNVERIFIABLE_PREFIX = "Unverifiable:";
+
+export function isAdminHidden(row: Pick<ExternalJobRow, "status" | "status_reason">): boolean {
+  return row.status === "paused" && !row.status_reason?.startsWith(UNVERIFIABLE_PREFIX);
+}
+
 export type RunStats = {
   sourcesCrawled: number;
   sourcesFailed: number;
@@ -176,7 +187,7 @@ export async function runExternalJobsCrawl(opts: {
 async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
   const { db } = ctx;
   const connector = CONNECTORS[source.source_type];
-  const fetcher = new PoliteFetcher({ minIntervalMs: source.min_request_interval_ms });
+  const fetcher = new PoliteFetcher({ minIntervalMs: source.min_request_interval_ms, deadline: ctx.deadline });
   const nowIso = new Date().toISOString();
 
   // --- Permission check ---------------------------------------------------
@@ -312,8 +323,14 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       verify_failures: 0,
     };
 
+    if (isAdminHidden(row)) {
+      // Hidden by an admin: keep tracking availability, never touch content or status.
+      await db.from("external_jobs").update(touch).eq("id", row.id);
+      continue;
+    }
+
     if (row.content_hash === hash) {
-      if (row.status === "paused" && row.status_reason?.startsWith("Unverifiable")) {
+      if (row.status === "paused" && row.status_reason?.startsWith(UNVERIFIABLE_PREFIX)) {
         const canPublish = ctx.settings.autoPublishEnabled && !source.publishing_paused;
         await db
           .from("external_jobs")
@@ -423,7 +440,7 @@ async function failSource(
   if (opts.pauseSource || failures >= 3) {
     const { data: paused } = await db
       .from("external_jobs")
-      .update({ status: "paused", status_reason: `Unverifiable: ${message}`.slice(0, 500) })
+      .update({ status: "paused", status_reason: `${UNVERIFIABLE_PREFIX} ${message}`.slice(0, 500) })
       .eq("source_id", source.id)
       .eq("status", "published")
       .select("id");
@@ -750,6 +767,7 @@ async function markUnverifiable(
   why: string,
 ) {
   const failures = row.verify_failures + 1;
+  const adminHidden = isAdminHidden(row);
   if (failures >= EXPIRE_AFTER_MISSES) {
     await ctx.db
       .from("external_jobs")
@@ -766,7 +784,11 @@ async function markUnverifiable(
   }
   await ctx.db
     .from("external_jobs")
-    .update({ status: "paused", status_reason: `Unverifiable: ${why}`, verify_failures: failures })
+    .update(
+      adminHidden
+        ? { verify_failures: failures }
+        : { status: "paused", status_reason: `${UNVERIFIABLE_PREFIX} ${why}`, verify_failures: failures },
+    )
     .eq("id", row.id);
   if (row.status === "published") {
     ctx.stats.paused += 1;
@@ -797,8 +819,8 @@ export async function verifyStillOpen(
       return "closed";
     }
     return "open";
-  } catch (error) {
-    if (error instanceof SourceAccessDenied) return "unknown";
+  } catch {
+    // Blocked, robots or network: can't tell either way.
     return "unknown";
   }
 }
@@ -812,11 +834,19 @@ export async function hardPublishChecks(
   const problems: string[] = [];
   const permission = sourcePermission(source);
   if (!permission.ok) problems.push(permission.detail);
-  const fetcher = new PoliteFetcher({ minIntervalMs: source.min_request_interval_ms });
-  const link = await checkApplyLink(fetcher, job.apply_url, job.title, false);
-  if (!job.apply_url.startsWith("https://")) problems.push("Apply link must be https.");
-  if (link.gone) problems.push(link.detail);
-  else if (!link.ok) problems.push(`Apply link not verified: ${link.detail}`);
+  if (!job.apply_url.startsWith("https://")) {
+    problems.push("Apply link must be https.");
+  } else {
+    // Same evidence rule as auto-publish: an ATS job seen in the official
+    // feed within the last two days counts as listed by the official API.
+    const listedByApi =
+      source.source_type !== "jsonld_sitemap" &&
+      Date.now() - new Date(job.last_seen_at).getTime() < 48 * 3_600_000;
+    const fetcher = new PoliteFetcher({ minIntervalMs: source.min_request_interval_ms });
+    const link = await checkApplyLink(fetcher, job.apply_url, job.title, listedByApi);
+    if (link.gone) problems.push(link.detail);
+    else if (!link.ok) problems.push(`Apply link not verified: ${link.detail}`);
+  }
   const duplicate = await findDuplicate(db, job.id, job.fingerprint, job.company_name, job.title);
   if (duplicate.duplicate) problems.push(duplicate.detail);
   return { ok: problems.length === 0, problems };

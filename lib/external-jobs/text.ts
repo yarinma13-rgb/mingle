@@ -123,28 +123,42 @@ export function unsupportedNumbers(source: string, rewrite: string): string[] {
   return [...new Set(found.filter((n) => !sourceNumbers.has(n)))];
 }
 
+// JS `\b` only knows ASCII word characters, so Hebrew terms are matched as
+// plain substrings in their own patterns.
 const MONEY_PATTERN =
-  /(?:[$€£₪]\s?\d)|(?:\d\s?(?:k|K)\b)|\b(?:salary|compensation|equity|stock options|bonus|שכר|משכורת)\b/i;
+  /(?:[$€£₪]\s?\d)|(?:\d\s?(?:k|K)\b)|\b(?:salary|compensation|equity|stock options|bonus)\b/i;
+const MONEY_PATTERN_HE = /שכר|משכורת|תגמול|בונוס|אופציות/;
 const BENEFIT_PATTERN =
-  /\b(?:benefits?|perks?|health insurance|pension|401k|paid time off|pto|gym|hybrid stipend|הטבות|קרן השתלמות|ביטוח)\b/i;
+  /\b(?:benefits?|perks?|health insurance|pension|401k|paid time off|pto|gym|hybrid stipend)\b/i;
+const BENEFIT_PATTERN_HE = /הטבות|קרן השתלמות|ביטוח בריאות|פנסיה|חדר כושר|ארוחות/;
+
+function mentions(text: string, ...patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(text));
+}
 
 /** Salary or benefit claims present in the rewrite but absent from the source. */
 export function inventedTermsClaims(source: string, rewrite: string): string[] {
   const issues: string[] = [];
-  if (MONEY_PATTERN.test(rewrite) && !MONEY_PATTERN.test(source)) {
+  if (mentions(rewrite, MONEY_PATTERN, MONEY_PATTERN_HE) && !mentions(source, MONEY_PATTERN, MONEY_PATTERN_HE)) {
     issues.push("mentions pay/compensation the source does not state");
   }
-  if (BENEFIT_PATTERN.test(rewrite) && !BENEFIT_PATTERN.test(source)) {
+  if (
+    mentions(rewrite, BENEFIT_PATTERN, BENEFIT_PATTERN_HE) &&
+    !mentions(source, BENEFIT_PATTERN, BENEFIT_PATTERN_HE)
+  ) {
     issues.push("mentions benefits the source does not state");
   }
   return issues;
 }
 
+// Claims of a relationship with mingle specifically. Other partnerships
+// ("an official AWS partner") are the company's own facts.
 const PARTNERSHIP_PATTERN =
-  /\b(?:official partner|partnered with mingle|in partnership with mingle|mingle partner|apply (?:on|via|through) mingle|hiring on mingle)\b/i;
+  /\b(?:(?:official )?partners? (?:of|with) mingle|partnered with mingle|in partnership with mingle|mingle(?:'s)? (?:official )?partner|apply (?:on|via|through) mingle|hiring on mingle|endorsed by mingle)\b/i;
+const PARTNERSHIP_PATTERN_HE = /(?:בשיתוף|שותפה? של|שותפות עם)\s*(?:mingle|מינגל)|(?:הגישו|הגש|הגישי)\s+(?:דרך|ב)\s*(?:mingle|מינגל)/i;
 
 export function impliesPartnership(text: string): boolean {
-  return PARTNERSHIP_PATTERN.test(text);
+  return PARTNERSHIP_PATTERN.test(text) || PARTNERSHIP_PATTERN_HE.test(text);
 }
 
 export function hostOf(value: string): string | null {

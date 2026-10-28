@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
-import { verifyTakedown } from "@/lib/external-jobs/takedown";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** One-time link from the takedown verification email. */
+/**
+ * Old-style verification link. A GET must never remove anything (mail
+ * scanners prefetch links), so it only forwards to the confirmation page.
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const id = url.searchParams.get("id") ?? "";
-  const token = url.searchParams.get("token") ?? "";
-  const result =
-    /^[0-9a-f-]{36}$/i.test(id) && token ? await verifyTakedown(id, token) : { ok: false, removed: 0 };
-  const target = new URL("/job-removal", req.url);
-  target.searchParams.set("status", result.ok ? "removed" : "invalid");
-  if (result.ok) target.searchParams.set("count", String(result.removed));
+  const target = new URL("/job-removal/confirm", req.url);
+  target.searchParams.set("id", url.searchParams.get("id") ?? "");
+  target.searchParams.set("token", url.searchParams.get("token") ?? "");
   return NextResponse.redirect(target, 302);
 }

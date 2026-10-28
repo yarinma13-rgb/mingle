@@ -236,6 +236,8 @@ export const smartrecruiters: Connector = {
     const items = (data?.content ?? []).slice(0, MAX_JOBS_PER_SOURCE);
     const jobs: RawJob[] = [];
     for (const item of items) {
+      // One request per posting: stop when the run's time budget is spent.
+      if (fetcher.outOfTime()) break;
       const detailUrl = `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(source.source_key)}/postings/${encodeURIComponent(item.id)}`;
       const detail = await fetcher.getJson<SrDetail>(detailUrl);
       if (!detail.data) continue;

@@ -15,7 +15,7 @@ Validation → Duplicate Check → Auto Publish → Daily Monitoring
 | Cron יומי | `app/api/cron/external-jobs/route.ts` | 04:00 UTC (`vercel.json`), מוגן ב־`CRON_SECRET`, `maxDuration=300` |
 | תזמור | `lib/external-jobs/pipeline.ts` | `runExternalJobsCrawl` — מקורות שהגיע זמנם, תקציב זמן ותקציב AI לריצה |
 | הרשאה | `pipeline.ts` + `validate.ts#sourcePermission` | בלי `terms_reviewed_at` המקור לא נסרק בכלל; robots.txt נבדק לפני כל בקשה |
-| גישה לרשת | `lib/external-jobs/http.ts` | `PoliteFetcher`: User-Agent מזהה, robots.txt (RFC 9309), Rate limit לכל host (הגדרת מקור או Crawl-delay), Retry עם backoff ל־5xx/429/רשת. 401/403, CAPTCHA, אתגר בוטים או login — עצירה מיידית, בלי ניסיון עקיפה, והמקור מושהה |
+| גישה לרשת | `lib/external-jobs/http.ts` | `PoliteFetcher`: User-Agent מזהה, robots.txt (RFC 9309) לכל בקשה **כולל כל redirect**, Rate limit לכל host (הגדרת מקור או Crawl-delay), Retry עם backoff ל־5xx/429/רשת, עצירה כשתקציב הזמן של הריצה נגמר. 401/403, CAPTCHA, אתגר בוטים, login או Disallow — עצירה מיידית, בלי ניסיון עקיפה, והמקור מושהה. robots.txt שלא נגיש (רשת/5xx) — לא שולפים כלום, אבל זו תקלה זמנית ולא חסימה |
 | חילוץ | `lib/external-jobs/connectors/` | רק ממשקים שנועדו לכך: Greenhouse / Lever / Ashby / Workable / SmartRecruiters (APIs ציבוריים של לוחות משרות), ו־sitemap + schema.org `JobPosting` באתר הקריירה של החברה. **אין scraper כללי ל־HTML** |
 | AI | `lib/external-jobs/ai.ts` | Gemini (אותו client כמו `lib/ai/gemini.ts`). קריאה 1: חילוץ שדות + ניסוח מחדש (שפת המקור אם עברית/אנגלית, אחרת אנגלית). קריאה 2: fact-check עצמאי מול המקור. שם החברה והתפקיד נלקחים מהמקור מילה במילה |
 | בדיקות | `lib/external-jobs/validate.ts` | 8 בדיקות חובה (למטה) |
@@ -42,8 +42,13 @@ Validation → Duplicate Check → Auto Publish → Daily Monitoring
 
 ## סטטוסים
 
-`discovered` (בתור לעיבוד) · `pending_review` · `published` · `rejected` · `paused`
-(מוסתרת, לא ניתן לאמת) · `expired` · `removed` (בקשת הסרה / מקור הוסר).
+`discovered` (בתור לעיבוד) · `pending_review` · `published` · `rejected` · `paused` ·
+`expired` · `removed` (בקשת הסרה / מקור הוסר).
+
+`paused` מגיע בשני טעמים: המנוע הסתיר כי לא הצליח לאמת (`status_reason` מתחיל ב־
+`Unverifiable:`; המנוע מחזיר לפרסום כשהמשרה מאומתת שוב), או אדמין הסתיר (כל סיבה אחרת;
+המנוע ממשיך לעקוב אחרי הזמינות אבל לא משנה תוכן או סטטוס עד שאדמין פועל). השהיית מקור
+ע"י אדמין מסתירה את המשרות שפורסמו ממנו, והן חוזרות בסריקה הראשונה אחרי חידוש.
 
 ## הפרדת נתונים ואבטחה
 
@@ -81,9 +86,12 @@ AI Processing Logs · Removal requests. עמוד משרה: טקסט מקור מ�
 ## בקשות הסרה של חברות
 
 `/job-removal` (ציבורי). אם המייל של המבקש על דומיין החברה (`company_domains` או דומיין
-אתר הקריירה) — נשלח קישור אימות חד־פעמי (Resend); לחיצה מסירה מיד את המשרה, או בבקשה
-לכל החברה — את כל המשרות ומסמנת את המקור `removed`. אחרת — `needs_review` + התראה
-לאדמין.
+אתר הקריירה; דומיינים של ATS ומייל חינמי לא נחשבים) — נשלח קישור חד־פעמי (Resend)
+לעמוד `/job-removal/confirm`. הקישור עצמו לא מוחק כלום (סורקי מייל פותחים קישורים);
+ההסרה מתבצעת רק בלחיצה על "Confirm removal" (POST). בקשה למשרה אחת מסירה אותה; בקשה
+לכל החברה מסירה את כל המשרות **רק מהמקורות שהדומיין שלהם תואם למייל המאומת** —
+לא לפי שם החברה שהוקלד — ומסמנת אותם `removed`. בלי התאמת דומיין — `needs_review` +
+התראה לאדמין, ואישור אדמין מסיר רק את המקור שנרשם על הבקשה.
 
 ## התראות
 

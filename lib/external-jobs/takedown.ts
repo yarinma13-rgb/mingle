@@ -4,6 +4,7 @@ import { z } from "zod";
 import { appOrigin } from "@/lib/app-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEngineAlert } from "@/lib/external-jobs/alerts";
+import { ATS_APPLY_HOSTS } from "@/lib/external-jobs/connectors";
 import { logEvent, type AdminDb } from "@/lib/external-jobs/store";
 import { hostMatchesAny, hostOf, normalizeForKey, sha256 } from "@/lib/external-jobs/text";
 import type { ExternalSourceRow } from "@/lib/external-jobs/types";
@@ -27,26 +28,47 @@ export const takedownSchema = z.object({
 
 export type TakedownInput = z.infer<typeof takedownSchema>;
 
+// Shared domains that prove nothing about who owns a company.
+const SHARED_DOMAINS = [
+  ...Object.values(ATS_APPLY_HOSTS).flat(),
+  "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "yahoo.com",
+  "icloud.com", "me.com", "aol.com", "proton.me", "protonmail.com", "walla.co.il", "gmx.com",
+];
+
 function sourceDomains(source: ExternalSourceRow): string[] {
   const careers = hostOf(source.careers_url);
-  return [...source.company_domains, ...(careers ? [careers] : [])];
+  return [...source.company_domains, ...(careers ? [careers] : [])].filter(
+    (domain) => !hostMatchesAny(domain.toLowerCase(), SHARED_DOMAINS),
+  );
 }
 
-async function matchingSources(db: AdminDb, companyName: string, jobId: string) {
-  if (jobId) {
-    const { data: job } = await db
-      .from("external_jobs")
-      .select("source_id")
-      .eq("id", jobId)
-      .maybeSingle();
-    if (!job) return [];
-    const { data } = await db.from("external_job_sources").select("*").eq("id", job.source_id);
-    return data ?? [];
-  }
+function emailDomain(email: string): string {
+  return email.split("@")[1]?.toLowerCase() ?? "";
+}
+
+/** Sources whose recorded domains the requester proved they control. */
+async function sourcesOwnedByEmail(db: AdminDb, email: string): Promise<ExternalSourceRow[]> {
+  const domain = emailDomain(email);
+  if (!domain) return [];
   const { data } = await db.from("external_job_sources").select("*").neq("status", "removed");
-  return (data ?? []).filter(
-    (s) => normalizeForKey(s.company_name) === normalizeForKey(companyName),
-  );
+  return (data ?? []).filter((s) => hostMatchesAny(domain, sourceDomains(s)));
+}
+
+async function sourceOfJob(db: AdminDb, jobId: string): Promise<ExternalSourceRow | null> {
+  const { data: job } = await db
+    .from("external_jobs")
+    .select("source_id")
+    .eq("id", jobId)
+    .maybeSingle();
+  if (!job) return null;
+  const { data } = await db.from("external_job_sources").select("*").eq("id", job.source_id).maybeSingle();
+  return data;
+}
+
+/** Best guess for the admin queue only; never used to execute a removal on its own. */
+async function sourceByName(db: AdminDb, companyName: string): Promise<ExternalSourceRow | null> {
+  const { data } = await db.from("external_job_sources").select("*").neq("status", "removed");
+  return (data ?? []).find((s) => normalizeForKey(s.company_name) === normalizeForKey(companyName)) ?? null;
 }
 
 export async function createTakedownRequest(
@@ -56,9 +78,19 @@ export async function createTakedownRequest(
   if (!db) return { ok: false, error: "Removal requests are temporarily unavailable. Email support@mingle.careers." };
 
   const scope = input.jobId ? input.scope : "company";
-  const sources = await matchingSources(db, input.companyName, input.jobId);
-  const emailDomain = input.requesterEmail.split("@")[1] ?? "";
-  const verifiable = sources.find((s) => hostMatchesAny(emailDomain, sourceDomains(s)));
+  // What the request can be verified against depends only on the email
+  // domain, never on the company name the requester typed.
+  let verifiable: ExternalSourceRow | null = null;
+  let fallback: ExternalSourceRow | null = null;
+  if (scope === "job") {
+    const source = await sourceOfJob(db, input.jobId);
+    if (!source) return { ok: false, error: "That listing no longer exists." };
+    fallback = source;
+    if (hostMatchesAny(emailDomain(input.requesterEmail), sourceDomains(source))) verifiable = source;
+  } else {
+    verifiable = (await sourcesOwnedByEmail(db, input.requesterEmail))[0] ?? null;
+    fallback = verifiable ?? (input.jobId ? await sourceOfJob(db, input.jobId) : await sourceByName(db, input.companyName));
+  }
 
   const token = randomBytes(24).toString("base64url");
   const { data: row, error } = await db
@@ -68,7 +100,7 @@ export async function createTakedownRequest(
       requester_name: input.requesterName || null,
       requester_email: input.requesterEmail,
       job_id: input.jobId || null,
-      source_id: verifiable?.id ?? sources[0]?.id ?? null,
+      source_id: verifiable?.id ?? fallback?.id ?? null,
       scope,
       reason: input.reason || null,
       token_hash: sha256(token),
@@ -95,7 +127,9 @@ export async function createTakedownRequest(
     return { ok: true, verificationSent: false };
   }
 
-  const link = `${appOrigin()}/api/external-jobs/takedown/verify?id=${row.id}&token=${token}`;
+  // Opens a confirmation page; nothing happens until the button is pressed,
+  // so mail scanners that prefetch links can't trigger a removal.
+  const link = `${appOrigin()}/job-removal/confirm?id=${row.id}&token=${token}`;
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
     await db.from("external_job_takedowns").update({ status: "needs_review" }).eq("id", row.id);
@@ -111,7 +145,7 @@ export async function createTakedownRequest(
       subject: "Confirm your job removal request on mingle",
       text: `We received a request to remove ${
         scope === "job" ? "a job listing" : `all job listings for ${input.companyName}`
-      } from mingle.\n\nConfirm the removal (takes effect immediately):\n${link}\n\nIf you did not make this request, ignore this email.`,
+      } from mingle.\n\nOpen this link and press "Confirm removal" (takes effect immediately):\n${link}\n\nIf you did not make this request, ignore this email.`,
     });
   } catch {
     await db.from("external_job_takedowns").update({ status: "needs_review" }).eq("id", row.id);
@@ -120,11 +154,18 @@ export async function createTakedownRequest(
   return { ok: true, verificationSent: true };
 }
 
-/** Removes the job(s) a takedown covers. Used by the verify link and by admins. */
+/**
+ * Removes the job(s) a takedown covers.
+ * - "email": the requester confirmed from their inbox; a company-wide request
+ *   covers exactly the sources on their email's domain.
+ * - "admin": an admin reviewed it; a company-wide request covers the one
+ *   source recorded on the request.
+ */
 export async function executeTakedown(
   db: AdminDb,
   takedownId: string,
   actor: string,
+  verifiedBy: "email" | "admin",
 ): Promise<{ removed: number }> {
   const { data: request } = await db
     .from("external_job_takedowns")
@@ -143,7 +184,13 @@ export async function executeTakedown(
       .select("id");
     removed = data?.length ?? 0;
   } else {
-    const sources = await matchingSources(db, request.company_name, "");
+    let sources: ExternalSourceRow[] = [];
+    if (verifiedBy === "email") {
+      sources = await sourcesOwnedByEmail(db, request.requester_email);
+    } else if (request.source_id) {
+      const { data } = await db.from("external_job_sources").select("*").eq("id", request.source_id);
+      sources = data ?? [];
+    }
     for (const source of sources) {
       const { data } = await db
         .from("external_jobs")
@@ -178,18 +225,45 @@ export async function executeTakedown(
   return { removed };
 }
 
-export async function verifyTakedown(
+async function loadValidRequest(db: AdminDb, id: string, token: string) {
+  const { data: request } = await db
+    .from("external_job_takedowns")
+    .select("id, token_hash, status, requester_email, company_name, scope, job_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (!request || request.token_hash !== sha256(token)) return null;
+  return request;
+}
+
+/** For the confirmation page: what the link would remove, without doing it. */
+export async function previewTakedown(id: string, token: string) {
+  const db = createAdminClient();
+  if (!db) return null;
+  const request = await loadValidRequest(db, id, token);
+  if (!request) return null;
+  let jobTitle: string | null = null;
+  if (request.job_id) {
+    const { data } = await db.from("external_jobs").select("title").eq("id", request.job_id).maybeSingle();
+    jobTitle = data?.title ?? null;
+  }
+  const sources = request.scope === "company" ? await sourcesOwnedByEmail(db, request.requester_email) : [];
+  return {
+    status: request.status,
+    scope: request.scope,
+    companyName: request.company_name,
+    jobTitle,
+    sourceNames: sources.map((s) => s.company_name),
+  };
+}
+
+export async function confirmTakedown(
   id: string,
   token: string,
 ): Promise<{ ok: boolean; removed: number }> {
   const db = createAdminClient();
   if (!db) return { ok: false, removed: 0 };
-  const { data: request } = await db
-    .from("external_job_takedowns")
-    .select("id, token_hash, status, requester_email")
-    .eq("id", id)
-    .maybeSingle();
-  if (!request || request.token_hash !== sha256(token)) return { ok: false, removed: 0 };
+  const request = await loadValidRequest(db, id, token);
+  if (!request) return { ok: false, removed: 0 };
   if (request.status === "completed") return { ok: true, removed: 0 };
   if (request.status !== "pending_verification") return { ok: false, removed: 0 };
 
@@ -197,6 +271,6 @@ export async function verifyTakedown(
     .from("external_job_takedowns")
     .update({ verified_at: new Date().toISOString() })
     .eq("id", id);
-  const { removed } = await executeTakedown(db, id, request.requester_email);
+  const { removed } = await executeTakedown(db, id, request.requester_email, "email");
   return { ok: true, removed };
 }

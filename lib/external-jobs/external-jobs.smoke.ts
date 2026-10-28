@@ -139,6 +139,11 @@ async function run() {
   expect(unsupportedNumbers(SOURCE_TEXT, "Requires 4+ years").length === 0, "numbers: sourced 4 ok");
   expect(inventedTermsClaims(SOURCE_TEXT, "Competitive salary and great benefits").length === 2, "terms: salary+benefits caught");
   expect(impliesPartnership("Apply via mingle today"), "partnership phrase caught");
+  expect(impliesPartnership("Acme is an official partner of mingle"), "partnership: official partner of mingle");
+  expect(impliesPartnership("המשרה בשיתוף mingle"), "partnership: Hebrew claim caught");
+  expect(!impliesPartnership("You will partner with Product. Acme is an official AWS partner."), "partnership: ordinary wording ok");
+  expect(inventedTermsClaims("דרוש מפתח צד שרת", "שכר תחרותי וקרן השתלמות").length === 2, "terms: Hebrew salary+benefits caught");
+  expect(inventedTermsClaims("שכר גבוה והטבות", "שכר תחרותי והטבות").length === 0, "terms: Hebrew sourced terms ok");
 
   // --- tags ---------------------------------------------------------------
   const tags = supportedTags(["Kafka", "Rust", "Kubernetes", "Payments"], RAW, "Engineering");
@@ -166,6 +171,11 @@ async function run() {
   fail({ source: { ...SOURCE, terms_reviewed_at: null } }, "source_permitted");
   fail({ source: { ...SOURCE, robots_allowed: false } }, "source_permitted");
   fail({ processed: { ...GOOD, summary: GOOD.summary + " Hiring on mingle now." } }, "not_misleading");
+  const partnerWording = validateJob({
+    source: SOURCE, raw: RAW, factCheck: CLEAN_FACTS, link: OK_LINK, duplicate: NO_DUP,
+    processed: { ...GOOD, summary: GOOD.summary + " You will partner closely with product managers." },
+  });
+  expect(!failedChecks(partnerWording).some((c) => c.id === "not_misleading"), "validate: 'partner with' is not misleading");
 
   // --- JSON-LD + sitemap --------------------------------------------------
   const page = `<html><head><script type="application/ld+json">${JSON.stringify({
@@ -213,6 +223,8 @@ async function run() {
     if (url.endsWith("/robots.txt")) {
       return new Response(url.includes("blocked.test") ? "User-agent: *\nDisallow: /" : "User-agent: *\nAllow: /", { status: 200 });
     }
+    if (url.includes("/redir-bad")) return new Response(null, { status: 302, headers: { location: "https://blocked.test/private" } });
+    if (url.includes("/redir-ok")) return new Response(null, { status: 301, headers: { location: "/landed" } });
     if (url.includes("/forbidden")) return new Response("no", { status: 403 });
     if (url.includes("/captcha")) {
       return new Response("<html>Checking your browser before accessing</html>", { status: 200, headers: { "content-type": "text/html" } });
@@ -259,6 +271,15 @@ async function run() {
     );
     const flakyResult = await fetcher.get("https://ok.test/flaky");
     expect(flakyResult.status === 200 && flaky === 2, "http: transient 503 retried");
+
+    await fetcher.get("https://ok.test/redir-bad").then(
+      () => expect(false, "http: redirect into a robots-disallowed page must throw"),
+      (e) => expect(e instanceof SourceAccessDenied && e.reason === "robots", "http: robots checked on redirect target"),
+    );
+    expect(!calls.includes("https://blocked.test/private"), "http: disallowed redirect target never requested");
+    const landed = await fetcher.get("https://ok.test/redir-ok");
+    expect(landed.url === "https://ok.test/landed", `http: redirect followed to ${landed.url}`);
+    expect(new PoliteFetcher({ minIntervalMs: 250, deadline: Date.now() - 1 }).outOfTime(), "http: deadline reported");
 
     const t0 = Date.now();
     await fetcher.get("https://ok.test/a");

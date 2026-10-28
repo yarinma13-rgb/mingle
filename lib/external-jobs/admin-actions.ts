@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/access";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hardPublishChecks, runExternalJobsCrawl } from "@/lib/external-jobs/pipeline";
+import { hardPublishChecks, runExternalJobsCrawl, UNVERIFIABLE_PREFIX } from "@/lib/external-jobs/pipeline";
 import { logEvent } from "@/lib/external-jobs/store";
 import { executeTakedown } from "@/lib/external-jobs/takedown";
 import { hostOf, jobFingerprint } from "@/lib/external-jobs/text";
@@ -110,6 +110,13 @@ export async function updateSourceAction(formData: FormData) {
   switch (op) {
     case "pause":
       await db.from("external_job_sources").update({ status: "paused" }).eq("id", id);
+      // A paused source is no longer crawled, so its jobs can't be verified:
+      // hide them. They come back on the first crawl after resuming.
+      await db
+        .from("external_jobs")
+        .update({ status: "paused", status_reason: `${UNVERIFIABLE_PREFIX} source paused by ${actor}` })
+        .eq("source_id", id)
+        .eq("status", "published");
       break;
     case "resume":
       await db
@@ -349,7 +356,7 @@ export async function takedownAdminAction(formData: FormData) {
   const op = String(formData.get("op") ?? "");
   const back = `${BASE}?tab=takedowns`;
   if (op === "complete") {
-    const { removed } = await executeTakedown(db, id, actor);
+    const { removed } = await executeTakedown(db, id, actor, "admin");
     revalidatePath(BASE);
     redirectWith(back, `Removal completed: ${removed} job(s) removed.`);
   }
