@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { SubmitButton } from "@/components/admin/external-jobs/SubmitButton";
 import { ActionButton, inputClass, Panel, StatusPill, when } from "@/components/admin/external-jobs/ui";
 import { requireAdmin } from "@/lib/admin/access";
 import { editJobAction, jobAction } from "@/lib/external-jobs/admin-actions";
@@ -71,13 +72,13 @@ export default async function ExternalJobAdminDetail({
             <input name="note" className={inputClass} />
           </label>
           {job.status !== "published" && job.status !== "removed" ? (
-            <button name="op" value="publish" className="mingle-btn-primary text-xs">Publish</button>
+            <SubmitButton name="op" value="publish" className="mingle-btn-primary text-xs">Publish</SubmitButton>
           ) : null}
-          {job.status === "published" ? <button name="op" value="pause" className="mingle-btn-secondary text-xs">Hide (pause)</button> : null}
-          <button name="op" value="reprocess" className="mingle-btn-secondary text-xs">Re-run AI on next crawl</button>
-          <button name="op" value="expire" className="mingle-btn-secondary text-xs">Mark closed</button>
-          <button name="op" value="reject" className="mingle-btn-secondary text-xs">Reject</button>
-          <button name="op" value="remove" className="mingle-btn-secondary text-xs">Remove</button>
+          {job.status === "published" ? <SubmitButton name="op" value="pause" className="mingle-btn-secondary text-xs">Hide (pause)</SubmitButton> : null}
+          <SubmitButton name="op" value="reprocess" className="mingle-btn-secondary text-xs">Re-run AI on next crawl</SubmitButton>
+          <SubmitButton name="op" value="expire" className="mingle-btn-secondary text-xs">Mark closed</SubmitButton>
+          <SubmitButton name="op" value="reject" className="mingle-btn-secondary text-xs">Reject</SubmitButton>
+          <SubmitButton name="op" value="remove" className="mingle-btn-secondary text-xs">Remove</SubmitButton>
         </form>
         <p className="text-[11px] text-mingle-text-secondary">
           Manual publish still re-checks the apply link, duplicates and source permission; those can’t be overridden.
@@ -146,7 +147,7 @@ export default async function ExternalJobAdminDetail({
               Keep to facts in the source text, in your own words. Shown with: “{EXTERNAL_JOB_DISCLAIMER}”
             </p>
             <div>
-              <button type="submit" className="mingle-btn-primary text-xs">Save edits</button>
+              <SubmitButton className="mingle-btn-primary text-xs" pendingLabel="Saving…">Save edits</SubmitButton>
             </div>
           </form>
         </Panel>

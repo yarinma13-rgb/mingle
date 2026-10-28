@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/admin/external-jobs/SubmitButton";
 import { crawlNowAction, addSourceAction, updateSourceAction } from "@/lib/external-jobs/admin-actions";
 import { SOURCE_TYPE_LABELS, UNAVAILABLE_SOURCE_TYPES, type ExternalSourceRow } from "@/lib/external-jobs/types";
 import { ActionButton, inputClass, Panel, StatusPill, when } from "@/components/admin/external-jobs/ui";
@@ -70,14 +71,14 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
             email and the time.)
           </label>
           <div className="sm:col-span-2">
-            <button type="submit" className="mingle-btn-primary text-xs">Add source</button>
+            <SubmitButton className="mingle-btn-primary text-xs" pendingLabel="Adding…">Add source</SubmitButton>
           </div>
         </form>
       </Panel>
 
       <Panel
         title={`Sources (${sources.length})`}
-        actions={<ActionButton action={crawlNowAction} fields={{ returnTo: BACK }} label="Crawl all due sources now" />}
+        actions={<ActionButton action={crawlNowAction} fields={{ returnTo: BACK }} label="Crawl all due sources now" pendingLabel="Crawling… (up to a minute)" />}
       >
         {sources.length === 0 ? (
           <p className="text-sm text-mingle-text-secondary">No sources yet.</p>
@@ -111,7 +112,7 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
                   <div className="flex flex-wrap gap-2">
                     {s.status === "active" ? (
                       <>
-                        <ActionButton action={crawlNowAction} fields={{ sourceId: s.id, returnTo: BACK }} label="Crawl now" />
+                        <ActionButton action={crawlNowAction} fields={{ sourceId: s.id, returnTo: BACK }} label="Crawl now" pendingLabel="Crawling… (up to a minute)" />
                         <ActionButton action={updateSourceAction} fields={{ sourceId: s.id, op: "pause", returnTo: BACK }} label="Pause crawling" />
                       </>
                     ) : (
@@ -157,7 +158,7 @@ export function SourcesPanel({ sources }: { sources: Array<ExternalSourceRow & {
                       <textarea name="permissionNotes" rows={2} defaultValue={s.permission_notes ?? ""} className={inputClass} />
                     </label>
                     <div>
-                      <button type="submit" className="mingle-btn-secondary text-xs">Save</button>
+                      <SubmitButton className="mingle-btn-secondary text-xs" pendingLabel="Saving…">Save</SubmitButton>
                     </div>
                   </form>
                 </details>

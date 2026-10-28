@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/admin/external-jobs/SubmitButton";
 import type { ExternalJobStatus } from "@/lib/supabase/types";
 
 export const inputClass =
@@ -56,22 +57,21 @@ export function ActionButton({
   fields,
   label,
   tone = "secondary",
-  confirm,
+  pendingLabel,
 }: {
   action: (formData: FormData) => Promise<void>;
   fields: Record<string, string>;
   label: string;
   tone?: "primary" | "secondary" | "danger";
-  confirm?: string;
+  pendingLabel?: string;
 }) {
   return (
     <form action={action}>
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <button
-        type="submit"
-        title={confirm}
+      <SubmitButton
+        pendingLabel={pendingLabel}
         className={
           tone === "primary"
             ? "mingle-btn-primary text-xs"
@@ -81,7 +81,7 @@ export function ActionButton({
         }
       >
         {label}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
