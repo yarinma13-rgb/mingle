@@ -7,6 +7,7 @@ import { greenhouse, lever } from "@/lib/external-jobs/connectors/ats";
 import { extractJobPostings, postingToRawJob, sitemapLocations } from "@/lib/external-jobs/connectors/jsonld";
 import { PoliteFetcher, SourceAccessDenied, SourceTransientError } from "@/lib/external-jobs/http";
 import { recommendJob } from "@/lib/external-jobs/recommend";
+import { inTargetRegion } from "@/lib/external-jobs/region";
 import { isModelUnavailable, isPerDayQuota, perMinuteQuotaLimit } from "@/lib/external-jobs/ai";
 import { parseRobots } from "@/lib/external-jobs/robots";
 import { supportedTags } from "@/lib/external-jobs/pipeline";
@@ -153,6 +154,22 @@ async function run() {
   expect(isPerDayQuota("Quota exceeded ... limit: 20, model: x, description: Generate content requests per day limit exceeded"), "quota: per-day detected");
   expect(isModelUnavailable("This model models/gemini-2.5-flash is no longer available to new users. (HTTP 404 NOT_FOUND)"), "model: retired model detected");
   expect(!isModelUnavailable("Requested entity was not found. (HTTP 404 NOT_FOUND)"), "model: generic 404 is not a model problem");
+
+  // --- region (real location strings from Ashby / Greenhouse / Lever) -----
+  const IN = [
+    "San Francisco, California", "New York, New York", "New York, NY (HQ)", "San Francisco, CA",
+    "Remote (US)", "Remote, United States", "Remote, Canada; Remote, United States", "Remote, US",
+    "Los Angeles, CA", "Miami, FL", "Remote, North America", "Tel Aviv", "Tel Aviv-Yafo, Israel", "Remote - Israel", "Herzliya", "תל אביב",
+  ];
+  const OUT = [
+    "Dublin, Ireland", "Tokyo, Japan ", "London, United Kingdom", "London, UK", "Toronto, ON", "Remote (Canada)",
+    "Bangalore, India", "Remote, Germany", "Remote", "London", "Stockholm", "Paris", "Sydney, Australia",
+  ];
+  for (const location of IN) expect(inTargetRegion({ location }, ["US", "IL"]), `region: "${location}" should be in`);
+  for (const location of OUT) expect(!inTargetRegion({ location }, ["US", "IL"]), `region: "${location}" should be out`);
+  expect(inTargetRegion({ location: "Remote", countries: ["United States"] }, ["US", "IL"]), "region: structured country wins");
+  expect(inTargetRegion({ location: "Dublin, Ireland", countries: ["Ireland", "USA"] }, ["US", "IL"]), "region: any location in target counts");
+  expect(!inTargetRegion({ location: "New York, NY" }, ["IL"]), "region: target list respected");
 
   // --- tags ---------------------------------------------------------------
   const tags = supportedTags(["Kafka", "Rust", "Kubernetes", "Payments"], RAW, "Engineering");
