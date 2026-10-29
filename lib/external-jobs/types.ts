@@ -86,6 +86,8 @@ export type RawJob = {
 
 /** AI output, after schema coercion. */
 export type ProcessedJob = {
+  /** Gemini model that wrote this version (set by rewriteJob). */
+  model?: string;
   companyName: string;
   title: string;
   location: string | null;

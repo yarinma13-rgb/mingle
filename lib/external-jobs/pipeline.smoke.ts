@@ -101,6 +101,7 @@ tables.roles = [];
 let geminiCalls = 0;
 let geminiDown = false;
 let quotaHitsLeft = 0;
+let primaryOutForTheDay = false;
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
@@ -114,6 +115,12 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   if (url.includes("generativelanguage.googleapis.com")) {
     geminiCalls += 1;
     if (geminiDown) return Response.json({ error: { message: "models/x is not found" } }, { status: 404 });
+    if (primaryOutForTheDay && url.includes("/models/gemini-3.6-flash:")) {
+      return Response.json(
+        { error: { status: "RESOURCE_EXHAUSTED", message: "Quota exceeded for metric: generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash, description: Generate content requests per day limit exceeded on Free Tier." } },
+        { status: 429 },
+      );
+    }
     if (quotaHitsLeft > 0) {
       quotaHitsLeft -= 1;
       return Response.json(
@@ -195,6 +202,15 @@ async function run() {
   const quotaJob = tables.external_jobs.find((j) => j.external_id === "job-quota")!;
   expect(quotaJob.status === "published", `quota-limited job published: ${quotaJob.status} / ${quotaJob.status_reason}`);
   expect(summary.stats.aiErrors === 0, `quota handled without AI errors: ${summary.stats.aiErrors}`);
+
+  // 7. Primary model out of daily quota: fall back to the next model.
+  primaryOutForTheDay = true;
+  ashbyJobs.push({ ...ashbyJobs[1], id: "job-fallback", title: "Product Designer fallback", jobUrl: "https://jobs.ashbyhq.com/acme/job-fallback", applyUrl: "https://jobs.ashbyhq.com/acme/job-fallback/application" });
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  const fallbackJob = tables.external_jobs.find((j) => j.external_id === "job-fallback")!;
+  expect(fallbackJob.status === "published", `fallback job published: ${fallbackJob.status} / ${fallbackJob.status_reason}`);
+  expect(fallbackJob.ai_model === "gemini-2.5-flash", `processed by fallback model: ${fallbackJob.ai_model}`);
+  expect(summary.stats.aiErrors === 0, `fallback without AI errors: ${summary.stats.aiErrors}`);
 
   console.log("pipeline smoke: OK");
 }

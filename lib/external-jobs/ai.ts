@@ -11,12 +11,49 @@ import {
   type WorkModel,
 } from "@/lib/external-jobs/types";
 
-export function externalJobsModel(): string {
-  return (
+/**
+ * Models tried in order. Gemini quotas (incl. the free tier's per-day cap,
+ * e.g. 20 requests/day for gemini-3.6-flash) are per model, so when one
+ * model's daily quota is used up the engine moves on to the next. Override
+ * with EXTERNAL_JOBS_GEMINI_MODELS="a,b,c"; every job still passes the same
+ * mandatory checks whichever model processed it.
+ */
+const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
+
+export function modelChain(): string[] {
+  const configured = process.env.EXTERNAL_JOBS_GEMINI_MODELS?.split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const primary =
     process.env.EXTERNAL_JOBS_GEMINI_MODEL?.trim() ||
     process.env.GEMINI_MODEL?.trim() ||
-    DEFAULT_GEMINI_MODEL
-  );
+    DEFAULT_GEMINI_MODEL;
+  return [...new Set(configured?.length ? configured : [primary, ...FALLBACK_MODELS])];
+}
+
+/**
+ * Models whose daily quota ran out, with when to try them again. Quotas reset
+ * at midnight Pacific; re-checking hourly costs one failed call at most.
+ */
+const exhaustedUntil = new Map<string, number>();
+const EXHAUSTED_RETRY_MS = 60 * 60_000;
+
+function isExhausted(model: string): boolean {
+  const until = exhaustedUntil.get(model);
+  if (until == null) return false;
+  if (Date.now() < until) return true;
+  exhaustedUntil.delete(model);
+  return false;
+}
+
+function markExhausted(model: string): void {
+  exhaustedUntil.set(model, Date.now() + EXHAUSTED_RETRY_MS);
+}
+
+/** The model the next call will use, for logs and alerts. */
+export function externalJobsModel(): string {
+  const chain = modelChain();
+  return chain.find((m) => !isExhausted(m)) ?? chain[0];
 }
 
 export function aiAvailable(): boolean {
@@ -30,27 +67,27 @@ const AI_TIMEOUT_MS = 45_000;
 const AI_MAX_RETRY_WAIT_MS = 40_000;
 
 /**
- * Client-side pacing for low quotas. EXTERNAL_JOBS_AI_RPM sets it
+ * Client-side pacing for low quotas, per model. EXTERNAL_JOBS_AI_RPM sets it
  * explicitly; otherwise it is learned from the first per-minute quota error
  * ("... limit: 5, ... per minute ..."), so a free-tier key paces itself
  * instead of failing. Unset and never hit = no pacing.
  */
-let learnedRpm: number | null = null;
-let nextAiSlot = 0;
+const learnedRpm = new Map<string, number>();
+const nextAiSlot = new Map<string, number>();
 
-function pacingRpm(): number | null {
+function pacingRpm(model: string): number | null {
   const configured = Number.parseFloat(process.env.EXTERNAL_JOBS_AI_RPM ?? "");
   if (Number.isFinite(configured) && configured > 0) return configured;
-  return learnedRpm;
+  return learnedRpm.get(model) ?? null;
 }
 
-async function aiSlot(): Promise<void> {
-  const rpm = pacingRpm();
+async function aiSlot(model: string): Promise<void> {
+  const rpm = pacingRpm(model);
   if (!rpm) return;
   const interval = 60_000 / rpm;
   const now = Date.now();
-  const slot = Math.max(now, nextAiSlot);
-  nextAiSlot = slot + interval;
+  const slot = Math.max(now, nextAiSlot.get(model) ?? 0);
+  nextAiSlot.set(model, slot + interval);
   if (slot > now) await new Promise((resolve) => setTimeout(resolve, slot - now));
 }
 
@@ -62,23 +99,47 @@ export function perMinuteQuotaLimit(message: string): number | null {
   return Number.isFinite(limit) && limit > 0 ? limit : null;
 }
 
+export function isPerDayQuota(message: string): boolean {
+  return /per day/i.test(message) && /quota|limit/i.test(message);
+}
+
 /**
- * One paced AI call. On a per-minute quota error, learn the limit, wait for
- * the next slot and try once more; anything else (incl. per-day quota) throws.
+ * One AI call, paced per model. A per-minute quota error teaches the limit
+ * and retries once in the next slot; a per-day quota error moves on to the
+ * next model in the chain. Anything else throws.
  */
-async function pacedCall<T>(call: () => Promise<T>): Promise<T> {
-  await aiSlot();
-  try {
-    return await call();
-  } catch (error) {
-    const limit = error instanceof Error ? perMinuteQuotaLimit(error.message) : null;
-    if (!limit) throw error;
-    // Stay a little under the limit: other calls may share the project quota.
-    learnedRpm = Math.max(1, limit - 0.5);
-    nextAiSlot = Math.max(nextAiSlot, Date.now() + 60_000 / learnedRpm);
-    await aiSlot();
-    return call();
+async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ value: T; model: string }> {
+  let lastError: unknown = null;
+  for (const model of modelChain()) {
+    if (isExhausted(model)) continue;
+    await aiSlot(model);
+    try {
+      return { value: await call(model), model };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      lastError = error;
+      if (isPerDayQuota(message)) {
+        markExhausted(model);
+        continue;
+      }
+      const limit = perMinuteQuotaLimit(message);
+      if (!limit) throw error;
+      // Stay a little under the limit: other calls may share the project quota.
+      const rpm = Math.max(1, limit - 0.5);
+      learnedRpm.set(model, rpm);
+      nextAiSlot.set(model, Math.max(nextAiSlot.get(model) ?? 0, Date.now() + 60_000 / rpm));
+      await aiSlot(model);
+      try {
+        return { value: await call(model), model };
+      } catch (retryError) {
+        lastError = retryError;
+        const retryMessage = retryError instanceof Error ? retryError.message : "";
+        if (!isPerDayQuota(retryMessage)) throw retryError;
+        markExhausted(model);
+      }
+    }
   }
+  throw lastError ?? new Error("All AI models are out of quota for today.");
 }
 
 function sourceBlock(job: RawJob): string {
@@ -160,15 +221,16 @@ function text(value: unknown, max = 200): string | null {
 }
 
 export async function rewriteJob(job: RawJob): Promise<ProcessedJob> {
-  const out = await pacedCall(() => geminiGenerateJson<RewriteOutput>({
+  const { value: out, model } = await pacedCall((model) => geminiGenerateJson<RewriteOutput>({
     system: REWRITE_SYSTEM,
     user: sourceBlock(job),
-    model: externalJobsModel(),
+    model,
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
   }));
 
   return {
+    model,
     // Company and title always come from the source verbatim: they are facts,
     // not prose, and must match the official posting exactly.
     companyName: job.companyName,
@@ -209,10 +271,10 @@ export async function factCheckJob(job: RawJob, processed: ProcessedJob): Promis
     `Tags: ${processed.tags.join(", ")}`,
   ].join("\n");
 
-  const out = await pacedCall(() => geminiGenerateJson<Partial<Record<keyof FactCheck, unknown>>>({
+  const { value: out } = await pacedCall((model) => geminiGenerateJson<Partial<Record<keyof FactCheck, unknown>>>({
     system: FACT_CHECK_SYSTEM,
     user: `ORIGINAL POSTING:\n${sourceBlock(job)}\n\nREWRITE:\n${rewrite}`,
-    model: externalJobsModel(),
+    model,
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
   }));

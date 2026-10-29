@@ -784,7 +784,7 @@ async function processJob(
     apply_url: raw.applyUrl,
     source_url: raw.sourceUrl,
     validation: checks,
-    ai_model: externalJobsModel(),
+    ai_model: processed.model ?? externalJobsModel(),
     source_posted_at: raw.postedAt,
     source_updated_at: raw.updatedAt,
     last_seen_at: nowIso,
@@ -813,7 +813,7 @@ async function processJob(
     return rejected ? "rejected" : "failed";
   }
 
-  const detail = { checks, factCheck, aiModel: externalJobsModel() };
+  const detail = { checks, factCheck, aiModel: processed.model ?? externalJobsModel() };
   await logEvent(db, { kind: "processed", jobId: row.id, sourceId: source.id, runId: ctx.runId, message: `${processed.title} → ${status}`, detail });
 
   if (status === "published") {
