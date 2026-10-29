@@ -100,6 +100,7 @@ tables.roles = [];
 
 let geminiCalls = 0;
 let geminiDown = false;
+let quotaHitsLeft = 0;
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
@@ -113,6 +114,13 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   if (url.includes("generativelanguage.googleapis.com")) {
     geminiCalls += 1;
     if (geminiDown) return Response.json({ error: { message: "models/x is not found" } }, { status: 404 });
+    if (quotaHitsLeft > 0) {
+      quotaHitsLeft -= 1;
+      return Response.json(
+        { error: { status: "RESOURCE_EXHAUSTED", message: "You exceeded your current quota. Quota exceeded for metric: generate_content_free_tier_requests, limit: 600, model: x, description: Generate content requests per minute limit exceeded on Free Tier." } },
+        { status: 429 },
+      );
+    }
     await new Promise((r) => setTimeout(r, 30));
     const body = JSON.parse(String(init?.body));
     const isFactCheck = String(body.systemInstruction.parts[0].text).includes("fact-checker");
@@ -178,6 +186,15 @@ async function run() {
   tables.external_crawl_runs.push({ id: "lock", started_at: new Date().toISOString(), finished_at: null, stats: {}, errors: [] });
   summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
   expect(summary.skipped?.includes("already running"), "concurrent run blocked");
+
+  // 6. Free-tier per-minute quota: learn the limit, pace, and still publish.
+  tables.external_crawl_runs = tables.external_crawl_runs.filter((r) => r.id !== "lock");
+  ashbyJobs.push({ ...ashbyJobs[1], id: "job-quota", title: "Product Designer quota", jobUrl: "https://jobs.ashbyhq.com/acme/job-quota", applyUrl: "https://jobs.ashbyhq.com/acme/job-quota/application" });
+  quotaHitsLeft = 3; // the client retries twice itself, then pacing retries once more
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  const quotaJob = tables.external_jobs.find((j) => j.external_id === "job-quota")!;
+  expect(quotaJob.status === "published", `quota-limited job published: ${quotaJob.status} / ${quotaJob.status_reason}`);
+  expect(summary.stats.aiErrors === 0, `quota handled without AI errors: ${summary.stats.aiErrors}`);
 
   console.log("pipeline smoke: OK");
 }

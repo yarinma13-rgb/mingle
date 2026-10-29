@@ -30,18 +30,55 @@ const AI_TIMEOUT_MS = 45_000;
 const AI_MAX_RETRY_WAIT_MS = 40_000;
 
 /**
- * Optional client-side pacing for low quotas: EXTERNAL_JOBS_AI_RPM=5 spaces
- * calls 12s apart (Gemini free tier). Unset = no pacing.
+ * Client-side pacing for low quotas. EXTERNAL_JOBS_AI_RPM sets it
+ * explicitly; otherwise it is learned from the first per-minute quota error
+ * ("... limit: 5, ... per minute ..."), so a free-tier key paces itself
+ * instead of failing. Unset and never hit = no pacing.
  */
+let learnedRpm: number | null = null;
 let nextAiSlot = 0;
+
+function pacingRpm(): number | null {
+  const configured = Number.parseFloat(process.env.EXTERNAL_JOBS_AI_RPM ?? "");
+  if (Number.isFinite(configured) && configured > 0) return configured;
+  return learnedRpm;
+}
+
 async function aiSlot(): Promise<void> {
-  const rpm = Number.parseFloat(process.env.EXTERNAL_JOBS_AI_RPM ?? "");
-  if (!Number.isFinite(rpm) || rpm <= 0) return;
+  const rpm = pacingRpm();
+  if (!rpm) return;
   const interval = 60_000 / rpm;
   const now = Date.now();
   const slot = Math.max(now, nextAiSlot);
   nextAiSlot = slot + interval;
   if (slot > now) await new Promise((resolve) => setTimeout(resolve, slot - now));
+}
+
+/** "...limit: 5, model: ..., description: ... per minute ..." → 5 */
+export function perMinuteQuotaLimit(message: string): number | null {
+  if (!/per minute/i.test(message)) return null;
+  const match = message.match(/limit:\s*(\d+)/i);
+  const limit = match ? Number.parseInt(match[1], 10) : Number.NaN;
+  return Number.isFinite(limit) && limit > 0 ? limit : null;
+}
+
+/**
+ * One paced AI call. On a per-minute quota error, learn the limit, wait for
+ * the next slot and try once more; anything else (incl. per-day quota) throws.
+ */
+async function pacedCall<T>(call: () => Promise<T>): Promise<T> {
+  await aiSlot();
+  try {
+    return await call();
+  } catch (error) {
+    const limit = error instanceof Error ? perMinuteQuotaLimit(error.message) : null;
+    if (!limit) throw error;
+    // Stay a little under the limit: other calls may share the project quota.
+    learnedRpm = Math.max(1, limit - 0.5);
+    nextAiSlot = Math.max(nextAiSlot, Date.now() + 60_000 / learnedRpm);
+    await aiSlot();
+    return call();
+  }
 }
 
 function sourceBlock(job: RawJob): string {
@@ -123,14 +160,13 @@ function text(value: unknown, max = 200): string | null {
 }
 
 export async function rewriteJob(job: RawJob): Promise<ProcessedJob> {
-  await aiSlot();
-  const out = await geminiGenerateJson<RewriteOutput>({
+  const out = await pacedCall(() => geminiGenerateJson<RewriteOutput>({
     system: REWRITE_SYSTEM,
     user: sourceBlock(job),
     model: externalJobsModel(),
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
-  });
+  }));
 
   return {
     // Company and title always come from the source verbatim: they are facts,
@@ -173,14 +209,13 @@ export async function factCheckJob(job: RawJob, processed: ProcessedJob): Promis
     `Tags: ${processed.tags.join(", ")}`,
   ].join("\n");
 
-  await aiSlot();
-  const out = await geminiGenerateJson<Partial<Record<keyof FactCheck, unknown>>>({
+  const out = await pacedCall(() => geminiGenerateJson<Partial<Record<keyof FactCheck, unknown>>>({
     system: FACT_CHECK_SYSTEM,
     user: `ORIGINAL POSTING:\n${sourceBlock(job)}\n\nREWRITE:\n${rewrite}`,
     model: externalJobsModel(),
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
-  });
+  }));
   return {
     unsupportedClaims: cleanList(out.unsupportedClaims, 20),
     missingKeyRequirements: cleanList(out.missingKeyRequirements, 20),

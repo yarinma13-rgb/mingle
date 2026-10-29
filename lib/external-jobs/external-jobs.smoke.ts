@@ -7,6 +7,7 @@ import { greenhouse, lever } from "@/lib/external-jobs/connectors/ats";
 import { extractJobPostings, postingToRawJob, sitemapLocations } from "@/lib/external-jobs/connectors/jsonld";
 import { PoliteFetcher, SourceAccessDenied, SourceTransientError } from "@/lib/external-jobs/http";
 import { recommendJob } from "@/lib/external-jobs/recommend";
+import { perMinuteQuotaLimit } from "@/lib/external-jobs/ai";
 import { parseRobots } from "@/lib/external-jobs/robots";
 import { supportedTags } from "@/lib/external-jobs/pipeline";
 import {
@@ -144,6 +145,10 @@ async function run() {
   expect(!impliesPartnership("You will partner with Product. Acme is an official AWS partner."), "partnership: ordinary wording ok");
   expect(inventedTermsClaims("דרוש מפתח צד שרת", "שכר תחרותי וקרן השתלמות").length === 2, "terms: Hebrew salary+benefits caught");
   expect(inventedTermsClaims("שכר גבוה והטבות", "שכר תחרותי והטבות").length === 0, "terms: Hebrew sourced terms ok");
+
+  // --- quota parsing -----------------------------------------------------
+  expect(perMinuteQuotaLimit("Quota exceeded ... limit: 5, model: gemini-3.6-flash, description: Generate content requests per minute limit exceeded on Free Tier.") === 5, "quota: per-minute limit parsed");
+  expect(perMinuteQuotaLimit("Quota exceeded ... limit: 20, description: requests per day") === null, "quota: per-day limit is not paced");
 
   // --- tags ---------------------------------------------------------------
   const tags = supportedTags(["Kafka", "Rust", "Kubernetes", "Payments"], RAW, "Engineering");
