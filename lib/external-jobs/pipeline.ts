@@ -709,6 +709,14 @@ async function processJob(
       })
       .eq("id", row.id);
     ctx.stats.aiErrors += 1;
+    // Surface the first AI error of the run (summary, cron response, alert).
+    if (ctx.stats.aiErrors === 1) {
+      ctx.errors.push({
+        sourceId: source.id,
+        company: source.company_name,
+        message: `AI (${externalJobsModel()}): ${aiError}`.slice(0, 500),
+      });
+    }
     await logEvent(db, { kind: "ai_error", jobId: row.id, sourceId: source.id, runId: ctx.runId, message: aiError });
     ctx.aiErrorsInARow += 1;
     if (ctx.aiErrorsInARow >= MAX_CONSECUTIVE_AI_ERRORS) {
