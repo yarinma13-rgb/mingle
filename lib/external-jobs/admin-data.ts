@@ -212,3 +212,34 @@ export async function loadJobDetail(db: AdminDb, id: string) {
   }
   return { job, source, snapshot, events, stats };
 }
+
+/** Compact read-only status for the protected cron endpoint (?status=1). */
+export async function engineStatus() {
+  const db = createAdminClient();
+  if (!db) return { error: "SUPABASE_SERVICE_ROLE_KEY not configured" };
+  const counts = Object.fromEntries(
+    await Promise.all(ALL_STATUSES.map(async (s) => [s, await countStatus(db, s)] as const)),
+  );
+  const [{ data: runs }, { data: sources }, { data: reasons }] = await Promise.all([
+    db
+      .from("external_crawl_runs")
+      .select("id, trigger, started_at, finished_at, stats, errors")
+      .order("started_at", { ascending: false })
+      .limit(5),
+    db
+      .from("external_job_sources")
+      .select("company_name, status, publishing_paused, publishing_paused_reason, last_error, last_crawled_at"),
+    db
+      .from("external_jobs")
+      .select("status_reason")
+      .eq("status", "pending_review")
+      .limit(500),
+  ]);
+  // Group pending reasons by their first clause so a systematic failure stands out.
+  const pendingReasons: Record<string, number> = {};
+  for (const row of reasons ?? []) {
+    const key = (row.status_reason ?? "(none)").split(/[|:]/)[0].trim().slice(0, 80);
+    pendingReasons[key] = (pendingReasons[key] ?? 0) + 1;
+  }
+  return { counts, sources, runs, pendingReasons };
+}

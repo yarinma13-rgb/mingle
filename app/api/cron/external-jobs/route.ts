@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runExternalJobsCrawl } from "@/lib/external-jobs/pipeline";
 import { sendEngineAlert } from "@/lib/external-jobs/alerts";
+import { engineStatus } from "@/lib/external-jobs/admin-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,12 @@ export async function GET(request: Request) {
   const urlSecret = new URL(request.url).searchParams.get("secret");
   if (!secret || (auth !== secret && urlSecret !== secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ?status=1 (same secret): read-only snapshot of recent runs and job
+  // counts, for operators checking on a run without the dashboard.
+  if (new URL(request.url).searchParams.get("status") === "1") {
+    return NextResponse.json(await engineStatus());
   }
 
   try {
