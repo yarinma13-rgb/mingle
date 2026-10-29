@@ -18,7 +18,12 @@ import {
  * with EXTERNAL_JOBS_GEMINI_MODELS="a,b,c"; every job still passes the same
  * mandatory checks whichever model processed it.
  */
-const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
+const FALLBACK_MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.8-flash-lite",
+  "gemini-3.1-flash-lite",
+];
 
 export function modelChain(): string[] {
   const configured = process.env.EXTERNAL_JOBS_GEMINI_MODELS?.split(",")
@@ -46,8 +51,15 @@ function isExhausted(model: string): boolean {
   return false;
 }
 
-function markExhausted(model: string): void {
-  exhaustedUntil.set(model, Date.now() + EXHAUSTED_RETRY_MS);
+function markExhausted(model: string, forMs = EXHAUSTED_RETRY_MS): void {
+  exhaustedUntil.set(model, Date.now() + forMs);
+}
+
+/** A model this key can't use at all (retired, not offered to new users). */
+export function isModelUnavailable(message: string): boolean {
+  // Only messages that are about the model itself: a broader match (any 404)
+  // would sideline every model for a day on a generic fault.
+  return /no longer available|models\/\S+ is not found|not supported for generateContent/i.test(message);
 }
 
 /** The model the next call will use, for logs and alerts. */
@@ -120,6 +132,10 @@ async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ valu
       lastError = error;
       if (isPerDayQuota(message)) {
         markExhausted(model);
+        continue;
+      }
+      if (isModelUnavailable(message)) {
+        markExhausted(model, 24 * 60 * 60_000);
         continue;
       }
       const limit = perMinuteQuotaLimit(message);

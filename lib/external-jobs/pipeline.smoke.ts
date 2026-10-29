@@ -114,11 +114,19 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   }
   if (url.includes("generativelanguage.googleapis.com")) {
     geminiCalls += 1;
-    if (geminiDown) return Response.json({ error: { message: "models/x is not found" } }, { status: 404 });
+    if (geminiDown) {
+      return Response.json({ error: { status: "INVALID_ARGUMENT", message: "API key not valid. Please pass a valid API key." } }, { status: 400 });
+    }
     if (primaryOutForTheDay && url.includes("/models/gemini-3.6-flash:")) {
       return Response.json(
         { error: { status: "RESOURCE_EXHAUSTED", message: "Quota exceeded for metric: generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash, description: Generate content requests per day limit exceeded on Free Tier." } },
         { status: 429 },
+      );
+    }
+    if (primaryOutForTheDay && url.includes("/models/gemini-3.8-flash:")) {
+      return Response.json(
+        { error: { status: "NOT_FOUND", message: "This model models/gemini-3.8-flash is no longer available to new users." } },
+        { status: 404 },
       );
     }
     if (quotaHitsLeft > 0) {
@@ -209,7 +217,8 @@ async function run() {
   summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
   const fallbackJob = tables.external_jobs.find((j) => j.external_id === "job-fallback")!;
   expect(fallbackJob.status === "published", `fallback job published: ${fallbackJob.status} / ${fallbackJob.status_reason}`);
-  expect(fallbackJob.ai_model === "gemini-2.5-flash", `processed by fallback model: ${fallbackJob.ai_model}`);
+  // gemini-3.8-flash answers "no longer available" and is skipped too.
+  expect(fallbackJob.ai_model === "gemini-3.5-flash-lite", `processed by fallback model: ${fallbackJob.ai_model}`);
   expect(summary.stats.aiErrors === 0, `fallback without AI errors: ${summary.stats.aiErrors}`);
 
   console.log("pipeline smoke: OK");

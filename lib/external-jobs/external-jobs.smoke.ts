@@ -7,7 +7,7 @@ import { greenhouse, lever } from "@/lib/external-jobs/connectors/ats";
 import { extractJobPostings, postingToRawJob, sitemapLocations } from "@/lib/external-jobs/connectors/jsonld";
 import { PoliteFetcher, SourceAccessDenied, SourceTransientError } from "@/lib/external-jobs/http";
 import { recommendJob } from "@/lib/external-jobs/recommend";
-import { perMinuteQuotaLimit } from "@/lib/external-jobs/ai";
+import { isModelUnavailable, isPerDayQuota, perMinuteQuotaLimit } from "@/lib/external-jobs/ai";
 import { parseRobots } from "@/lib/external-jobs/robots";
 import { supportedTags } from "@/lib/external-jobs/pipeline";
 import {
@@ -149,6 +149,10 @@ async function run() {
   // --- quota parsing -----------------------------------------------------
   expect(perMinuteQuotaLimit("Quota exceeded ... limit: 5, model: gemini-3.6-flash, description: Generate content requests per minute limit exceeded on Free Tier.") === 5, "quota: per-minute limit parsed");
   expect(perMinuteQuotaLimit("Quota exceeded ... limit: 20, description: requests per day") === null, "quota: per-day limit is not paced");
+
+  expect(isPerDayQuota("Quota exceeded ... limit: 20, model: x, description: Generate content requests per day limit exceeded"), "quota: per-day detected");
+  expect(isModelUnavailable("This model models/gemini-2.5-flash is no longer available to new users. (HTTP 404 NOT_FOUND)"), "model: retired model detected");
+  expect(!isModelUnavailable("Requested entity was not found. (HTTP 404 NOT_FOUND)"), "model: generic 404 is not a model problem");
 
   // --- tags ---------------------------------------------------------------
   const tags = supportedTags(["Kafka", "Rust", "Kubernetes", "Payments"], RAW, "Engineering");
