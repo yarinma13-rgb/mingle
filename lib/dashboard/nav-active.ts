@@ -12,5 +12,8 @@ export function isNavHrefActive(pathname: string, href: string): boolean {
   if (href === "/profile/build" && pathname.startsWith("/profile/build")) {
     return true;
   }
+  if (href === "/jobs" && pathname.startsWith("/jobs/")) {
+    return true;
+  }
   return false;
 }

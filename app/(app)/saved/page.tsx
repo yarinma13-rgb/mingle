@@ -8,6 +8,8 @@ import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
 import { loadDisplayInfoForUsers } from "@/lib/connections/enrich";
 import { loadSavedUserIds } from "@/lib/matching/saved";
 import { Avatar } from "@/components/Avatar";
+import { ExternalBadge } from "@/components/external-jobs/ExternalBadge";
+import { loadSavedExternalJobs } from "@/lib/external-jobs/candidate";
 
 export default async function SavedPage() {
   const { supabase, user, isCompany } = await requireAppUser();
@@ -29,7 +31,10 @@ export default async function SavedPage() {
   }
 
   const savedIds = await loadSavedUserIds(supabase, user.id);
-  const display = await loadDisplayInfoForUsers(supabase, savedIds);
+  const [display, savedJobs] = await Promise.all([
+    loadDisplayInfoForUsers(supabase, savedIds),
+    isCompany ? Promise.resolve([]) : loadSavedExternalJobs(supabase, user.id),
+  ]);
 
   return (
     <>
@@ -84,6 +89,27 @@ export default async function SavedPage() {
             })}
           </div>
         )}
+
+        {savedJobs.length > 0 ? (
+          <section className="flex flex-col gap-3">
+            <h2 className="font-display text-base font-semibold text-mingle-text">Saved jobs</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {savedJobs.map((job) => (
+                <Link
+                  key={job.id}
+                  href={`/jobs/${job.id}`}
+                  className="flex flex-col gap-2 rounded-2xl border border-mingle-border bg-mingle-white p-5 shadow-mingle"
+                >
+                  <ExternalBadge />
+                  <p className="truncate font-display text-sm font-semibold text-mingle-text">{job.title}</p>
+                  <p className="truncate text-xs text-mingle-text-secondary">
+                    {[job.company_name, job.location, job.work_model].filter(Boolean).join(" · ")}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </>
   );

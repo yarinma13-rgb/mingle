@@ -25,6 +25,9 @@ export function AdminShell({
           <Link href="/admin/matches" className="text-mingle-purple underline-offset-2 hover:underline">
             Match review
           </Link>
+          <Link href="/admin/external-jobs" className="text-mingle-purple underline-offset-2 hover:underline">
+            External jobs
+          </Link>
           <Link href="/dashboard" className="text-mingle-text-secondary underline-offset-2 hover:underline">
             Back to dashboard
           </Link>
