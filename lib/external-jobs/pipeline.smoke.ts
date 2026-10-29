@@ -221,6 +221,27 @@ async function run() {
   expect(fallbackJob.ai_model === "gemini-3.5-flash-lite", `processed by fallback model: ${fallbackJob.ai_model}`);
   expect(summary.stats.aiErrors === 0, `fallback without AI errors: ${summary.stats.aiErrors}`);
 
+  // 8. Region filter (US + Israel): a published job that moved abroad is taken
+  //    down; a new job abroad is never inserted and costs no AI calls.
+  primaryOutForTheDay = false;
+  const moved = ashbyJobs.find((j) => j.id === "job-2")!;
+  moved.location = "Dublin, Ireland";
+  ashbyJobs.push({ ...ashbyJobs[1], id: "job-tokyo", title: "Designer Tokyo", location: "Tokyo, Japan", jobUrl: "https://jobs.ashbyhq.com/acme/job-tokyo", applyUrl: "https://jobs.ashbyhq.com/acme/job-tokyo/application" });
+  geminiCalls = 0;
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  const movedRow = tables.external_jobs.find((j) => j.external_id === "job-2")!;
+  expect(movedRow.status === "rejected" && String(movedRow.status_reason).startsWith("Outside target countries"), `moved job taken down: ${movedRow.status}`);
+  expect(!tables.external_jobs.some((j) => j.external_id === "job-tokyo"), "job abroad never inserted");
+  expect(geminiCalls === 0, `no AI spent on jobs abroad: ${geminiCalls}`);
+  expect(summary.stats.outOfRegion === 2, `out-of-region counted: ${summary.stats.outOfRegion}`);
+  expect(movedRow.status !== "expired", "filtered job is not treated as closed");
+
+  // 9. Moving back into a target country brings it back through the checks.
+  moved.location = "Tel Aviv";
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  const back = tables.external_jobs.find((j) => j.external_id === "job-2")!;
+  expect(back.status === "published", `job back in region republished: ${back.status} / ${back.status_reason}`);
+
   console.log("pipeline smoke: OK");
 }
 

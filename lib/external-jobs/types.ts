@@ -81,6 +81,8 @@ export type RawJob = {
   sourceUrl: string;
   postedAt: string | null;
   updatedAt: string | null;
+  /** Countries from the source's structured data, when it has them. */
+  countries?: string[];
   payload: unknown;
 };
 

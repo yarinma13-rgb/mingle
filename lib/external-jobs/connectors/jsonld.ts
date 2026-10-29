@@ -118,6 +118,10 @@ export function postingToRawJob(
     sourceUrl: pageUrl,
     postedAt: isoOrNull(posting.datePosted),
     updatedAt: null,
+    countries: asArray(posting.jobLocation as unknown)
+      .map((place) => (place as { address?: Record<string, unknown> })?.address?.addressCountry)
+      .map((c) => str((c as { name?: string })?.name ?? c))
+      .filter((c): c is string => Boolean(c)),
     payload: { validThrough, identifier: posting.identifier, employmentType: posting.employmentType },
   };
 }
