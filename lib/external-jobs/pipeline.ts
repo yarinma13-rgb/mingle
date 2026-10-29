@@ -152,6 +152,8 @@ type RunContext = {
 export async function runExternalJobsCrawl(opts: {
   trigger: "cron" | "manual";
   sourceId?: string;
+  /** Crawl every active source now, even if its interval hasn't passed. */
+  force?: boolean;
   /** Stop starting new work after this many ms (serverless time limit). */
   budgetMs?: number;
   /** Tests inject an in-memory client; production uses the service role. */
@@ -211,7 +213,7 @@ export async function runExternalJobsCrawl(opts: {
   const now = Date.now();
   for (const source of sources ?? []) {
     if (Date.now() > ctx.deadline) break;
-    if (!opts.sourceId && !isDue(source, now)) continue;
+    if (!opts.sourceId && !opts.force && !isDue(source, now)) continue;
     await crawlSource(ctx, source);
   }
 

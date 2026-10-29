@@ -21,7 +21,14 @@ export async function GET(request: Request) {
 
   try {
     // Leave headroom under maxDuration to write the run summary.
-    const summary = await runExternalJobsCrawl({ trigger: "cron", budgetMs: 240_000 });
+    // ?force=1 (same secret) crawls every active source now, for testing and
+    // catch-up; the scheduled call never sends it.
+    const force = new URL(request.url).searchParams.get("force") === "1";
+    const summary = await runExternalJobsCrawl({
+      trigger: force ? "manual" : "cron",
+      force,
+      budgetMs: 240_000,
+    });
     return NextResponse.json(summary, { status: summary.skipped ? 202 : 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
