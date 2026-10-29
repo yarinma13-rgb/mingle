@@ -55,6 +55,13 @@ function markExhausted(model: string, forMs = EXHAUSTED_RETRY_MS): void {
   exhaustedUntil.set(model, Date.now() + forMs);
 }
 
+export function isAiTimeout(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === "TimeoutError" || error.name === "AbortError" || /aborted due to timeout/i.test(error.message))
+  );
+}
+
 /** A model this key can't use at all (retired, not offered to new users). */
 export function isModelUnavailable(message: string): boolean {
   // Only messages that are about the model itself: a broader match (any 404)
@@ -150,6 +157,11 @@ async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ valu
       }
       if (isModelUnavailable(message)) {
         markExhausted(model, 24 * 60 * 60_000);
+        continue;
+      }
+      if (isAiTimeout(error)) {
+        // A slow/queued model: set it aside briefly and try the next one.
+        markExhausted(model, 5 * 60_000);
         continue;
       }
       const limit = perMinuteQuotaLimit(message);
