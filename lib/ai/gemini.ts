@@ -28,8 +28,19 @@ type GeminiGenerateResponse = {
     finishReason?: string;
   }>;
   promptFeedback?: { blockReason?: string };
-  error?: { message?: string; status?: string };
+  error?: {
+    message?: string;
+    status?: string;
+    details?: Array<{ "@type"?: string; retryDelay?: string }>;
+  };
 };
+
+/** Seconds Google asks us to wait on a 429 (RetryInfo.retryDelay, e.g. "34s"). */
+function retryDelayMs(payload: GeminiGenerateResponse): number | null {
+  const raw = payload.error?.details?.find((d) => d.retryDelay)?.retryDelay;
+  const seconds = raw ? Number.parseFloat(raw) : Number.NaN;
+  return Number.isFinite(seconds) ? Math.ceil(seconds * 1000) : null;
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Rate-limit / overload answers worth one or two quick retries. */
@@ -41,6 +52,8 @@ export async function geminiGenerateJson<T>(input: {
   model?: string;
   /** Abort the request after this long (default 60s). */
   timeoutMs?: number;
+  /** Longest wait honoured when Google asks to retry later (default 5s). */
+  maxRetryWaitMs?: number;
 }): Promise<T> {
   const key = geminiApiKey();
   if (!key) {
@@ -70,7 +83,13 @@ export async function geminiGenerateJson<T>(input: {
   let response: Response | null = null;
   let payload: GeminiGenerateResponse = {};
   for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await sleep(1500 * 2 ** (attempt - 1));
+    if (attempt > 0) {
+      const asked = response ? retryDelayMs(payload) : null;
+      const wait = asked ?? 1500 * 2 ** (attempt - 1);
+      // A per-day quota asks for hours: don't wait, fail now.
+      if (wait > (input.maxRetryWaitMs ?? 5000)) break;
+      await sleep(wait);
+    }
     response = await fetch(url, {
       method: "POST",
       signal: AbortSignal.timeout(input.timeoutMs ?? 60_000),

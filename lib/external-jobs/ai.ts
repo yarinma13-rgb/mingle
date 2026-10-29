@@ -26,6 +26,23 @@ export function aiAvailable(): boolean {
 const MAX_SOURCE_CHARS = 14_000;
 /** One slow AI call must not eat the whole run. */
 const AI_TIMEOUT_MS = 45_000;
+/** Per-minute quota waits (Gemini free tier) are worth honouring within a run. */
+const AI_MAX_RETRY_WAIT_MS = 40_000;
+
+/**
+ * Optional client-side pacing for low quotas: EXTERNAL_JOBS_AI_RPM=5 spaces
+ * calls 12s apart (Gemini free tier). Unset = no pacing.
+ */
+let nextAiSlot = 0;
+async function aiSlot(): Promise<void> {
+  const rpm = Number.parseFloat(process.env.EXTERNAL_JOBS_AI_RPM ?? "");
+  if (!Number.isFinite(rpm) || rpm <= 0) return;
+  const interval = 60_000 / rpm;
+  const now = Date.now();
+  const slot = Math.max(now, nextAiSlot);
+  nextAiSlot = slot + interval;
+  if (slot > now) await new Promise((resolve) => setTimeout(resolve, slot - now));
+}
 
 function sourceBlock(job: RawJob): string {
   return [
@@ -106,11 +123,13 @@ function text(value: unknown, max = 200): string | null {
 }
 
 export async function rewriteJob(job: RawJob): Promise<ProcessedJob> {
+  await aiSlot();
   const out = await geminiGenerateJson<RewriteOutput>({
     system: REWRITE_SYSTEM,
     user: sourceBlock(job),
     model: externalJobsModel(),
     timeoutMs: AI_TIMEOUT_MS,
+    maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
   });
 
   return {
@@ -154,11 +173,13 @@ export async function factCheckJob(job: RawJob, processed: ProcessedJob): Promis
     `Tags: ${processed.tags.join(", ")}`,
   ].join("\n");
 
+  await aiSlot();
   const out = await geminiGenerateJson<Partial<Record<keyof FactCheck, unknown>>>({
     system: FACT_CHECK_SYSTEM,
     user: `ORIGINAL POSTING:\n${sourceBlock(job)}\n\nREWRITE:\n${rewrite}`,
     model: externalJobsModel(),
     timeoutMs: AI_TIMEOUT_MS,
+    maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
   });
   return {
     unsupportedClaims: cleanList(out.unsupportedClaims, 20),
