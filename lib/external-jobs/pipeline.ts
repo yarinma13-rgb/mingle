@@ -1,5 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { aiAvailable, externalJobsModel, factCheckJob, rewriteJob, type FactCheck } from "@/lib/external-jobs/ai";
+import {
+  aiAvailable,
+  exportLearnedRpm,
+  externalJobsModel,
+  factCheckJob,
+  importLearnedRpm,
+  rewriteJob,
+  type FactCheck,
+} from "@/lib/external-jobs/ai";
 import { sendEngineAlert } from "@/lib/external-jobs/alerts";
 import { CONNECTORS } from "@/lib/external-jobs/connectors";
 import { extractJobPostings, postingToRawJob } from "@/lib/external-jobs/connectors/jsonld";
@@ -124,8 +132,16 @@ async function saveRunProgress(ctx: RunContext, force = false): Promise<void> {
   ctx.lastProgressSave = now;
   await ctx.db
     .from("external_crawl_runs")
-    .update({ stats: ctx.stats as unknown as Record<string, number>, errors: ctx.errors })
+    .update({ stats: runStats(ctx), errors: ctx.errors })
     .eq("id", ctx.runId);
+}
+
+/** Counters plus the learned AI pacing ("rpm:<model>") for the next run. */
+function runStats(ctx: RunContext): Record<string, number> {
+  const pacing = Object.fromEntries(
+    Object.entries(exportLearnedRpm()).map(([model, rpm]) => [`rpm:${model}`, rpm]),
+  );
+  return { ...(ctx.stats as unknown as Record<string, number>), ...pacing };
 }
 
 function isDue(source: ExternalSourceRow, now: number): boolean {
@@ -181,6 +197,22 @@ export async function runExternalJobsCrawl(opts: {
     return { runId: null, skipped: "Another crawl is already running. Try again in a few minutes.", stats, errors: [] };
   }
 
+  // Start at the AI pace earlier runs learned (stored as "rpm:<model>").
+  const { data: lastRuns } = await db
+    .from("external_crawl_runs")
+    .select("stats")
+    .order("started_at", { ascending: false })
+    .limit(5);
+  for (const previous of lastRuns ?? []) {
+    importLearnedRpm(
+      Object.fromEntries(
+        Object.entries(previous.stats ?? {})
+          .filter(([key]) => key.startsWith("rpm:"))
+          .map(([key, value]) => [key.slice(4), Number(value)]),
+      ),
+    );
+  }
+
   const { data: run } = await db
     .from("external_crawl_runs")
     .insert({ trigger: opts.trigger })
@@ -222,7 +254,7 @@ export async function runExternalJobsCrawl(opts: {
       .from("external_crawl_runs")
       .update({
         finished_at: new Date().toISOString(),
-        stats: stats as unknown as Record<string, number>,
+        stats: runStats(ctx),
         errors: ctx.errors,
       })
       .eq("id", ctx.runId);

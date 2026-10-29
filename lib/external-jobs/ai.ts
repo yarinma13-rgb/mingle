@@ -87,6 +87,20 @@ const AI_MAX_RETRY_WAIT_MS = 40_000;
 const learnedRpm = new Map<string, number>();
 const nextAiSlot = new Map<string, number>();
 
+/**
+ * Learned per-model pacing, persisted between runs (each serverless run
+ * starts fresh and would otherwise burst into the same limit again).
+ */
+export function exportLearnedRpm(): Record<string, number> {
+  return Object.fromEntries(learnedRpm);
+}
+
+export function importLearnedRpm(values: Record<string, number>): void {
+  for (const [model, rpm] of Object.entries(values)) {
+    if (Number.isFinite(rpm) && rpm > 0 && !learnedRpm.has(model)) learnedRpm.set(model, rpm);
+  }
+}
+
 function pacingRpm(model: string): number | null {
   const configured = Number.parseFloat(process.env.EXTERNAL_JOBS_AI_RPM ?? "");
   if (Number.isFinite(configured) && configured > 0) return configured;
@@ -143,16 +157,25 @@ async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ valu
       // Stay a little under the limit: other calls may share the project quota.
       const rpm = Math.max(1, limit - 0.5);
       learnedRpm.set(model, rpm);
-      nextAiSlot.set(model, Math.max(nextAiSlot.get(model) ?? 0, Date.now() + 60_000 / rpm));
-      await aiSlot(model);
-      try {
-        return { value: await call(model), model };
-      } catch (retryError) {
-        lastError = retryError;
-        const retryMessage = retryError instanceof Error ? retryError.message : "";
-        if (!isPerDayQuota(retryMessage)) throw retryError;
-        markExhausted(model);
+      let retried = false;
+      for (let attempt = 0; attempt < 2 && !retried; attempt++) {
+        // The quota counts a rolling minute: let the whole window pass.
+        nextAiSlot.set(model, Math.max(nextAiSlot.get(model) ?? 0, Date.now() + 60_000));
+        await aiSlot(model);
+        try {
+          return { value: await call(model), model };
+        } catch (retryError) {
+          lastError = retryError;
+          const retryMessage = retryError instanceof Error ? retryError.message : "";
+          if (isPerDayQuota(retryMessage)) {
+            markExhausted(model);
+            retried = true;
+          } else if (!perMinuteQuotaLimit(retryMessage)) {
+            throw retryError;
+          }
+        }
       }
+      if (!retried) markExhausted(model, 5 * 60_000);
     }
   }
   throw lastError ?? new Error("All AI models are out of quota for today.");
