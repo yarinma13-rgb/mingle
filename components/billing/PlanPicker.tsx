@@ -3,9 +3,7 @@
 import { useMemo, useState } from "react";
 import { PURCHASABLE_PLANS, type PurchasablePlanId } from "@/lib/billing/plans";
 import { priceFor, regionForCountry, TRIAL_DAYS } from "@/lib/billing/pricing";
-
-/** Enterprise is sales-led: "Talk to us" books a call on the founder's calendar. */
-const ENTERPRISE_BOOKING_URL = "https://calendly.com/yarinma13/30min";
+import { ENTERPRISE_BOOKING_URL, PLAN_COPY } from "@/lib/billing/plan-catalog";
 
 const COUNTRY_CODES = [
   "IL", "US", "GB", "CA", "AU", "NZ", "IE", "DE", "FR", "ES", "IT", "NL", "BE", "AT", "PT",
@@ -13,55 +11,6 @@ const COUNTRY_CODES = [
   "CH", "PL", "CZ", "HU", "RO", "UA", "TR", "AE", "SA", "IN", "SG", "JP", "KR", "HK", "CN",
   "BR", "MX", "AR", "CL", "CO", "ZA", "EG", "NG", "KE",
 ];
-
-const PLAN_COPY: Record<
-  PurchasablePlanId,
-  { name: string; tagline: string; jobs: string; features: string[]; popular?: boolean }
-> = {
-  core: {
-    name: "Core",
-    tagline: "For lean hiring teams getting started.",
-    jobs: "1–3 active jobs",
-    features: [
-      "AI matching (Role, Human, Motivation fit)",
-      "Why match / Why not insights",
-      "Candidate pipeline & basic ATS",
-      "Calendar integration",
-      "Team collaboration (up to 3 users)",
-      "Standard support",
-      "Basic reporting",
-    ],
-  },
-  plus: {
-    name: "Plus",
-    tagline: "For growing teams with more hiring needs.",
-    jobs: "4–10 active jobs",
-    features: [
-      "All Core features",
-      "Candidate comparison",
-      "Talent pool (save & reuse candidates)",
-      "Recruitment analytics",
-      "Advanced reporting",
-      "Expanded hiring team (up to 10 users)",
-      "Priority support",
-    ],
-  },
-  max: {
-    name: "Max",
-    tagline: "For high-volume teams that need advanced intelligence.",
-    jobs: "11–25 active jobs",
-    features: [
-      "All Plus features",
-      "Interview intelligence",
-      "Talent rediscovery (Talent Exchange)",
-      "Company insights",
-      "Advanced analytics & dashboards",
-      "Expanded hiring team (up to 25 users)",
-      "Dedicated success manager",
-    ],
-    popular: true,
-  },
-};
 
 function countryName(code: string): string {
   try {
@@ -178,7 +127,7 @@ export function PlanPicker({ defaultCountry }: { defaultCountry: string }) {
                 {copy.jobs}
               </p>
               <ul className="flex flex-1 flex-col gap-2 text-sm text-mingle-text">
-                {copy.features.map((feature) => (
+                {[...(copy.includes ? [`All ${copy.includes} features`] : []), ...copy.highlights].map((feature) => (
                   <li key={feature} className="flex gap-2">
                     <span aria-hidden className="text-mingle-success">
                       ✓

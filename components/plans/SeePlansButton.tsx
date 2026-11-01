@@ -26,7 +26,7 @@ export function SeePlansButton({
 }) {
   return (
     <Link
-      href="/coming-soon"
+      href="/plans"
       className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-mingle-border bg-mingle-white font-medium text-mingle-accent-purple transition-colors hover:bg-mingle-lavender ${
         compact
           ? "h-9 px-3.5 text-xs"
@@ -34,7 +34,7 @@ export function SeePlansButton({
       }`}
     >
       <SparkleIcon size={compact ? 13 : 14} />
-      Plans soon
+      Plans
     </Link>
   );
 }
