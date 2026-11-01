@@ -20,6 +20,10 @@ import { PROFILE_QUESTIONS } from "@/lib/profile/questions";
 import { COMPANY_QUESTIONS } from "@/lib/company-profile/questions";
 import { requireAppUser } from "@/lib/dashboard/require-shell-user";
 import { resolveCompanyWorkspaceId } from "@/lib/team/persistence";
+import { JobsForYou } from "@/components/external-jobs/JobsForYou";
+import { loadJobsFeed, type JobCard } from "@/lib/external-jobs/candidate";
+
+const JOBS_IN_DISCOVER = 6;
 
 export default async function DiscoverPage({
   searchParams,
@@ -66,6 +70,36 @@ export default async function DiscoverPage({
       ? { onlyUserIds: passedUserIds }
       : { excludeUserIds: passedUserIds },
   );
+
+  // Talents also see their best-matching open jobs (mingle roles and
+  // External Opportunities) at the top of the Discover feed, filtered by the
+  // same location / work model. Never blocks Discover if it fails.
+  const showJobs =
+    userRow.user_type === "talent" && !viewPassed && filters.page <= 1;
+  let jobCards: JobCard[] = [];
+  if (showJobs) {
+    try {
+      const feed = await loadJobsFeed(supabase, user.id, {
+        q: "",
+        workModel: filters.workModel,
+        category: "",
+        employmentType: "",
+        location: filters.location,
+        origin: "",
+        sort: "recommended",
+      });
+      jobCards = feed.cards.slice(0, JOBS_IN_DISCOVER);
+    } catch {
+      jobCards = [];
+    }
+  }
+  const jobsHref = (() => {
+    const params = new URLSearchParams();
+    if (filters.location) params.set("location", filters.location);
+    if (filters.workModel) params.set("workModel", filters.workModel);
+    const qs = params.toString();
+    return qs ? `/jobs?${qs}` : "/jobs";
+  })();
 
   const filtersActive = discoveryFiltersActive(filters);
   const screenKey = [
@@ -143,6 +177,7 @@ export default async function DiscoverPage({
             preserveView={viewBrowse ? "browse" : null}
           />
         )}
+        {showJobs ? <JobsForYou cards={jobCards} seeAllHref={jobsHref} /> : null}
         <DiscoveryScreen
           key={`${screenKey}|${mode}`}
           viewerId={user.id}
