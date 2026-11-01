@@ -56,12 +56,6 @@ const TALENT_ITEMS: CommandItem[] = [
     href: "/settings/support",
     keywords: ["support", "help", "bug", "broken", "contact"],
   },
-  {
-    id: "plans",
-    label: "Plans soon",
-    href: "/coming-soon",
-    keywords: ["billing", "upgrade", "soon", "plans"],
-  },
 ];
 
 const COMPANY_ITEMS: CommandItem[] = [
@@ -133,9 +127,9 @@ const COMPANY_ITEMS: CommandItem[] = [
   },
   {
     id: "plans",
-    label: "Plans soon",
-    href: "/coming-soon",
-    keywords: ["billing", "upgrade", "soon", "plans"],
+    label: "Plans",
+    href: "/plans",
+    keywords: ["billing", "upgrade", "pricing", "plans", "subscription"],
   },
 ];
 
@@ -168,7 +162,8 @@ const ENABLED_PREFIXES = [
   "/interviews",
   "/team",
   "/saved",
-  "/coming-soon",
+  "/plans",
+  "/insights",
 ];
 
 export function isCommandPalettePath(pathname: string): boolean {

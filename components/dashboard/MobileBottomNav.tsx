@@ -38,6 +38,7 @@ export function MobileBottomNav({
   userGender = null,
   userPhoto = null,
   userSubtitle,
+  showPlans = false,
   profileHref,
   avatarShape = "circle",
 }: {
@@ -50,6 +51,8 @@ export function MobileBottomNav({
   userSubtitle: string;
   profileHref: string;
   avatarShape?: "circle" | "soft";
+  /** Company accounts only — candidates never see plans. */
+  showPlans?: boolean;
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -162,9 +165,11 @@ export function MobileBottomNav({
               </Link>
             </div>
 
-            <div className="mt-4 px-1">
-              <SeePlansButton />
-            </div>
+            {showPlans ? (
+              <div className="mt-4 px-1">
+                <SeePlansButton />
+              </div>
+            ) : null}
 
             <div className="mt-4 flex items-center justify-between rounded-[10px] border border-mingle-border bg-mingle-bg px-3.5 py-3">
               <ThemeSwitch compact />
