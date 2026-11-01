@@ -33,6 +33,18 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: supabaseStoragePatterns(),
   },
+  async rewrites() {
+    return [
+      {
+        source: "/pitch",
+        destination: "/pitch/index.html",
+      },
+      {
+        source: "/pitch/",
+        destination: "/pitch/index.html",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
