@@ -31,6 +31,7 @@ import {
   type LinkCheck,
 } from "@/lib/external-jobs/validate";
 import type { ExternalJobStatus } from "@/lib/supabase/types";
+import { inTargetRegion, targetCountries } from "@/lib/external-jobs/region";
 
 /**
  * Source Discovery → Permission Check → Job Extraction → AI Rewriting →
@@ -40,6 +41,8 @@ import type { ExternalJobStatus } from "@/lib/supabase/types";
 const PENDING_HASH = "pending";
 /** status_reason prefix for jobs the AI could not process; retried every run. */
 export const AI_ERROR_PREFIX = "AI processing failed:";
+/** status_reason prefix for jobs outside the target countries. */
+export const OUT_OF_REGION_PREFIX = "Outside target countries:";
 /** Stop calling the AI for the rest of a run after this many failures in a row. */
 const MAX_CONSECUTIVE_AI_ERRORS = 3;
 /** A run that started this recently and hasn't finished blocks a new one. */
@@ -75,6 +78,7 @@ export type RunStats = {
   expired: number;
   paused: number;
   deferred: number;
+  outOfRegion: number;
   aiErrors: number;
   requests: number;
 };
@@ -100,6 +104,7 @@ function emptyStats(): RunStats {
     expired: 0,
     paused: 0,
     deferred: 0,
+    outOfRegion: 0,
     aiErrors: 0,
     requests: 0,
   };
@@ -329,12 +334,38 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     .in("status", ACTIVE_STATUSES);
   const existing = new Map((existingRows ?? []).map((row) => [row.external_id, row]));
 
-  const unique: RawJob[] = [];
+  const listed: RawJob[] = [];
   const seen = new Set<string>();
   for (const raw of result.jobs) {
     if (seen.has(raw.externalId)) continue;
     seen.add(raw.externalId);
-    unique.push(raw);
+    listed.push(raw);
+  }
+
+  // --- Region filter: only jobs in the target countries are listed --------
+  // Filtered before any AI work, so jobs elsewhere cost no quota. They stay
+  // in `seen`, so they are not mistaken for closed jobs.
+  const targets = targetCountries();
+  const unique = listed.filter((raw) => inTargetRegion(raw, targets));
+  const outOfRegionIds = listed
+    .filter((raw) => !inTargetRegion(raw, targets))
+    .map((raw) => existing.get(raw.externalId))
+    .filter((row): row is ExternalJobRow => Boolean(row))
+    .map((row) => row.id);
+  ctx.stats.outOfRegion += listed.length - unique.length;
+  for (const ids of chunk(outOfRegionIds, 200)) {
+    await db
+      .from("external_jobs")
+      .update({
+        status: "rejected",
+        status_reason: `${OUT_OF_REGION_PREFIX} mingle lists jobs in ${targets.join(", ")} only.`,
+        last_seen_at: nowIso,
+      })
+      .in("id", ids);
+    await logEvents(
+      db,
+      ids.map((id) => ({ kind: "rejected" as const, jobId: id, sourceId: source.id, runId: ctx.runId, message: "Outside target countries" })),
+    );
   }
 
   // --- Pass 1: bookkeeping in a handful of bulk queries ---------------------
@@ -348,11 +379,11 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
   // Jobs we decided on before (rejected/removed) keep that decision; an
   // expired job that is listed again is processed again.
   const unknown = unique.filter((raw) => !rows.has(raw.externalId));
-  const priors = new Map<string, { id: string; status: ExternalJobStatus }>();
+  const priors = new Map<string, { id: string; status: ExternalJobStatus; status_reason: string | null }>();
   for (const ids of chunk(unknown.map((raw) => raw.externalId), 200)) {
     const { data } = await db
       .from("external_jobs")
-      .select("id, status, external_id")
+      .select("id, status, status_reason, external_id")
       .eq("source_id", source.id)
       .in("external_id", ids);
     for (const prior of data ?? []) priors.set(prior.external_id, prior);
@@ -363,7 +394,11 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     const prior = priors.get(raw.externalId);
     if (!prior) {
       toInsert.push(raw);
-    } else if (prior.status === "expired") {
+    } else if (
+      prior.status === "expired" ||
+      // Moved into a target country since it was filtered out.
+      (prior.status === "rejected" && prior.status_reason?.startsWith(OUT_OF_REGION_PREFIX))
+    ) {
       const { data: reopened } = await db
         .from("external_jobs")
         .update({ status: "discovered", status_reason: "Re-opened on source", expired_at: null, content_hash: PENDING_HASH })

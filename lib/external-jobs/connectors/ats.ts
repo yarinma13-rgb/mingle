@@ -79,7 +79,8 @@ type LeverPosting = {
   descriptionPlain?: string;
   additionalPlain?: string;
   lists?: Array<{ text?: string; content?: string }>;
-  categories?: { location?: string; commitment?: string; team?: string; department?: string };
+  categories?: { location?: string; commitment?: string; team?: string; department?: string; allLocations?: string[] };
+  country?: string;
 };
 
 export const lever: Connector = {
@@ -103,7 +104,6 @@ export const lever: Connector = {
         externalId: posting.id,
         title: posting.text.trim(),
         companyName: source.company_name,
-        location: posting.categories?.location?.trim() || null,
         workModelHint: inferWorkModel(posting.workplaceType, posting.categories?.location),
         employmentTypeHint: inferEmploymentType(posting.categories?.commitment),
         department: posting.categories?.department || posting.categories?.team || null,
@@ -112,6 +112,10 @@ export const lever: Connector = {
         sourceUrl: posting.hostedUrl,
         postedAt: isoOrNull(posting.createdAt),
         updatedAt: null,
+        location: [posting.categories?.location, ...(posting.categories?.allLocations ?? [])]
+          .filter((l, i, all): l is string => Boolean(l) && all.indexOf(l) === i)
+          .join("; ") || null,
+        countries: posting.country ? [posting.country] : [],
         payload: { id: posting.id, categories: posting.categories, workplaceType: posting.workplaceType },
       };
     });
@@ -135,6 +139,8 @@ type AshbyJob = {
   publishedAt?: string;
   jobUrl: string;
   applyUrl?: string;
+  address?: { postalAddress?: { addressCountry?: string } };
+  secondaryLocations?: Array<{ location?: string; address?: { postalAddress?: { addressCountry?: string } } }>;
 };
 
 export const ashby: Connector = {
@@ -157,6 +163,10 @@ export const ashby: Connector = {
       sourceUrl: job.jobUrl,
       postedAt: isoOrNull(job.publishedAt),
       updatedAt: null,
+      countries: [
+        job.address?.postalAddress?.addressCountry,
+        ...(job.secondaryLocations ?? []).map((l) => l.address?.postalAddress?.addressCountry),
+      ].filter((c): c is string => Boolean(c)),
       payload: { id: job.id, workplaceType: job.workplaceType, employmentType: job.employmentType },
     }));
     return { jobs, complete: all.length <= MAX_JOBS_PER_SOURCE };
@@ -203,6 +213,7 @@ export const workable: Connector = {
         sourceUrl: url,
         postedAt: isoOrNull(job.published_on || job.created_at),
         updatedAt: null,
+        countries: job.country ? [job.country] : [],
         payload: { shortcode: job.shortcode, employment_type: job.employment_type },
       };
     });
@@ -272,6 +283,7 @@ export const smartrecruiters: Connector = {
         sourceUrl: postingUrl,
         postedAt: isoOrNull(item.releasedDate),
         updatedAt: null,
+        countries: item.location?.country ? [item.location.country] : [],
         payload: { id: item.id, location: item.location },
       });
     }
