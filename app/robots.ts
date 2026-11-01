@@ -29,6 +29,8 @@ export default function robots(): MetadataRoute.Robots {
           "/coming-soon",
           "/admin",
           "/demo/mascot",
+          "/demo",
+          "/deck",
           "/recommend",
         ],
       },
