@@ -242,6 +242,20 @@ async function run() {
   const back = tables.external_jobs.find((j) => j.external_id === "job-2")!;
   expect(back.status === "published", `job back in region republished: ${back.status} / ${back.status_reason}`);
 
+  // 10. Out of time: AI work that can't finish inside the budget is deferred,
+  //     the run still finishes and records its stats, and the job is untouched.
+  ashbyJobs.push({ ...ashbyJobs[1], id: "job-late", title: "Designer late", jobUrl: "https://jobs.ashbyhq.com/acme/job-late", applyUrl: "https://jobs.ashbyhq.com/acme/job-late/application" });
+  geminiCalls = 0;
+  const t1 = Date.now();
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb, budgetMs: 1000 });
+  const late = tables.external_jobs.find((j) => j.external_id === "job-late")!;
+  expect(Date.now() - t1 < 20_000, `short-budget run returns promptly: ${Date.now() - t1}ms`);
+  expect(geminiCalls === 0 && summary.stats.deferred >= 1, `deferred, no AI started: calls=${geminiCalls} deferred=${summary.stats.deferred}`);
+  expect(late.status === "discovered" && late.content_hash === "pending", `late job untouched: ${late.status} ${late.content_hash}`);
+  expect(tables.external_crawl_runs.at(-1)!.finished_at, "short-budget run recorded as finished");
+  summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  expect(tables.external_jobs.find((j) => j.external_id === "job-late")!.status === "published", "deferred job published next run");
+
   console.log("pipeline smoke: OK");
 }
 
