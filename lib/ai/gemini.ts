@@ -54,6 +54,8 @@ export async function geminiGenerateJson<T>(input: {
   timeoutMs?: number;
   /** Longest wait honoured when Google asks to retry later (default 5s). */
   maxRetryWaitMs?: number;
+  /** Never start a retry that could run past this time (epoch ms). */
+  deadline?: number;
 }): Promise<T> {
   const key = geminiApiKey();
   if (!key) {
@@ -88,6 +90,7 @@ export async function geminiGenerateJson<T>(input: {
       const wait = asked ?? 1500 * 2 ** (attempt - 1);
       // A per-day quota asks for hours: don't wait, fail now.
       if (wait > (input.maxRetryWaitMs ?? 5000)) break;
+      if (input.deadline != null && Date.now() + wait + (input.timeoutMs ?? 60_000) > input.deadline) break;
       await sleep(wait);
     }
     response = await fetch(url, {

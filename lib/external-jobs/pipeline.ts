@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  AiDeadlineError,
+  setAiDeadline,
   aiAvailable,
   exportLearnedRpm,
   externalJobsModel,
@@ -236,6 +238,8 @@ export async function runExternalJobsCrawl(opts: {
     lastProgressSave: 0,
   };
   await logEvent(db, { kind: "crawl_started", runId: ctx.runId, message: opts.trigger });
+  // AI calls must finish inside the run's budget (see AiDeadlineError).
+  setAiDeadline(ctx.deadline);
 
   let query = db.from("external_job_sources").select("*").eq("status", "active");
   if (opts.sourceId) query = query.eq("id", opts.sourceId);
@@ -273,6 +277,7 @@ export async function runExternalJobsCrawl(opts: {
     );
   }
 
+  setAiDeadline(null);
   return { runId: ctx.runId, stats, errors: ctx.errors };
 }
 
@@ -535,6 +540,11 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       const item = toProcess[next++];
       if (!item) return;
       const outcome = await processJob(ctx, source, item.row, item.raw, item.hash, fetcher);
+      if (outcome === "deferred") {
+        // No time left for AI in this run; the rest are deferred below.
+        ctx.aiLeft = 0;
+        return;
+      }
       // An AI outage says nothing about this source's jobs: it doesn't count
       // toward pausing the source.
       if (outcome !== "ai_error") processedHere += 1;
@@ -729,7 +739,7 @@ export function supportedTags(tags: string[], raw: RawJob, category: string): st
   });
 }
 
-type ProcessOutcome = "published" | "failed" | "rejected" | "ai_error";
+type ProcessOutcome = "published" | "failed" | "rejected" | "ai_error" | "deferred";
 
 async function processJob(
   ctx: RunContext,
@@ -756,6 +766,13 @@ async function processJob(
       processed.tags = supportedTags(processed.tags, raw, processed.category);
       factCheck = await factCheckJob(raw, processed);
     } catch (error) {
+      if (error instanceof AiDeadlineError) {
+        // Out of time for this run: leave the job exactly as it was.
+        ctx.aiLeft += 1;
+        ctx.stats.processed -= 1;
+        ctx.stats.deferred += 1;
+        return "deferred";
+      }
       // Either call failing means the content wasn't verified: treat both alike.
       processed = null;
       aiError = error instanceof Error ? error.message : "AI processing failed";

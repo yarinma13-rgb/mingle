@@ -114,14 +114,48 @@ function pacingRpm(model: string): number | null {
   return learnedRpm.get(model) ?? null;
 }
 
+/**
+ * The run's time limit for AI work. A call that could not finish before it
+ * (waiting for a quota slot included) is not started: it throws
+ * AiDeadlineError and the job waits for the next run, instead of the whole
+ * serverless run being cut off mid-call.
+ */
+let aiDeadline: number | null = null;
+/** Room one call needs: its own timeout plus a margin to save the result. */
+const CALL_RESERVE_MS = AI_TIMEOUT_MS + 10_000;
+
+export class AiDeadlineError extends Error {
+  constructor() {
+    super("Out of time for AI work in this run; deferred to the next run.");
+    this.name = "AiDeadlineError";
+  }
+}
+
+export function setAiDeadline(deadline: number | null): void {
+  aiDeadline = deadline;
+}
+
+function assertTimeFor(startAt: number): void {
+  if (aiDeadline != null && startAt + CALL_RESERVE_MS > aiDeadline) throw new AiDeadlineError();
+}
+
 async function aiSlot(model: string): Promise<void> {
   const rpm = pacingRpm(model);
-  if (!rpm) return;
-  const interval = 60_000 / rpm;
   const now = Date.now();
+  if (!rpm) {
+    assertTimeFor(now);
+    return;
+  }
+  const interval = 60_000 / rpm;
   const slot = Math.max(now, nextAiSlot.get(model) ?? 0);
+  assertTimeFor(slot);
   nextAiSlot.set(model, slot + interval);
   if (slot > now) await new Promise((resolve) => setTimeout(resolve, slot - now));
+}
+
+/** Overloaded right now ("high demand", 503): try another model. */
+export function isModelOverloaded(message: string): boolean {
+  return /HTTP 503|UNAVAILABLE|high demand|overloaded/i.test(message);
 }
 
 /** "...limit: 5, model: ..., description: ... per minute ..." → 5 */
@@ -159,7 +193,8 @@ async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ valu
         markExhausted(model, 24 * 60 * 60_000);
         continue;
       }
-      if (isAiTimeout(error)) {
+      if (error instanceof AiDeadlineError) throw error;
+      if (isAiTimeout(error) || isModelOverloaded(message)) {
         // A slow/queued model: set it aside briefly and try the next one.
         markExhausted(model, 5 * 60_000);
         continue;
@@ -177,6 +212,7 @@ async function pacedCall<T>(call: (model: string) => Promise<T>): Promise<{ valu
         try {
           return { value: await call(model), model };
         } catch (retryError) {
+          if (retryError instanceof AiDeadlineError) throw retryError;
           lastError = retryError;
           const retryMessage = retryError instanceof Error ? retryError.message : "";
           if (isPerDayQuota(retryMessage)) {
@@ -278,6 +314,7 @@ export async function rewriteJob(job: RawJob): Promise<ProcessedJob> {
     model,
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
+    deadline: aiDeadline ?? undefined,
   }));
 
   return {
@@ -328,6 +365,7 @@ export async function factCheckJob(job: RawJob, processed: ProcessedJob): Promis
     model,
     timeoutMs: AI_TIMEOUT_MS,
     maxRetryWaitMs: AI_MAX_RETRY_WAIT_MS,
+    deadline: aiDeadline ?? undefined,
   }));
   return {
     unsupportedClaims: cleanList(out.unsupportedClaims, 20),
