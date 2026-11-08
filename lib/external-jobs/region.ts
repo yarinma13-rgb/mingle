@@ -97,6 +97,18 @@ export function countriesFromText(location: string | null | undefined): Set<Coun
   return found;
 }
 
+/**
+ * Country whose jobs are processed first when AI quota is scarce
+ * (EXTERNAL_JOBS_PRIORITY_COUNTRY, default IL). Ordering only: jobs in the
+ * other target countries are still processed, later in the same run or in
+ * the next one.
+ */
+export function priorityCountry(): CountryCode | null {
+  const raw = process.env.EXTERNAL_JOBS_PRIORITY_COUNTRY?.trim().toUpperCase();
+  if (raw === "NONE") return null;
+  return raw || "IL";
+}
+
 export function jobCountries(raw: Pick<RawJob, "location" | "countries">): Set<CountryCode> {
   const found = countriesFromText(raw.location);
   for (const country of raw.countries ?? []) {

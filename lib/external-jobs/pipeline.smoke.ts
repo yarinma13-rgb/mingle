@@ -4,6 +4,7 @@
  * Run: npx --yes tsx lib/external-jobs/pipeline.smoke.ts
  */
 import { runExternalJobsCrawl } from "@/lib/external-jobs/pipeline";
+import { addSources } from "@/lib/external-jobs/sources";
 import type { AdminDb } from "@/lib/external-jobs/store";
 
 function expect(condition: unknown, message: string) {
@@ -255,6 +256,32 @@ async function run() {
   expect(tables.external_crawl_runs.at(-1)!.finished_at, "short-budget run recorded as finished");
   summary = await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
   expect(tables.external_jobs.find((j) => j.external_id === "job-late")!.status === "published", "deferred job published next run");
+
+  // 11. Israel first: with room for one job, the Tel Aviv job is processed
+  //     before the New York one listed ahead of it.
+  ashbyJobs.push(
+    { ...ashbyJobs[1], id: "job-ny", title: "Designer New York", location: "New York, NY", jobUrl: "https://jobs.ashbyhq.com/acme/job-ny", applyUrl: "https://jobs.ashbyhq.com/acme/job-ny/application" },
+    { ...ashbyJobs[1], id: "job-tlv", title: "Designer Tel Aviv", location: "Tel Aviv", jobUrl: "https://jobs.ashbyhq.com/acme/job-tlv", applyUrl: "https://jobs.ashbyhq.com/acme/job-tlv/application" },
+  );
+  process.env.EXTERNAL_JOBS_MAX_AI_PER_RUN = "1";
+  await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
+  delete process.env.EXTERNAL_JOBS_MAX_AI_PER_RUN;
+  const tlv = tables.external_jobs.find((j) => j.external_id === "job-tlv")!;
+  const ny = tables.external_jobs.find((j) => j.external_id === "job-ny")!;
+  expect(tlv.status === "published" && ny.status === "discovered", `Israel first: tlv=${tlv.status} ny=${ny.status}`);
+
+  // 12. Bulk-adding sources records the reviewer and skips duplicates.
+  const bulk = await addSources(fakeDb, {
+    termsReviewedBy: "owner@example.com",
+    sources: [
+      { companyName: "Acme", careersUrl: "https://acme.com/careers", sourceType: "ashby", sourceKey: "acme", collectionBasis: "public_api", companyDomains: [], permissionNotes: "" },
+      { companyName: "Beta", careersUrl: "https://beta.io/careers", sourceType: "greenhouse", sourceKey: "beta", collectionBasis: "public_api", companyDomains: ["beta.io"], permissionNotes: "test" },
+      { companyName: "Gamma", careersUrl: "https://gamma.io/jobs", sourceType: "smartrecruiters", sourceKey: "gamma", collectionBasis: "public_api", companyDomains: [], permissionNotes: "" },
+    ],
+  });
+  const beta = tables.external_job_sources.find((x) => x.source_key === "beta")!;
+  expect(bulk.added.join() === "Beta" && bulk.skipped.length === 2, `bulk add: ${JSON.stringify(bulk)}`);
+  expect(beta.terms_reviewed_by === "owner@example.com" && beta.terms_reviewed_at, "bulk add records reviewer");
 
   console.log("pipeline smoke: OK");
 }

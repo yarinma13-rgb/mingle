@@ -23,7 +23,7 @@ export type Connector = {
 };
 
 /** Hard cap so one huge board can't eat the whole run. */
-export const MAX_JOBS_PER_SOURCE = 150;
+export const MAX_JOBS_PER_SOURCE = 500;
 
 export function htmlToText(html: string | null | undefined): string {
   if (!html) return "";

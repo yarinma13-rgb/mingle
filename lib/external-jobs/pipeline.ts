@@ -33,7 +33,7 @@ import {
   type LinkCheck,
 } from "@/lib/external-jobs/validate";
 import type { ExternalJobStatus } from "@/lib/supabase/types";
-import { inTargetRegion, targetCountries } from "@/lib/external-jobs/region";
+import { inTargetRegion, jobCountries, priorityCountry, targetCountries } from "@/lib/external-jobs/region";
 
 /**
  * Source Discovery → Permission Check → Job Extraction → AI Rewriting →
@@ -529,6 +529,13 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     await db.from("external_jobs").update(touch).in("id", ids);
   }
   await saveRunProgress(ctx);
+
+  // Jobs in the priority country first: on a small AI quota they go live first.
+  const priority = priorityCountry();
+  if (priority) {
+    const first = (item: { raw: RawJob }) => (jobCountries(item.raw).has(priority) ? 0 : 1);
+    toProcess.sort((a, b) => first(a) - first(b));
+  }
 
   // --- Pass 2: AI processing, a few jobs at a time --------------------------
   let processedHere = 0;
