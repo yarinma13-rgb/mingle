@@ -73,6 +73,14 @@ mingle מציג משרות חיצוניות רק בארה"ב ובישראל (`EX
 במדינת יעד. מיקום לא מזוהה (למשל "Remote" בלבד) לא נכלל. משרה שפורסמה ועברה למדינה אחרת
 יורדת (`rejected`, `Outside target countries:`), וחוזרת לבדיקות אם חזרה למדינת יעד.
 
+**עדיפות לישראל:** כשמכסת ה־AI מוגבלת, משרות בישראל מעובדות קודם
+(`EXTERNAL_JOBS_PRIORITY_COUNTRY`, ברירת מחדל `IL`, `NONE` לביטול). זה סדר בלבד; שאר
+המשרות במדינות היעד מעובדות אחריהן.
+
+**הוספת מקורות בכמות:** `POST /api/cron/external-jobs?action=add-sources` עם `CRON_SECRET`
+בכותרת Authorization וגוף `{ termsReviewedBy, sources: [...] }` (`lib/external-jobs/sources.ts`).
+אותם שדות וכללים כמו בטופס, ומי שאישר את תנאי השימוש נרשם על כל מקור.
+
 ## חוויית המועמד
 
 - `/jobs` (טאלנט בלבד, בניווט) — משרות של חברות ב־mingle (RPC `list_open_mingle_roles`)
