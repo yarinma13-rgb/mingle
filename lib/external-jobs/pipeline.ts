@@ -47,6 +47,8 @@ export const AI_ERROR_PREFIX = "AI processing failed:";
 export const OUT_OF_REGION_PREFIX = "Outside target countries:";
 /** Stop calling the AI for the rest of a run after this many failures in a row. */
 const MAX_CONSECUTIVE_AI_ERRORS = 3;
+/** Share of a run's budget that listing sources may use (stage 1). */
+const LISTING_SHARE = 0.5;
 /** A run that started this recently and hasn't finished blocks a new one. */
 const RUN_LOCK_MS = 6 * 60_000;
 /** Jobs absent from a complete official feed this many checks in a row are expired. */
@@ -256,8 +258,12 @@ export async function runExternalJobsCrawl(opts: {
   // first source in line using it all.
   const now = Date.now();
   const works: SourceWork[] = [];
+  // Listing gets at most half the budget so the AI always has time; sources
+  // not reached are first in line next run (ordered by last_crawled_at).
+  const listingDeadline = now + ((opts.budgetMs ?? 240_000) * LISTING_SHARE);
   for (const source of sources ?? []) {
     if (Date.now() > ctx.deadline) break;
+    if (works.length > 0 && Date.now() > listingDeadline) break;
     if (!opts.sourceId && !opts.force && !isDue(source, now)) continue;
     const work = await crawlSource(ctx, source);
     if (work) works.push(work);
@@ -482,15 +488,6 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow): Promise<
     );
   }
 
-  const rawById = new Map(unique.map((raw) => [raw.externalId, raw]));
-  for (const batch of chunk([...rows.values()], 50)) {
-    await db.from("external_job_snapshots").upsert(
-      batch.map((row) => {
-        const raw = rawById.get(row.external_id)!;
-        return { job_id: row.id, source_text: raw.text, source_payload: raw.payload, fetched_at: nowIso };
-      }),
-    );
-  }
 
   // Seen in the official feed: it's open. Clear any verification misses.
   const touch = {
@@ -550,6 +547,20 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow): Promise<
     }
 
     toProcess.push({ row, raw, hash });
+  }
+
+  // Source text is stored only for jobs about to be (re)processed: unchanged
+  // jobs keep the snapshot they were validated against, and rewriting every
+  // snapshot on every run used up most of a big run's time.
+  for (const batch of chunk(toProcess, 50)) {
+    await db.from("external_job_snapshots").upsert(
+      batch.map(({ row, raw }) => ({
+        job_id: row.id,
+        source_text: raw.text,
+        source_payload: raw.payload,
+        fetched_at: nowIso,
+      })),
+    );
   }
 
   for (const ids of chunk(touchIds, 200)) {
