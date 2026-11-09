@@ -190,10 +190,13 @@ async function run() {
   expect(run2.finished_at && (run2.stats as Record<string, number>).published === JOBS, "run stats saved");
   console.log(`  processed ${JOBS} jobs with 4 parallel workers in ${Date.now() - t0}ms`);
 
-  // 3. Unchanged third run: no AI calls, nothing reprocessed.
+  // 3. Unchanged third run: no AI calls, nothing reprocessed, snapshots kept.
   geminiCalls = 0;
+  const snapshotTimes = tables.external_job_snapshots.map((x) => x.fetched_at).join();
+  await new Promise((r) => setTimeout(r, 5));
   await runExternalJobsCrawl({ trigger: "manual", sourceId: "src-1", db: fakeDb });
   expect(geminiCalls === 0, `unchanged jobs are not reprocessed: ${geminiCalls}`);
+  expect(tables.external_job_snapshots.map((x) => x.fetched_at).join() === snapshotTimes, "unchanged jobs' snapshots not rewritten");
 
   // 4. A job disappears from the complete feed: hidden, then expired after repeated misses.
   ashbyJobs.pop();
