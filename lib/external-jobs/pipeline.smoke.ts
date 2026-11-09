@@ -107,6 +107,9 @@ const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
   if (url.endsWith("/robots.txt")) return new Response("User-agent: *\nAllow: /");
+  if (url.includes("api.ashbyhq.com/posting-api/job-board/solo")) {
+    return Response.json({ jobs: [{ ...ashbyJobs[1], id: "job-solo", title: "Designer Solo", location: "Tel Aviv", jobUrl: "https://jobs.ashbyhq.com/solo/job-solo", applyUrl: "https://jobs.ashbyhq.com/solo/job-solo/application" }] });
+  }
   if (url.includes("api.ashbyhq.com/posting-api")) return Response.json({ jobs: ashbyJobs });
   if (url.includes("jobs.ashbyhq.com")) {
     const id = url.match(/job-\d+/)?.[0];
@@ -282,6 +285,20 @@ async function run() {
   const beta = tables.external_job_sources.find((x) => x.source_key === "beta")!;
   expect(bulk.added.join() === "Beta" && bulk.skipped.length === 2, `bulk add: ${JSON.stringify(bulk)}`);
   expect(beta.terms_reviewed_by === "owner@example.com" && beta.terms_reviewed_at, "bulk add records reviewer");
+
+  // 13. One run over several sources: the AI budget goes to the priority
+  //     country across all of them, not to whichever source is listed first.
+  tables.external_job_sources.push({ ...tables.external_job_sources[0], id: "src-solo", company_name: "Solo", source_key: "solo", last_crawled_at: null });
+  process.env.EXTERNAL_JOBS_MAX_AI_PER_RUN = "1";
+  await runExternalJobsCrawl({ trigger: "manual", force: true, db: fakeDb });
+  delete process.env.EXTERNAL_JOBS_MAX_AI_PER_RUN;
+  const solo = tables.external_jobs.find((j) => j.external_id === "job-solo")!;
+  const nyStill = tables.external_jobs.find((j) => j.external_id === "job-ny")!;
+  expect(solo.status === "published", `Israeli job from the second source processed first: ${solo.status}`);
+  expect(nyStill.status === "discovered", `US job from the first source waits: ${nyStill.status}`);
+  // (Fake DB rows don't get Postgres column defaults, so only explicitly active sources are crawled.)
+  expect(tables.external_job_sources.filter((src) => src.status === "active").every((src) => src.last_crawled_at), "every source in the run is finalized");
+  expect(tables.external_crawl_runs.at(-1)!.finished_at, "multi-source run finished");
 
   console.log("pipeline smoke: OK");
 }
