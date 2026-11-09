@@ -251,12 +251,23 @@ export async function runExternalJobsCrawl(opts: {
     ctx.errors.push({ sourceId: "-", company: "-", message: error.message });
   }
 
+  // Stage 1: list every due source (cheap) so that stage 2 can spend the
+  // AI budget across all of them, priority country first, instead of the
+  // first source in line using it all.
   const now = Date.now();
+  const works: SourceWork[] = [];
   for (const source of sources ?? []) {
     if (Date.now() > ctx.deadline) break;
     if (!opts.sourceId && !opts.force && !isDue(source, now)) continue;
-    await crawlSource(ctx, source);
+    const work = await crawlSource(ctx, source);
+    if (work) works.push(work);
   }
+
+  // Stage 2: AI processing across all sources.
+  await processQueue(ctx, works);
+
+  // Stage 3: per-source monitoring and bookkeeping.
+  for (const work of works) await finishSource(ctx, work);
 
   if (ctx.runId) {
     await db
@@ -281,7 +292,23 @@ export async function runExternalJobsCrawl(opts: {
   return { runId: ctx.runId, stats, errors: ctx.errors };
 }
 
-async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
+type QueueItem = { row: ExternalJobRow; raw: RawJob; hash: string };
+
+/** What stage 1 found for one source, for stages 2 and 3. */
+type SourceWork = {
+  source: ExternalSourceRow;
+  fetcher: PoliteFetcher;
+  nowIso: string;
+  touch: { last_seen_at: string; last_verified_at: string; verify_failures: number };
+  toProcess: QueueItem[];
+  existing: Map<string, ExternalJobRow>;
+  seen: Set<string>;
+  listingComplete: boolean;
+  processed: number;
+  failed: number;
+};
+
+async function crawlSource(ctx: RunContext, source: ExternalSourceRow): Promise<SourceWork | null> {
   const { db } = ctx;
   const connector = CONNECTORS[source.source_type];
   const fetcher = new PoliteFetcher({ minIntervalMs: source.min_request_interval_ms, deadline: ctx.deadline });
@@ -295,7 +322,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       runId: ctx.runId,
       message: "Terms of use not reviewed; source skipped.",
     });
-    return;
+    return null;
   }
 
   const endpoint = connector.endpoint(source);
@@ -304,7 +331,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     // An outage, not a ban: count a failure and try again next run.
     await failSource(ctx, source, robots.reason, { pauseSource: false });
     ctx.stats.requests += fetcher.requests;
-    return;
+    return null;
   }
   const robotsAllowed = robots.state === "allowed";
   await db
@@ -315,7 +342,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
   if (!robotsAllowed) {
     const message = `robots.txt disallows ${endpoint}. Collection stopped; published jobs paused.`;
     await failSource(ctx, source, message, { pauseSource: true });
-    return;
+    return null;
   }
 
   // --- Extraction ----------------------------------------------------------
@@ -327,7 +354,7 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
     const message = error instanceof Error ? error.message : "Unknown source error";
     await failSource(ctx, source, message, { pauseSource: blocked });
     ctx.stats.requests += fetcher.requests;
-    return;
+    return null;
   }
   ctx.stats.sourcesCrawled += 1;
   ctx.stats.jobsSeen += result.jobs.length;
@@ -530,23 +557,45 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
   }
   await saveRunProgress(ctx);
 
-  // Jobs in the priority country first: on a small AI quota they go live first.
-  const priority = priorityCountry();
-  if (priority) {
-    const first = (item: { raw: RawJob }) => (jobCountries(item.raw).has(priority) ? 0 : 1);
-    toProcess.sort((a, b) => first(a) - first(b));
-  }
+  return {
+    source,
+    fetcher,
+    nowIso,
+    touch,
+    toProcess,
+    existing,
+    seen,
+    listingComplete: result.complete,
+    processed: 0,
+    failed: 0,
+  };
+}
 
-  // --- Pass 2: AI processing, a few jobs at a time --------------------------
-  let processedHere = 0;
-  let failedHere = 0;
+/**
+ * Stage 2: one AI queue for every source in the run. Jobs in the priority
+ * country go first; within each group sources take turns, so a big board
+ * can't starve the others.
+ */
+async function processQueue(ctx: RunContext, works: SourceWork[]): Promise<void> {
+  const priority = priorityCountry();
+  const tagged = works.flatMap((work) =>
+    work.toProcess.map((item, index) => ({
+      work,
+      item,
+      rank: priority && jobCountries(item.raw).has(priority) ? 0 : 1,
+      turn: index,
+    })),
+  );
+  tagged.sort((a, b) => a.rank - b.rank || a.turn - b.turn);
+
   let next = 0;
   const worker = async () => {
     for (;;) {
       if (ctx.aiLeft <= 0 || Date.now() > ctx.deadline) return;
-      const item = toProcess[next++];
-      if (!item) return;
-      const outcome = await processJob(ctx, source, item.row, item.raw, item.hash, fetcher);
+      const entry = tagged[next++];
+      if (!entry) return;
+      const { work, item } = entry;
+      const outcome = await processJob(ctx, work.source, item.row, item.raw, item.hash, work.fetcher);
       if (outcome === "deferred") {
         // No time left for AI in this run; the rest are deferred below.
         ctx.aiLeft = 0;
@@ -554,34 +603,43 @@ async function crawlSource(ctx: RunContext, source: ExternalSourceRow) {
       }
       // An AI outage says nothing about this source's jobs: it doesn't count
       // toward pausing the source.
-      if (outcome !== "ai_error") processedHere += 1;
-      if (outcome === "failed") failedHere += 1;
+      if (outcome !== "ai_error") work.processed += 1;
+      if (outcome === "failed") work.failed += 1;
       await saveRunProgress(ctx);
     }
   };
   await Promise.all(Array.from({ length: aiConcurrency() }, worker));
 
   // Not reached this run: leave content_hash stale so the next run picks them up.
-  const deferred = toProcess.slice(next);
+  const deferred = tagged.slice(next);
   ctx.stats.deferred += deferred.length;
-  for (const ids of chunk(deferred.map((item) => item.row.id), 200)) {
-    await db.from("external_jobs").update(touch).in("id", ids);
+  for (const work of works) {
+    const ids = deferred.filter((d) => d.work === work).map((d) => d.item.row.id);
+    for (const batch of chunk(ids, 200)) {
+      await ctx.db.from("external_jobs").update(work.touch).in("id", batch);
+    }
   }
+}
+
+/** Stage 3: closed-job monitoring, the failure-pause rule and source bookkeeping. */
+async function finishSource(ctx: RunContext, work: SourceWork): Promise<void> {
+  const { db } = ctx;
+  const { source, fetcher, nowIso } = work;
 
   // --- Monitoring: jobs that disappeared from the source -------------------
-  for (const row of existing.values()) {
-    if (seen.has(row.external_id)) continue;
+  for (const row of work.existing.values()) {
+    if (work.seen.has(row.external_id)) continue;
     if (Date.now() > ctx.deadline) break;
-    await handleMissingJob(ctx, source, row, result.complete, fetcher);
+    await handleMissingJob(ctx, source, row, work.listingComplete, fetcher);
   }
 
   // --- Rule 10: pause auto-publishing when mandatory checks keep failing ---
   if (
-    processedHere >= FAILURE_PAUSE_MIN_JOBS &&
-    failedHere / processedHere >= FAILURE_PAUSE_RATIO &&
+    work.processed >= FAILURE_PAUSE_MIN_JOBS &&
+    work.failed / work.processed >= FAILURE_PAUSE_RATIO &&
     !source.publishing_paused
   ) {
-    const reason = `${failedHere}/${processedHere} jobs failed mandatory checks in the last crawl.`;
+    const reason = `${work.failed}/${work.processed} jobs failed mandatory checks in the last crawl.`;
     await db
       .from("external_job_sources")
       .update({ publishing_paused: true, publishing_paused_reason: reason })
