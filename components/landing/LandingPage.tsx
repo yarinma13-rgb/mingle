@@ -3,6 +3,8 @@
 import { AnalyticsEvent } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Figtree } from "next/font/google";
 import { MingleLogo } from "@/components/MingleLogo";
@@ -18,6 +20,7 @@ import {
   useLandingLocale,
 } from "@/components/landing/LandingLocale";
 import "./landing.css";
+import "./landing-v2.css";
 
 const figtree = Figtree({
   // Figtree is Latin-first; Hebrew falls back to system UI on landing.
@@ -28,6 +31,14 @@ const figtree = Figtree({
 });
 
 const SIGN_IN_HREF = "/auth";
+// Real, varied portraits (Unsplash) — one per audience chip in the strip below the hero.
+const STRIP_PEOPLE = [
+  "/landing/avatars/avatar-sofia.webp",
+  "/landing/avatars/avatar-arjun.webp",
+  "/landing/avatars/avatar-dana.webp",
+  "/landing/avatars/avatar-kofi.webp",
+  "/landing/avatars/avatar-lin.webp",
+];
 // No default segment — user must pick Talent or Company on /auth.
 const GET_STARTED_HREF = "/auth?mode=signup";
 const DEMO_HREF = "/contact";
@@ -35,6 +46,14 @@ const DEMO_HREF = "/contact";
 function LandingPageInner() {
   const { t, locale } = useLandingLocale();
   const year = new Date().getFullYear();
+  // Nav floats transparent over the dark hero, turns solid once you scroll.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div
@@ -43,7 +62,7 @@ function LandingPageInner() {
       lang={locale}
       data-locale={locale}
     >
-      <header className="landing-nav">
+      <header className={`landing-nav${scrolled ? " is-scrolled" : ""}`}>
         <div className="landing-shell landing-nav-inner">
           <Link href="/" className="landing-nav-brand" aria-label="mingle home">
             <MingleLogo variant="mark" size={30} priority />
@@ -71,7 +90,7 @@ function LandingPageInner() {
       </header>
 
       <main>
-        <section className="landing-hero" aria-labelledby="landing-hero-title">
+        <section className="landing-hero landing-hero-dark" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
             <LandingAudienceProvider>
               <LandingHeroCopy />
@@ -79,6 +98,28 @@ function LandingPageInner() {
                 <LandingHeroMatch />
               </div>
             </LandingAudienceProvider>
+          </div>
+        </section>
+
+        <section className="landing-strip" aria-label={t.hero.eyebrow}>
+          <div className="landing-shell">
+            <div className="landing-strip-card">
+              <p className="landing-strip-title">{t.hero.eyebrow}</p>
+              <ul className="landing-strip-list">
+                {t.hero.audiences.map((item, index) => (
+                  <li key={item.id}>
+                    <Image
+                      src={STRIP_PEOPLE[index % STRIP_PEOPLE.length]}
+                      alt=""
+                      width={36}
+                      height={36}
+                      sizes="36px"
+                    />
+                    <span>{item.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
@@ -258,9 +299,23 @@ function LandingPageInner() {
             </div>
             <div className="landing-moment-card" aria-hidden="true">
               <div className="landing-moment-pair">
-                <span className="landing-avatar landing-avatar-talent" />
+                <Image
+                  className="landing-moment-photo"
+                  src="/landing/avatars/avatar-maya.webp"
+                  alt=""
+                  width={88}
+                  height={88}
+                  sizes="88px"
+                />
                 <span className="landing-moment-link" />
-                <span className="landing-avatar landing-avatar-company" />
+                <Image
+                  className="landing-moment-photo"
+                  src="/landing/avatars/avatar-idan.webp"
+                  alt=""
+                  width={88}
+                  height={88}
+                  sizes="88px"
+                />
               </div>
               <p className="landing-moment-score">{t.moment.unlocked}</p>
               <p className="landing-moment-sub">{t.moment.scoresLine}</p>

@@ -22,7 +22,7 @@ const COMPANY_MATCHES: PanelCard[] = [
     where: "Tel Aviv",
     score: 96,
     why: "Same shipping pace. She already led a B2B roadmap like yours.",
-    avatar: "/landing/avatars/avatar-noa.png",
+    avatar: "/landing/avatars/avatar-noa.webp",
     badge: "Mutual interest",
   },
   {
@@ -31,44 +31,44 @@ const COMPANY_MATCHES: PanelCard[] = [
     where: "Austin",
     score: 93,
     why: "Motivation lined up — he wants ownership, not ticket farms.",
-    avatar: "/landing/avatars/avatar-noah.png",
+    avatar: "/landing/avatars/avatar-noah.webp",
     badge: "Strong human fit",
   },
   {
-    name: "Yael Naveh",
+    name: "Sofia Reyes",
     role: "Product Designer",
     where: "Tel Aviv",
     score: 91,
     why: "Clear craft overlap, and she prefers teams that talk early.",
-    avatar: "/landing/avatars/avatar-sofia.png",
+    avatar: "/landing/avatars/avatar-sofia.webp",
     badge: "Worth a conversation",
   },
 ];
 
 const COMPANY_FLOATERS = [
   {
-    src: "/landing/avatars/avatar-idan.png",
+    src: "/landing/avatars/avatar-idan.webp",
     name: "Idan",
     top: "9%",
     left: "7%",
     delay: 0.1,
   },
   {
-    src: "/landing/avatars/avatar-arjun.png",
+    src: "/landing/avatars/avatar-arjun.webp",
     name: "Arjun",
     top: "14%",
     right: "6%",
     delay: 0.25,
   },
   {
-    src: "/landing/avatars/avatar-noa.png",
+    src: "/landing/avatars/avatar-noa.webp",
     name: "Noa",
     bottom: "11%",
     left: "8%",
     delay: 0.35,
   },
   {
-    src: "/landing/avatars/avatar-noah.png",
+    src: "/landing/avatars/avatar-noah.webp",
     name: "Noah",
     bottom: "8%",
     right: "7%",
@@ -84,7 +84,7 @@ const TALENT_MATCHES: PanelCard[] = [
     where: "Tel Aviv",
     score: 97,
     why: "They want builders who own outcomes — same way you like to ship.",
-    avatar: "/landing/avatars/avatar-maya.png",
+    avatar: "/landing/avatars/avatar-maya.webp",
     badge: "Role fit strong",
   },
   {
@@ -93,7 +93,7 @@ const TALENT_MATCHES: PanelCard[] = [
     where: "New York",
     score: 94,
     why: "Small team, real ownership. No ticket farm — matches your motivation.",
-    avatar: "/landing/avatars/avatar-idan.png",
+    avatar: "/landing/avatars/avatar-idan.webp",
     badge: "Human fit",
   },
   {
@@ -102,35 +102,35 @@ const TALENT_MATCHES: PanelCard[] = [
     where: "Remote",
     score: 92,
     why: "Early product stage. They interview for craft, not buzzwords.",
-    avatar: "/landing/avatars/avatar-sofia.png",
+    avatar: "/landing/avatars/avatar-sofia.webp",
     badge: "Worth a conversation",
   },
 ];
 
 const TALENT_FLOATERS = [
   {
-    src: "/landing/avatars/avatar-noah.png",
+    src: "/landing/avatars/avatar-noah.webp",
     name: "Teams",
     top: "9%",
     left: "7%",
     delay: 0.1,
   },
   {
-    src: "/landing/avatars/avatar-arjun.png",
+    src: "/landing/avatars/avatar-arjun.webp",
     name: "Roles",
     top: "14%",
     right: "6%",
     delay: 0.25,
   },
   {
-    src: "/landing/avatars/avatar-noa.png",
+    src: "/landing/avatars/avatar-noa.webp",
     name: "Fit",
     bottom: "11%",
     left: "8%",
     delay: 0.35,
   },
   {
-    src: "/landing/avatars/avatar-maya.png",
+    src: "/landing/avatars/avatar-maya.webp",
     name: "Why",
     bottom: "8%",
     right: "7%",
@@ -146,8 +146,8 @@ const COPY = {
     sub: "Not another CV pile. Short lists with human reasons — Role, Human, and Motivation Fit.",
     mutual: "Mutual",
     footer: "Fewer profiles. Clearer why. Human from the first screen.",
-    mutualLeft: "/landing/avatars/avatar-noa.png",
-    mutualRight: "/landing/avatars/avatar-noah.png",
+    mutualLeft: "/landing/avatars/avatar-noa.webp",
+    mutualRight: "/landing/avatars/avatar-noah.webp",
   },
   talent: {
     eyebrow: "Real roles. Clear why.",
@@ -156,8 +156,8 @@ const COPY = {
     sub: "Not another job board. Short lists of roles with human reasons — Role, Human, and Motivation Fit.",
     mutual: "Interested",
     footer: "Fewer applications. Clearer why. Human from the first screen.",
-    mutualLeft: "/landing/avatars/avatar-idan.png",
-    mutualRight: "/landing/avatars/avatar-maya.png",
+    mutualLeft: "/landing/avatars/avatar-idan.webp",
+    mutualRight: "/landing/avatars/avatar-maya.webp",
   },
 } as const;
 

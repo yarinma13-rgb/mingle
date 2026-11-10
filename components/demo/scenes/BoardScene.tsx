@@ -20,7 +20,7 @@ const AVATAR_BY_NAME: Record<
   },
   "Sofia Reyes": {
     initials: "SR",
-    photo: "/landing/avatars/avatar-maya.png",
+    photo: "/landing/avatars/avatar-maya.webp",
     gender: "female",
   },
 };
