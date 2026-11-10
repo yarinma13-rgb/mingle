@@ -1,9 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useLandingLocale } from "@/components/landing/LandingLocale";
 
 type BoardCard = {
   name: string;
+  /** Sample profile portrait (Unsplash) — illustrative, not a customer. */
+  photo: string;
   role: string;
   match: number;
   confidence: "high" | "medium" | "low";
@@ -26,21 +29,24 @@ const COLUMNS: BoardColumn[] = [
     accent: "#7b2ff7",
     cards: [
       {
-        name: "Noa Levi",
+        name: "Sofia Reyes",
+        photo: "/landing/avatars/avatar-sofia.webp",
         role: "Product Designer",
         match: 94,
         confidence: "high",
         note: "Role 97 · Human 92",
       },
       {
-        name: "Eli Cohen",
+        name: "Arjun Mehta",
+        photo: "/landing/avatars/avatar-arjun.webp",
         role: "Full-stack",
         match: 91,
         confidence: "high",
         note: "Motivation 95",
       },
       {
-        name: "Maya Bar",
+        name: "Maya Johnson",
+        photo: "/landing/avatars/avatar-maya.webp",
         role: "PM",
         match: 86,
         confidence: "medium",
@@ -55,14 +61,16 @@ const COLUMNS: BoardColumn[] = [
     accent: "#3e6be0",
     cards: [
       {
-        name: "Tom Asher",
+        name: "Noah Brooks",
+        photo: "/landing/avatars/avatar-noah.webp",
         role: "Backend",
         match: 93,
         confidence: "high",
         note: "Why this match open",
       },
       {
-        name: "Dana Shalev",
+        name: "Lin Zhang",
+        photo: "/landing/avatars/avatar-lin.webp",
         role: "Data",
         match: 88,
         confidence: "medium",
@@ -75,7 +83,8 @@ const COLUMNS: BoardColumn[] = [
     accent: "#ea1e63",
     cards: [
       {
-        name: "Yuval Ben",
+        name: "Dana Walker",
+        photo: "/landing/avatars/avatar-dana.webp",
         role: "Design lead",
         match: 96,
         confidence: "high",
@@ -89,7 +98,8 @@ const COLUMNS: BoardColumn[] = [
     accent: "#00ca72",
     cards: [
       {
-        name: "Ori Katz",
+        name: "Kofi Mensah",
+        photo: "/landing/avatars/avatar-kofi.webp",
         role: "Engineer",
         match: 92,
         confidence: "high",
@@ -165,14 +175,6 @@ const NOTE_HE: Record<string, string> = {
   "Interview booked": "ראיון נקבע",
 };
 
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
-}
-
 export function LandingCompanyBoard() {
   const { locale } = useLandingLocale();
   const copy = COPY[locale];
@@ -219,12 +221,15 @@ export function LandingCompanyBoard() {
                   {column.cards.map((card) => (
                     <article key={card.name} className="landing-company-card">
                       <div className="landing-company-card-top">
-                        <span
+                        <Image
                           className="landing-company-avatar"
-                          style={{ background: column.accent }}
-                        >
-                          {initials(card.name)}
-                        </span>
+                          src={card.photo}
+                          alt=""
+                          width={36}
+                          height={36}
+                          sizes="36px"
+                          style={{ borderColor: column.accent }}
+                        />
                         <div>
                           <p className="landing-company-card-name">{card.name}</p>
                           <p className="landing-company-card-role">{locale === "he" ? (ROLE_HE[card.role] ?? card.role) : card.role}</p>

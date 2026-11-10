@@ -60,7 +60,7 @@ export const DEMO_EMMA = {
   initials: "EC",
   headline: "Senior Product Designer",
   location: "Berlin · Open to EU remote",
-  photo: "/landing/avatars/avatar-sofia.png",
+  photo: "/landing/avatars/avatar-sofia.webp",
   gender: "female" as const,
   about:
     "I design product systems that help teams move faster without losing craft.",
@@ -78,7 +78,7 @@ export const DEMO_DANIEL = {
   initials: "DC",
   headline: "Product Manager",
   location: "Tel Aviv · Open to hybrid EU",
-  photo: "/landing/avatars/avatar-idan.png",
+  photo: "/landing/avatars/avatar-idan.webp",
   gender: "male" as const,
   matchScore: 92,
   about:
@@ -146,7 +146,7 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(3),
     initials: "SR",
     gender: "female",
-    photo: "/landing/avatars/avatar-maya.png",
+    photo: "/landing/avatars/avatar-maya.webp",
   },
   {
     userId: "demo-talent-noah-kim",
@@ -157,7 +157,7 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(4),
     initials: "NK",
     gender: "male",
-    photo: "/landing/avatars/avatar-arjun.png",
+    photo: "/landing/avatars/avatar-arjun.webp",
   },
   {
     userId: "demo-talent-aya-ben",
@@ -168,7 +168,7 @@ export const DEMO_CANDIDATES: CandidateRow[] = [
     updatedAt: daysAgo(5),
     initials: "AB",
     gender: "female",
-    photo: "/landing/avatars/avatar-lin.png",
+    photo: "/landing/avatars/avatar-lin.webp",
   },
 ];
 

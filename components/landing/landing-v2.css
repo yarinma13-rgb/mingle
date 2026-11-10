@@ -1,0 +1,623 @@
+/* mingle landing v2 — light, airy, with depth: mesh glows, glass cards, an animated
+   isometric hero and scroll motion. Layered on landing.css (same class names, scoped
+   overrides) so Hebrew/RTL, analytics hooks and copy stay untouched.
+   Brand palette only: #EA1E63 / #7B2FF7 / #3E6BE0 with the light tints from the guidelines. */
+
+.landing {
+  --ld-glass: rgba(255, 255, 255, 0.72);
+  --ld-glass-line: rgba(123, 47, 247, 0.14);
+  --ld-shadow-lg: 0 30px 70px rgba(77, 43, 209, 0.14);
+  --ld-shadow-md: 0 14px 34px rgba(77, 43, 209, 0.09);
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────── */
+
+.landing-nav {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px) saturate(1.4);
+}
+
+.landing-nav .landing-btn-ghost {
+  border-radius: 999px;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+
+.landing-hero-v2 {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(3.5rem, 7vw, 6rem);
+  background:
+    radial-gradient(720px 480px at 82% 0%, rgba(123, 47, 247, 0.16), transparent 66%),
+    radial-gradient(640px 460px at 4% 38%, rgba(62, 107, 224, 0.14), transparent 64%),
+    radial-gradient(520px 340px at 60% 100%, rgba(234, 30, 99, 0.1), transparent 70%),
+    linear-gradient(180deg, #faf8ff 0%, #ffffff 100%);
+}
+
+/* dotted blueprint grid, fading out */
+.landing-hero-v2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(123, 47, 247, 0.22) 1px, transparent 1.4px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 75% 80% at 70% 30%, #000 20%, transparent 75%);
+  opacity: 0.55;
+}
+
+.landing-hero-v2 .landing-hero-grid {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+}
+
+.landing-hero-v2 .landing-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--ld-glass-line);
+  background: var(--ld-glass);
+  box-shadow: var(--ld-shadow-md);
+  color: var(--ld-indigo);
+  font-size: 0.82rem;
+}
+
+.landing-hero-v2 .landing-hero-eyebrow::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-blue));
+  box-shadow: 0 0 0 4px rgba(123, 47, 247, 0.14);
+}
+
+.landing-hero-v2 .landing-hero-title {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-size: clamp(2.3rem, 4.8vw, 3.9rem);
+}
+
+.landing-hero-v2 .landing-hero-line:last-child {
+  background: linear-gradient(100deg, var(--ld-pink) 0%, var(--ld-purple) 55%, var(--ld-blue) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.landing-hero-v2 .landing-audience button {
+  background: var(--ld-glass);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: 0 6px 16px rgba(77, 43, 209, 0.06);
+}
+
+.landing-hero-v2 .landing-audience button.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
+  box-shadow: 0 10px 24px rgba(123, 47, 247, 0.32);
+}
+
+/* the legacy pulse animation re-paints the background; keep a steady gradient + the shine */
+.landing-hero-v2 .landing-btn-primary,
+.landing-hero-v2 .landing-btn-primary.landing-btn-rainbow-pulse {
+  animation: none;
+  border-radius: 999px;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
+  box-shadow: 0 16px 36px rgba(123, 47, 247, 0.35);
+}
+
+.landing-hero-v2 .landing-btn-ghost {
+  border-radius: 999px;
+  background: var(--ld-glass);
+  backdrop-filter: blur(10px);
+}
+
+/* ── Hero illustration ───────────────────────────────────────────────── */
+
+.mingle-scene {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.mingle-scene-glow {
+  position: absolute;
+  inset: 8% 4% 4%;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side at 35% 30%, rgba(123, 47, 247, 0.28), transparent),
+    radial-gradient(closest-side at 70% 70%, rgba(62, 107, 224, 0.26), transparent),
+    radial-gradient(closest-side at 50% 90%, rgba(234, 30, 99, 0.18), transparent);
+  filter: blur(34px);
+}
+
+.mingle-scene-svg {
+  direction: ltr; /* keep the illustration identical in Hebrew; text anchors stay put */
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.mingle-scene-flat {
+  font-family: var(--ld-display);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #fff;
+  letter-spacing: 0.03em;
+}
+
+.mingle-chip-title {
+  font-family: var(--ld-display);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #1c1b2e;
+}
+
+.mingle-chip-text {
+  font-family: var(--ld-display);
+  font-size: 11.5px;
+  font-weight: 700;
+  fill: #1c1b2e;
+}
+
+.mingle-chip-score {
+  font-family: var(--ld-display);
+  font-size: 15px;
+  font-weight: 800;
+  fill: #fff;
+}
+
+.mingle-flow {
+  animation: mingle-flow 1.6s linear infinite;
+}
+
+.mingle-link {
+  animation: mingle-flow 2.4s linear infinite;
+  opacity: 0.85;
+}
+
+.mingle-bob {
+  animation: mingle-bob 5s ease-in-out infinite;
+}
+
+.mingle-core-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-pulse 3.4s ease-in-out infinite;
+}
+
+.mingle-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-ring 3.2s ease-out infinite;
+}
+
+.mingle-ring-b {
+  animation-delay: -1.6s;
+}
+
+.mingle-pair-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-pair 2.4s ease-out infinite;
+}
+
+@keyframes mingle-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes mingle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes mingle-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes mingle-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.3);
+  }
+}
+
+@keyframes mingle-pair {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mingle-flow,
+  .mingle-link,
+  .mingle-bob,
+  .mingle-core-glow,
+  .mingle-ring,
+  .mingle-pair-ring {
+    animation: none;
+  }
+
+  .mingle-ring,
+  .mingle-pair-ring {
+    opacity: 0;
+  }
+}
+
+/* ── Strip below the hero ────────────────────────────────────────────── */
+
+.landing-strip {
+  position: relative;
+  margin-top: -2.5rem;
+  z-index: 3;
+  padding-bottom: 1rem;
+}
+
+.landing-strip-card {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+  border-radius: 24px;
+  background: var(--ld-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
+}
+
+.landing-strip-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ld-muted);
+  text-align: center;
+}
+
+.landing-strip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 0.8rem;
+}
+
+.landing-strip-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 1rem 0.3rem 0.35rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: 0 4px 12px rgba(77, 43, 209, 0.06);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ld-text);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-strip-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(123, 47, 247, 0.16);
+}
+
+.landing-strip-list img {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(28, 27, 46, 0.18);
+}
+
+/* ── Section headings ────────────────────────────────────────────────── */
+
+.landing-section-head-center h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.landing-section-head-center::after {
+  content: "";
+  display: block;
+  width: 4.5rem;
+  height: 3px;
+  margin: 1.1rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ld-pink), var(--ld-purple), var(--ld-blue));
+}
+
+/* ── Hiring board ────────────────────────────────────────────────────── */
+
+.landing-company-board-section {
+  background:
+    radial-gradient(700px 360px at 85% 0%, rgba(123, 47, 247, 0.09), transparent 65%),
+    var(--ld-lavender);
+}
+
+.landing-company-board {
+  border-radius: 24px;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
+}
+
+.landing-company-avatar {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border: 2px solid;
+  background: #fff;
+}
+
+.landing-company-card-name {
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────── */
+
+.landing-fit,
+.landing-steps li {
+  position: relative;
+  border-radius: 22px;
+  padding: 1.6rem 1.35rem;
+  background: var(--ld-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-md);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.landing-fit:hover,
+.landing-steps li:hover {
+  transform: translateY(-5px);
+  border-color: rgba(123, 47, 247, 0.32);
+  box-shadow: 0 26px 50px rgba(123, 47, 247, 0.16);
+}
+
+.landing-fit-dot {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(123, 47, 247, 0.26);
+}
+
+.landing-step-num {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(123, 47, 247, 0.32);
+}
+
+/* steps: a dotted rail connecting the four cards */
+#how {
+  background:
+    radial-gradient(700px 320px at 10% 0%, rgba(62, 107, 224, 0.1), transparent 65%),
+    radial-gradient(640px 320px at 95% 100%, rgba(234, 30, 99, 0.08), transparent 65%),
+    var(--ld-lavender);
+}
+
+.landing-steps {
+  position: relative;
+}
+
+@media (min-width: 901px) {
+  .landing-steps::before {
+    content: "";
+    position: absolute;
+    inset-inline: 6%;
+    top: 2.35rem;
+    border-top: 2px dashed rgba(123, 47, 247, 0.28);
+    z-index: 0;
+  }
+
+  .landing-steps li {
+    z-index: 1;
+  }
+}
+
+.landing-report {
+  border-radius: 26px;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
+}
+
+/* ── Mingle moment: two real people, linked ──────────────────────────── */
+
+#moment {
+  background:
+    radial-gradient(620px 340px at 88% 20%, rgba(234, 30, 99, 0.12), transparent 65%),
+    radial-gradient(660px 340px at 6% 90%, rgba(123, 47, 247, 0.12), transparent 65%),
+    #fff;
+}
+
+#moment .landing-moment-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--ld-glass);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
+}
+
+.landing-moment-pair {
+  gap: 0;
+}
+
+.landing-moment-photo {
+  position: relative;
+  z-index: 1;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 14px 34px rgba(77, 43, 209, 0.28);
+}
+
+.landing-moment-link {
+  position: relative;
+  width: 4.5rem;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ld-pink), var(--ld-purple), var(--ld-blue));
+  background-size: 200% 100%;
+  animation: ld-link 2.4s linear infinite;
+}
+
+@keyframes ld-link {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Compare, FAQ ────────────────────────────────────────────────────── */
+
+.landing-compare-panel {
+  border-radius: 26px;
+  box-shadow: var(--ld-shadow-lg);
+}
+
+.landing-faq-item {
+  border-radius: 18px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.landing-faq-item:hover {
+  border-color: rgba(123, 47, 247, 0.3);
+  box-shadow: var(--ld-shadow-md);
+}
+
+/* ── Closing banner ──────────────────────────────────────────────────── */
+
+.landing-banner-inner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid var(--ld-glass-line);
+  background:
+    radial-gradient(520px 300px at 90% 0%, rgba(234, 30, 99, 0.16), transparent 65%),
+    radial-gradient(560px 320px at 6% 100%, rgba(62, 107, 224, 0.18), transparent 65%),
+    radial-gradient(480px 300px at 50% 50%, rgba(123, 47, 247, 0.12), transparent 70%),
+    #faf8ff;
+  box-shadow: var(--ld-shadow-lg);
+}
+
+.landing-banner-inner .landing-btn-primary {
+  border-radius: 999px;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
+  box-shadow: 0 16px 36px rgba(123, 47, 247, 0.32);
+}
+
+.landing-banner-inner .landing-btn-ghost {
+  border-radius: 999px;
+}
+
+.landing-footer-links a {
+  white-space: nowrap;
+}
+
+/* ── Scroll reveal (CSS-only; ignored by browsers without view timelines) ── */
+
+@keyframes ld-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .landing-fit,
+  .landing-steps li,
+  .landing-report,
+  .landing-moment-card,
+  .landing-company-board,
+  .landing-compare-panel,
+  .landing-faq-item,
+  .landing-strip-card {
+    animation: ld-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-fit,
+  .landing-steps li,
+  .landing-report,
+  .landing-moment-card,
+  .landing-company-board,
+  .landing-compare-panel,
+  .landing-faq-item,
+  .landing-strip-card,
+  .landing-moment-link {
+    animation: none;
+  }
+
+  .landing-fit:hover,
+  .landing-steps li:hover,
+  .landing-strip-list li:hover {
+    transform: none;
+  }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .landing-hero-v2 .landing-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-hero-v2 .landing-hero-visual {
+    min-height: 0;
+    order: -1; /* illustration first on phones, copy right under it */
+    max-width: 420px;
+    margin-inline: auto;
+  }
+
+  .landing-strip {
+    margin-top: -1.25rem;
+  }
+
+  .landing-strip-list li {
+    font-size: 0.85rem;
+  }
+}

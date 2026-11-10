@@ -35,14 +35,14 @@ type Person = {
   style: "photo";
 };
 
-/** Mix of Israelis + Americans, ages ~25–39 — all realistic photos. */
+/** Sample profiles from around the world (illustrative, not customers) — real portrait photos. */
 const PEOPLE: Person[] = [
   {
     name: "Noa Levi",
     role: "Senior Product Manager",
     location: "Tel Aviv",
     match: 97,
-    avatar: "/landing/avatars/avatar-noa.png",
+    avatar: "/landing/avatars/avatar-noa.webp",
     skills: ["Roadmaps", "B2B SaaS", "Discovery", "Leadership"],
     roleFit: 96,
     humanFit: 94,
@@ -55,7 +55,7 @@ const PEOPLE: Person[] = [
     role: "Full-stack Engineer",
     location: "Austin",
     match: 95,
-    avatar: "/landing/avatars/avatar-noah.png",
+    avatar: "/landing/avatars/avatar-noah.webp",
     skills: ["TypeScript", "React", "Node", "Systems"],
     roleFit: 94,
     humanFit: 91,
@@ -64,11 +64,11 @@ const PEOPLE: Person[] = [
     style: "photo",
   },
   {
-    name: "Yael Naveh",
+    name: "Sofia Reyes",
     role: "Product Designer",
-    location: "Tel Aviv",
+    location: "Madrid",
     match: 94,
-    avatar: "/landing/avatars/avatar-sofia.png",
+    avatar: "/landing/avatars/avatar-sofia.webp",
     skills: ["Figma", "User Research", "Prototyping", "Leadership"],
     roleFit: 93,
     humanFit: 90,
@@ -79,9 +79,9 @@ const PEOPLE: Person[] = [
   {
     name: "Arjun Mehta",
     role: "Backend Engineer",
-    location: "New York",
+    location: "London",
     match: 88,
-    avatar: "/landing/avatars/avatar-arjun.png",
+    avatar: "/landing/avatars/avatar-arjun.webp",
     skills: ["Platform", "Go", "Reliability"],
     roleFit: 90,
     humanFit: 84,
@@ -94,7 +94,7 @@ const PEOPLE: Person[] = [
     role: "Full-stack Engineer",
     location: "Tel Aviv",
     match: 86,
-    avatar: "/landing/avatars/avatar-idan.png",
+    avatar: "/landing/avatars/avatar-idan.webp",
     skills: ["TypeScript", "React", "Node"],
     roleFit: 88,
     humanFit: 86,
