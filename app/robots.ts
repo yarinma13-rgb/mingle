@@ -27,6 +27,7 @@ export default function robots(): MetadataRoute.Robots {
           "/team",
           "/saved",
           "/coming-soon",
+          "/plans",
           "/admin",
           "/demo/mascot",
           "/recommend",

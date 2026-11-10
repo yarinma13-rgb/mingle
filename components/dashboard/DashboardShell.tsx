@@ -253,7 +253,7 @@ export function DashboardShell({
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <SeePlansButton compact />
+            {isCompany ? <SeePlansButton compact /> : null}
           </div>
 
           <div className="hidden flex-1 justify-center md:flex">
@@ -355,6 +355,7 @@ export function DashboardShell({
         userPhoto={userPhoto}
         userSubtitle={userSubtitle}
         avatarShape={isCompany ? "soft" : "circle"}
+        showPlans={isCompany}
         profileHref={
           isCompany ? "/company-profile/build" : "/profile/build"
         }
