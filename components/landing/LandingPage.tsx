@@ -11,8 +11,8 @@ import { MingleLogo } from "@/components/MingleLogo";
 import {
   LandingAudienceProvider,
   LandingHeroCopy,
-  LandingHeroMatch,
 } from "@/components/landing/LandingHeroMatch";
+import { LandingMingleScene } from "@/components/landing/LandingMingleScene";
 import { LandingCompanyBoard } from "@/components/landing/LandingCompanyBoard";
 import {
   LandingLanguageSwitch,
@@ -90,12 +90,12 @@ function LandingPageInner() {
       </header>
 
       <main>
-        <section className="landing-hero landing-hero-dark" aria-labelledby="landing-hero-title">
+        <section className="landing-hero landing-hero-v2" aria-labelledby="landing-hero-title">
           <div className="landing-shell landing-hero-grid">
             <LandingAudienceProvider>
               <LandingHeroCopy />
               <div className="landing-hero-visual">
-                <LandingHeroMatch />
+                <LandingMingleScene />
               </div>
             </LandingAudienceProvider>
           </div>

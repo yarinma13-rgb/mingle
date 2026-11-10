@@ -1,209 +1,281 @@
-/* mingle landing v2 — dark hero, glass cards and scroll motion.
-   Layered on top of landing.css (same class names, scoped overrides) so Hebrew/RTL,
-   analytics hooks and copy stay untouched. Brand palette only: #EA1E63 / #7B2FF7 / #3E6BE0. */
+/* mingle landing v2 — light, airy, with depth: mesh glows, glass cards, an animated
+   isometric hero and scroll motion. Layered on landing.css (same class names, scoped
+   overrides) so Hebrew/RTL, analytics hooks and copy stay untouched.
+   Brand palette only: #EA1E63 / #7B2FF7 / #3E6BE0 with the light tints from the guidelines. */
 
 .landing {
-  --ld-ink: #14122a; /* deep violet-navy, built from brand text #1C1B2E */
-  --ld-ink-2: #1c1b2e;
-  --ld-on-dark: #ffffff;
-  --ld-on-dark-muted: #c6c3e4;
-  --ld-glass: rgba(255, 255, 255, 0.06);
-  --ld-glass-line: rgba(255, 255, 255, 0.14);
-  --ld-glow-purple: rgba(123, 47, 247, 0.42);
-  --ld-glow-blue: rgba(62, 107, 224, 0.38);
-  --ld-glow-pink: rgba(234, 30, 99, 0.26);
-  background: #fff;
+  --ld-glass: rgba(255, 255, 255, 0.72);
+  --ld-glass-line: rgba(123, 47, 247, 0.14);
+  --ld-shadow-lg: 0 30px 70px rgba(77, 43, 209, 0.14);
+  --ld-shadow-md: 0 14px 34px rgba(77, 43, 209, 0.09);
 }
 
-/* ── Nav: floats over the dark hero, turns solid on scroll ───────────── */
+/* ── Nav ─────────────────────────────────────────────────────────────── */
 
 .landing-nav {
-  background: rgba(20, 18, 42, 0.55);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.landing-nav .landing-nav-wordmark,
-.landing-nav .landing-nav-signin {
-  color: var(--ld-on-dark);
-  transition: color 0.25s ease;
-}
-
-.landing-nav .landing-nav-links {
-  color: var(--ld-on-dark-muted);
-}
-
-.landing-nav .landing-nav-links a:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px) saturate(1.4);
 }
 
 .landing-nav .landing-btn-ghost {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.55);
-  background: transparent;
-}
-
-.landing-nav .landing-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.landing-nav.is-scrolled {
-  background: rgba(255, 255, 255, 0.92);
-  border-bottom-color: var(--ld-line);
-  box-shadow: 0 6px 24px rgba(28, 27, 46, 0.06);
-}
-
-.landing-nav.is-scrolled .landing-nav-wordmark,
-.landing-nav.is-scrolled .landing-nav-signin {
-  color: var(--ld-text);
-}
-
-.landing-nav.is-scrolled .landing-nav-links {
-  color: var(--ld-muted);
-}
-
-.landing-nav.is-scrolled .landing-nav-links a:hover {
-  color: var(--ld-text);
-}
-
-.landing-nav.is-scrolled .landing-btn-ghost {
-  color: var(--ld-indigo);
-  border-color: color-mix(in srgb, var(--ld-indigo) 45%, transparent);
-}
-
-.landing-nav.is-scrolled .landing-btn-ghost:hover {
-  background: var(--ld-purple-soft);
+  border-radius: 999px;
 }
 
 /* ── Hero ────────────────────────────────────────────────────────────── */
 
-.landing-hero-dark {
+.landing-hero-v2 {
   position: relative;
   isolation: isolate;
-  margin-top: -4.1rem; /* tuck under the sticky nav */
-  padding-block: calc(4.1rem + clamp(2.5rem, 6vw, 4.5rem)) clamp(3rem, 6vw, 5rem);
-  color: var(--ld-on-dark);
+  overflow: hidden;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(3.5rem, 7vw, 6rem);
   background:
-    radial-gradient(900px 520px at 78% 8%, var(--ld-glow-purple), transparent 65%),
-    radial-gradient(760px 520px at 8% 70%, var(--ld-glow-blue), transparent 62%),
-    radial-gradient(520px 360px at 55% 100%, var(--ld-glow-pink), transparent 70%),
-    linear-gradient(180deg, #14122a 0%, #1a1738 100%);
+    radial-gradient(720px 480px at 82% 0%, rgba(123, 47, 247, 0.16), transparent 66%),
+    radial-gradient(640px 460px at 4% 38%, rgba(62, 107, 224, 0.14), transparent 64%),
+    radial-gradient(520px 340px at 60% 100%, rgba(234, 30, 99, 0.1), transparent 70%),
+    linear-gradient(180deg, #faf8ff 0%, #ffffff 100%);
 }
 
-/* faint grid, like a product blueprint */
-.landing-hero-dark::before {
+/* dotted blueprint grid, fading out */
+.landing-hero-v2::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 78%);
+  background-image: radial-gradient(rgba(123, 47, 247, 0.22) 1px, transparent 1.4px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 75% 80% at 70% 30%, #000 20%, transparent 75%);
+  opacity: 0.55;
 }
 
-.landing-hero-dark .landing-hero-eyebrow {
+.landing-hero-v2 .landing-hero-grid {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+}
+
+.landing-hero-v2 .landing-hero-eyebrow {
   display: inline-flex;
-  padding: 0.35rem 0.8rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.85rem;
   border-radius: 999px;
   border: 1px solid var(--ld-glass-line);
   background: var(--ld-glass);
-  color: #e7dcff;
+  box-shadow: var(--ld-shadow-md);
+  color: var(--ld-indigo);
   font-size: 0.82rem;
 }
 
-.landing-hero-dark .landing-hero-title {
-  color: var(--ld-on-dark);
+.landing-hero-v2 .landing-hero-eyebrow::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-blue));
+  box-shadow: 0 0 0 4px rgba(123, 47, 247, 0.14);
+}
+
+.landing-hero-v2 .landing-hero-title {
   font-weight: 600;
   letter-spacing: -0.035em;
   font-size: clamp(2.3rem, 4.8vw, 3.9rem);
 }
 
-.landing-hero-dark .landing-hero-line:last-child {
-  background: linear-gradient(100deg, #ff6fa5 0%, #b58cff 45%, #7fa2ff 100%);
+.landing-hero-v2 .landing-hero-line:last-child {
+  background: linear-gradient(100deg, var(--ld-pink) 0%, var(--ld-purple) 55%, var(--ld-blue) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.landing-hero-dark .landing-hero-lead {
-  color: var(--ld-on-dark-muted);
-}
-
-.landing-hero-dark .landing-hero-value,
-.landing-hero-dark .landing-hero-hint,
-.landing-hero-dark .landing-hero-note {
-  color: #a9a5d0;
-}
-
-.landing-hero-dark .landing-hero-value {
-  color: #e7e4ff;
-}
-
-.landing-hero-dark .landing-audience button {
-  color: #dcd8f7;
+.landing-hero-v2 .landing-audience button {
   background: var(--ld-glass);
   border: 1px solid var(--ld-glass-line);
+  box-shadow: 0 6px 16px rgba(77, 43, 209, 0.06);
 }
 
-.landing-hero-dark .landing-audience button:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.landing-hero-dark .landing-audience button.is-active {
+.landing-hero-v2 .landing-audience button.is-active {
   color: #fff;
   border-color: transparent;
   background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
-  box-shadow: 0 8px 22px rgba(123, 47, 247, 0.4);
+  box-shadow: 0 10px 24px rgba(123, 47, 247, 0.32);
 }
 
-.landing-hero-dark .landing-btn-primary {
-  background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 14px 34px rgba(123, 47, 247, 0.45);
-}
-
-/* the legacy pulse animation re-paints the background; keep the gradient steady, keep the shine */
-.landing-hero-dark .landing-btn-primary.landing-btn-rainbow-pulse {
+/* the legacy pulse animation re-paints the background; keep a steady gradient + the shine */
+.landing-hero-v2 .landing-btn-primary,
+.landing-hero-v2 .landing-btn-primary.landing-btn-rainbow-pulse {
   animation: none;
+  border-radius: 999px;
   background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
+  box-shadow: 0 16px 36px rgba(123, 47, 247, 0.35);
 }
 
-.landing-hero-dark .landing-btn-ghost {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.5);
+.landing-hero-v2 .landing-btn-ghost {
+  border-radius: 999px;
+  background: var(--ld-glass);
+  backdrop-filter: blur(10px);
 }
 
-.landing-hero-dark .landing-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.14);
+/* ── Hero illustration ───────────────────────────────────────────────── */
+
+.mingle-scene {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
 }
 
-/* Product stage: dark glass frame around the live match demo */
-.landing-hero-dark .landing-match-stage {
-  border: 1px solid var(--ld-glass-line);
+.mingle-scene-glow {
+  position: absolute;
+  inset: 8% 4% 4%;
+  z-index: 0;
+  border-radius: 50%;
   background:
-    radial-gradient(520px 300px at 20% 10%, rgba(123, 47, 247, 0.28), transparent 70%),
-    radial-gradient(520px 300px at 90% 90%, rgba(62, 107, 224, 0.26), transparent 70%),
-    rgba(255, 255, 255, 0.05);
-  box-shadow:
-    0 40px 90px rgba(5, 4, 20, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  backdrop-filter: blur(14px);
+    radial-gradient(closest-side at 35% 30%, rgba(123, 47, 247, 0.28), transparent),
+    radial-gradient(closest-side at 70% 70%, rgba(62, 107, 224, 0.26), transparent),
+    radial-gradient(closest-side at 50% 90%, rgba(234, 30, 99, 0.18), transparent);
+  filter: blur(34px);
 }
 
-.landing-hero-dark .landing-match-glow {
-  opacity: 0.9;
+.mingle-scene-svg {
+  direction: ltr; /* keep the illustration identical in Hebrew; text anchors stay put */
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-.landing-hero-dark .landing-mingle-title,
-.landing-hero-dark .landing-match-center {
-  color: #fff;
+.mingle-scene-flat {
+  font-family: var(--ld-display);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #fff;
+  letter-spacing: 0.03em;
 }
 
-/* ── Strip below the hero (ScaleOps "trusted by" slot) ──────────────── */
+.mingle-chip-title {
+  font-family: var(--ld-display);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #1c1b2e;
+}
+
+.mingle-chip-text {
+  font-family: var(--ld-display);
+  font-size: 11.5px;
+  font-weight: 700;
+  fill: #1c1b2e;
+}
+
+.mingle-chip-score {
+  font-family: var(--ld-display);
+  font-size: 15px;
+  font-weight: 800;
+  fill: #fff;
+}
+
+.mingle-flow {
+  animation: mingle-flow 1.6s linear infinite;
+}
+
+.mingle-link {
+  animation: mingle-flow 2.4s linear infinite;
+  opacity: 0.85;
+}
+
+.mingle-bob {
+  animation: mingle-bob 5s ease-in-out infinite;
+}
+
+.mingle-core-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-pulse 3.4s ease-in-out infinite;
+}
+
+.mingle-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-ring 3.2s ease-out infinite;
+}
+
+.mingle-ring-b {
+  animation-delay: -1.6s;
+}
+
+.mingle-pair-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mingle-pair 2.4s ease-out infinite;
+}
+
+@keyframes mingle-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes mingle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes mingle-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes mingle-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.3);
+  }
+}
+
+@keyframes mingle-pair {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mingle-flow,
+  .mingle-link,
+  .mingle-bob,
+  .mingle-core-glow,
+  .mingle-ring,
+  .mingle-pair-ring {
+    animation: none;
+  }
+
+  .mingle-ring,
+  .mingle-pair-ring {
+    opacity: 0;
+  }
+}
+
+/* ── Strip below the hero ────────────────────────────────────────────── */
 
 .landing-strip {
   position: relative;
@@ -217,10 +289,11 @@
   gap: 1rem;
   justify-items: center;
   padding: 1.5rem clamp(1rem, 3vw, 2rem);
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid var(--ld-line);
-  box-shadow: 0 24px 60px rgba(28, 27, 46, 0.12);
+  border-radius: 24px;
+  background: var(--ld-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
 }
 
 .landing-strip-title {
@@ -245,13 +318,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.3rem 0.95rem 0.3rem 0.35rem;
+  padding: 0.3rem 1rem 0.3rem 0.35rem;
   border-radius: 999px;
-  background: var(--ld-lavender);
-  border: 1px solid var(--ld-line);
+  background: #fff;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: 0 4px 12px rgba(77, 43, 209, 0.06);
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--ld-text);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-strip-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(123, 47, 247, 0.16);
 }
 
 .landing-strip-list img {
@@ -263,14 +343,7 @@
   box-shadow: 0 2px 8px rgba(28, 27, 46, 0.18);
 }
 
-.landing-strip-note {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--ld-muted);
-  text-align: center;
-}
-
-/* ── Section headings (centered, large, with brand divider) ─────────── */
+/* ── Section headings ────────────────────────────────────────────────── */
 
 .landing-section-head-center h2 {
   font-size: clamp(1.7rem, 3.4vw, 2.5rem);
@@ -288,18 +361,18 @@
   background: linear-gradient(90deg, var(--ld-pink), var(--ld-purple), var(--ld-blue));
 }
 
-/* ── Hiring board section ───────────────────────────────────────────── */
+/* ── Hiring board ────────────────────────────────────────────────────── */
 
 .landing-company-board-section {
   background:
-    radial-gradient(700px 360px at 85% 0%, rgba(123, 47, 247, 0.07), transparent 65%),
+    radial-gradient(700px 360px at 85% 0%, rgba(123, 47, 247, 0.09), transparent 65%),
     var(--ld-lavender);
 }
 
 .landing-company-board {
-  border-radius: 22px;
-  border: 1px solid rgba(28, 27, 46, 0.1);
-  box-shadow: 0 40px 80px rgba(28, 27, 46, 0.16);
+  border-radius: 24px;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
 }
 
 .landing-company-avatar {
@@ -315,217 +388,167 @@
   line-height: 1.2;
 }
 
-/* ── Cards: fit / dna / steps ───────────────────────────────────────── */
+/* ── Cards ───────────────────────────────────────────────────────────── */
 
 .landing-fit,
 .landing-steps li {
   position: relative;
-  border-radius: 20px;
-  padding: 1.5rem 1.3rem;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 12px 30px rgba(28, 27, 46, 0.05);
+  border-radius: 22px;
+  padding: 1.6rem 1.35rem;
+  background: var(--ld-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-md);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .landing-fit:hover,
 .landing-steps li:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--ld-purple) 30%, transparent);
-  box-shadow: 0 22px 44px rgba(123, 47, 247, 0.14);
+  transform: translateY(-5px);
+  border-color: rgba(123, 47, 247, 0.32);
+  box-shadow: 0 26px 50px rgba(123, 47, 247, 0.16);
 }
 
 .landing-fit-dot {
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(123, 47, 247, 0.25);
-}
-
-/* How it works: dark band with glass steps */
-#how {
-  position: relative;
-  isolation: isolate;
-  color: var(--ld-on-dark);
-  background:
-    radial-gradient(700px 340px at 12% 0%, var(--ld-glow-purple), transparent 65%),
-    radial-gradient(640px 340px at 92% 100%, var(--ld-glow-blue), transparent 65%),
-    linear-gradient(180deg, #1a1738, #14122a);
-}
-
-#how .landing-section-head p {
-  color: var(--ld-on-dark-muted);
-}
-
-#how .landing-steps li {
-  background: var(--ld-glass);
-  border-color: var(--ld-glass-line);
-  box-shadow: none;
-  backdrop-filter: blur(10px);
-}
-
-#how .landing-steps li:hover {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.28);
-}
-
-#how .landing-steps p {
-  color: var(--ld-on-dark-muted);
-}
-
-#how .landing-steps h3 {
-  color: #fff;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(123, 47, 247, 0.26);
 }
 
 .landing-step-num {
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(123, 47, 247, 0.4);
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(123, 47, 247, 0.32);
 }
 
-/* ── Report / score cards ───────────────────────────────────────────── */
+/* steps: a dotted rail connecting the four cards */
+#how {
+  background:
+    radial-gradient(700px 320px at 10% 0%, rgba(62, 107, 224, 0.1), transparent 65%),
+    radial-gradient(640px 320px at 95% 100%, rgba(234, 30, 99, 0.08), transparent 65%),
+    var(--ld-lavender);
+}
+
+.landing-steps {
+  position: relative;
+}
+
+@media (min-width: 901px) {
+  .landing-steps::before {
+    content: "";
+    position: absolute;
+    inset-inline: 6%;
+    top: 2.35rem;
+    border-top: 2px dashed rgba(123, 47, 247, 0.28);
+    z-index: 0;
+  }
+
+  .landing-steps li {
+    z-index: 1;
+  }
+}
 
 .landing-report {
-  border-radius: 24px;
-  border: 1px solid rgba(123, 47, 247, 0.14);
-  box-shadow: 0 30px 70px rgba(28, 27, 46, 0.12);
+  border-radius: 26px;
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
 }
 
-/* ── Mingle moment: dark band, real people ─────────────────────────── */
+/* ── Mingle moment: two real people, linked ──────────────────────────── */
 
 #moment {
-  position: relative;
-  isolation: isolate;
-  color: var(--ld-on-dark);
   background:
-    radial-gradient(640px 360px at 85% 20%, var(--ld-glow-pink), transparent 65%),
-    radial-gradient(700px 360px at 8% 90%, var(--ld-glow-purple), transparent 65%),
-    linear-gradient(180deg, #14122a, #1c1b2e);
-}
-
-#moment .landing-moment-copy h2 {
-  color: #fff;
-}
-
-#moment .landing-moment-copy > p,
-#moment .landing-checklist li {
-  color: var(--ld-on-dark-muted);
-}
-
-#moment .landing-moment-eyebrow {
-  color: #ff8fb8;
+    radial-gradient(620px 340px at 88% 20%, rgba(234, 30, 99, 0.12), transparent 65%),
+    radial-gradient(660px 340px at 6% 90%, rgba(123, 47, 247, 0.12), transparent 65%),
+    #fff;
 }
 
 #moment .landing-moment-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
   background: var(--ld-glass);
-  border-color: var(--ld-glass-line);
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(14px);
+  border: 1px solid var(--ld-glass-line);
+  box-shadow: var(--ld-shadow-lg);
 }
 
-#moment .landing-moment-score {
-  color: #fff;
-}
-
-#moment .landing-moment-sub {
-  color: var(--ld-on-dark-muted);
+.landing-moment-pair {
+  gap: 0;
 }
 
 .landing-moment-photo {
+  position: relative;
+  z-index: 1;
   width: 5.5rem;
   height: 5.5rem;
   border-radius: 999px;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+  border: 3px solid #fff;
+  box-shadow: 0 14px 34px rgba(77, 43, 209, 0.28);
 }
 
 .landing-moment-link {
-  width: 3.5rem;
-  height: 3px;
+  position: relative;
+  width: 4.5rem;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ld-pink), var(--ld-purple), var(--ld-blue));
+  background-size: 200% 100%;
+  animation: ld-link 2.4s linear infinite;
 }
 
-/* ── Compare, FAQ ───────────────────────────────────────────────────── */
+@keyframes ld-link {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Compare, FAQ ────────────────────────────────────────────────────── */
 
 .landing-compare-panel {
-  border-radius: 24px;
-  box-shadow: 0 30px 70px rgba(28, 27, 46, 0.1);
+  border-radius: 26px;
+  box-shadow: var(--ld-shadow-lg);
 }
 
 .landing-faq-item {
-  border-radius: 16px;
+  border-radius: 18px;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .landing-faq-item:hover {
-  border-color: color-mix(in srgb, var(--ld-purple) 28%, transparent);
+  border-color: rgba(123, 47, 247, 0.3);
+  box-shadow: var(--ld-shadow-md);
 }
 
-/* ── Closing banner + footer ───────────────────────────────────────── */
-
-.landing-banner {
-  background: #fff;
-}
+/* ── Closing banner ──────────────────────────────────────────────────── */
 
 .landing-banner-inner {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 0;
-  color: #fff;
+  border-radius: 32px;
+  border: 1px solid var(--ld-glass-line);
   background:
-    radial-gradient(520px 300px at 85% 0%, rgba(234, 30, 99, 0.45), transparent 65%),
-    radial-gradient(560px 320px at 10% 100%, rgba(62, 107, 224, 0.5), transparent 65%),
-    linear-gradient(135deg, #3a1d8f, #4d2bd1 55%, #2d3fa8);
-  box-shadow: 0 40px 90px rgba(77, 43, 209, 0.35);
-}
-
-.landing-banner-inner h2,
-.landing-banner-inner p {
-  color: #fff;
-}
-
-.landing-banner-inner .landing-banner-note {
-  color: rgba(255, 255, 255, 0.75);
+    radial-gradient(520px 300px at 90% 0%, rgba(234, 30, 99, 0.16), transparent 65%),
+    radial-gradient(560px 320px at 6% 100%, rgba(62, 107, 224, 0.18), transparent 65%),
+    radial-gradient(480px 300px at 50% 50%, rgba(123, 47, 247, 0.12), transparent 70%),
+    #faf8ff;
+  box-shadow: var(--ld-shadow-lg);
 }
 
 .landing-banner-inner .landing-btn-primary {
-  background: #fff;
-  color: #3a1d8f;
-  border-color: #fff;
+  border-radius: 999px;
+  background: linear-gradient(115deg, var(--ld-pink), var(--ld-purple) 55%, var(--ld-blue));
+  box-shadow: 0 16px 36px rgba(123, 47, 247, 0.32);
 }
 
 .landing-banner-inner .landing-btn-ghost {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.6);
-  background: transparent;
-}
-
-.landing-footer {
-  color: var(--ld-on-dark-muted);
-  background: linear-gradient(180deg, #14122a, #0f0d20);
-  border-top: 0;
-}
-
-.landing-footer .landing-nav-wordmark,
-.landing-footer .landing-footer-label {
-  color: #fff;
-}
-
-.landing-footer a {
-  color: var(--ld-on-dark-muted);
-}
-
-.landing-footer a:hover {
-  color: #fff;
+  border-radius: 999px;
 }
 
 .landing-footer-links a {
   white-space: nowrap;
-}
-
-.landing-footer .landing-footer-copy,
-.landing-footer .landing-footer-free {
-  color: #9895bd;
 }
 
 /* ── Scroll reveal (CSS-only; ignored by browsers without view timelines) ── */
@@ -564,25 +587,34 @@
   .landing-company-board,
   .landing-compare-panel,
   .landing-faq-item,
-  .landing-strip-card {
+  .landing-strip-card,
+  .landing-moment-link {
     animation: none;
   }
 
   .landing-fit:hover,
-  .landing-steps li:hover {
+  .landing-steps li:hover,
+  .landing-strip-list li:hover {
     transform: none;
   }
 }
 
-/* ── Mobile ─────────────────────────────────────────────────────────── */
+/* ── Mobile ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
-  .landing-hero-dark {
-    padding-block: calc(4.1rem + 1.5rem) 3.5rem;
+  .landing-hero-v2 .landing-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-hero-v2 .landing-hero-visual {
+    min-height: 0;
+    order: -1; /* illustration first on phones, copy right under it */
+    max-width: 420px;
+    margin-inline: auto;
   }
 
   .landing-strip {
-    margin-top: -1.5rem;
+    margin-top: -1.25rem;
   }
 
   .landing-strip-list li {
